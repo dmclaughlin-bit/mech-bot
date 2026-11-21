@@ -24,6 +24,12 @@ const LOOT_CLEAR = 160
 const LOOT_DETOUR = 80
 /** D4, A2: the gun fires only inside this range (m), unless the target is hitting us, below half HP, or not moving sideways. */
 const GUN_GATE = 100
+/** Z1: plan the trip to the next circle at this fraction of walk speed. */
+const ZONE_WALK = 0.8
+/** Z1: seconds of buffer when deciding to leave for the next circle. */
+const ZONE_BUFFER = 10
+/** H2, Q1: stay under this ground speed (m/s) inside the next circle, so our steps make no sound. */
+const SILENT_SPEED = 5
 
 // ------------------------------------------------------------------ aiming
 /** Where to aim a straight-flying shot so it meets a target moving at a steady velocity. */
@@ -172,11 +178,38 @@ function buildBot(hello: Hello): Bot {
           } else if (flat(want.pos, me.pos) < LOOT_DETOUR) lootTarget = want.pos
         }
       }
-      const walk = yawTo(me.pos, lootTarget ?? obs.zone.next_center)
-      act.move = [Math.cos(walk), Math.sin(walk)]
-      act.boost = !me.in_zone
+      // Zone (Z1, Z2, H2, Q1): leave for the next circle just in time, walk there, then hold silently.
+      const z = obs.zone
+      const walkSpeed = me.stats.walk_speed ?? cfg.mech.walk_speed
+      const silent = Math.min(1, (SILENT_SPEED * 0.9) / walkSpeed)
+      const margin = Math.min(15, z.next_radius * 0.25)
+      const toEnter = Math.max(0, flat(me.pos, z.next_center) - (z.next_radius - margin))
+      const timeLeft = z.shrink_end - obs.t
+      const leaveNow = toEnter > 0 && toEnter / (ZONE_WALK * walkSpeed) + ZONE_BUFFER >= timeLeft
+      const heading = (to: number[]): [number, number] => {
+        const yaw = yawTo(me.pos, to)
+        return [Math.cos(yaw), Math.sin(yaw)]
+      }
+      let move: [number, number] = [0, 0]
+      let boost = false
+      let mode = "hold"
+      if (!me.in_zone) {
+        // Outside the circle every tick costs HP and stops regen (Z2): head straight in, boosting.
+        move = heading(z.center)
+        boost = true
+        mode = "zone escape"
+      } else if (leaveNow) {
+        move = heading(z.next_center)
+        boost = toEnter / walkSpeed > timeLeft
+        mode = "to next circle"
+      } else if (lootTarget) {
+        move = heading(lootTarget)
+        mode = "loot"
+      }
+      // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1).
+      if (toEnter === 0 && !boost) move = [move[0] * silent, move[1] * silent]
       act.jump = obs.tick % 40 === 0
-      let aim: [number, number] = [walk, 0]
+      let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
 
       // Target: the nearest enemy mech with a clear shot, else the nearest one we know is there.
       const slotOf = (kind: WeaponKind) => me.weapons.findIndex((w) => w?.kind === kind)
@@ -265,9 +298,11 @@ function buildBot(hello: Hello): Bot {
         if (g && (g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0) act.reload = true
       }
 
+      act.move = move
+      act.boost = boost
       act.aim = [aim[0], clamp(aim[1], minPitch, maxPitch)]
       act.fire = fire
-      draw.label(label)
+      draw.label(`${label} · ${mode}`)
       return act
     },
   }

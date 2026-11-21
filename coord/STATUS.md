@@ -51,3 +51,10 @@ Opening / first-30 s tweaks (seven 3.79 ties), upgrades, later aim tweaks, hold-
 
 ## Sim-only track (added Sat Nov 21, 1:56 PM ET)
 - **P-B-008 movement & evasion training track** (Doug, 1:52 PM ET). Sim-only: strafe / slide / orbit / telegraph dodge / slide-around-cover on the current champion, all current rules held in place (now the 4.17 drop-run stack). Branch `build-109-movement`. It does not take a site slot. It feeds the site queue only after the gate is green and sim testers show opponent hit rate down without new stuck/pin damage. Not a remake of B101 (early gun-round dodge, not submitted). Rebase the track onto 4.17 main (`8b6e7b2` / `6182d29`) when that work is free.
+
+
+## Empty slot, Sat Nov 21 5:45 PM ET tick (loop)
+- No READY candidate against champion 6182d29 (B113, 4.17). Ledger: coord/data/ready_ledger.md (created this tick).
+- Blocker: zero fully screened builds; P25 cube memory has no PR/SHA and no paired screen yet. Reserve goal (2 READY + 1 researched) is at 0 READY.
+- Owner: Mech Builder (P25 build), then Mech Sim Tester (full paired screen 2000+3000 and 4000+5000). Diego's Claude is backup builder.
+- Next action: parent assigns P25 push + a second new-family build so the reserve refills; loop submits the first one that turns READY.

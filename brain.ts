@@ -2,11 +2,12 @@
  * mech-bot brain.
  *
  * Build 1: keep track of every bot around, and aim each weapon so it actually hits.
- * Movement, the choice of whom to fight, and upgrade picks still follow the kit's starter bot.
- * Later builds replace them one rule at a time.
+ * Build 2 (survival-min): setup that cannot fail, terrain in the cover check, laser and lightning
+ * only, a fire gate on the gun, zone travel that leaves just in time and holds silently,
+ * unsticking, retreat when hurt, and an upgrade order. The rules are §9 of the team plan.
  */
-import { readFileSync } from "node:fs"
-import { join } from "node:path"
+import { clearLine, loadMap } from "./map.ts"
+import { params } from "./params.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
 // ------------------------------------------------------------------ geometry helpers
@@ -17,83 +18,27 @@ const yawTo = (from: number[], to: number[]) => Math.atan2(to[1] - from[1], to[0
 const pitchTo = (from: number[], to: number[]) => Math.atan2(to[2] - from[2], flat(from, to))
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
 
-// ------------------------------------------------------------------ the map
-/** Buildings, stadium and bridges on a grid: per cell, the lowest base and the highest top. */
-type Solids = { minX: number; minY: number; step: number; nx: number; ny: number; base: Float32Array; top: Float32Array }
+// ------------------------------------------------------------------ rule constants (plan §9)
+/** L2: loot only when no enemy mech is within this distance (m). */
+const LOOT_CLEAR = 160
+/** L2: walk at most this far (m) to a wanted weapon. */
+const LOOT_DETOUR = 80
+// The tunable thresholds live in params.ts (six knobs at most); its comments say what each one does.
+const GUN_GATE = params.gunRange
+const ZONE_WALK = params.zoneWalk
+const ZONE_BUFFER = params.zoneBuffer
+const SILENT_SPEED = params.silentSpeed
+const RETREAT_HP = params.retreatHp
 
-function inside(ring: number[], x: number, y: number): boolean {
-  let hit = false
-  for (let i = 0, j = ring.length - 2; i < ring.length; j = i, i += 2) {
-    const xi = ring[i], yi = ring[i + 1], xj = ring[j], yj = ring[j + 1]
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) hit = !hit
-  }
-  return hit
-}
-
-function loadSolids(hello: Hello): Solids | null {
-  const file = hello.map?.files?.find((f) => f.endsWith("world.json")) ?? "v2/world.json"
-  for (const path of [join(hello.map.dir, file), join(hello.map.dir, "arena", file)]) {
-    let text: string
-    try {
-      text = readFileSync(path, "utf8")
-    } catch {
-      continue
-    }
-    try {
-      const world = JSON.parse(text)
-      const { minX, minY, nx, ny } = world.terrain
-      const step: number = world.terrain.step ?? 1
-      const base = new Float32Array(nx * ny).fill(Infinity)
-      const top = new Float32Array(nx * ny).fill(-Infinity)
-      for (const p of world.prisms) {
-        const ring: number[] = p.ring
-        const holes: number[][] = p.holes ?? []
-        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity
-        for (let i = 0; i < ring.length; i += 2) {
-          x0 = Math.min(x0, ring[i]); x1 = Math.max(x1, ring[i])
-          y0 = Math.min(y0, ring[i + 1]); y1 = Math.max(y1, ring[i + 1])
-        }
-        const i0 = Math.max(0, Math.floor((x0 - minX) / step)), i1 = Math.min(nx - 1, Math.floor((x1 - minX) / step))
-        const j0 = Math.max(0, Math.floor((y0 - minY) / step)), j1 = Math.min(ny - 1, Math.floor((y1 - minY) / step))
-        for (let j = j0; j <= j1; j++) {
-          const y = minY + (j + 0.5) * step
-          for (let i = i0; i <= i1; i++) {
-            const x = minX + (i + 0.5) * step
-            if (!inside(ring, x, y) || holes.some((h) => inside(h, x, y))) continue
-            const k = j * nx + i
-            if (p.base < base[k]) base[k] = p.base
-            if (p.top > top[k]) top[k] = p.top
-          }
-        }
-      }
-      return { minX, minY, step, nx, ny, base, top }
-    } catch (e) {
-      log("could not read the map, firing without cover checks:", e)
-      return null
-    }
-  }
-  log("map not found under", hello.map?.dir, "- firing without cover checks")
-  return null
-}
-
-/** True when no building, stadium or bridge sits on the straight line from a to b. Trees never stop shots. */
-function clearLine(s: Solids | null, a: Vec3, b: Vec3, skipStart = 3, skipEnd = 2.5): boolean {
-  if (!s) return true
-  const len = span(a, b)
-  const usable = len - skipStart - skipEnd
-  if (usable <= 0) return true
-  const steps = Math.ceil(usable / 0.75)
-  for (let n = 0; n <= steps; n++) {
-    const f = (skipStart + (usable * n) / steps) / len
-    const x = a[0] + (b[0] - a[0]) * f
-    const y = a[1] + (b[1] - a[1]) * f
-    const z = a[2] + (b[2] - a[2]) * f
-    const i = Math.floor((x - s.minX) / s.step), j = Math.floor((y - s.minY) / s.step)
-    if (i < 0 || j < 0 || i >= s.nx || j >= s.ny) continue
-    const k = j * s.nx + i
-    if (z >= s.base[k] && z <= s.top[k]) return false
-  }
-  return true
+/** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
+const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
+const MOBILITY = ["servos", "jets", "capacitor", "reactor"]
+function upgradeRank(id: string): number {
+  const i = UPGRADE_FIRST.indexOf(id)
+  if (i >= 0) return i
+  if (/^(gun|laser|lightning|mortar)_/.test(id) || id === "gyros") return 4
+  if (MOBILITY.includes(id)) return 5
+  return 6
 }
 
 // ------------------------------------------------------------------ aiming
@@ -145,14 +90,48 @@ type Known = {
   hpLog: [number, number][]
 }
 
+/** Never throws: a failed setup gets the fallback bot instead of idling the whole match (plan D6). */
 export function createBot(hello: Hello): Bot {
+  try {
+    return buildBot(hello)
+  } catch (e) {
+    log("bot setup failed, using the fallback bot:", e)
+    return fallbackBot()
+  }
+}
+
+/** A bare bot with no setup to fail: walk to the next circle, shoot the gun at the nearest mech. */
+function fallbackBot(): Bot {
+  return {
+    name: "mech-bot",
+    act(obs: Observation): BotAction {
+      const me = obs.self
+      const goal = obs.zone?.next_center ?? [me.pos[0], me.pos[1]]
+      const walk = yawTo(me.pos, goal)
+      const act: BotAction = { move: [Math.cos(walk), Math.sin(walk)], aim: [walk, 0], boost: !me.in_zone }
+      const enemy = obs.mechs.filter((m) => m.kind === "mech").sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+      if (enemy) {
+        act.aim = [yawTo(me.pos, enemy.pos), 0]
+        act.fire = [true, false]
+      }
+      if (obs.offer) act.pick = 0
+      return act
+    },
+  }
+}
+
+function buildBot(hello: Hello): Bot {
   const cfg = hello.config
-  const solids = loadSolids(hello)
+  const solids = loadMap(hello)
   const growth = Number(cfg.cubes.size_per_cube ?? 0.05)
   const minPitch = cfg.mech.min_pitch ?? -0.7
   const maxPitch = cfg.mech.max_pitch ?? 1.3
   const known = new Map<number, Known>()
   let lastHit: { bearing: number; t: number } | null = null
+  /** attacker id → last time it damaged us */
+  const hitBy = new Map<number, number>()
+  /** where we were over the last half second, and whether we were trying to move */
+  const trail: { t: number; pos: Vec3; moving: boolean }[] = []
 
   const scale = (cubes = 0) => 1 + growth * cubes
   const centerOf = (m: { pos: Vec3; cubes?: number }): Vec3 => [m.pos[0], m.pos[1], m.pos[2] + (cfg.mech.height / 2) * scale(m.cubes)]
@@ -176,6 +155,7 @@ export function createBot(hello: Hello): Bot {
     for (const e of obs.events) {
       if (e.type === "kill") known.delete(e.target)
       if (e.type === "damaged" && e.bearing !== null) lastHit = { bearing: e.bearing, t: obs.t }
+      if (e.type === "damaged" && e.by !== null) hitBy.set(e.by, obs.t)
     }
     for (const [id, k] of known) if (obs.t - k.lastSeen > 30) known.delete(id)
   }
@@ -190,15 +170,84 @@ export function createBot(hello: Hello): Bot {
       const act: BotAction = {}
       const fire: [boolean, boolean] = [false, false]
 
-      // Starter behavior, unchanged in build 1: default upgrade, grab a weapon, walk to the next circle.
-      if (obs.offer) act.pick = 0
-      const pickup = obs.pickups.find((p) => flat(p.pos, me.pos) < cfg.loot.pickup_radius && p.kind !== "gun")
-      if (!me.weapons[1] && pickup) act.take = pickup.id
-      const walk = yawTo(me.pos, obs.zone.next_center)
-      act.move = [Math.cos(walk), Math.sin(walk)]
-      act.boost = !me.in_zone
-      act.jump = obs.tick % 40 === 0
-      let aim: [number, number] = [walk, 0]
+      // Upgrades (L4): always answer, in the plan's order.
+      if (obs.offer?.choices?.length) {
+        const ranks = obs.offer.choices.map((c) => upgradeRank(c.id))
+        act.pick = ranks.indexOf(Math.min(...ranks))
+      }
+      const enemies = obs.mechs.filter((m) => m.kind === "mech")
+
+      // Loot (D3, L1, L2): laser and lightning only, never a mortar, and only with no enemy within 160 m.
+      // Keep the gun until the second of the two shows up, then swap the gun out, never with an enemy in view.
+      let lootTarget: Vec3 | null = null
+      if (!enemies.some((m) => flat(m.pos, me.pos) < LOOT_CLEAR)) {
+        const held = me.weapons.map((x) => x?.kind ?? null)
+        const free = held.indexOf(null)
+        const swapSlot = free < 0 && enemies.length === 0 && (held.includes("laser") || held.includes("lightning")) ? held.indexOf("gun") : -1
+        const want = obs.pickups
+          .filter((p) => (p.kind === "laser" || p.kind === "lightning") && !held.includes(p.kind))
+          .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+        if (want && (free >= 0 || swapSlot >= 0)) {
+          if (flat(want.pos, me.pos) < cfg.loot.pickup_radius && Math.abs(want.pos[2] - me.pos[2]) < 4) {
+            act.take = want.id
+            if (free < 0) act.drop = swapSlot
+          } else if (flat(want.pos, me.pos) < LOOT_DETOUR) lootTarget = want.pos
+        }
+      }
+      // Zone (Z1, Z2, H2, Q1): leave for the next circle just in time, walk there, then hold silently.
+      const z = obs.zone
+      const walkSpeed = me.stats.walk_speed ?? cfg.mech.walk_speed
+      const silent = Math.min(1, (SILENT_SPEED * 0.9) / walkSpeed)
+      const margin = Math.min(15, z.next_radius * 0.25)
+      const toEnter = Math.max(0, flat(me.pos, z.next_center) - (z.next_radius - margin))
+      const timeLeft = z.shrink_end - obs.t
+      const leaveNow = toEnter > 0 && toEnter / (ZONE_WALK * walkSpeed) + ZONE_BUFFER >= timeLeft
+      const heading = (to: number[]): [number, number] => {
+        const yaw = yawTo(me.pos, to)
+        return [Math.cos(yaw), Math.sin(yaw)]
+      }
+      let move: [number, number] = [0, 0]
+      let boost = false
+      let mode = "hold"
+      if (!me.in_zone) {
+        // Outside the circle every tick costs HP and stops regen (Z2): head straight in, boosting.
+        move = heading(z.center)
+        boost = true
+        mode = "zone escape"
+      } else if (leaveNow) {
+        move = heading(z.next_center)
+        boost = toEnter / walkSpeed > timeLeft
+        mode = "to next circle"
+      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp) {
+        // Retreat (F2, F3): hurt and under fire, so back away from the attacker with the torso still on it
+        // (legs and torso are independent). Lean toward the center near the circle's edge; boost only above 30% energy.
+        const away = lastHit.bearing + Math.PI
+        let mx = Math.cos(away), my = Math.sin(away)
+        const edge = clamp((flat(me.pos, z.center) - (z.radius - 40)) / 40, 0, 1)
+        if (edge > 0) {
+          const [cx, cy] = heading(z.center)
+          mx += 1.5 * edge * cx
+          my += 1.5 * edge * cy
+        }
+        const n = Math.hypot(mx, my) || 1
+        move = [mx / n, my / n]
+        boost = me.energy > 0.3 * me.max_energy
+        mode = "retreat"
+      } else if (lootTarget) {
+        move = heading(lootTarget)
+        mode = "loot"
+      }
+      // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1).
+      if (toEnter === 0 && !boost && mode !== "retreat") move = [move[0] * silent, move[1] * silent]
+      // Unstick: jump, then jet, only when we've been trying to move but covered under 1 m in 0.5 s.
+      trail.push({ t: obs.t, pos: me.pos, moving: Math.hypot(move[0], move[1]) > 0.2 })
+      while (trail.length > 1 && obs.t - trail[0].t > 0.5) trail.shift()
+      const stuck = obs.t - trail[0].t >= 0.45 && trail.every((s) => s.moving) && flat(trail[0].pos, me.pos) < 1
+      if (stuck) {
+        if (me.grounded) act.jump = true
+        else if (me.energy > 15) boost = true
+      }
+      let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
 
       // Target: the nearest enemy mech with a clear shot, else the nearest one we know is there.
       const slotOf = (kind: WeaponKind) => me.weapons.findIndex((w) => w?.kind === kind)
@@ -247,8 +296,17 @@ export function createBot(hello: Hello): Bot {
           }
         }
 
+        // Fire gate on the gun (D4, A2): inside 100 m, or at a target that is hitting us, is below half HP, or is
+        // moving mostly toward or away from us. Past that a sideways mover dodges, and a shot is heard 320 m away.
+        const dx = c[0] - muzzle[0], dy = c[1] - muzzle[1], dl = Math.hypot(dx, dy) || 1
+        const radial = Math.abs((m.vel[0] * dx + m.vel[1] * dy) / dl)
+        const sideways = Math.abs((m.vel[0] * dy - m.vel[1] * dx) / dl)
+        const hittingUs = obs.t - (hitBy.get(m.id) ?? -Infinity) < 2
+        const weak = (m.hp ?? 1) / (m.max_hp ?? 1) < 0.5
+        const gunOpen = d <= GUN_GATE || hittingUs || weak || sideways <= radial
+
         // Fire only what can hit from where the torso actually points.
-        if (clear && gun >= 0) {
+        if (clear && gun >= 0 && gunOpen) {
           const g = w(gun)
           if ((g.ammo ?? 1) > 0 && (g.reload ?? 0) <= 0 && d <= g.stats.range && onTarget(gunAim[0], gunAim[1])) fire[gun] = true
         }
@@ -278,9 +336,11 @@ export function createBot(hello: Hello): Bot {
         if (g && (g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0) act.reload = true
       }
 
+      act.move = move
+      act.boost = boost
       act.aim = [aim[0], clamp(aim[1], minPitch, maxPitch)]
       act.fire = fire
-      draw.label(label)
+      draw.label(`${label} · ${mode}`)
       return act
     },
   }

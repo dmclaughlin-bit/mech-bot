@@ -85,6 +85,13 @@ export const LASER_TRIP_M = 250
 /** Give up on a weapon we have walked toward this long (s) without reaching it. */
 export const LASER_CHASE_S = 20
 /**
+ * Build 86 (P7): after 60 s, a still-gun-only B80 late walk may go this far (m) instead of LASER_TRIP_M.
+ * The zone-time test still applies. LATE_CHASE_S is long enough for 400 m at walk speed (~11.7 m/s);
+ * without it, LASER_CHASE_S 20 would give up around 234 m and the longer cap would never finish.
+ */
+export const LATE_TRIP_M = 400
+export const LATE_CHASE_S = 40
+/**
  * Build 16 (target pick): instead of the nearest enemy with a clear line, lock the enemy mech with the best kill
  * value (target.ts: a shot from here, short time-to-kill from our DPS, low hp, weak weapons, alone) and keep it until
  * it dies or has had no shot for TARGET_LOST_S. An enemy outside the circle is picked only while we can shoot it from

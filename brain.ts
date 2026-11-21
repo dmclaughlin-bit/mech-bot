@@ -19,12 +19,13 @@
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  * Build 80 (late lightning): after 45 s, a gun-only bot may walk to a reachable ground lightning or laser
  * (see LATE_LIGHT_ON).
+ * Build 86 (longer late walk): after 60 s, that walk may go up to LATE_TRIP_M (see LATE_LONG_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LATE_CHASE_S, LATE_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -129,6 +130,10 @@ const CROSSFIRE_ON = true
  * Take, swap, and drop are unchanged (B66 and B68 lost on the site). Different from B76/B78 (first 45 s only).
  * false = champion. */
 const LATE_LIGHT_ON = true
+/** Build 86 (Tester P7): after 60 s, a still-gun-only late walk may go up to LATE_TRIP_M (400 m) instead of
+ * LASER_TRIP_M (250 m). Zone-time and the no-hit-for-3 s gate stay. The give-up window is LATE_CHASE_S so a
+ * 400 m walk can finish. false = champion B80. */
+const LATE_LONG_ON = true
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -644,8 +649,12 @@ function buildBot(hello: Hello): Bot {
       ) {
         const pace = ZONE_WALK * walkSpeed
         const onward = (p: Vec3) => Math.max(0, flat(p, z.next_center) - inner)
+        // Build 86: after 60 s, a gun-only late walk may go LATE_TRIP_M; the zone-time check is unchanged.
+        const lateLong = LATE_LONG_ON && lateLight && obs.t >= 60
+        const tripM = lateLong ? LATE_TRIP_M : LASER_TRIP_M
+        const chaseS = lateLong ? LATE_CHASE_S : LASER_CHASE_S
         // `len` m of walking to the weapon at p: a bounded trip, and back in the next circle in time.
-        const fits = (p: Vec3, len: number) => len <= LASER_TRIP_M && (len + onward(p)) / pace + ZONE_BUFFER < timeLeft
+        const fits = (p: Vec3, len: number) => len <= tripM && (len + onward(p)) / pace + ZONE_BUFFER < timeLeft
         // A laser always counts; a lightning only while we hold nothing but the gun. Lasers first, then the nearest.
         const options = [...arms]
           .filter(([id, a]) =>
@@ -660,7 +669,7 @@ function buildBot(hello: Hello): Bot {
           const go = travel(me.pos, pos, obs.t, canPlan())
           const planned = !!route && flat(route.goal, pos) <= ROUTE_GOAL_SHIFT
           // No path (a ledge, a walled yard) or a walk that has taken too long: leave this one for good.
-          if ((planned && !route!.found) || obs.t - rush.since > LASER_CHASE_S) laserSkip.add(id)
+          if ((planned && !route!.found) || obs.t - rush.since > chaseS) laserSkip.add(id)
           else if (planned && fits(pos, go.dist)) rushMove = go.move
         }
       }

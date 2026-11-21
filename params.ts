@@ -147,5 +147,5 @@ export const DROP_RUN_M = 200
  * Sim (P-D-007 Step A): dying with zone travel in the last 5 s touches 28 and 37 of 192 games. Route, cover and every
  * other rule are unchanged. 0 = off, identical to main.
  */
-export const ZONE_EARLY_S = 0
+export const ZONE_EARLY_S = 10
 

@@ -385,3 +385,9 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - Result: research only, from kit config and code; not submitted.
 - Found: drops (called at 70/140/210 s, landing 25 s later inside the next circle) give full HP, full energy and 3 cubes for 4 s alone in an 8 m ring. They are the only heal that our own hits can't reset. We take one only after it lands, within 80 m, and with no enemy known within 160 m (`brain.ts:456-476`, `params.ts:32-34`). One watched winner took all 3 drops.
 - Blocked / next: **proposal (Lane A):** `DROP_RUN_ON`: walk to a called, zone-safe drop as soon as the nav ETA ≤ `lands_in` + 10 s, then hold the ring with normal fight logic; skip it if it's held or contested. Expected +0.1 to +0.3.
+
+## Sat 02:13 ET · Diego (research) · Endgame: no one reaches 8:00
+- Did: filed `research/intake/diego-2026-11-21-0211.json` (1 finding, ACCEPT on a scratch ingest). Checked HYP-011's premise against the kit's zone config.
+- Result: research only; not submitted.
+- Found: the zone reaches radius 0 at ~6:55 (phases sum to 415 s) with 260 HP/s, no armor and no regen, so even ~2,980 HP lasts ~11.5 s. The 8:00 HP tiebreak never happens. The endgame order is HP at 6:55. Plating helps there and armor does not. Low priority at 3.50, since we usually die earlier. My supply-drop proposal (PR #39) is still open and is the stronger next Lane A candidate.
+- Blocked / next: Grok: merge PR #39 and this one; restate HYP-011 as "most HP at the 6:55 collapse".

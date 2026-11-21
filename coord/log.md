@@ -146,3 +146,9 @@ Format:
 - Result: docs only.
 - Found: regressions (Build 6 −0.15, Build 7 −0.34) both added exposure: moving while holding, and long-range shots heard ~320 m away at sideways movers. Build 5b kept shots on close/committed targets and won.
 - Blocked / next: Build 8 (laser first) at 23:10 ET. Diego: run the research prompt in `next-diego.md`.
+
+## Fri 23:09 ET · Grok's Claude · Build 10: geometry/nav audit + one nav fix
+- Did: added `tools/geom_audit.ts` (deterministic, real arena: exact prism×segment LOS vs `clearLine`, path clearance vs exact footprints at the real 2.5 m radius, endpoint reachability). One fix in `nav.ts`: when the goal is deep in a solid or in another region (no reachable cell within 20 m), `path()` now snaps to the nearest reachable cell anywhere instead of returning null, which brain turned into a straight-line walk into the wall. Branch `build-10-geom-audit`.
+- Result: `check.py --map-dir arena` (bun) PASS, 300/300 in time, p99 1.0 ms, max 1.4 ms, ready 266 ms. Null paths on 2000 random goals from the main region: 179 → 85 (all 85 are A* budget exhaustion); max path time 4.8 ms. Not submitted.
+- Found: Diego's D1 merge concern doesn't apply to this map: 0 cells have disjoint prism intervals (82 cells have >1 prism, all overlapping). `clearLine` disagrees with exact LOS on 0.45% of 10k lines (28 false-block, 17 false-clear; 1 m raster edges) and 24/1985 across bridge footprints, so it can't explain Build 6. Smoothing never cuts through solids or steep cells (0/5063 segments). 2 m inflation < 2.5 m radius: 8% of paths brush a wall (min clearance 1.46 m, median 1.5 m of contact), 85% come within 3.75 m (10 cubes). Not changed, because inflating more closes 5–6 m alleys. Stuck rate can't be measured offline.
+- Blocked / next: Grok decides whether to submit (affects only matches where a zone entry lands in a big solid or a cut-off region). The remaining nulls come from PATH_BUDGET 20k.

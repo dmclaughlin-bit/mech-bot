@@ -316,6 +316,18 @@ function gridNav(g: NavGrid, walk: number, stuck: Nav["stuck"]): Nav {
     }
     return best
   }
+  /** Nearest free cell to c in component `want`, over the whole map (one linear scan, under 1 ms); -1 if none. */
+  const nearestInComp = (c: number, want: number) => {
+    const cx = c % nx, cy = (c / nx) | 0, F = g.freeCells
+    let best = -1, bestD = Infinity
+    for (let n = 0; n < F.length; n++) {
+      const m = F[n]
+      if (comp[m] !== want) continue
+      const d = (m % nx - cx) ** 2 + (((m / nx) | 0) - cy) ** 2
+      if (d < bestD) { bestD = d; best = m }
+    }
+    return best
+  }
   /** Every cell the segment a→b touches is free (a conservative supercover walk). */
   const clear = (a: number, b: number) => {
     let x = a % nx, y = (a / nx) | 0
@@ -379,7 +391,8 @@ function gridNav(g: NavGrid, walk: number, stuck: Nav["stuck"]): Nav {
     const s = snap(cellOf(from[0], from[1]), -1)
     if (s < 0) return null
     const t0 = cellOf(to[0], to[1])
-    const t = snap(t0, comp[s])
+    let t = snap(t0, comp[s])
+    if (t < 0) t = nearestInComp(t0, comp[s]) // goal deep in a solid or in another region: nearest reachable cell
     if (t < 0) return null
     const exact = t === t0 || (free[t0] && comp[t0] === comp[s])
     const end: Vec3 = exact ? [to[0], to[1], surfaceZ(to[0], to[1])] : cellPos(g, t)

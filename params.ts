@@ -113,3 +113,15 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 55 (crossfire first): when two or more enemies have line of sight to us and a mech damaged us in the last
+ * CROSSFIRE_FIRST_HIT_S, the laser trip pauses for the Build 60 crossfire break (cover that breaks those lines), and the
+ * remembered trip resumes once the rush's own conditions hold again (lines broken, no mech damage for its quiet time),
+ * even after LASER_RUSH_S. The paused time does not count toward LASER_CHASE_S. Sight alone never pauses the trip
+ * (early pickups pay the most). Before this, the hit dropped the trip, and after LASER_RUSH_S it was never resumed.
+ * Set CROSSFIRE_FIRST_ON to false to roll back to Build 60 behavior exactly.
+ */
+export const CROSSFIRE_FIRST_ON = true
+/** The pause needs mech damage this recent (s). */
+export const CROSSFIRE_FIRST_HIT_S = 2

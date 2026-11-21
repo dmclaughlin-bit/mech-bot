@@ -21,7 +21,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  CROSSFIRE_FIRST_HIT_S, CROSSFIRE_FIRST_ON, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -249,6 +249,8 @@ function buildBot(hello: Hello): Bot {
   let beamAt: Vec3 | null = null
   const laserSkip = new Set<number>()
   let rush: { id: number; since: number } | null = null
+  /** Build 55: the last decision time the trip was held paused by a crossfire under fire (null when not paused). */
+  let rushHeld: number | null = null
   /** Build 12: last time a mech (or the zone) damaged us, the item we are walking to, and items we gave up on. */
   let lastMechHit = -Infinity
   /** Build 19: the last time we took damage from anything (mech, drone or zone). */
@@ -653,8 +655,21 @@ function buildBot(hello: Hello): Bot {
           else if (planned && fits(pos, go.dist)) rushMove = go.move
         }
       }
-      if (!rushMove) rush = null
-      else farmChase = null
+      // Crossfire first (Build 55): see CROSSFIRE_FIRST_ON in params.ts. Taking mech fire with two or more lines on us
+      // pauses the trip instead of dropping it: the crossfire break below runs (it already ranks above a rush that the
+      // hit has stopped), and the remembered trip resumes when the rush test above passes again. The chase clock stops.
+      const holdTrip =
+        CROSSFIRE_FIRST_ON && CROSSFIRE_ON && !rushMove && !!rush && LASER_RUSH_ON && !holdsLaser && rushSlot && me.in_zone &&
+        !leaveNow && !trip && !engage && !claimGoal && !hurt && !cubeFirst && obs.t - lastMechHit <= FARM_QUIET_S &&
+        (rushHeld !== null ||
+          (obs.t - lastMechHit < CROSSFIRE_FIRST_HIT_S && threats.filter((e) => seenAt(me.pos, myHeight, [e], false)).length >= 2))
+      if (holdTrip) {
+        rush!.since += obs.t - (rushHeld ?? obs.t)
+        rushHeld = obs.t
+      } else rushHeld = null
+      if (!rushMove) {
+        if (!holdTrip) rush = null
+      } else farmChase = null
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false

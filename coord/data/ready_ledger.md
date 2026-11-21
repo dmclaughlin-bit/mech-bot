@@ -105,3 +105,19 @@ These were listed in the stub as “not eligible / do not submit.” They stay H
 - P26 healthy boost with reserve, PR #138, c566fbadf65372c0de70d2ccd02e8f4c91a29ef0: no paired screen vs 6182d29 yet. Owner: Mech Sim Tester. Next: full screen on both sets; novelty check against the loadout/upgrade-timing losses.
 - P27 mode 36 skip break-crossfire during drop runs, PR #137, 7df3a4a6: one-flag site SHA; no paired screen vs 6182d29 yet. Owner: Mech Sim Tester. Next: full screen on both sets.
 - 6:15 PM ET (loop): P25 #136 head moved to 47d0e6ce (the pin fix). The b34271c screen does not carry over. HOLD until Mech Sim Tester runs a fresh full screen of 47d0e6ce on both sets vs 6182d29.
+
+
+## Loop 6:55 PM ET (Sat Nov 21) - screens evaluated this tick
+### READY - P27 drop crossfire skip (DROP_CROSSFIRE_SKIP_ON), PR #137, 7df3a4a6ab809aae28ef4e63e6629db5b9aedd81, vs champion 6182d29
+- Novelty: closest priors P21 drop contest (tie, BB-1D97890A), P20 drop-when-hurt (tie, BB-36A427E0). New trigger (drop active + 2+ enemies in sight + no hit in 2 s) and action (skip the crossfire hide). Not tested before.
+- Impact rank: 1 (only eligible candidate).
+- Timing: loop check.py re-run PASS 300/300, max 3.2 ms.
+- Change off: identical (tester flag-0 temp copy, 96 base-2000 seeds; code guarded by the flag).
+- Activations: 2000+3000 fired 11 / diff behavior 11 / diff score 6; 4000+5000 fired 11 / 11 / 8.
+- Hazards: no crash, no new 20 s+ pin (champion 3062 44 s pin gone), died<40 s 56->56, drop arrivals held.
+- Single change: brain.ts one guarded condition + one params flag.
+- Decision: READY.
+### HOLD - P26 healthy boost (HEALTHY_BOOST_ON), PR #138, c566fbad
+- Screens complete and rated PASS by Sim Tester, but new 20 s+ pins 4018 (22 s) and 5053 (20 s) with boost not active in the window. Rule (6) is per new pin. Owner: Doug (decide whether pins with the feature inactive veto). Next: Doug's answer; then loop check.py re-run.
+### HOLD - P25b cube memory + no-progress drop (CUBE_MEMORY_ON), PR #136, 47d0e6ce
+- Screens complete; seed 3043 pin fixed, but new 20 s+ pins 72 (20 s), 4091 (26 s), 5048 (25 s), 5054 (20 s), memory not active in any window. Also D3 question: memory plus no-progress drop may be two behaviors under one flag. Owner: Doug (pin rule + D3). Next: Doug's answer.

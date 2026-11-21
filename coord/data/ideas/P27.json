@@ -1,0 +1,26 @@
+{
+ "id": "P27",
+ "title": "Drop crossfire skip: keep the drop run / ring hold when 2+ enemies see us but none hit us in 2 s",
+ "family": "drops",
+ "flag": "DROP_CROSSFIRE_SKIP_ON",
+ "owner": "Mech Builder",
+ "stage": "READY",
+ "pr": 137,
+ "sha": "7df3a4a6ab809aae28ef4e63e6629db5b9aedd81",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": {
+  "2000+3000": "fired 11 / diff behavior 11 / diff score 6, delta -0.010 +/- 0.029, died<40s 56->56, no new 20 s+ pin (champion 3062 44 s pin gone)",
+  "4000+5000": "fired 11 / diff behavior 11 / diff score 8, delta -0.021 +/- 0.038, no new 20 s+ pin"
+ },
+ "checks": {
+  "contains_champion": "PASS (merge-base --is-ancestor)",
+  "flag0_identical": "PASS (tester temp copy flag 0 identical on 96 base-2000 seeds; diff guarded by flag, 0 short-circuits)",
+  "check_py": "PASS 300/300, max 3.2 ms (loop re-run 6:5x PM ET)",
+  "single_change": "PASS (brain.ts one condition + params.ts one flag)",
+  "novelty": "closest prior: P21 drop contest (BB-1D97890A, tie), P20 drop-when-hurt (BB-36A427E0, tie); different trigger (2+ enemies in sight, no hit in 2 s, drop active) and action (skip crossfire hide)"
+ },
+ "receipt": null,
+ "score": null,
+ "decision": "READY - submit",
+ "updated": "2026-11-21 18:55 ET"
+}

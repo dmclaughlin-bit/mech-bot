@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 18:08 ET",
- "origin_main": "1b5ad159dc5176d77d64716e2d1dfedf339ae2b9",
+ "generated_at_et": "2026-11-21 18:49 ET",
+ "origin_main": "616a4db5b87f394972fd3c5e58a9386480a22e28",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -25,7 +25,7 @@
   "pending": [],
   "slots": {
    "limit": 6,
-   "used_rolling_60": 3,
+   "used_rolling_60": 0,
    "used_clock_hour": 0,
    "last_submit": "2026-11-21 17:33 ET"
   },
@@ -2659,7 +2659,7 @@
      "A",
      "B"
     ],
-    "when_both": "2026-11-21 18:03 ET",
+    "when_both": "2026-11-21 18:47 ET",
     "events": [
      {
       "src": "PR #136 comment",
@@ -2667,27 +2667,27 @@
        "A",
        "B"
       ],
-      "at": "2026-11-21 18:03 ET",
-      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/136#issuecomment-7070616608",
+      "at": "2026-11-21 18:47 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/136#issuecomment-7071108537",
       "after_click": false,
       "exact_sha": true
      },
      {
-      "src": "screens.csv P25",
+      "src": "screens.csv P25b",
       "sets": [
        "A"
       ],
-      "at": "2026-11-21 18:03 ET",
+      "at": "2026-11-21 18:47 ET",
       "url": null,
       "after_click": false,
       "exact_sha": true
      },
      {
-      "src": "screens.csv P25",
+      "src": "screens.csv P25b",
       "sets": [
        "B"
       ],
-      "at": "2026-11-21 18:03 ET",
+      "at": "2026-11-21 18:47 ET",
       "url": null,
       "after_click": false,
       "exact_sha": true
@@ -2697,7 +2697,7 @@
    "screened_before_click": false,
    "postmortems": [],
    "first_mention": "2026-11-21 17:45 ET",
-   "sha": "b34271c15df17bac4fda4275a7928643034f5e83",
+   "sha": "47d0e6cecbe5df5432b6e604897a0bad9fd40f73",
    "research": [
     "coord/data/watcher/SKILLS.md"
    ],
@@ -2711,7 +2711,7 @@
      "n": 136,
      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/136",
      "state": "open",
-     "head": "b34271c15df17bac4fda4275a7928643034f5e83",
+     "head": "47d0e6cecbe5df5432b6e604897a0bad9fd40f73",
      "title": "P25: cube memory, walk to remembered cubes out to 150 m when farm is open (CUBE_MEMORY_ON)"
     }
    ],
@@ -2719,7 +2719,7 @@
    "primary_pr": 136,
    "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/136",
    "pr_state": "open",
-   "head": "b34271c15df17bac4fda4275a7928643034f5e83",
+   "head": "47d0e6cecbe5df5432b6e604897a0bad9fd40f73",
    "pr_closed": null,
    "pr_merged": null,
    "contains_champion": true,

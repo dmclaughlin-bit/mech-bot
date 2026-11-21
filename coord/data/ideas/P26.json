@@ -1,0 +1,19 @@
+{
+ "id": "P26",
+ "title": "Healthy boost with reserve on long legs to drop/zone",
+ "family": "movement",
+ "flag": "HEALTHY_BOOST_ON",
+ "owner": "Mech Builder",
+ "stage": "HOLD",
+ "pr": 138,
+ "sha": "c566fbadf65372c0de70d2ccd02e8f4c91a29ef0",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": {
+  "2000+3000": "fired 32 / diff behavior 32 / diff score 9, delta -0.057 +/- 0.032",
+  "4000+5000": "fired 40 / diff behavior 39 / diff score 18, delta -0.031 +/- 0.040; new 20 s+ pins 4018 (22 s), 5053 (20 s), boost not active in window; seed 78 pin 28->38 s"
+ },
+ "receipt": null,
+ "score": null,
+ "decision": "HOLD: rule (6) new 20 s+ pins (4018, 5053) - Doug decides whether pins with the feature not active count; check.py not yet re-run by loop",
+ "updated": "2026-11-21 18:55 ET"
+}

@@ -1,0 +1,19 @@
+{
+ "id": "P25b",
+ "title": "Cube memory plus no-progress drop",
+ "family": "farm",
+ "flag": "CUBE_MEMORY_ON",
+ "owner": "Mech Builder",
+ "stage": "HOLD",
+ "pr": 136,
+ "sha": "47d0e6cecbe5df5432b6e604897a0bad9fd40f73",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": {
+  "2000+3000": "fired 30 / diff behavior 30 / diff score 17, delta -0.109 +/- 0.063; seed 3043 pin gone; seed 72 pin 20 s (no memory in window)",
+  "4000+5000": "fired 32 / diff behavior 32 / diff score 22, delta +0.062 +/- 0.101; new 20 s+ pins 4091 (26 s), 5048 (25 s), 5054 (20 s), no memory in window"
+ },
+ "receipt": null,
+ "score": null,
+ "decision": "HOLD: rule (6) new 20 s+ pins (72, 4091, 5048, 5054) - Doug decides; D3 check: memory + no-progress drop may be two behaviors under one flag",
+ "updated": "2026-11-21 18:55 ET"
+}

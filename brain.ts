@@ -23,11 +23,13 @@
  * close to our best weapon's effective range (see STANDOFF_BREAK_S).
  * P-D-003 (drop run): walk to a called supply drop within 150 m, timed to arrive as it lands, and hold its ring
  * (see DROP_RUN_M).
+ * P-B-008 (movement & evasion track, sim-only): strafe, jitter, orbit, telegraph dodge and slide-around-cover behind
+ * EVADE_MODE (params.ts). 0 = champion exactly.
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_RUN_M, ENGAGE_FINISH_HP, EVADE_MODE, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -152,6 +154,36 @@ const STANDOFF_MIN_M = 45
 const STANDOFF_MAX_M = 90
 const STANDOFF_SECOND_S = 3
 const STANDOFF_HP_MARGIN = 0.2
+
+/** P-B-008 (see EVADE_MODE in params.ts): which mechanics the chosen variant turns on. All false at 0. */
+const EV_STRAFE = EVADE_MODE === 1 || EVADE_MODE === 2 || EVADE_MODE === 3 || EVADE_MODE === 6
+const EV_JITTER = EVADE_MODE === 2 || EVADE_MODE === 6
+const EV_ORBIT = EVADE_MODE === 3 || EVADE_MODE === 6
+const EV_DODGE = EVADE_MODE === 4 || EVADE_MODE === 6
+const EV_SLIDE = EVADE_MODE === 5 || EVADE_MODE === 6
+/** P-B-008: a standing gunfight is against an enemy with a clear line within this distance (m), or one that hit us in the last THREAT_HIT_S, or one charging a laser. */
+const EVADE_RANGE_M = 160
+/** P-B-008: every evasion step is checked this far ahead (s of walking, at least EVADE_LOOK_MIN_M) against walls, the zone and the shot. */
+const EVADE_LOOK_S = 0.5
+const EVADE_LOOK_MIN_M = 4
+/** P-B-008 (jitter): the strafe reverses after a random time in this window (s). A gun round takes 0.2 to 0.4 s to cross a 55 to 95 m fight. */
+const EVADE_JITTER_MIN_S = 0.5
+const EVADE_JITTER_MAX_S = 1.4
+/** P-B-008 (orbit): hold our best weapon's range when within this band (m) of it; the gain (per m of error) and cap of the radial correction; the bend (rad) of a close. */
+const ORBIT_BAND_M = 15
+const ORBIT_GAIN = 1 / 8
+const ORBIT_RADIAL_MAX = 0.6
+const ORBIT_BEND = Math.PI / 6
+/** P-B-008 (dodge): a charging enemy whose aim is within this angle (rad) of our bearing is charging at us; a shell landing within its splash + our radius + this margin (m), at most this far ahead (s), is dodged. */
+const DODGE_AIM_RAD = 0.3
+const DODGE_SHELL_MARGIN_M = 3
+const DODGE_SHELL_S = 4
+/** P-B-008 (slide): a straight-line move is checked this far ahead (m); the headings (rad off the wanted one) tried when it is blocked. */
+const SLIDE_LOOK_M = 5
+const SLIDE_TURNS = [0.5, 1.0, 1.5]
+const SLIDE_MODES = new Set(["retreat to cover", "retreat", "break crossfire", "lightning ambush", "heal, hiding", "loot", "hide"])
+/** P-B-008: aim from where our muzzle will be when the action lands: our velocity x this (s). The same 1 to 2 tick guess as LASER_LEAD_S. */
+const AIM_LAG_S = 0.075
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -308,6 +340,18 @@ function buildBot(hello: Hello): Bot {
   let claim: { pos: Vec3; until: number } | null = null
   /** P-B-001: the enemy the standoff break walked at last decision (null when it did not run). */
   let standoffId: number | null = null
+  /** P-B-008: strafe side (+1 = left of the threat bearing), when the jitter next reverses it, the orbit ring, the slide side, and a seeded random source. */
+  let evDir = 1
+  let evFlipAt = 0
+  let evRing: { id: number; r: number } | null = null
+  let slideSide = 1
+  let evRand = (Number(hello.seed ?? 1) ^ 0x9e3779b9) | 0
+  const evRnd = () => {
+    evRand = (evRand + 0x6d2b79f5) | 0
+    let t = Math.imul(evRand ^ (evRand >>> 15), 1 | evRand)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
 
   /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
    * lightning 0.8 × its range, gun GUN_NEAR_M, laser and mortar their reach. */
@@ -866,19 +910,179 @@ function buildBot(hello: Hello): Bot {
         }
         standoffId = foe?.id ?? null
       }
+      // P-B-008 (EVADE_MODE, params.ts): movement only. Everything above has already chosen what to do; this replaces a
+      // standing gunfight's [0, 0], bends a close already under way, or steers a straight-line move around a wall.
+      let evading = false
+      let evFoe: Vec3 | null = null
+      if (EVADE_MODE > 0) {
+        const lookM = Math.max(EVADE_LOOK_MIN_M, walkSpeed * EVADE_LOOK_S)
+        const keepD = Math.hypot(me.pos[0] - zoneKeep[0][0], me.pos[1] - zoneKeep[0][1])
+        // Map awareness: a step of `dist` m along (ux, uy) stays on walkable cells and inside the circle we keep to
+        // (or, from outside it, does not go further out).
+        const stepOk = (ux: number, uy: number, dist = lookM): boolean => {
+          const to: Vec3 = [me.pos[0] + ux * dist, me.pos[1] + uy * dist, me.pos[2]]
+          const dd = Math.hypot(to[0] - zoneKeep[0][0], to[1] - zoneKeep[0][1])
+          return (dd <= zoneKeep[1] || dd < keepD) && nav.open(me.pos, to)
+        }
+        const turn = (ux: number, uy: number, a: number): [number, number] => [ux * Math.cos(a) - uy * Math.sin(a), ux * Math.sin(a) + uy * Math.cos(a)]
+        const flip = () => {
+          evDir = -evDir
+          evFlipAt = obs.t + EVADE_JITTER_MIN_S + evRnd() * (EVADE_JITTER_MAX_S - EVADE_JITTER_MIN_S)
+        }
+        const still = move[0] === 0 && move[1] === 0
+        const standing = still && (mode === "engage, ttk" || mode === "engage, finish" || mode === "heal" || mode === "hold")
+        // The foe of a standing gunfight: the engaged enemy, else the nearest enemy mech we have a clear line to that is close, hitting us, or charging.
+        let foe: (typeof enemies)[number] | undefined
+        if (standing && engage) foe = engage.clear ? engage.m : undefined
+        else if (standing)
+          foe = threats.find((e) =>
+            (flat(e.pos, me.pos) <= EVADE_RANGE_M || obs.t - (mechHitBy.get(e.id) ?? -Infinity) < THREAT_HIT_S || !!e.charging) && clearLine(solids, muzzle, centerOf(e)))
+        if (!foe) evRing = null
+        // Dodge (variant 4): a mortar shell about to land on us, or a laser charging along our bearing.
+        if (EV_DODGE && standing) {
+          const mortar = cfg.weapons.mortar ?? {}
+          const g = Number(mortar.gravity ?? 22), reach = Number(mortar.splash_radius ?? 7) + (me.stats.radius ?? cfg.mech.radius) + DODGE_SHELL_MARGIN_M
+          let shell: { at: number[]; vel: number[] } | null = null
+          for (const p of obs.projectiles ?? []) {
+            if (p.kind !== "mortar") continue
+            const disc = p.vel[2] * p.vel[2] + 2 * g * (p.pos[2] - me.pos[2])
+            if (disc < 0) continue
+            const tt = (p.vel[2] + Math.sqrt(disc)) / g
+            if (tt < 0 || tt > DODGE_SHELL_S) continue
+            const at = [p.pos[0] + p.vel[0] * tt, p.pos[1] + p.vel[1] * tt]
+            if (flat(at, me.pos) < reach && (!shell || flat(at, me.pos) < flat(shell.at, me.pos))) shell = { at, vel: p.vel }
+          }
+          if (shell) {
+            let ax = me.pos[0] - shell.at[0], ay = me.pos[1] - shell.at[1]
+            if (Math.hypot(ax, ay) < 0.5) { ax = -shell.vel[1]; ay = shell.vel[0] }
+            const n = Math.hypot(ax, ay) || 1
+            for (const a of [0, evDir, -evDir, 1.6 * evDir, -1.6 * evDir]) {
+              const [ux, uy] = turn(ax / n, ay / n, a)
+              if (!stepOk(ux, uy)) continue
+              move = [ux, uy]
+              evading = true
+              mode = "dodge, mortar"
+              break
+            }
+          }
+          const beamReach = Number(cfg.weapons.laser?.range ?? 280)
+          const charger = evading ? undefined : threats.find((e) =>
+            !!e.charging && flat(e.pos, me.pos) <= beamReach && Math.abs(wrap(yawTo(e.pos, me.pos) - e.aim[0])) < DODGE_AIM_RAD && seenAt(me.pos, myHeight, [e], false))
+          if (charger) {
+            const cover = hideSpot(me, myHeight, walkSpeed, [charger], false, zoneKeep, canPlan)
+            if (cover && nav.open(me.pos, cover)) {
+              move = heading(cover)
+              evading = true
+            } else {
+              const a = yawTo(charger.pos, me.pos)
+              for (const side of [evDir, -evDir]) {
+                const [ux, uy] = turn(Math.cos(a), Math.sin(a), (side * Math.PI) / 2)
+                if (!stepOk(ux, uy)) continue
+                if (side !== evDir) flip()
+                move = [ux, uy]
+                evading = true
+                break
+              }
+            }
+            if (evading) mode = "dodge, laser"
+          }
+          if (evading && foe) evFoe = foe.pos
+        }
+        // Strafe (variants 1, 2, 3): walk across the threat bearing instead of standing; 2 reverses on a timer, 3 holds a ring.
+        if (EV_STRAFE && foe && !evading) {
+          const d = flat(foe.pos, me.pos) || 1
+          const ux = (foe.pos[0] - me.pos[0]) / d, uy = (foe.pos[1] - me.pos[1]) / d
+          if (EV_JITTER && obs.t >= evFlipAt) flip()
+          let radial = 0
+          if (EV_ORBIT) {
+            if (evRing?.id !== foe.id) {
+              const pref = bestWeaponRange(me)
+              evRing = { id: foe.id, r: Math.abs(d - pref) <= ORBIT_BAND_M ? pref : d }
+            }
+            radial = clamp((d - evRing.r) * ORBIT_GAIN, -ORBIT_RADIAL_MAX, ORBIT_RADIAL_MAX)
+          }
+          const aim0 = centerOf(foe)
+          for (const side of [evDir, -evDir]) {
+            let sx = -uy * side + ux * radial, sy = ux * side + uy * radial
+            const n = Math.hypot(sx, sy) || 1
+            sx /= n
+            sy /= n
+            // The step must be walkable, in the zone, and keep the shot we have now.
+            if (!stepOk(sx, sy) || !clearLine(solids, [muzzle[0] + sx * lookM, muzzle[1] + sy * lookM, muzzle[2]], aim0)) continue
+            if (side !== evDir) flip()
+            move = [sx, sy]
+            evading = true
+            evFoe = foe.pos
+            mode = `${mode}, ${EV_ORBIT ? "orbit" : "strafe"}`
+            break
+          }
+        }
+        // Orbit (variant 3): a close the champion is already walking in the open (finish rule, standoff break) becomes an arc.
+        if (EV_ORBIT && !evading && !still) {
+          const closing = mode === "engage, standoff" ? enemies.find((e) => e.id === standoffId) : engage?.clear && mode.startsWith("engage, ") ? engage.m : undefined
+          if (closing && clearLine(solids, muzzle, centerOf(closing)) && nav.open(me.pos, closing.pos)) {
+            if (EV_JITTER && obs.t >= evFlipAt) flip()
+            const d = flat(closing.pos, me.pos) || 1
+            for (const side of [evDir, -evDir]) {
+              const [ux, uy] = turn((closing.pos[0] - me.pos[0]) / d, (closing.pos[1] - me.pos[1]) / d, side * ORBIT_BEND)
+              if (!stepOk(ux, uy)) continue
+              if (side !== evDir) flip()
+              move = [ux, uy]
+              evFoe = closing.pos
+              break
+            }
+          }
+        }
+        // Slide around cover (variant 5): a straight-line move whose next step is blocked follows the nav path to its
+        // goal, else turns to the first open heading. Moves along a found nav path are left alone.
+        const len = Math.hypot(move[0], move[1])
+        if (EV_SLIDE && !evading && len > 0.05 && (SLIDE_MODES.has(mode) || (!!route && !route.found)) && nav.standable(me.pos)) {
+          const ux = move[0] / len, uy = move[1] / len
+          const ahead = (x: number, y: number) => nav.open(me.pos, [me.pos[0] + x * SLIDE_LOOK_M, me.pos[1] + y * SLIDE_LOOK_M, me.pos[2]])
+          if (!ahead(ux, uy)) {
+            const goal = SLIDE_MODES.has(mode) ? (spot ?? (mode === "loot" ? lootTarget : null)) : null
+            let done = false
+            if (goal) {
+              const go = travel(me.pos, goal, obs.t, canPlan())
+              if (route?.found && flat(route.goal, goal) <= ROUTE_GOAL_SHIFT && ahead(go.move[0], go.move[1])) {
+                move = [go.move[0] * len, go.move[1] * len]
+                done = true
+              }
+            }
+            for (const a of done ? [] : SLIDE_TURNS) {
+              for (const side of [slideSide, -slideSide]) {
+                const [sx, sy] = turn(ux, uy, side * a)
+                if (!ahead(sx, sy)) continue
+                slideSide = side
+                move = [sx * len, sy * len]
+                done = true
+                break
+              }
+              if (done) break
+            }
+          }
+        }
+      }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      if (!evading && !noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {
         if (me.grounded) act.jump = true
         else if (me.energy > 15) boost = true
         route = null
+        // P-B-008: a strafe that ran into something turns around.
+        if (evading) evDir = -evDir
       }
       let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
+      // P-B-008: while evading, the torso stays on the foe (or where it points now), never on the move heading.
+      if (evading || evFoe) aim = evFoe ? [yawTo(me.pos, evFoe), 0] : [me.aim[0], 0]
+      // P-B-008: aim from where the muzzle will be when this action lands (our own motion). At 0 these are the champion's points.
+      const shotFrom: Vec3 = EVADE_MODE > 0 ? [muzzle[0] + me.vel[0] * AIM_LAG_S, muzzle[1] + me.vel[1] * AIM_LAG_S, muzzle[2]] : muzzle
+      const tubeFrom: Vec3 = EVADE_MODE > 0 ? [tube[0] + me.vel[0] * AIM_LAG_S, tube[1] + me.vel[1] * AIM_LAG_S, tube[2]] : tube
 
       // Target: the nearest enemy mech with a clear shot, else the nearest one we know is there (Build 16 re-picks below).
       const slotOf = (kind: WeaponKind) => me.weapons.findIndex((w) => w?.kind === kind)
@@ -979,13 +1183,13 @@ function buildBot(hello: Hello): Bot {
           Math.abs(wrap(me.aim[0] - yaw)) < yawTol && Math.abs(me.aim[1] - pitch) < pTol
         const gun = slotOf("gun"), laser = slotOf("laser"), arc = slotOf("lightning"), mortar = slotOf("mortar")
         const w = (i: number) => me.weapons[i] as WeaponObs
-        const led = lead(muzzle, c, vel, gun >= 0 ? w(gun).stats.speed : cfg.weapons.gun.speed)
-        const gunAim: [number, number] = [yawTo(muzzle, led), pitchTo(muzzle, led)]
-        const direct: [number, number] = [yawTo(muzzle, c), pitchTo(muzzle, c)]
+        const led = lead(shotFrom, c, vel, gun >= 0 ? w(gun).stats.speed : cfg.weapons.gun.speed)
+        const gunAim: [number, number] = [yawTo(shotFrom, led), pitchTo(shotFrom, led)]
+        const direct: [number, number] = [yawTo(shotFrom, c), pitchTo(shotFrom, c)]
         // Build 17: the beam is instant and has no spread, so aim it where the target will be when our action lands,
         // and let go only when the torso is inside the target's outline (its own radius and height, not the gun's wider cone).
         const ahead: Vec3 = LASER_RUSH_ON ? [c[0] + vel[0] * LASER_LEAD_S, c[1] + vel[1] * LASER_LEAD_S, c[2]] : c
-        const beamAim: [number, number] = [yawTo(muzzle, ahead), pitchTo(muzzle, ahead)]
+        const beamAim: [number, number] = [yawTo(shotFrom, ahead), pitchTo(shotFrom, ahead)]
         const body = farmShot ? [Math.min(cfg.crates.radius ?? 1.4, cfg.npc.radius ?? 1.8), Math.min(cfg.crates.height, cfg.npc.height) / 2] : [cfg.mech.radius * size, (cfg.mech.height / 2) * size]
         const beamOn = LASER_RUSH_ON
           ? Math.abs(wrap(me.aim[0] - beamAim[0])) < Math.atan2(body[0] * LASER_RELEASE, d) && Math.abs(me.aim[1] - beamAim[1]) < Math.atan2(body[1] * LASER_RELEASE, d)
@@ -1005,7 +1209,7 @@ function buildBot(hello: Hello): Bot {
           aim = gunAim
         } else if (!farmShot && mortar >= 0 && w(mortar).cooldown <= 0.3 && d > 15) {
           const g = w(mortar).stats.gravity ?? cfg.weapons.mortar.gravity
-          const shell = lob(tube, c, vel, w(mortar).stats.speed, g, !clear)
+          const shell = lob(tubeFrom, c, vel, w(mortar).stats.speed, g, !clear)
           if (shell && shell.pitch >= minPitch && shell.pitch <= maxPitch) {
             leading = "mortar"
             aim = [shell.yaw, shell.pitch]

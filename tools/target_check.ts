@@ -1,6 +1,7 @@
 /**
  * Build 16 offline check: run the brain on recorded observations and count which enemy it targets, how often the
- * target switches, and how often the pick differs from Build 13's (nearest with a clear line, else nearest).
+ * target switches, and how often the pick differs from the nearest-clear pick (nearest with a clear line, else nearest:
+ * the rule up to Build 13; Build 14 only puts the enemy it is engaged with first among the clear ones).
  * OFFLINE ONLY: the recording is not reactive (our actions do not change later observations), so these counts say
  * whether the rule fires and on what, never how a match would go. They are not scores.
  *
@@ -41,8 +42,8 @@ const cfg = hello.config
 const solids = loadMap(hello)
 const bot = createBot(hello)
 
-/** Build 13's pick, recomputed here: the nearest enemy mech with a clear line from our muzzle, else the nearest. */
-function build13Pick(obs: Observation): number | null {
+/** The nearest-clear pick, recomputed here: the nearest enemy mech with a clear line from our muzzle, else the nearest. */
+function nearestClearPick(obs: Observation): number | null {
   const me = obs.self
   const growth = Number(cfg.cubes.size_per_cube ?? 0.05)
   const muzzle: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.muzzle_height ?? cfg.mech.muzzle_height * (1 + growth * me.cubes))]
@@ -79,7 +80,7 @@ for (const line of lines.slice(1)) {
   }
   const enemies = obs.mechs.filter((m) => m.kind === "mech")
   bump(inView, String(enemies.length))
-  const baseline = build13Pick(obs)
+  const baseline = nearestClearPick(obs)
   const act = bot.act(obs)
   const label = draw.take()?.label ?? ""
   // "… · gun at 10 57m [lock+first 6.31] · hold": role, +cause on the decision a lock starts, kill value.
@@ -93,7 +94,7 @@ for (const line of lines.slice(1)) {
   }
   withTarget++
   bump(targets, String(id))
-  bump(roles, hit![3] ?? "build 13 pick")
+  bump(roles, hit![3] ?? "nearest-clear pick (TARGET_PICK_ON off)")
   if (hit![4]) bump(newLocks, hit![4])
   if (act.fire?.some(Boolean)) bump(firingAt, String(id))
   if (enemies.length > 1) {
@@ -123,7 +124,7 @@ console.log(`TARGET_PICK_ON = ${TARGET_PICK_ON}, lock lost after ${TARGET_LOST_S
 console.log(`observations: ${obsCount}  with a mech target: ${withTarget}  with a choice (2+ enemy mechs in view): ${choiceTicks}`)
 console.log(`target switches (target id changed between consecutive targeted ticks): ${switches}  of which straight back to the previous target: ${backAndForth}`)
 console.log(`longest run on one target: ${longestHold} ticks`)
-console.log(`with a choice: pick differs from Build 13's nearest-clear pick on ${differs} ticks; pick is not the lowest-hp enemy on ${notLowestHp} ticks`)
+console.log(`with a choice: pick differs from the nearest-clear pick on ${differs} ticks; pick is not the lowest-hp enemy on ${notLowestHp} ticks`)
 show("enemy mechs in view (ticks):", inView)
 show("target by id (ticks):", targets)
 show("fired at, by id (ticks):", firingAt)

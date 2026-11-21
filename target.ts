@@ -10,51 +10,15 @@
  *   shot  : 1 when we have a clear line and a weapon that reaches it
  *   ttk   : 1 / (1 + ttk / TARGET_TTK_REF_S), ttk = its hp / our DPS on it (0 with no shot)
  *   hp    : 1 − hp / max_hp
- *   weak  : 1 − (DPS of the weapons it is seen holding) / (the best two-weapon DPS in the config)
+ *   weak  : 1 − threat, the DPS of the weapons it is seen holding over the best two-weapon DPS in the config
  *   alone : 1 when no other enemy is within TARGET_ALONE_M of it
- * Every weapon number comes from hello.config.weapons (ours after upgrades, from self.weapons[].stats).
+ * Our DPS and each enemy's weapon threat come from brain.ts (Build 14's ourDps and baseDps), which read
+ * hello.config.weapons, so the pick and the fight-or-flee test share one estimate.
  *
  * Zone rule: an enemy outside the current circle can be picked only while we can shoot it from where we stand, so a
  * pick never asks us to leave the zone. This module only picks; it never moves the bot.
  */
 import { TARGET_ALONE_M, TARGET_LOST_S, TARGET_TTK_REF_S, TARGET_W } from "./params.ts"
-import type { WeaponKind, WeaponObs } from "./mechfight.ts"
-
-type Stats = Record<string, number>
-type WeaponTable = Record<string, Stats>
-
-/** Sustained DPS of one weapon from its stats, with no range or accuracy factor. */
-export function weaponDps(kind: WeaponKind, s: Stats): number {
-  const dmg = s.damage ?? 0
-  if (kind === "gun") {
-    const mag = s.mag ?? 1
-    return (dmg * mag) / (mag * (s.cooldown ?? 1) + (s.reload ?? 0))
-  }
-  if (kind === "laser") return dmg / ((s.charge ?? 0) + (s.cooldown ?? 1))
-  return dmg / (s.cooldown ?? 1)
-}
-
-/**
- * Our DPS on a target `d` m away with a clear line. The gun fades past `gunGate` (D4: its fire gate closes there and
- * a sideways mover dodges), and a mortar rarely lands on a walking mech.
- */
-export function ourDps(weapons: (WeaponObs | null)[], table: WeaponTable, d: number, gunGate: number): number {
-  let sum = 0
-  for (const w of weapons) {
-    if (!w) continue
-    const s = { ...table[w.kind], ...w.stats }
-    if (w.kind === "mortar") {
-      if (d > 15) sum += 0.3 * weaponDps(w.kind, s)
-    } else if (d <= (s.range ?? Infinity)) sum += weaponDps(w.kind, s) * (w.kind === "gun" ? Math.min(1, gunGate / d) : 1)
-  }
-  return sum
-}
-
-/** The largest DPS any two different weapons in the config give together: the scale for "weak weapons". */
-export function topPairDps(table: WeaponTable): number {
-  const all = (Object.keys(table) as WeaponKind[]).map((k) => weaponDps(k, table[k])).sort((a, b) => b - a)
-  return (all[0] ?? 0) + (all[1] ?? 0) || 1
-}
 
 export type Candidate = {
   id: number
@@ -66,8 +30,8 @@ export type Candidate = {
   clear: boolean
   hp: number
   maxHp: number
-  /** weapons it is seen holding; undefined when never seen */
-  weapons?: WeaponKind[]
+  /** 0 to 1: the DPS of the weapons it is seen holding over the best two-weapon DPS in the config (0.5 when never seen) */
+  threat: number
 }
 export type Scored = Candidate & {
   /** clear line and a weapon of ours reaches it */
@@ -80,23 +44,22 @@ export type Scored = Candidate & {
 }
 export type Zone = { center: number[]; radius: number }
 
-/** Score every candidate. `others` are the enemy positions used for the alone test (the candidates and remembered ones). */
-export function scoreTargets(
-  cands: Candidate[], others: { id: number; pos: number[] }[], weapons: (WeaponObs | null)[], table: WeaponTable, gunGate: number, zone: Zone,
-): Scored[] {
-  const pair = topPairDps(table)
+/**
+ * Score every candidate. `others` are the enemy positions for the alone test (the candidates and remembered ones), and
+ * `dps(d)` is what we deal per second to a target `d` m away with a clear line.
+ */
+export function scoreTargets(cands: Candidate[], others: { id: number; pos: number[] }[], dps: (d: number) => number, zone: Zone): Scored[] {
   return cands.map((c) => {
-    const dps = c.clear ? ourDps(weapons, table, c.d, gunGate) : 0
-    const shot = dps > 0
-    const ttk = shot ? c.hp / dps : Infinity
+    const out = c.clear ? dps(c.d) : 0
+    const shot = out > 0
+    const ttk = shot ? c.hp / out : Infinity
     const alone = !others.some((o) => o.id !== c.id && Math.hypot(o.pos[0] - c.pos[0], o.pos[1] - c.pos[1]) < TARGET_ALONE_M)
-    const threat = c.weapons ? Math.min(1, c.weapons.reduce((a, k) => a + (table[k] ? weaponDps(k, table[k]) : 0), 0) / pair) : 0.5
     const inZone = Math.hypot(c.pos[0] - zone.center[0], c.pos[1] - zone.center[1]) <= zone.radius
     const score =
       TARGET_W.shot * Number(shot) +
       TARGET_W.ttk * (shot ? 1 / (1 + ttk / TARGET_TTK_REF_S) : 0) +
       TARGET_W.hp * (1 - Math.min(1, c.hp / (c.maxHp || 1))) +
-      TARGET_W.weak * (1 - threat) +
+      TARGET_W.weak * (1 - c.threat) +
       TARGET_W.alone * Number(alone)
     return { ...c, shot, ttk, alone, eligible: inZone || shot, score }
   })
@@ -107,24 +70,32 @@ export type Pick = {
   target: Scored | null
   /** lock: the locked target. interim: the lock has no shot right now, so shoot this one until it is back or lost. track: nobody can be picked, face the nearest. */
   role: "lock" | "interim" | "track" | "none"
-  /** set on the decision a lock starts */
-  locked?: "first" | "died" | "lost" | "zone"
+  /** set on the decision a lock starts: why the one before it ended ("engage": Build 14 chose this enemy to fight) */
+  locked?: LockCause
 }
+type LockCause = "first" | "died" | "lost" | "zone" | "engage"
 
 /**
- * The lock (hysteresis). Call once per decision with this decision's scores and the ids killed since the last one.
- * A lock ends only when its target dies, has had no shot for TARGET_LOST_S, or can't be picked under the zone rule.
+ * The lock (hysteresis). Call once per decision with this decision's scores, the ids killed since the last one, and
+ * the id Build 14 is engaged with, if any. A lock ends only when its target dies, has had no shot for TARGET_LOST_S,
+ * can't be picked under the zone rule, or Build 14 commits to fighting another enemy (that one takes the lock, so the
+ * fight-or-flee choice and the aim never disagree).
  */
 export function createTargetLock() {
   let lock: { id: number; shotAt: number } | null = null
-  let ended: "first" | "died" | "lost" | "zone" = "first"
+  let ended: LockCause = "first"
   return {
     get id() {
       return lock?.id ?? null
     },
-    pick(scored: Scored[], t: number, killed: number[]): Pick {
+    pick(scored: Scored[], t: number, killed: number[], engaged?: number): Pick {
       const best = (list: Scored[]) => list.reduce<Scored | null>((a, b) => (!a || b.score > a.score || (b.score === a.score && b.d < a.d) ? b : a), null)
       const nearest = scored.reduce<Scored | null>((a, b) => (!a || b.d < a.d ? b : a), null)
+      const forced = engaged !== undefined && engaged !== lock?.id ? scored.find((s) => s.id === engaged && s.eligible) : undefined
+      if (forced) {
+        lock = { id: forced.id, shotAt: t }
+        if (forced.shot) return { target: forced, role: "lock", locked: "engage" }
+      }
       let held = lock ? scored.find((s) => s.id === lock!.id) ?? null : null
       if (lock) {
         if (killed.includes(lock.id)) (lock = null), (ended = "died"), (held = null)

@@ -79,3 +79,6 @@ Never submit a build while an earlier submission is still unscored. Wait for the
 1. Site-result-driven ideas first: tweaks and follow-ups of the current best, and rebuilds on current main of anything that beat its own parent on the site.
 2. Research/code-reading ideas (e.g. Diego's audits) fill leftover slots only, and only after a sim trigger count shows they fire in about 10 of 192 games or more.
 3. Ideas in the same family as a recent site loss go last (e.g. after B108 finish burst 3.75: other finish-rule changes).
+
+## Sim-only training tracks (Doug, Sat Nov 21 1:52 PM ET)
+A sim-only track (currently P-B-008, movement and evasion) may iterate in the local sim until it is in good standing: `check.py` max under 30 ms, flag 0 byte-identical to the current champion bot code, and the track's own metrics (for P-B-008: opponent hit rate and damage taken down, no new stuck/pin problem, aim-while-moving holds up). It does **not** take a site slot, is not submitted, and is not merged to main. Only after it clears that gate and Grok judges it ready does it go to Mech Builder / the site queue as a normal flagged build on the then-current champion. Sequence and queue-priority rules still apply to any later site submission.

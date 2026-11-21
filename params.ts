@@ -140,3 +140,13 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * B124 (no close-in while hurt on a laser holder): Sim Tester's B117 post-mortem (coord/data/postmortems/B117-matchup-range.md)
+ * found that closing in while hurt on a laser-armed target caused the two biggest losses (seeds 2034 −7, 3012 −3).
+ * Measured on the champion (6182d29, sim 2000+3000): engage walks toward a visible laser holder with our HP under 35%
+ * in 17 of 192 games. With this on, the engage branch (ttk / finish) does not walk toward its target while our HP is
+ * under 35% of max and that target is seen (now or remembered) holding a laser: we hold position, firing is unchanged.
+ * Retreat, zone travel, crossfire break, drop run and every other mode are unchanged. false = champion behavior exactly.
+ */
+export const NO_CLOSE_HURT_LASER_ON = true

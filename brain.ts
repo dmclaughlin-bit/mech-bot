@@ -28,7 +28,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, NO_CLOSE_HURT_LASER_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -79,6 +79,8 @@ const HEAL_HP = 0.9
 /** F3, Q2 hiding spots: this many bearings around us, at the distances we walk in 1, 2 and 3 s, nearest first. */
 const HIDE_BEARINGS = 12
 const HIDE_STEPS_S = [1, 2, 3]
+/** B124: "hurt" for NO_CLOSE_HURT_LASER_ON, as a fraction of max HP (the Watcher's and ENGAGE_FINISH_HP's 35%). */
+const NO_CLOSE_HP = 0.35
 /** Build 12 (farm): no farming for this long (s) after damage from anything but a drone. */
 const FARM_QUIET_S = 3
 /** Build 12: known enemies seen this recently (s) count against the FARM_ENEMY_M ring. */
@@ -764,9 +766,12 @@ function buildBot(hello: Hello): Bot {
         // hits as well at range, and walking in while charging is at half speed.
         const beam = LASER_RUSH_ON ? me.weapons.find((w) => w?.kind === "laser") : undefined
         const standOff = !!beam && engage.clear && d <= (beam.stats.range ?? baseReach.laser)
-        if ((!engage.clear || (engage.why === "finish" && d > close && !standOff)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1])
-          move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
-        mode = `engage, ${engage.why}`
+        // B124 (NO_CLOSE_HURT_LASER_ON): hurt (HP under 35%) against a laser holder, hold instead of walking in.
+        const laserFoe = (engage.m.weapons ?? known.get(engage.m.id)?.weapons ?? []).includes("laser")
+        const noClose = NO_CLOSE_HURT_LASER_ON && laserFoe && me.hp < NO_CLOSE_HP * me.max_hp
+        const walkIn = (!engage.clear || (engage.why === "finish" && d > close && !standOff)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1]
+        if (walkIn && !noClose) move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
+        mode = `engage, ${engage.why}${walkIn && noClose ? ", no close" : ""}`
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && seenAt(me.pos, myHeight, threats, false) && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
         // Retreat (F2, F3, Build 5): hurt and under fire, so head for the nearest in-zone spot out of every visible
         // enemy's line of sight, torso still on the attacker (legs and torso are independent). Boost only above 30% energy.

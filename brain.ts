@@ -7,6 +7,7 @@
  * unsticking, retreat when hurt, and an upgrade order. The rules are §9 of the team plan.
  */
 import { clearLine, loadMap } from "./map.ts"
+import { params } from "./params.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
 // ------------------------------------------------------------------ geometry helpers
@@ -22,16 +23,12 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
 const LOOT_CLEAR = 160
 /** L2: walk at most this far (m) to a wanted weapon. */
 const LOOT_DETOUR = 80
-/** D4, A2: the gun fires only inside this range (m), unless the target is hitting us, below half HP, or not moving sideways. */
-const GUN_GATE = 100
-/** Z1: plan the trip to the next circle at this fraction of walk speed. */
-const ZONE_WALK = 0.8
-/** Z1: seconds of buffer when deciding to leave for the next circle. */
-const ZONE_BUFFER = 10
-/** H2, Q1: stay under this ground speed (m/s) inside the next circle, so our steps make no sound. */
-const SILENT_SPEED = 5
-/** F2: retreat when HP is below this fraction of max while under fire. */
-const RETREAT_HP = 0.35
+// The tunable thresholds live in params.ts (six knobs at most); its comments say what each one does.
+const GUN_GATE = params.gunRange
+const ZONE_WALK = params.zoneWalk
+const ZONE_BUFFER = params.zoneBuffer
+const SILENT_SPEED = params.silentSpeed
+const RETREAT_HP = params.retreatHp
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]

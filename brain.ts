@@ -16,7 +16,10 @@
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
-import { ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, TARGET_PICK_ON, params } from "./params.ts"
+import {
+  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, STANDOFF_ARC_M, STANDOFF_BAND_M,
+  STANDOFF_GUN_M, STANDOFF_LASER_M, STANDOFF_ON, TARGET_PICK_ON, params,
+} from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
@@ -95,6 +98,10 @@ const ENGAGE_REST_S = 10
 /** Build 14: after a kill, walk to cubes within CLAIM_M (m) of where the target died, for at most CLAIM_S (s). */
 const CLAIM_M = 12
 const CLAIM_S = 12
+/** Build 20 (standoff): how far ahead (m) a back-off step is tested for the circle, walls and the line to the target. */
+const STANDOFF_PROBE_M = 6
+/** Build 20: back-off headings tried, in order, relative to straight away from the target (rad). */
+const STANDOFF_TURNS = [0, Math.PI / 4, -Math.PI / 4]
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -282,6 +289,32 @@ function buildBot(hello: Hello): Bot {
     }
     const yaw = yawTo(from, rest[0])
     return { move: [Math.cos(yaw), Math.sin(yaw)], dist, points: rest }
+  }
+
+  /**
+   * Build 20 (standoff): a unit move away from `m`, leaning toward the kept circle's center near its edge, whose point
+   * STANDOFF_PROBE_M ahead is inside that circle, has no wall between us and it, and keeps a clear line to `m`.
+   * Tries straight away, then 45° to either side; [0, 0] (stand) if none passes.
+   */
+  function standoffBack(pos: Vec3, muzzle: Vec3, m: { pos: Vec3; cubes?: number }, keep: [number[], number]): [number, number] {
+    const away = yawTo(m.pos, pos)
+    const edge = clamp((flat(pos, keep[0]) - (keep[1] - 40)) / 40, 0, 1)
+    const toCenter = yawTo(pos, keep[0])
+    const aim = centerOf(m)
+    for (const turn of STANDOFF_TURNS) {
+      let mx = Math.cos(away + turn), my = Math.sin(away + turn)
+      mx += 1.5 * edge * Math.cos(toCenter)
+      my += 1.5 * edge * Math.sin(toCenter)
+      const n = Math.hypot(mx, my)
+      if (n < 1e-6) continue
+      mx /= n
+      my /= n
+      const probe: Vec3 = [pos[0] + mx * STANDOFF_PROBE_M, pos[1] + my * STANDOFF_PROBE_M, muzzle[2]]
+      if (flat(probe, keep[0]) >= keep[1]) continue
+      if (!clearLine(solids, muzzle, probe, 0, 0) || !clearLine(solids, probe, aim)) continue
+      return [mx, my]
+    }
+    return [0, 0]
   }
 
   /** How many enemies seen in the last 10 s are within ROUTE_TRACK_M of the route. */
@@ -579,9 +612,16 @@ function buildBot(hello: Hello): Bot {
         // when the target is behind cover, or (finish rule) beyond our best range. Never walk outside the circle we keep to.
         const d = flat(engage.m.pos, me.pos)
         const arc = me.weapons.find((w) => w?.kind === "lightning")
-        const close = arc ? 0.8 * (arc.stats.range ?? baseReach.lightning) : GUN_NEAR_M
-        if ((!engage.clear || (engage.why === "finish" && d > close)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1])
-          move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
+        const inKeep = flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1]
+        if (STANDOFF_ON) {
+          // Standoff (Build 20): hold the range our best held weapon wants instead of closing to GUN_NEAR_M.
+          const want = me.weapons.some((w) => w?.kind === "laser") ? STANDOFF_LASER_M : arc ? STANDOFF_ARC_M : STANDOFF_GUN_M
+          if ((!engage.clear || d > want + STANDOFF_BAND_M) && inKeep) move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
+          else if (engage.clear && d < want - STANDOFF_BAND_M) move = standoffBack(me.pos, muzzle, engage.m, zoneKeep)
+        } else {
+          const close = arc ? 0.8 * (arc.stats.range ?? baseReach.lightning) : GUN_NEAR_M
+          if ((!engage.clear || (engage.why === "finish" && d > close)) && inKeep) move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
+        }
         mode = `engage, ${engage.why}`
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && seenAt(me.pos, myHeight, threats, false) && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
         // Retreat (F2, F3, Build 5): hurt and under fire, so head for the nearest in-zone spot out of every visible

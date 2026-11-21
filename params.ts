@@ -76,3 +76,21 @@ export const TARGET_ALONE_M = 40
 export const TARGET_TTK_REF_S = 5
 /** Kill-value weights. `shot` is above the sum of hp, weak and alone, so an enemy we can shoot always outranks one we can't. */
 export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
+
+/**
+ * Build 20 (lane A, standoff): while engaged (Build 14's engage branch), hold a range set by the best weapon we hold
+ * instead of closing to GUN_NEAR_M: STANDOFF_LASER_M with a laser, else STANDOFF_ARC_M with lightning, else
+ * STANDOFF_GUN_M (gun only). Inside the band (± STANDOFF_BAND_M) we stand; closer, we step back (away from the target,
+ * leaning to the kept circle's center near its edge, only to a spot inside that circle with no wall in the way and a
+ * clear line to the target); farther, we walk in along a path. With no clear line we still walk in, as before.
+ * The hit-rate guesses and the fight-or-flee race are unchanged. Set STANDOFF_ON to false to roll back to Build 16 exactly.
+ */
+export const STANDOFF_ON = true
+/** Standoff with a laser held (m). Winners' first hits land at a median 111 m. */
+export const STANDOFF_LASER_M = 110
+/** Standoff with only a gun (m). */
+export const STANDOFF_GUN_M = 80
+/** Standoff with lightning and no laser (m); lightning reaches 45 m. */
+export const STANDOFF_ARC_M = 28
+/** Dead band around the standoff (m): no move while the range is within this of it. */
+export const STANDOFF_BAND_M = 10

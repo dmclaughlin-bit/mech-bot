@@ -140,3 +140,12 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P-D-007 (zone-travel timing, Diego's Claude): after 60 s of match time, start the move to the next circle
+ * ZONE_EARLY_S seconds earlier than the Z1 timing, so we arrive before the house squad converges on it.
+ * Sim (P-D-007 Step A): dying with zone travel in the last 5 s touches 28 and 37 of 192 games. Route, cover and every
+ * other rule are unchanged. 0 = off, identical to main.
+ */
+export const ZONE_EARLY_S = 0
+

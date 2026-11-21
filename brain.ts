@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_RUN_M, ENGAGE_FINISH_HP, ZONE_EARLY_S, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -142,6 +142,8 @@ const LATE_LIGHT_ON = true
  * normal target code then fires the lightning. Not a walk-in (H1's walk-in screened -0.109). Engage, the hurt retreat,
  * zone travel, the laser walks and the crossfire break all rank first. false = champion. */
 const LIGHT_AMBUSH_ON = true
+/** P-D-007 (see ZONE_EARLY_S): match time (s) from which the early zone move applies. */
+const ZONE_EARLY_AFTER_S = 60
 /** Build 103: the far edge (m) of the standoff band the ambush answers. */
 const AMBUSH_MAX_M = 90
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
@@ -540,10 +542,12 @@ function buildBot(hello: Hello): Bot {
           ? [z.next_center[0] + ((me.pos[0] - z.next_center[0]) * inner) / fromNext, z.next_center[1] + ((me.pos[1] - z.next_center[1]) * inner) / fromNext, me.pos[2]]
           : [z.next_center[0], z.next_center[1], me.pos[2]]
       let trip: { move: [number, number]; dist: number; points: Vec3[] } | null = null
-      let needed = toEnter / (ZONE_WALK * walkSpeed) + ZONE_BUFFER
-      if (toEnter > 0 && (2 * toEnter) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + ROUTE_TRACK_S * known.size >= timeLeft) {
+      // P-D-007 (ZONE_EARLY_S): after ZONE_EARLY_AFTER_S, leave for the next circle this much earlier.
+      const early = ZONE_EARLY_S > 0 && obs.t >= ZONE_EARLY_AFTER_S ? ZONE_EARLY_S : 0
+      let needed = toEnter / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + early
+      if (toEnter > 0 && (2 * toEnter) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + early + ROUTE_TRACK_S * known.size >= timeLeft) {
         trip = travel(me.pos, entry, obs.t, canPlan())
-        needed = trip.dist / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + ROUTE_TRACK_S * tracksAlong(me.pos, trip.points, obs.t)
+        needed = trip.dist / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + early + ROUTE_TRACK_S * tracksAlong(me.pos, trip.points, obs.t)
       }
       const leaveNow = toEnter > 0 && needed >= timeLeft
       const heading = (to: number[]): [number, number] => {

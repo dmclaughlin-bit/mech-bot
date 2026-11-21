@@ -6,6 +6,7 @@ Related data: `screens.csv` (sim screens), `hazard_screens.csv` (Wild Sim), `pos
 
 | Submitted (ET) | Build | Change | Family | Champion then | Site | Delta | Verdict | Receipt |
 |---|---|---|---|---|---|---|---|---|
+| 2026-11-21 17:15 ET | P24 | P24 heal in cover, HEAL_COVER=2, on 4.17 main | heal | 4.17 | 3.79 | -0.38 | CLOSE | BB-BE220066 |
 | 2026-11-21 16:05 ET | B111 | B111 ambush far edge 100 m, on 4.17 main | ambush | 4.17 | 4.10 | -0.07 | CLOSE | BB-D985B698 |
 | 2026-11-21 16:00 ET | B110 | B110 standoff break at 90 s, on 4.17 main | standoff | 4.17 | 3.96 | -0.21 | CLOSE | BB-4E063E2E |
 | 2026-11-21 15:55 ET | P21 | P21 contest a lone enemy drop, on 4.17 main | drops | 4.17 | 4.17 | +0.00 | CLOSE | BB-1D97890A |

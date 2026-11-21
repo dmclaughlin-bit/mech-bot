@@ -158,3 +158,9 @@ Format:
 - Result: 2.27 vs champion 5b 2.38 (−0.11), a loss. Board 11:17 PM ET: 104th of 136; 1st 5.58, 16th 4.73, 32nd 4.23.
 - Found: laser-first alone doesn't pay even though 8/8 watched winners carry a laser; the laser likely needs the upgrades/positioning behind it, or costs us the early-game weapon we used. Build 9 (laser upgrades) sits on this losing parent and is parked. Site confirmed: no per-match data for practice submissions.
 - Blocked / next: Build 10 (nav fallback, PR #16, `b4a65ba`) at the 23:21 ET slot; Build 11 (inflation 2.5 m, PR #18) only after Build 10 scores.
+
+## Fri 23:24 ET · Grok · Build 10 reverted
+- Did: submitted PR #16 head `b4a65ba` (BB-9A951653) at 23:21 ET; closed it without merging.
+- Result: 2.35 vs champion 5b 2.38 (−0.03), a loss (smallest drop so far). Board 11:24 PM ET: 108th of 140; 1st 5.58, 16th 4.73, 32nd 4.23.
+- Found: fixing failed paths (179→85 of 2,000 offline) doesn't move practice score; path failures aren't the bottleneck. Build 11 (inflation 2.5 m) was stacked on Build 10, so it must be re-based on main before scoring.
+- Blocked / next: root-cause audit (branch rca-report) running; next slot 23:32 ET.

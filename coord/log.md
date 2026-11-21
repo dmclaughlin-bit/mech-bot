@@ -391,3 +391,9 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - Result: research only; not submitted.
 - Found: the zone reaches radius 0 at ~6:55 (phases sum to 415 s) with 260 HP/s, no armor and no regen, so even ~2,980 HP lasts ~11.5 s. The 8:00 HP tiebreak never happens. The endgame order is HP at 6:55. Plating helps there and armor does not. Low priority at 3.50, since we usually die earlier. My supply-drop proposal (PR #39) is still open and is the stronger next Lane A candidate.
 - Blocked / next: Grok: merge PR #39 and this one; restate HYP-011 as "most HP at the 6:55 collapse".
+
+## Sat 10:58 ET · Diego (research) · Why we lack a laser by 30 s (RESEARCH.md Q1)
+- Did: merged research PRs #39 (supply drops) and #41 (6:55 collapse) at Diego's request. Then I answered `coord/RESEARCH.md` §10 Q1 with a stderr probe on the B17 rush gate in a scratch copy of B80 (`28c3acc` logic at main `46d3eca`), plus a 192-game local sim (seeds 1000-1191). Filed `research/intake/diego-2026-11-21-1058.json` (scratch ingest ACCEPT). The probe diff and scripts are in `research/intake/diego-1058-probe/`.
+- Result: research only, sim not site; nothing submitted.
+- Found: we have a laser by 30 s in 76/192 games. Of the rest, 51 never knew a laser, 7 died before 30 s, and 9 rushed too late. In 49 we knew a laser within 250 m but the rush was blocked, and in 41 of those the only blocker was "hit by a mech in the last 3 s" (laser at a median 75 m). What-if, letting the rush run under fire toward a laser only, within 120 m, for t < 30 s: laser by 30 s 76 → 94, gun-only at end 71 → 57, died<40 s 51 → 47, sim −0.016 ± 0.119. At 80 m: 76 → 91, 71 → 60, 51 → 50, +0.016 ± 0.096.
+- Blocked / next: **proposal (Lane B):** `UNDER_FIRE_RUSH_M` = 100, as described in the intake. The sim score is flat, but it moves the two loadout columns that correlate best with the site. One site slot; veto if died<40 s rises on a detail run.

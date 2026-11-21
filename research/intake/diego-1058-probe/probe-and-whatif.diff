@@ -1,0 +1,54 @@
+diff --git a/brain.ts b/brain.ts
+index 36a4270..57d2b60 100644
+--- a/brain.ts
++++ b/brain.ts
+@@ -638,9 +638,18 @@ function buildBot(hello: Hello): Bot {
+       const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
+       // Build 80: after the opening, a gun-only bot may start a new lightning/laser walk (champion only continues one).
+       const lateLight = LATE_LIGHT_ON && gunOnly && obs.t >= LASER_RUSH_S
++      if (obs.t < 45) {
++        const lasers = [...arms.values()].filter((a) => a.kind === "laser")
++        const nl = lasers.length ? Math.min(...lasers.map((a) => flat(a.pos, me.pos))) : -1
++        const anyArm = arms.size ? Math.min(...[...arms.values()].map((a) => flat(a.pos, me.pos))) : -1
++        process.stderr.write("RUSH " + JSON.stringify({ t: +obs.t.toFixed(1), laser: holdsLaser, w: me.weapons.map((x) => x?.kind ?? null), slot: rushSlot, inz: me.in_zone, leave: leaveNow, trip: !!trip, engage: engage ? engage.why : null, claim: !!claimGoal, hurt, cube: cubeFirst, hitq: +(obs.t - lastMechHit).toFixed(1), nlaser: Math.round(nl), narm: Math.round(anyArm), nen: enemies.length, hp: Math.round(me.hp) }) + "\n")
++      }
++      const UNDER_FIRE_M = Number(process.env.UF_M ?? 0)
++      const ufLaser = obs.t < 30 && UNDER_FIRE_M > 0 && [...arms.values()].some((x) => x.kind === "laser" && flat(x.pos, me.pos) <= UNDER_FIRE_M)
++      const quiet = obs.t - lastMechHit > FARM_QUIET_S
+       if (
+         LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush || lateLight) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
+-        !claimGoal && !hurt && !(cubeFirst && !lateLight) && obs.t - lastMechHit > FARM_QUIET_S
++        !claimGoal && !hurt && !(cubeFirst && !lateLight) && (quiet || ufLaser)
+       ) {
+         const pace = ZONE_WALK * walkSpeed
+         const onward = (p: Vec3) => Math.max(0, flat(p, z.next_center) - inner)
+@@ -649,7 +658,7 @@ function buildBot(hello: Hello): Bot {
+         // A laser always counts; a lightning only while we hold nothing but the gun. Lasers first, then the nearest.
+         const options = [...arms]
+           .filter(([id, a]) =>
+-            (a.kind === "laser" || gunOnly) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
++            (a.kind === "laser" || (gunOnly && quiet)) && !(!quiet && flat(a.pos, me.pos) > UNDER_FIRE_M) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
+             !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4) && fits(a.pos, flat(me.pos, a.pos)))
+           .sort((a, b) => Number(a[1].kind !== "laser") - Number(b[1].kind !== "laser") || flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos))
+         const kept = rush ? options.find(([id]) => id === rush!.id) : undefined
+diff --git a/tools/sim/run.ts b/tools/sim/run.ts
+index f6160ca..c97b620 100644
+--- a/tools/sim/run.ts
++++ b/tools/sim/run.ts
+@@ -27,7 +27,7 @@ class BotProc {
+   wake: (() => void) | null = null
+   dead = false
+   constructor(path: string) {
+-    this.proc = Bun.spawn(["bun", path], { cwd: dirname(path), stdin: "pipe", stdout: "pipe", stderr: "ignore" })
++    this.proc = Bun.spawn(["bun", path], { cwd: dirname(path), stdin: "pipe", stdout: "pipe", stderr: process.env.RUSH_DIR ? Bun.file(process.env.RUSH_DIR + "/" + process.env.RUSH_SEED_TAG + ".log") : "ignore" })
+     this.pump()
+   }
+   async pump() {
+@@ -139,6 +139,7 @@ async function worker() {
+   const geo = loadGeo(arena)
+   const bot = resolve(opt("bot")!)
+   for (const seed of opt("seed-list")!.split(",").map(Number)) {
++    process.env.RUSH_SEED_TAG = String(seed)
+     const row = await runMatch(geo, cfg, seed, bot, arena)
+     console.log("RESULT " + JSON.stringify(row))
+   }

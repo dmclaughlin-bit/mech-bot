@@ -1,0 +1,60 @@
+== 2000+3000: 192 games, kills 639, score 3.531
+-- after 60 s: 86 games alive; 57439 decision ticks; no-target ticks 30363 (53%)
+     no target, hold                    18748 ticks; known enemy <=150 m on 574 (3%)
+     no target, heal                     3076 ticks; known enemy <=150 m on 263 (9%)
+     no target, to next circle           2974 ticks; known enemy <=150 m on 150 (5%)
+     no target, engage                   1872 ticks; known enemy <=150 m on 134 (7%)
+     no target, farm                     1286 ticks; known enemy <=150 m on 0 (0%)
+     no target, drop                     1071 ticks; known enemy <=150 m on 44 (4%)
+   our kills after 60 s: 177; by mode {'heal': 79, 'engage': 32, 'retreat': 24, 'to next circle': 15, 'retreat to cover': 7}; by LOS count (3=3+) {0: 69, 1: 52, 2: 32, 3: 24}; by our HP {'<35%': 76, '>=70%': 50, '35-70%': 51}
+   deaths after 60 s: 80; mode at death {'retreat': 33, 'to next circle': 18, 'retreat to cover': 13, 'heal': 7, 'zone escape': 5, 'break crossfire': 2}
+     LOS at death {0: 2, 1: 12, 2: 15, 3: 51}; attackers in last 5 s {0: 5, 1: 18, 2: 29, 3: 28}; our HP 5 s before {'<35%': 42, '35-70%': 22, '>=70%': 16}
+     killer {('house:expert', 'gun'): 19, ('house:medium', 'gun'): 13, ('house:hard', 'gun'): 12, ('house:hard', 'laser'): 6, ('house:expert', 'laser'): 6}
+     last 5 s (last 3 modes) [('heal > retreat', 9), ('retreat > heal > retreat', 6), ('to next circle', 5), ('zone escape', 3), ('retreat to cover > heal > retreat to cover', 3)]
+-- after 120 s: 33 games alive; 24156 decision ticks; no-target ticks 13749 (57%)
+     no target, hold                     8191 ticks; known enemy <=150 m on 337 (4%)
+     no target, heal                     1423 ticks; known enemy <=150 m on 134 (9%)
+     no target, to next circle           1347 ticks; known enemy <=150 m on 51 (4%)
+     no target, drop                      833 ticks; known enemy <=150 m on 44 (5%)
+     no target, zone escape               825 ticks; known enemy <=150 m on 15 (2%)
+     no target, farm                      536 ticks; known enemy <=150 m on 0 (0%)
+   our kills after 120 s: 36; by mode {'to next circle': 10, 'heal': 6, 'retreat': 4, 'zone escape': 4, 'break crossfire': 3}; by LOS count (3=3+) {0: 11, 1: 9, 2: 5, 3: 11}; by our HP {'<35%': 10, '>=70%': 15, '35-70%': 11}
+   deaths after 120 s: 27; mode at death {'retreat': 10, 'to next circle': 8, 'zone escape': 5, 'retreat to cover': 1, 'heal': 1, 'break crossfire': 1}
+     LOS at death {1: 4, 2: 2, 3: 21}; attackers in last 5 s {0: 3, 1: 3, 2: 5, 3: 16}; our HP 5 s before {'35-70%': 10, '>=70%': 10, '<35%': 7}
+     killer {('house:expert', 'gun'): 4, ('house:hard', 'gun'): 3, ('house:medium', 'gun'): 3, ('house:expert', 'laser'): 3, ('house:expert', 'mortar'): 2}
+     last 5 s (last 3 modes) [('to next circle', 4), ('zone escape', 3), ('break crossfire > drop > retreat', 3), ('heal > retreat', 2), ('to next circle > zone escape > to next circle', 2)]
+-- worst quartile (score <= 2): 94 games, mean score 1.48, median death 39 s, died <40 s 48, killer [('house:hard', 33), ('house:expert', 33), ('house:medium', 18), ('house:easy', 9)]
+-- first kill: 186 games got one (mean score 3.63, median first kill 16 s); 6 never killed (mean 0.33)
+   first kill before 60 s: 176 games; of them died within 30 s of it 75; mean score 3.72
+-- trigger counts (games of 192): G1 idle >=3 s after 60 s in hold/heal with a lone enemy known <=150 m: 6; G2 died after 60 s with 2+ attackers in last 5 s: 57; G3 died after 60 s in heal/hold while seen: 7; G4 died after 60 s engaging with 2+ LOS: 0
+   G5 died after 60 s with "to next circle" in the last 5 s: 28 games; G6 died after 60 s retreating with 2+ LOS: 37 games; zone-travel ticks after 60 s 6520, kills during them 15
+== 4000+5000: 192 games, kills 691, score 3.849
+-- after 60 s: 99 games alive; 72017 decision ticks; no-target ticks 42298 (59%)
+     no target, hold                    25225 ticks; known enemy <=150 m on 1136 (5%)
+     no target, to next circle           4415 ticks; known enemy <=150 m on 465 (11%)
+     no target, heal                     4292 ticks; known enemy <=150 m on 493 (11%)
+     no target, farm                     2625 ticks; known enemy <=150 m on 0 (0%)
+     no target, drop                     1820 ticks; known enemy <=150 m on 213 (12%)
+     no target, zone escape              1624 ticks; known enemy <=150 m on 36 (2%)
+   our kills after 60 s: 214; by mode {'heal': 77, 'retreat': 36, 'engage': 34, 'to next circle': 21, 'hold': 12}; by LOS count (3=3+) {0: 57, 1: 70, 2: 40, 3: 47}; by our HP {'<35%': 112, '35-70%': 53, '>=70%': 49}
+   deaths after 60 s: 94; mode at death {'retreat': 39, 'to next circle': 21, 'heal': 16, 'retreat to cover': 9, 'zone escape': 4, 'break crossfire': 3}
+     LOS at death {0: 6, 1: 15, 2: 21, 3: 52}; attackers in last 5 s {0: 11, 1: 29, 2: 23, 3: 31}; our HP 5 s before {'35-70%': 29, '<35%': 50, '>=70%': 15}
+     killer {('house:hard', 'gun'): 19, ('house:expert', 'gun'): 17, ('house:medium', 'gun'): 12, ('house:expert', 'laser'): 9, ('house:expert', 'mortar'): 5}
+     last 5 s (last 3 modes) [('to next circle', 11), ('retreat > heal > retreat', 10), ('heal > retreat', 6), ('retreat > to next circle > retreat', 6), ('heal > retreat > heal', 6)]
+-- after 120 s: 41 games alive; 33471 decision ticks; no-target ticks 22153 (66%)
+     no target, hold                    13451 ticks; known enemy <=150 m on 605 (4%)
+     no target, to next circle           2313 ticks; known enemy <=150 m on 216 (9%)
+     no target, heal                     1890 ticks; known enemy <=150 m on 339 (18%)
+     no target, zone escape              1527 ticks; known enemy <=150 m on 22 (1%)
+     no target, drop                     1384 ticks; known enemy <=150 m on 166 (12%)
+     no target, farm                     1267 ticks; known enemy <=150 m on 0 (0%)
+   our kills after 120 s: 44; by mode {'drop': 8, 'heal': 8, 'retreat': 7, 'to next circle': 6, 'hold': 6}; by LOS count (3=3+) {0: 8, 1: 11, 2: 8, 3: 17}; by our HP {'35-70%': 11, '<35%': 19, '>=70%': 14}
+   deaths after 120 s: 36; mode at death {'retreat': 19, 'to next circle': 11, 'zone escape': 3, 'retreat to cover': 1, 'break crossfire': 1, 'heal': 1}
+     LOS at death {0: 4, 1: 1, 2: 4, 3: 27}; attackers in last 5 s {0: 5, 1: 5, 2: 4, 3: 22}; our HP 5 s before {'35-70%': 11, '<35%': 11, '>=70%': 14}
+     killer {('house:hard', 'gun'): 9, ('house:expert', 'gun'): 8, ('house:hard', 'laser'): 3, ('zone', 'zone'): 3, ('house:medium', 'gun'): 3}
+     last 5 s (last 3 modes) [('to next circle', 7), ('retreat > to next circle > retreat', 5), ('retreat > retreat to cover > retreat', 3), ('zone escape', 3), ('heal > retreat', 2)]
+-- worst quartile (score <= 2): 86 games, mean score 1.38, median death 39 s, died <40 s 45, killer [('house:expert', 31), ('house:hard', 27), ('house:medium', 16), ('house:easy', 6)]
+-- first kill: 179 games got one (mean score 4.08, median first kill 14 s); 13 never killed (mean 0.62)
+   first kill before 60 s: 173 games; of them died within 30 s of it 64; mean score 4.14
+-- trigger counts (games of 192): G1 idle >=3 s after 60 s in hold/heal with a lone enemy known <=150 m: 15; G2 died after 60 s with 2+ attackers in last 5 s: 54; G3 died after 60 s in heal/hold while seen: 16; G4 died after 60 s engaging with 2+ LOS: 0
+   G5 died after 60 s with "to next circle" in the last 5 s: 37 games; G6 died after 60 s retreating with 2+ LOS: 39 games; zone-travel ticks after 60 s 9642, kills during them 21

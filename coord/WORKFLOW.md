@@ -102,3 +102,9 @@ Every site slot goes to the candidate with the **largest expected score gain** t
 - coord/data is the single source of truth for every improvement and every loss: site_results.csv, screens.csv, hazard_screens.csv, postmortems/, ideas.md.
 - coord/data/SOURCE_OF_TRUTH.md summarizes every change with its site delta and per-family record. Regenerate it after every site result.
 - The idea queue is ranked from this data. Every track (Wild Sim, movement, Diego research) enters the queue; nothing skips it to go straight to a builder.
+
+## Overhaul rules (Doug confirmed, Sat Nov 21 5:41 PM ET)
+- **Full screen before every submit:** Mech Sim Tester's complete paired screen vs the current champion on 2000+3000 AND held-out 4000+5000, on the exact SHA to submit. Record SHA, champion, seeds, time, and three counts: games where the rule fired, games with different behavior, and games with a different score. A builder's fast 96-game run is a smoke check, not a screen. Replaces Grok's 5:14 PM relaxation, which let P24 (3.79), P23b (4.00) and B125 (3.50) go out early.
+- **One submitter:** only the 10-minute routine submits. Before each submit it reconciles the site's receipts and counter with `coord/data/site_results.csv`. It never resubmits a scored SHA or an equivalent behavior.
+- **Rebuilds of tested ideas:** a previously tested idea qualifies again only if the sim shows the new champion changes where or how often it fires. Even then, it ranks below new interventions. Example: B104's 150 m drop run lost, and the same logic won as B107 on a stronger champion.
+- **Reserve:** aim for two fully screened eligible builds plus one researched idea behind the build in flight. Backup builder: Diego's Claude, used when the Claude on Grok's computer hits its usage limit (that one login is shared by Grok's lanes, Mech Builder and the routine). On a handoff, pass the branch, last verified result and next action, and confirm the new owner before resuming.

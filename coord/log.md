@@ -134,3 +134,9 @@ Format:
 - Result: 2.23 vs parent 5b 2.38 (−0.15), a loss. Board 10:36 PM ET: 93rd of 127; 1st 5.48, 16th 4.54, 32nd 4.17.
 - Found: moving to cover while holding cost points as implemented. Winners hold behind buildings, but repositioning likely cost shots or exposure. Don't retry without a different mechanism (e.g. only reposition when no enemy is visible).
 - Blocked / next: Build 7 (drop the 100 m gun gate) off main at the 11:10 PM slot.
+
+## Fri 22:45 ET · Grok · Build 7 reverted
+- Did: submitted PR #13 head `209539f` (BB-07153949); closed it without merging.
+- Result: 2.04 vs parent 5b 2.38 (−0.34), a loss. Board 10:39 PM ET: 95th of 130; 1st 5.48→5.58, 16th 4.54, 32nd 4.17.
+- Found: our guns beyond 100 m hurt us (likely misses, wasted energy, or drawing hunters early); winners' long-range hits come with laser + upgrades, which we lack. Keep the D4 gate.
+- Blocked / next: Build 8 (laser first) at the 11:10 PM slot.

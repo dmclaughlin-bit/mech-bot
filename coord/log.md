@@ -31,3 +31,9 @@ Format:
 - Result: docs only (PR #4).
 - Found: Grok can't push, so Diego's Claude commits Grok's prompts into `coord/next-*.md`. Grok reads raw files from `main`, so PR #4 must be merged first.
 - Blocked / next: merge PR #4, then start Grok with the onboarding prompt.
+
+## Fri 20:22 ET · Diego · S1 logged
+- Did: logged S1 score for Build 1 (`76aabfa`)
+- Result: 1.67 (+0.52 vs kit)
+- Found: —
+- Blocked / next: Doug starts Build 2; Diego starts nav.ts

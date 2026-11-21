@@ -7,6 +7,7 @@
  * unsticking, retreat when hurt, and an upgrade order. The rules are §9 of the team plan.
  */
 import { clearLine, loadMap } from "./map.ts"
+import { createNav } from "./nav.ts"
 import { params } from "./params.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
@@ -17,6 +18,12 @@ const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
 const yawTo = (from: number[], to: number[]) => Math.atan2(to[1] - from[1], to[0] - from[0])
 const pitchTo = (from: number[], to: number[]) => Math.atan2(to[2] - from[2], flat(from, to))
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
+/** Horizontal distance from p to the segment a-b. */
+const segmentDistance = (p: number[], a: number[], b: number[]) => {
+  const vx = b[0] - a[0], vy = b[1] - a[1], len2 = vx * vx + vy * vy
+  const s = len2 > 0 ? clamp(((p[0] - a[0]) * vx + (p[1] - a[1]) * vy) / len2, 0, 1) : 0
+  return Math.hypot(p[0] - a[0] - s * vx, p[1] - a[1] - s * vy)
+}
 
 // ------------------------------------------------------------------ rule constants (plan §9)
 /** L2: loot only when no enemy mech is within this distance (m). */
@@ -29,6 +36,17 @@ const ZONE_WALK = params.zoneWalk
 const ZONE_BUFFER = params.zoneBuffer
 const SILENT_SPEED = params.silentSpeed
 const RETREAT_HP = params.retreatHp
+
+/** Z1 (Build 3): seconds added to the trip for each enemy known within ROUTE_TRACK_M (m) of the route. */
+const ROUTE_TRACK_S = 2
+const ROUTE_TRACK_M = 50
+/** In-tick A* budget in node expansions, from Diego's nav bench (about 7 ms worst case on bun). */
+const PATH_BUDGET = 20000
+/** Re-plan at most this often (s), or sooner when the goal moves more than ROUTE_GOAL_SHIFT (m). */
+const ROUTE_REPLAN_S = 1
+const ROUTE_GOAL_SHIFT = 10
+/** Move on to the next waypoint within this distance (m). */
+const WAYPOINT_REACHED = 4
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -132,6 +150,43 @@ function buildBot(hello: Hello): Bot {
   const hitBy = new Map<number, number>()
   /** where we were over the last half second, and whether we were trying to move */
   const trail: { t: number; pos: Vec3; moving: boolean }[] = []
+  const nav = createNav(hello)
+  /** The current route: waypoints from nav.path toward `goal`, planned at time `at`. */
+  let route: { goal: Vec3; at: number; points: Vec3[]; next: number } | null = null
+
+  /** Follow a path to `goal`, re-planning at most once a second (Z1, Build 3). Returns the move and the distance left. */
+  function travel(from: Vec3, goal: Vec3, t: number, canPlan: boolean): { move: [number, number]; dist: number; points: Vec3[] } {
+    const stale = !route || t - route.at >= ROUTE_REPLAN_S || flat(route.goal, goal) > ROUTE_GOAL_SHIFT
+    if (stale && canPlan) route = { goal, at: t, points: nav.path(from, goal, PATH_BUDGET) ?? [goal], next: 0 }
+    const r = route ?? { goal, at: t, points: [goal], next: 0 }
+    while (r.next < r.points.length - 1 && flat(from, r.points[r.next]) < WAYPOINT_REACHED) r.next++
+    const rest = r.points.slice(r.next)
+    let dist = 0
+    let prev: number[] = from
+    for (const w of rest) {
+      dist += flat(prev, w)
+      prev = w
+    }
+    const yaw = yawTo(from, rest[0])
+    return { move: [Math.cos(yaw), Math.sin(yaw)], dist, points: rest }
+  }
+
+  /** How many enemies seen in the last 10 s are within ROUTE_TRACK_M of the route. */
+  function tracksAlong(from: Vec3, points: Vec3[], t: number): number {
+    let n = 0
+    for (const k of known.values()) {
+      if (t - k.lastSeen > 10) continue
+      let prev: number[] = from
+      for (const w of points) {
+        if (segmentDistance(k.pos, prev, w) < ROUTE_TRACK_M) {
+          n++
+          break
+        }
+        prev = w
+      }
+    }
+    return n
+  }
 
   const scale = (cubes = 0) => 1 + growth * cubes
   const centerOf = (m: { pos: Vec3; cubes?: number }): Vec3 => [m.pos[0], m.pos[1], m.pos[2] + (cfg.mech.height / 2) * scale(m.cubes)]
@@ -199,9 +254,23 @@ function buildBot(hello: Hello): Bot {
       const walkSpeed = me.stats.walk_speed ?? cfg.mech.walk_speed
       const silent = Math.min(1, (SILENT_SPEED * 0.9) / walkSpeed)
       const margin = Math.min(15, z.next_radius * 0.25)
-      const toEnter = Math.max(0, flat(me.pos, z.next_center) - (z.next_radius - margin))
+      const fromNext = flat(me.pos, z.next_center)
+      const inner = Math.max(0, z.next_radius - margin)
+      const toEnter = Math.max(0, fromNext - inner)
       const timeLeft = z.shrink_end - obs.t
-      const leaveNow = toEnter > 0 && toEnter / (ZONE_WALK * walkSpeed) + ZONE_BUFFER >= timeLeft
+      // Z1 with path distance (Build 3): aim where the straight line to the next center crosses the circle we want, and
+      // plan a path only once there might be little slack (a path is rarely more than twice the straight line).
+      const entry: Vec3 =
+        fromNext > 1e-6
+          ? [z.next_center[0] + ((me.pos[0] - z.next_center[0]) * inner) / fromNext, z.next_center[1] + ((me.pos[1] - z.next_center[1]) * inner) / fromNext, me.pos[2]]
+          : [z.next_center[0], z.next_center[1], me.pos[2]]
+      let trip: { move: [number, number]; dist: number; points: Vec3[] } | null = null
+      let needed = toEnter / (ZONE_WALK * walkSpeed) + ZONE_BUFFER
+      if (toEnter > 0 && (2 * toEnter) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + ROUTE_TRACK_S * known.size >= timeLeft) {
+        trip = travel(me.pos, entry, obs.t, true)
+        needed = trip.dist / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + ROUTE_TRACK_S * tracksAlong(me.pos, trip.points, obs.t)
+      }
+      const leaveNow = toEnter > 0 && needed >= timeLeft
       const heading = (to: number[]): [number, number] => {
         const yaw = yawTo(me.pos, to)
         return [Math.cos(yaw), Math.sin(yaw)]
@@ -210,13 +279,14 @@ function buildBot(hello: Hello): Bot {
       let boost = false
       let mode = "hold"
       if (!me.in_zone) {
-        // Outside the circle every tick costs HP and stops regen (Z2): head straight in, boosting.
-        move = heading(z.center)
+        // Outside the circle every tick costs HP and stops regen (Z2): head in along a path, boosting.
+        move = travel(me.pos, [z.center[0], z.center[1], me.pos[2]], obs.t, true).move
         boost = true
         mode = "zone escape"
       } else if (leaveNow) {
-        move = heading(z.next_center)
-        boost = toEnter / walkSpeed > timeLeft
+        const go = trip ?? travel(me.pos, entry, obs.t, true)
+        move = go.move
+        boost = go.dist / walkSpeed > timeLeft
         mode = "to next circle"
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp) {
         // Retreat (F2, F3): hurt and under fire, so back away from the attacker with the torso still on it

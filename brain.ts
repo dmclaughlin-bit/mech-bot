@@ -13,7 +13,7 @@
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
-import { FARM_ENEMY_M, FARM_ON, FARM_PICKUP_M, params } from "./params.ts"
+import { FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, params } from "./params.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
 // ------------------------------------------------------------------ geometry helpers
@@ -68,6 +68,10 @@ const FARM_QUIET_S = 3
 const FARM_MEMORY_S = 10
 /** Build 12: give up on a cube or drop we have chased this long (s) without reaching it (roofs, blocked paths). */
 const FARM_CHASE_S = 15
+/** Build 13 (hunt): stop walking at this distance (m) from a hunted drone or crate with a clear line (outside drone aggro, 45 m). */
+const HUNT_STAND_M = 60
+/** Build 13: give up on a hunted drone or crate after this long (s) without getting it in clear range. */
+const HUNT_CHASE_S = 25
 /** Build 12: stand this far (m) inside a drop's ring while capturing. */
 const DROP_INSET = 1.5
 
@@ -363,6 +367,7 @@ function buildBot(hello: Hello): Bot {
         ![...known.values()].some((k) => obs.t - k.lastSeen < FARM_MEMORY_S && flat(k.pos, me.pos) < FARM_ENEMY_M)
       let farmGoal: { id: number; pos: Vec3 } | null = null
       let farmHold = false
+      let farmHunt = false
       if (farmOk) {
         // Zone safety: the item is inside the current circle (with margin), and from it we still reach the next
         // circle's inner ring before the shrink ends, with the usual buffer (plus the capture time for a drop).
@@ -379,10 +384,24 @@ function buildBot(hello: Hello): Bot {
           .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
         if (drop && flat(drop.pos, me.pos) < drop.radius - DROP_INSET) farmHold = true
         else if (drop || cube) farmGoal = drop ?? cube
+        // Hunt (Build 13): nothing to pick up, so walk toward the nearest drone or crate in view within FARM_HUNT_M
+        // (zone-safe, not given up) until it is within HUNT_STAND_M with a clear line; the farm shot code fires.
+        if (FARM_HUNT_ON && !farmGoal && !farmHold && me.hp >= HEAL_HP * me.max_hp) {
+          const prey = [
+            ...obs.mechs.filter((m) => m.kind === "npc").map((m) => ({ id: m.id, pos: m.pos, c: [m.pos[0], m.pos[1], m.pos[2] + cfg.npc.height / 2] as Vec3 })),
+            ...obs.crates.map((k) => ({ id: k.id, pos: k.pos, c: [k.pos[0], k.pos[1], k.pos[2] + cfg.crates.height / 2] as Vec3 })),
+          ]
+            .filter((x) => !farmGiveUp.has(x.id) && flat(x.pos, me.pos) < FARM_HUNT_M && zoneSafe(x.pos, 0))
+            .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+          if (prey && (flat(prey.pos, me.pos) > HUNT_STAND_M || !clearLine(solids, muzzle, prey.c))) {
+            farmGoal = prey
+            farmHunt = true
+          }
+        }
       }
       if (farmGoal && farmChase?.id !== farmGoal.id) farmChase = { id: farmGoal.id, since: obs.t }
       if (!farmGoal && !farmHold) farmChase = null
-      if (farmGoal && farmChase && obs.t - farmChase.since > FARM_CHASE_S) {
+      if (farmGoal && farmChase && obs.t - farmChase.since > (farmHunt ? HUNT_CHASE_S : FARM_CHASE_S)) {
         farmGiveUp.add(farmGoal.id)
         farmGoal = null
       }
@@ -434,7 +453,7 @@ function buildBot(hello: Hello): Bot {
         mode = "farm, capture"
       } else if (farmGoal) {
         move = travel(me.pos, farmGoal.pos, obs.t, canPlan()).move
-        mode = "farm, pickup"
+        mode = farmHunt ? "farm, hunt" : "farm, pickup"
       } else if (threats.length && seenAt(me.pos, myHeight, threats, true)) {
         // Hold out of sight (Q2, Build 5): outside every enemy's 45 m ring and 120° wedge, moving silently.
         spot = hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan)

@@ -2,6 +2,8 @@
 
 Diego asks: **read the audit, decide whether it is useful, and make whatever implementations you judge necessary** under the `coord/WORKFLOW.md` slot rules (one builder per change, the 192-game table, gate and flag-off identity check, vetoes, keep only above 3.79).
 
+**Check first: is the 3.79 tie real?** UF100 (PR #88) already scored exactly 3.79 and was closed. Do not resubmit it. Six builds have now landed on exactly 182/48 points. Two of them changed many sim games (B51 changed 23 of 192, UF100 37 of 192), so a chance tie is under 1%. Before building anything else, open site receipts **BB-D7178316** and **BB-2FD05CB0** and confirm they list commits **`3ee37ca`** and **`ba84a1a`**. If a receipt's commit box is empty, the form built the default branch (B80), so the tie is an artifact: resubmit that build with the SHA filled in. If the commits are right, the site is insensitive to opening changes: stop building fixes for the first 30 s.
+
 **Read:** [`coord/audit/code-audit-handoff-2026-11-21-1215.md`](audit/code-audit-handoff-2026-11-21-1215.md). Scripts and variant diffs: `coord/audit/code-audit-tools/`.
 
 **What it says, in three lines:**

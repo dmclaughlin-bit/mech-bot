@@ -43,3 +43,6 @@ Opening / first-30 s tweaks (seven 3.79 ties), upgrades, later aim tweaks, hold-
 1. Mid/late-game kill sources on top of 4.06 (after 60 s, especially after 120 s).
 2. Trigger-frequency estimates for any new idea (how many games per 100 would it change?).
 3. Ideas that combine with the standoff break or the ambush without changing them.
+
+## Sim-only track (added Sat Nov 21, 1:56 PM ET)
+- **P-B-008 movement & evasion training track** (Doug, 1:52 PM ET). Sim-only: strafe / slide / orbit / telegraph dodge / slide-around-cover on the 4.06 champion, all current rules held in place. Branch `build-109-movement`. It does not take a site slot. It feeds the site queue only after the gate and sim testers show opponent hit rate down without new stuck problems. Not a remake of B101 (early gun-round dodge, not submitted).

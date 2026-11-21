@@ -129,3 +129,14 @@ export const NO_SNEAK_QUIET_S = 3
  * standoff where neither side closes, most often while we heal. 0 = Build 103 (champion) behavior exactly.
  */
 export const STANDOFF_BREAK_S = 45
+
+/**
+ * P-D-003 (supply-drop run, first built as P-D-001 on B80): the bot never takes a supply drop once enemies are
+ * around (0 claims in 106 sim games reaching 95 s), because farming needs no enemy known within 160 m. With this set above 0: a called drop
+ * within DROP_RUN_M (m), not held by another mech, zone-safe for the capture, and not hurt (HP at or above retreatHp),
+ * we walk to it timed to arrive as it lands and stand in the ring until it is ours (full HP, full energy, +3 cubes).
+ * Engage, retreat, kill-claim, the laser walk, B60's crossfire break and the Build 103 lightning ambush all rank
+ * above it; firing is unchanged. The standoff break never replaces it (that runs only from heal or hold).
+ * 0 = off, identical to the champion.
+ */
+export const DROP_RUN_M = 150

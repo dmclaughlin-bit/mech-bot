@@ -7,6 +7,7 @@
  *   nav.path(me.pos, goal, 30000)           // waypoints after `from`, ending at `to`; null if none within budget
  *   nav.eta(me.pos, goal)                   // seconds at walk speed (path length, straight-line fallback)
  *   nav.stuck(me, commandedMove)            // call once per decision; true after ~0.5 s of commanded move with ~no speed
+ *   nav.open(me.pos, step)                  // P-B-008: is the straight step walkable (no wall, steep ground or map edge)?
  *
  * The grid:
  * - 1 m vertex surface from v2/terrain.i16. Bridge decks raise the surface when their underside is too low to walk
@@ -31,6 +32,10 @@ export interface Nav {
   eta(from: Vec3, to: Vec3): number
   /** Stateful: call once per decision. True once the move command has been held for STUCK_S with almost no speed. */
   stuck(me: SelfObs, commanded: [number, number]): boolean
+  /** P-B-008: true when every planning cell on the straight line from `from` to `to` is walkable (walls grown by INFLATE_M, steep ground and the map edge block). */
+  open(from: Vec3, to: Vec3): boolean
+  /** P-B-008: true when `p` lies in a walkable planning cell. */
+  standable(p: Vec3): boolean
 }
 
 const CELL = 2 // m per planning cell
@@ -206,6 +211,8 @@ function straightNav(walk: number, stuck: Nav["stuck"]): Nav {
     path: (_from, to) => [[to[0], to[1], to[2]]],
     eta: (from, to) => Math.hypot(to[0] - from[0], to[1] - from[1]) / walk,
     stuck,
+    open: () => true,
+    standable: () => true,
   }
 }
 
@@ -407,5 +414,11 @@ function gridNav(g: NavGrid, walk: number, stuck: Nav["stuck"]): Nav {
     return d / walk
   }
 
-  return { path, eta, stuck }
+  const open = (from: Vec3, to: Vec3): boolean => {
+    const a = cellOf(from[0], from[1]), b = cellOf(to[0], to[1])
+    return !!free[b] && (a === b || clear(a, b))
+  }
+  const standable = (p: Vec3): boolean => !!free[cellOf(p[0], p[1])]
+
+  return { path, eta, stuck, open, standable }
 }

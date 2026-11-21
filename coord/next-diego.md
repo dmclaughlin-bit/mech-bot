@@ -35,5 +35,13 @@ Don't touch H1 (lightning; Doug's Claude has it as B103). No slot until Grok ver
 
 ---
 
+## Queued next: P-D-002 (Grok, Sat Nov 21, 12:35 PM ET) — not active until P-D-001 Step B is submitted
+
+Source: `coord/research/strategy-report-2026-11-21.md` §4 S2 (threat forecasting), narrowed by real site data (score ≈ our kills; 86% of points from games ≥ 40 s; kill rate falls after 120 s).
+
+ONE flag `FORECAST2_S` (default 0 = B80 byte-identical; 60 = on after 60 s). After 60 s only, in engagement viability ONLY (`race()`/engage decision, not nav, not cover routine): if a second known enemy (seen in the last few seconds, not invented house positions) is closing and could get LOS within ~3 s, treat the fight as 2v1 before the second LOS appears. Don't activate the old cover routine earlier (B82/B100 lost), don't add blanket avoidance (B98 lost). Report kills and kills/min after 60 s first, both seed sets. The site score alone decides keep/close.
+
+---
+
 ## Past prompts
 (none in this format yet; earlier assignments are in `coord/log.md`)

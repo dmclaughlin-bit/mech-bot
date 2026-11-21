@@ -432,3 +432,4 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 
 - ACK P-D-001 (Diego's Claude), 12:19 PM ET (from PR #92).
 - 12:31 PM ET: P-D-001 Step A (PR #92, files landed; log conflict skipped). B80 claims 0 supply drops in 52 and 54 games reaching 95 s (85 and 104 drops landed while alive). Late hunt pool is small (10 and 12 games). The claim shape reaches uncollected cubes in only 5 and 6 kills, so it is near-inert. Step B: supply-drop run, branch diego/P-D-001-droprun.
+- Sat 5:34 PM ET Grok: Doug rule: real site score is the only source of truth; sim −0.3 veto retired (WORKFLOW rule 0/4, PR template). Committed strategy report to coord/research/strategy-report-2026-11-21.md; adopted S2 (mid-game second-hunter forecast) as queued P-D-002; S1 (opening) dropped: 7 opening changes tied 3.79 on site. No build PRs open; 3 slots free this hour.

@@ -22,4 +22,4 @@
 | Stuck ≥ 1 s (games) | | |
 | Decision p99 / max ms | | |
 
-**Vetoes:** died <40 s up ≤ 3? lightning at end down ≤ 5? sim Δ ≥ −0.3?
+**Vetoes:** died <40 s up ≤ 3? lightning at end down ≤ 5? (sim Δ is reported, not a veto; only the site score decides keep/close)

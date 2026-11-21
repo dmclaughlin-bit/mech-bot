@@ -17,10 +17,12 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 51 (corner duel): early, with no laser and one enemy closing, wait for it at a peek corner out of its sight (CORNER_DUEL_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
+  CORNER_CLOSE_M, CORNER_DUEL_ON, CORNER_ENEMY_M, CORNER_MAX_HP, CORNER_PEEK_M, CORNER_S, CORNER_SPOT_M,
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
 } from "./params.ts"
@@ -122,6 +124,18 @@ const LASER_LEAD_S = 0.075
 const CROSSFIRE_ON = true
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
+
+/** Build 51 (corner duel): the spot counts as reached within this distance (m). */
+const CORNER_AT_M = 2.5
+/** Build 51: corner spots are tried on this many bearings around us, on three rings out to CORNER_SPOT_M, nearest first. */
+const CORNER_BEARINGS = 16
+/** Build 51: at most this many candidate spots get the (path-finding) peek test per decision, with this A* budget each. */
+const CORNER_PEEK_TRIES = 3
+const CORNER_PEEK_BUDGET = 8000
+/** Build 51: walk the enemy's path to the spot in steps of this length (m) looking for where it first sees the spot. */
+const CORNER_PEEK_STEP = 3
+/** Build 51: before we reach the spot, look for a new one at most this often (s); the enemy moves. */
+const CORNER_REPICK_S = 1
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -273,6 +287,9 @@ function buildBot(hello: Hello): Bot {
   /** Build 14: targets we gave up on (id → time), and where our last kill died, to collect its cubes. */
   const engageGiveUp = new Map<number, number>()
   let claim: { pos: Vec3; until: number } | null = null
+  /** Build 51 (corner duel): each enemy's distance to us over the last 1.5 s, and the duel we are in (whom, where we wait, when the spot was picked, reached yet). */
+  const closeLog = new Map<number, [number, number][]>()
+  let corner: { id: number; spot: Vec3; way: Vec3[]; at: number; held: boolean } | null = null
 
   /** Build 14: what we deal per second to a target `d` m away: every held weapon that reaches, × its hit-rate guess × our cube bonus. */
   function ourDps(me: Observation["self"], d: number): number {
@@ -427,6 +444,16 @@ function buildBot(hello: Hello): Bot {
       const canPlan = () => performance.now() - started < DEADLINE_MS - PLAN_RESERVE_MS
       remember(obs)
       const me = obs.self
+      if (CORNER_DUEL_ON) {
+        for (const m of obs.mechs) {
+          if (m.kind !== "mech") continue
+          const log = closeLog.get(m.id) ?? []
+          log.push([obs.t, flat(m.pos, me.pos)])
+          while (obs.t - log[0][0] > 1.5) log.shift()
+          closeLog.set(m.id, log)
+        }
+        for (const id of closeLog.keys()) if (!obs.mechs.some((m) => m.id === id)) closeLog.delete(id)
+      }
       const muzzle: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.muzzle_height ?? cfg.mech.muzzle_height * scale(me.cubes))]
       const tube: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.height ?? cfg.mech.height * scale(me.cubes)) + 0.5]
       const act: BotAction = {}
@@ -655,6 +682,93 @@ function buildBot(hello: Hello): Bot {
       }
       if (!rushMove) rush = null
       else farmChase = null
+      // Corner duel (Build 51): see CORNER_DUEL_ON in params.ts. Called only where nothing above it in the order below is active.
+      const cornerPlan = (): { move: [number, number]; mode: string } | null => {
+        // One enemy near: the only one seen in the last FARM_MEMORY_S within CORNER_ENEMY_M, and no other mech hit us lately.
+        const near = [...known.values()].filter((k) => obs.t - k.lastSeen < FARM_MEMORY_S && flat(k.pos, me.pos) < CORNER_ENEMY_M)
+        const e = near.length === 1 ? threats.find((m) => m.id === near[0].id) : undefined
+        const hitOther = [...mechHitBy].some(([id, t]) => id !== e?.id && obs.t - t < THREAT_HIT_S)
+        if (obs.t >= CORNER_S || holdsLaser || !e || hitOther) return (corner = null)
+        if (corner && corner.id !== e.id) corner = null
+        if (!corner) {
+          if (me.hp >= CORNER_MAX_HP * me.max_hp) return null
+          // Closing: its distance fell at least CORNER_CLOSE_M over the last second (a sample 0.5 to 1 s old).
+          const old = closeLog.get(e.id)?.find(([t]) => obs.t - t <= 1.05)
+          if (!old || obs.t - old[0] < 0.5 || old[1] - flat(e.pos, me.pos) < CORNER_CLOSE_M) return null
+        }
+        const others = threats.filter((o) => o.id !== e.id)
+        // Where the enemy, walking its nav path to p, first sees a mech standing at p: that far from p (m).
+        const peek = (p: Vec3): number => {
+          const path = nav.path(e.pos, p, CORNER_PEEK_BUDGET)
+          if (!path) return Infinity
+          let prev: number[] = e.pos
+          for (const w of path) {
+            const len = flat(prev, w)
+            for (let s = 0; s < len; s += CORNER_PEEK_STEP) {
+              const x = prev[0] + ((w[0] - prev[0]) * s) / len, y = prev[1] + ((w[1] - prev[1]) * s) / len
+              const q: Vec3 = [x, y, solids?.ground ? groundAt(solids, x, y) : e.pos[2]]
+              if (seenAt(p, myHeight, [{ pos: q, aim: e.aim, cubes: e.cubes }], false)) return flat(q, p)
+            }
+            prev = w
+          }
+          return 0
+        }
+        // The nearest spot within CORNER_SPOT_M we reach along a short nav path, in the circle we keep to, no nearer to
+        // the enemy, that neither it nor any other known enemy sees, and that it first sees from at most CORNER_PEEK_M.
+        const pick = (): { p: Vec3; way: Vec3[] } | null => {
+          const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + myHeight / 2]
+          const dNow = flat(e.pos, me.pos)
+          let tries = 0
+          for (let ring = 1; ring <= 3; ring++) {
+            const r = (CORNER_SPOT_M * ring) / 3
+            for (let b = 0; b < CORNER_BEARINGS; b++) {
+              if (!canPlan()) return null
+              const yaw = (2 * Math.PI * b) / CORNER_BEARINGS
+              const x = me.pos[0] + Math.cos(yaw) * r, y = me.pos[1] + Math.sin(yaw) * r
+              if (Math.hypot(x - zoneKeep[0][0], y - zoneKeep[0][1]) > zoneKeep[1]) continue
+              const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+              if (g === -Infinity) continue
+              const p: Vec3 = [x, y, g]
+              if (flat(e.pos, p) < dNow) continue
+              if (!clearLine(solids, from, [x, y, g + myHeight / 2], 0, 0)) continue
+              if (seenAt(p, myHeight, [e], false) || seenAt(p, myHeight, others, false)) continue
+              if (CORNER_PEEK_M > 0) {
+                if (++tries > CORNER_PEEK_TRIES || !canPlan()) return null
+                if (peek(p) > CORNER_PEEK_M) continue
+              }
+              // Walkable: a nav path there, not much longer than the straight line (a wall or a ledge in the way otherwise).
+              if (!canPlan()) return null
+              const way = nav.path(me.pos, p, CORNER_PEEK_BUDGET)
+              if (!way) continue
+              let len = 0, prev: number[] = me.pos
+              for (const w of way) { len += flat(prev, w); prev = w }
+              if (len > 1.5 * r + CORNER_AT_M) continue
+              return { p, way }
+            }
+          }
+          return null
+        }
+        // Pushed off the spot (a mortar's knock): walk back.
+        if (corner?.held && flat(me.pos, corner.spot) > 3 * CORNER_AT_M) corner.held = false
+        if (corner && !corner.held) {
+          if (flat(me.pos, corner.spot) < CORNER_AT_M) corner.held = true
+          else if (obs.t - corner.at >= CORNER_REPICK_S) {
+            const got = pick()
+            if (!got) return (corner = null)
+            corner = { ...corner, spot: got.p, way: got.way, at: obs.t }
+          }
+        }
+        if (!corner) {
+          const got = pick()
+          if (!got) return null
+          corner = { id: e.id, spot: got.p, way: got.way, at: obs.t, held: false }
+        }
+        // At the spot: stand (heal while it is out of sight), and shoot it when it comes round (the torso tracks it).
+        if (corner.held) return { move: [0, 0], mode: seenAt(me.pos, myHeight, [e], false) ? "corner fight" : "corner wait" }
+        while (corner.way.length > 1 && flat(me.pos, corner.way[0]) < CORNER_AT_M) corner.way.shift()
+        return { move: heading(corner.way[0] ?? corner.spot), mode: "corner go" }
+      }
+      let duel: { move: [number, number]; mode: string } | null = null
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -717,6 +831,9 @@ function buildBot(hello: Hello): Bot {
         move = heading(spot)
         boost = me.energy > 0.3 * me.max_energy
         mode = "break crossfire"
+      } else if (CORNER_DUEL_ON && (duel = cornerPlan())) {
+        move = duel.move
+        mode = duel.mode
       } else if (me.hp < HEAL_HP * me.max_hp) {
         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
         // Build 19: the walk to a hiding spot only while hurt.
@@ -740,11 +857,13 @@ function buildBot(hello: Hello): Bot {
           mode = "hide"
         }
       }
+      // Build 51: the duel ends whenever anything else runs (a laser trip, a retreat, ...); a new one needs a fresh closing enemy.
+      if (CORNER_DUEL_ON && !duel) corner = null
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush" && !mode.startsWith("corner")) move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

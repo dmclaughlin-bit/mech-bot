@@ -113,3 +113,27 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 53 (post-kill cover): after we kill an enemy (or see one die within POST_KILL_SEEN_M of us) in the first
+ * POST_KILL_EARLY_S seconds while we hold no laser, assume a third party may arrive. For POST_KILL_S seconds walk to
+ * the nearest nav-reachable spot within POST_KILL_COVER_M that no currently known enemy sees and that is out of sight
+ * of the predicted arrival direction, then hold there (regen starts 5 s after the last hit). Predicted direction, in
+ * order: the bearing of the last mech fire we took from a shooter we could not see (last 20 s), else the nearest other
+ * enemy seen in the last 10 s, else the zone center (spawns and the field are inward). The kill's cubes are collected
+ * only while no other enemy has been seen and no unseen fire taken for POST_KILL_QUIET_S. Zone travel, engage, the hurt
+ * retreat, the Build 17 laser rush and the Build 60 crossfire break all still rank first. Build 51 diagnosis (sim):
+ * with another enemy seen within 1 s of an early kill we died within 15 s 17/40 times; with none seen for 6+ s, 4/53.
+ * Set POST_KILL_COVER_ON to false to roll back to Build 60 behavior exactly.
+ */
+export const POST_KILL_COVER_ON = true
+/** Only kills (or deaths seen) this early in the match (s). */
+export const POST_KILL_EARLY_S = 60
+/** How long (s) after the kill to take and keep cover. */
+export const POST_KILL_S = 8
+/** Farthest cover spot (m, straight line from us). */
+export const POST_KILL_COVER_M = 25
+/** Collect the kill's cubes only when no other enemy was seen (or unseen fire taken) this long (s). */
+export const POST_KILL_QUIET_S = 3
+/** An enemy we saw within this distance (m) that vanishes as the alive count drops counts as a death near us. */
+export const POST_KILL_SEEN_M = 60

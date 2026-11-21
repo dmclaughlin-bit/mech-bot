@@ -17,12 +17,14 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 53 (post-kill cover): after an early kill with no laser, take cover from the predicted next attacker (see POST_KILL_COVER_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, POST_KILL_COVER_M, POST_KILL_COVER_ON,
+  POST_KILL_EARLY_S, POST_KILL_QUIET_S, POST_KILL_S, POST_KILL_SEEN_M, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -120,6 +122,20 @@ const LASER_LEAD_S = 0.075
  * multi-threat fights when the race looked winning, and changed hit rates). Against real house bots that share
  * vision and hit harder than the sim, a 2-on-1 stand-and-shoot is a fight we cannot finish. */
 const CROSSFIRE_ON = true
+/** Build 53 (post-kill cover): unseen fire this recent (s) and enemies seen this recently (s) predict the next attacker. */
+const PK_FIRE_MEMORY_S = 20
+const PK_SEEN_MEMORY_S = 10
+/** Build 53: stand-in eyes this far (m) along the predicted direction; cover candidates on these rings (m) and bearings. */
+const PK_EYES_M = [50, 90]
+const PK_RINGS_M = [4, 8, 12, 16, 20, POST_KILL_COVER_M]
+const PK_BEARINGS = 16
+/** Build 53: re-check the chosen spot this often (s); a nav path to it may be at most this many times the straight line (plus 6 m); at most this many path checks per search. */
+const PK_RECHECK_S = 0.5
+const PK_DETOUR = 1.6
+const PK_PATH_TRIES = 3
+const PK_PATH_BUDGET = 4000
+/** Build 53: we are at the spot within this distance (m). */
+const PK_AT_M = 2
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -273,6 +289,12 @@ function buildBot(hello: Hello): Bot {
   /** Build 14: targets we gave up on (id → time), and where our last kill died, to collect its cubes. */
   const engageGiveUp = new Map<number, number>()
   let claim: { pos: Vec3; until: number } | null = null
+  /** Build 53 (post-kill cover): the active window, the last fire from a shooter we could not see, the chosen spot, and last decision's view. */
+  let postKill: { since: number; until: number } | null = null
+  let unseenFire: { bearing: number; t: number } | null = null
+  let pkSpot: { p: Vec3; at: number } | null = null
+  let pkPrevAlive = Infinity
+  let pkPrevSeen = new Map<number, number>()
 
   /** Build 14: what we deal per second to a target `d` m away: every held weapon that reaches, × its hit-rate guess × our cube bonus. */
   function ourDps(me: Observation["self"], d: number): number {
@@ -461,6 +483,23 @@ function buildBot(hello: Hello): Bot {
       // costs nothing; the 160 m rule above would leave us standing on it).
       const holdsLaser = me.weapons.some((x) => x?.kind === "laser")
       const gunOnly = me.weapons.every((x) => !x || x.kind === "gun") && me.weapons.some((x) => x?.kind === "gun")
+      // Post-kill cover (Build 53): see POST_KILL_COVER_ON in params.ts. Note fire from shooters we cannot see, and open
+      // the window on an early kill (ours, or an enemy we saw near us vanishing as the alive count drops) with no laser held.
+      if (POST_KILL_COVER_ON) {
+        let died = false
+        for (const e of obs.events) {
+          if (e.type === "damaged" && e.by !== null && e.bearing !== null && e.weapon !== "npc" && !enemies.some((m) => m.id === e.by)) unseenFire = { bearing: e.bearing, t: obs.t }
+          if (e.type === "kill") died = true
+        }
+        if (obs.alive < pkPrevAlive) for (const [id, d] of pkPrevSeen) if (d < POST_KILL_SEEN_M && !obs.mechs.some((m) => m.id === id)) died = true
+        pkPrevAlive = obs.alive
+        pkPrevSeen = new Map(enemies.map((m) => [m.id, flat(m.pos, me.pos)]))
+        if (died && obs.t < POST_KILL_EARLY_S && !holdsLaser) {
+          postKill = { since: obs.t, until: obs.t + POST_KILL_S }
+          pkSpot = null
+        }
+        if (postKill && obs.t - postKill.since > Math.max(POST_KILL_S, CLAIM_S)) postKill = null
+      }
       if (LASER_RUSH_ON) {
         const eye: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.eye_height ?? cfg.mech.eye_height ?? cfg.mech.height)]
         for (const p of obs.pickups) if (p.kind === "laser" || p.kind === "lightning") arms.set(p.id, { kind: p.kind, pos: p.pos })
@@ -617,6 +656,11 @@ function buildBot(hello: Hello): Bot {
           (flat(me.pos, goal) + Math.max(0, flat(goal, z.next_center) - inner)) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER < timeLeft
         if (!cube && flat(me.pos, at) < Number(cfg.cubes.pickup_radius ?? cfg.loot.pickup_radius)) claim = null
         else if (zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && !seenAt(me.pos, myHeight, threats, false)) claimGoal = goal
+        // Build 53: after an early kill, the cubes only while no other enemy was seen (or unseen fire taken) for POST_KILL_QUIET_S.
+        if (
+          claimGoal && POST_KILL_COVER_ON && postKill &&
+          ([...known.values()].some((k) => obs.t - k.lastSeen < POST_KILL_QUIET_S) || (!!unseenFire && obs.t - unseenFire.t < POST_KILL_QUIET_S))
+        ) claimGoal = null
       }
       // Stop sneaking (Build 19): not hurt (HP at or above the retreat line, no damage for NO_SNEAK_QUIET_S), so no
       // silent speed cap and no walk to a hiding spot. While hurt, the retreat, the heal and their hiding are unchanged.
@@ -655,6 +699,56 @@ function buildBot(hello: Hello): Bot {
       }
       if (!rushMove) rush = null
       else farmChase = null
+      // Post-kill cover (Build 53): the nearest nav-reachable spot within POST_KILL_COVER_M that no enemy seen in the
+      // last PK_SEEN_MEMORY_S sees (from where we last saw it), nor two stand-in eyes along the predicted direction of
+      // the next attacker. Re-checked every PK_RECHECK_S; null when there is none (normal behavior runs).
+      const postKillCover = (): { move: [number, number]; boost: boolean; mode: string } | null => {
+        const recent = [...known.values()].filter((k) => obs.t - k.lastSeen < PK_SEEN_MEMORY_S)
+        const nearest = recent.slice().sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+        const dir = unseenFire && obs.t - unseenFire.t < PK_FIRE_MEMORY_S ? unseenFire.bearing : nearest ? yawTo(me.pos, nearest.pos) : yawTo(me.pos, z.center)
+        const eyes: { pos: Vec3; aim: [number, number]; cubes?: number }[] = recent.map((k) => ({ pos: k.pos, aim: [0, 0], cubes: k.cubes }))
+        for (const m of PK_EYES_M) {
+          const x = me.pos[0] + Math.cos(dir) * m, y = me.pos[1] + Math.sin(dir) * m
+          const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+          eyes.push({ pos: [x, y, Number.isFinite(g) ? g : me.pos[2]], aim: [0, 0] })
+        }
+        const hidden = (p: Vec3) => !seenAt(p, myHeight, eyes, false)
+        const search = (): Vec3 | null => {
+          if (hidden(me.pos)) return me.pos
+          let tries = 0
+          for (const r of PK_RINGS_M) {
+            for (let b = 0; b < PK_BEARINGS; b++) {
+              if (!canPlan()) return null
+              const yaw = (2 * Math.PI * b) / PK_BEARINGS
+              const x = me.pos[0] + Math.cos(yaw) * r, y = me.pos[1] + Math.sin(yaw) * r
+              if (Math.hypot(x - zoneKeep[0][0], y - zoneKeep[0][1]) > zoneKeep[1]) continue
+              const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+              if (g === -Infinity) continue
+              const p: Vec3 = [x, y, g]
+              if (recent.some((k) => flat(k.pos, p) < flat(k.pos, me.pos)) || !hidden(p)) continue
+              if (tries++ >= PK_PATH_TRIES) return null
+              const path = nav.path(me.pos, p, PK_PATH_BUDGET)
+              if (!path?.length || flat(path[path.length - 1], p) > PK_AT_M) continue
+              let len = 0
+              let prev: number[] = me.pos
+              for (const w of path) {
+                len += flat(prev, w)
+                prev = w
+              }
+              if (len <= PK_DETOUR * r + 6) return p
+            }
+          }
+          return null
+        }
+        if (!pkSpot || (obs.t - pkSpot.at >= PK_RECHECK_S && !(pkSpot.p && hidden(pkSpot.p)))) pkSpot = { p: search(), at: obs.t }
+        else if (obs.t - pkSpot.at >= PK_RECHECK_S) pkSpot.at = obs.t
+        const p = pkSpot.p
+        if (!p) return null
+        const boost = me.energy > 0.3 * me.max_energy && seenAt(me.pos, myHeight, threats, false)
+        if (flat(me.pos, p) < PK_AT_M) return { move: [0, 0], boost: false, mode: "post-kill hold" }
+        return { move: travel(me.pos, p, obs.t, canPlan()).move, boost, mode: "post-kill cover" }
+      }
+      let pk: ReturnType<typeof postKillCover> = null
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -717,6 +811,11 @@ function buildBot(hello: Hello): Bot {
         move = heading(spot)
         boost = me.energy > 0.3 * me.max_energy
         mode = "break crossfire"
+      } else if (POST_KILL_COVER_ON && postKill && obs.t < postKill.until && (pk = postKillCover())) {
+        // Post-kill cover (Build 53): out of sight of the predicted next attacker and of every enemy seen lately, then hold (regen).
+        move = pk.move
+        boost = pk.boost
+        mode = pk.mode
       } else if (me.hp < HEAL_HP * me.max_hp) {
         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
         // Build 19: the walk to a hiding spot only while hurt.
@@ -744,7 +843,7 @@ function buildBot(hello: Hello): Bot {
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush" && !mode.startsWith("post-kill")) move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

@@ -1,0 +1,29 @@
+{
+  "author": "Diego",
+  "submitted_at": "2026-11-21T02:11:00-05:00",
+  "findings": [
+    {
+      "claim": "No mech can live to the 8:00 HP tiebreak with default config: the last circle closes to radius 0 by about 6:55 (415 s), and from then on everyone takes 260 HP/s with no armor and no regen. Even 1400 HP x 1.4 (10 cubes) x 1.15^3 (3 platings), about 2,980 HP, lasts about 11.5 s. So HYP-011's 'survivors at 8:00 ranked by HP' never applies. The real endgame rule: the order of death in the 6:55 collapse is the order of HP at that moment (same-tick deaths share a place).",
+      "topic": "contradiction",
+      "sources": [
+        {"ref": "mechfight-kit/protocol.md §9 The zone", "kind": "protocol", "quote": "The last circle closes by about 6:55. Matches end when one mech is left or at 8:00"},
+        {"ref": "mechfight-kit/check/stream.jsonl.gz hello.config.zone.phases (hold+shrink sum 415 s; last dps 260) and config.match.duration_s 480", "kind": "protocol", "quote": null},
+        {"ref": "mechfight-kit/protocol.md §4 Scoring", "kind": "protocol", "quote": "If the clock runs out, survivors are ranked by HP."},
+        {"ref": "pipeline/data/hypotheses.jsonl HYP-011", "kind": "repo", "quote": "Survivors at 8:00 ranked by HP; zone damage ignores armor"}
+      ],
+      "confidence": 0.8,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "Restate HYP-011 as 'enter the 6:55 collapse with the most HP'. If it is ever built: from about 6:30 (zone radius <= 25 m), with HP under max and no enemy hitting us, stop firing so the 5 s regen delay runs, and stand at the circle center to regenerate at 45 HP/s. Plating (+15% max HP) helps in the collapse and armor does not, since zone damage ignores armor. Low priority: at 3.50 we usually die well before 6:30.",
+      "mechanism": "In the collapse each 260 HP of extra health is about 1 s more of life, which can be a place or more among the last mechs. It matters only in matches we reach the end of, so the gain is small until survival improves.",
+      "expected_gain": 0.05,
+      "effort": 2,
+      "regression_risk": 0.15,
+      "failure_classes": [
+        {"class": "ZONE_LATE", "confidence": 0.2, "basis": "endgame collapse arithmetic from config; frequency of reaching 6:30 unknown"}
+      ],
+      "related_rule_ids": ["H3", "Z1"],
+      "keywords": ["endgame", "collapse", "zone", "HYP-011", "plating", "tiebreak"]
+    }
+  ]
+}

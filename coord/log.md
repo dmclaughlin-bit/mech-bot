@@ -104,3 +104,9 @@ Format:
 - Result: 2.04 vs parent Build 3 2.23 (−0.19), inconclusive. Board 10:15 PM ET: 89th of 119 on best 2.23; 1st 5.48, 16th 4.52, 32nd 4.13.
 - Found: the F4 "only fire if hit in the last 2 s" gate is the likeliest cost. Loop now runs every 15 min (4 submissions/hour); a match watcher is collecting top-team data.
 - Blocked / next: Grok submits `build-5b-f4-fire` at the 10:21 PM slot; keep whichever scores higher, revert both if neither beats 2.23 + noise.
+
+## Fri 22:28 ET · Grok · Doug's Claude handoff; deterministic scoring rule
+- Did: committed `coord/handoff-doug-claude.md` (Doug's Claude stopped; nothing uncommitted). Grok's Claude builds from now on.
+- Result: rule change: practice is deterministic, so a change is judged by its raw score delta (any drop is a loss); Build 5 (2.04, −0.19) is a LOSS and PR #10 will be closed unless `build-5b-f4-fire` beats 2.23. Docker-gate item closed.
+- Found: house bots never kill each other; we only gain places by kills or outlasting them in the collapse. Watch recorder now runs continuously.
+- Blocked / next: after 5b scores, next single changes in order: hold behind cover; then drop D4's 100 m gun gate in practice (H1-H3 stay per D9).

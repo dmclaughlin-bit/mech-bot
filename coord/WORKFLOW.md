@@ -2,6 +2,14 @@
 
 **The one goal (updated Fri 23:47 ET by Doug):** each build is the system change with the LARGEST expected impact on total score, not a small tweak. Rank candidates by expected score gain (winner-vs-loser gap size × how many matches it affects × evidence confidence ÷ cost and risk), and build the top one. Prefer changes that close a big structural gap (e.g. a whole missing system such as cube economy or engagement decisions) over parameter nudges. Promotion rule unchanged: keep only if it beats the current best. **Kills are the score (Sat 00:20 ET):** practice house bots never kill each other (track rules), so places come only from house bots dying to us or the zone; aim every build at more kills/damage. **Throughput (Sat 00:20 ET, Doug):** two build lanes run in parallel to fill all 4 slots/hour; a local sim (tools/sim, PR pending) pre-screens builds once calibrated; Diego loop every 20 min. Targets: above 32nd place (about 4.25) by Sun 11:00 AM ET; long-run 6.00.
 
+**Lane split (Sat 00:50 ET, Doug):** the two lanes own separate parts of the bot so one lane's keep never goes stale under the other.
+- **Lane A: movement.** Pathing, positioning, spacing, zone, sneak/stealth, retreat. Mainly `nav.ts`, `map.ts`, and the movement parts of `brain.ts`.
+- **Lane B: combat.** Target choice, aim, firing, weapons and laser use, upgrades. Mainly `target.ts` and the fire/weapon parts of `brain.ts`.
+- Each new lane build starts from the latest `main` (the current champion). A lane never edits the other lane's files. A `brain.ts` change stays in its own lane's functions; anything that crosses lanes gets flagged to Grok before it's built.
+- After any keep, the open build in the other lane rebases onto the new main and re-runs the gate before submission. Because the files don't overlap, this should be a clean rebase.
+- Builds already in flight at the switch (B17 laser in B, B19 no-sneak in A) finish as they are. They already fit this split.
+
+
 ```mermaid
 flowchart TD
     GOAL["Each build = the change with the largest expected score impact · keep only if it beats our best · target > 32nd place"]

@@ -33,6 +33,17 @@ const SILENT_SPEED = 5
 /** F2: retreat when HP is below this fraction of max while under fire. */
 const RETREAT_HP = 0.35
 
+/** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
+const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
+const MOBILITY = ["servos", "jets", "capacitor", "reactor"]
+function upgradeRank(id: string): number {
+  const i = UPGRADE_FIRST.indexOf(id)
+  if (i >= 0) return i
+  if (/^(gun|laser|lightning|mortar)_/.test(id) || id === "gyros") return 4
+  if (MOBILITY.includes(id)) return 5
+  return 6
+}
+
 // ------------------------------------------------------------------ aiming
 /** Where to aim a straight-flying shot so it meets a target moving at a steady velocity. */
 function lead(from: Vec3, at: Vec3, vel: Vec3, speed: number): Vec3 {
@@ -162,7 +173,11 @@ function buildBot(hello: Hello): Bot {
       const act: BotAction = {}
       const fire: [boolean, boolean] = [false, false]
 
-      if (obs.offer) act.pick = 0
+      // Upgrades (L4): always answer, in the plan's order.
+      if (obs.offer?.choices?.length) {
+        const ranks = obs.offer.choices.map((c) => upgradeRank(c.id))
+        act.pick = ranks.indexOf(Math.min(...ranks))
+      }
       const enemies = obs.mechs.filter((m) => m.kind === "mech")
 
       // Loot (D3, L1, L2): laser and lightning only, never a mortar, and only with no enemy within 160 m.

@@ -170,7 +170,9 @@ export const DROP_RUN_M = 200
  * movement ever replaces "drop, run" or "drop, hold"; the strafe only replaces a stand-still in an engage, heal or hold.
  *   30 = pathing: mode 5's slide with a 0.6 s commitment, an oscillation breaker (20 s with >120 m walked and <15 m net
  *        turns the new movement off for 10 s), jump + jet over what the slide finds no way round (energy >= 40), keep
- *        jetting after the unstick jump, and boost to the next circle while energy >= 50%.
+ *        jetting after the unstick jump, and boost to the next circle while energy >= 50%. v2 adds a quiet flap breaker
+ *        (8 s, no enemy in view for most of it, >35 m walked, <6 m net: give up the farm goal, re-plan, movement off
+ *        10 s) and recharge-then-jet (stuck under 15 energy: no boost until 60, then jump and jet for 4 s).
  *   31 = 30 + calibrated strafe in danger only: T = (d/252 + 0.1) x U(0.8, 1.4) clamped to 0.20-0.40 s; danger = an
  *        enemy with a line on us inside its reach aiming at us / hitting us / charging, 2+ lines on us, a mech hit in
  *        2 s, or low HP with a line on us. A laser charging at us: cover, else step off the beam.

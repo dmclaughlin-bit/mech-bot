@@ -220,6 +220,10 @@ const ESCAPE_BOOST_RESERVE = 0.2
 const JET_RESERVE = 40
 const JET_MIN = 15
 const JET_HOLD_S = 1.2
+/** Recharge then jet (mode 30+): stuck with under JET_MIN energy (the champion's zone escape boosts every tick, so a mech
+ * wedged in a pit never regenerates), stop boosting until energy is back to RECHARGE_TO, then jump and jet for RECHARGE_JET_S. */
+const RECHARGE_TO = 60
+const RECHARGE_JET_S = 4
 /** Slide commitment: keep a slid heading this long (s) unless its own next step is blocked. */
 const SLIDE_COMMIT_S = 0.6
 /** Oscillation breaker: over the last OSC_WIN_S, more than OSC_PATH_M of walking but under OSC_NET_M net → new movement off for OSC_OFF_S. */
@@ -227,6 +231,13 @@ const OSC_WIN_S = 20
 const OSC_PATH_M = 120
 const OSC_NET_M = 15
 const OSC_OFF_S = 10
+/** Quiet flap breaker (mode 30+): over the last FLAP_WIN_S with no enemy in view for most of it, more than FLAP_PATH_M
+ * walked but under FLAP_NET_M net (a route or decision flapping in place, e.g. laser rush <-> farm pickup, or a route
+ * flapping at a ledge) → give up the farm goal we were walking to (as the champion's own chase timeout does), re-plan,
+ * and turn the new movement off for OSC_OFF_S. */
+const FLAP_WIN_S = 8
+const FLAP_PATH_M = 35
+const FLAP_NET_M = 6
 /** Outnumbered escape: extra hiding distances (s of walking) tried when the champion's 1–3 s find nothing. */
 const ESCAPE_STEPS_S = [4, 6]
 /** Mode 36: "actually taking mech damage" = a mech damaged us within this many seconds. */
@@ -403,9 +414,10 @@ function buildBot(hello: Hello): Bot {
   /** P-B-008 iter 3: slide commitment, jet window, last hop, oscillation breaker (decision positions, cumulative path). */
   let slideHold: { move: [number, number]; until: number } | null = null
   let jetUntil = -Infinity
+  let recharge = false
   let lastHop = -Infinity
   let ev3OffUntil = -Infinity
-  const oscLog: { t: number; x: number; y: number; path: number }[] = []
+  const oscLog: { t: number; x: number; y: number; path: number; seen: number }[] = []
   const evRnd = () => {
     evRand = (evRand + 0x6d2b79f5) | 0
     let t = Math.imul(evRand ^ (evRand >>> 15), 1 | evRand)
@@ -1001,12 +1013,21 @@ function buildBot(hello: Hello): Bot {
       }
       if (EV3_PATH) {
         const last = oscLog[oscLog.length - 1]
-        oscLog.push({ t: obs.t, x: me.pos[0], y: me.pos[1], path: last ? last.path + Math.hypot(me.pos[0] - last.x, me.pos[1] - last.y) : 0 })
+        oscLog.push({ t: obs.t, x: me.pos[0], y: me.pos[1], path: last ? last.path + Math.hypot(me.pos[0] - last.x, me.pos[1] - last.y) : 0, seen: (last?.seen ?? 0) + (enemies.length ? 1 : 0) })
         while (oscLog.length && obs.t - oscLog[0].t > OSC_WIN_S) oscLog.shift()
         const a = oscLog[0], b = oscLog[oscLog.length - 1]
-        if (b.t - a.t >= OSC_WIN_S - 0.5 && b.path - a.path > OSC_PATH_M && Math.hypot(b.x - a.x, b.y - a.y) < OSC_NET_M) {
+        let fi = oscLog.length - 1
+        while (fi > 0 && b.t - oscLog[fi - 1].t <= FLAP_WIN_S) fi--
+        const f = oscLog[fi]
+        const flap = b.t - f.t >= FLAP_WIN_S - 0.3 && b.path - f.path > FLAP_PATH_M && Math.hypot(b.x - f.x, b.y - f.y) < FLAP_NET_M &&
+          (b.seen - f.seen) < (oscLog.length - fi) / 2
+        if (flap || (b.t - a.t >= OSC_WIN_S - 0.5 && b.path - a.path > OSC_PATH_M && Math.hypot(b.x - a.x, b.y - a.y) < OSC_NET_M)) {
           ev3OffUntil = obs.t + OSC_OFF_S
           oscLog.length = 0
+          if (flap) {
+            if (farmGoal) farmGiveUp.add(farmGoal.id)
+            route = null
+          }
         }
       }
       const ev3On = EV3 && obs.t >= ev3OffUntil
@@ -1276,7 +1297,8 @@ function buildBot(hello: Hello): Bot {
       if (!evading && !noSneak && !kite && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && !mode.startsWith("escape") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
-      if (nav.stuck(me, move)) {
+      const stuckNow = nav.stuck(me, move)
+      if (stuckNow) {
         if (me.grounded) act.jump = true
         else if (me.energy > 15) boost = true
         route = null
@@ -1285,7 +1307,15 @@ function buildBot(hello: Hello): Bot {
         // Mode 30+: keep jetting while airborne (up to JET_HOLD_S), not only on the next stuck call.
         if (EV3_PATH && me.energy >= JET_RESERVE) jetUntil = obs.t + JET_HOLD_S
       }
-      if (EV3_PATH && !me.grounded && obs.t < jetUntil && me.energy > JET_MIN && Math.hypot(move[0], move[1]) > 0.05) boost = true
+      if (EV3_PATH && stuckNow && me.energy < JET_MIN) recharge = true
+      if (EV3_PATH && recharge) {
+        if (me.energy >= RECHARGE_TO) {
+          recharge = false
+          jetUntil = obs.t + RECHARGE_JET_S
+          if (me.grounded) act.jump = true
+        } else boost = false
+      }
+      if (EV3_PATH && !recharge && !me.grounded && obs.t < jetUntil && me.energy > JET_MIN && Math.hypot(move[0], move[1]) > 0.05) boost = true
       let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
       // P-B-008: while evading, the torso stays on the foe (or where it points now), never on the move heading.
       if (evading || evFoe) aim = evFoe ? [yawTo(me.pos, evFoe), 0] : [me.aim[0], 0]

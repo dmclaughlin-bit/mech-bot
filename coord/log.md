@@ -164,3 +164,9 @@ Format:
 - Result: 2.35 vs champion 5b 2.38 (−0.03), a loss (smallest drop so far). Board 11:24 PM ET: 108th of 140; 1st 5.58, 16th 4.73, 32nd 4.23.
 - Found: fixing failed paths (179→85 of 2,000 offline) doesn't move practice score; path failures aren't the bottleneck. Build 11 (inflation 2.5 m) was stacked on Build 10, so it must be re-based on main before scoring.
 - Blocked / next: root-cause audit (branch rca-report) running; next slot 23:32 ET.
+
+## Fri 23:26 ET · Doug · Build 11b: nav inflation = mech radius, on main
+- Did: re-based only the `nav.ts` change from Build 11 (`1cd007f`: `INFLATE_M` 2 → 2.5 m, loop bounds `Math.ceil(R)`) onto `main` @ `83b8815`, without the Build 10 fallback. Supersedes PR #18.
+- Result: `check.py` PASS, 300/300 in time, p99 1.1 ms. Not submitted.
+- Found: offline (on the Build 10 parent) paths within 2.5 m of a wall fell 225 → 127 of 2,000; null paths 12 → 18 as a few narrow gaps close; arena stays connected.
+- Blocked / next: Coordinator scores it at the 23:32 ET slot.

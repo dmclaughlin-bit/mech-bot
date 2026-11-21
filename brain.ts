@@ -19,6 +19,8 @@
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  * Build 80 (late lightning): after 45 s, a gun-only bot may walk to a reachable ground lightning or laser
  * (see LATE_LIGHT_ON).
+ * Build 100 (late cover): after 45 s, when recently hit, B60 cover also fires at 1+ line of sight
+ * (see LATE_COVER_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -129,6 +131,13 @@ const CROSSFIRE_ON = true
  * Take, swap, and drop are unchanged (B66 and B68 lost on the site). Different from B76/B78 (first 45 s only).
  * false = champion. */
 const LATE_LIGHT_ON = true
+/** Build 100: after 45 s, B60's cover move also fires when we were hit in the last 2 s and at least one
+ * enemy has line of sight (champion cover still requires 2+). Hide distances stay [1,2,3] (not B82).
+ * Hurt retreat, zone travel, finish/TTK engage, and the B80 late walk stay ahead of this cover, so a
+ * gun-only walk is not cancelled by a single watcher. Claim, loot, farm, heal, and hold yield to it.
+ * Early game unchanged. false = B80. */
+const LATE_COVER_ON = true
+const LATE_COVER_S = 45
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -719,17 +728,23 @@ function buildBot(hello: Hello): Bot {
         move = [mx / n, my / n]
         boost = me.energy > 0.3 * me.max_energy
         mode = "retreat"
-      } else if (claimGoal) {
+      } else if (claimGoal && !(LATE_COVER_ON && obs.t >= LATE_COVER_S && lastHit && obs.t - lastHit.t < 2 && CROSSFIRE_ON && (spot = (() => {
+        const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        return los.length >= 1 ? hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan) : null
+      })()))) {
         move = travel(me.pos, claimGoal, obs.t, canPlan()).move
         mode = "engage, collect"
       } else if (rushMove) {
         // Early arm-up (Build 17): full walk speed (steps carry only 40 m), no boost. Walking does not stop regen.
         move = rushMove
         mode = "laser rush"
-      } else if (CROSSFIRE_ON && (spot = (() => {
+      } else if (spot || (LATE_COVER_ON && obs.t >= LATE_COVER_S && lastHit && obs.t - lastHit.t < 2 && CROSSFIRE_ON && (spot = (() => {
+        const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        return los.length >= 1 ? hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan) : null
+      })())) || (CROSSFIRE_ON && (spot = (() => {
         const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
         return los.length >= 2 ? hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan) : null
-      })())) {
+      })()))) {
         move = heading(spot)
         boost = me.energy > 0.3 * me.max_energy
         mode = "break crossfire"

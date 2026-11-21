@@ -15,7 +15,7 @@
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
-import { ENGAGE_ON, FARM_ENEMY_M, FARM_ON, FARM_PICKUP_M, params } from "./params.ts"
+import { ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_ON, FARM_PICKUP_M, params } from "./params.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
 // ------------------------------------------------------------------ geometry helpers
@@ -73,7 +73,7 @@ const FARM_CHASE_S = 15
 /** Build 12: stand this far (m) inside a drop's ring while capturing. */
 const DROP_INSET = 1.5
 
-/** Build 14 (engage): our hit-rate guesses. Gun inside GUN_NEAR_M and beyond it, laser and lightning, mortar. */
+/** Build 14 (engage): hit-rate guesses, the same for us and for enemies. Gun inside GUN_NEAR_M and beyond it, laser and lightning, mortar. */
 const GUN_NEAR_M = 60
 const HIT_GUN_NEAR = 0.8
 const HIT_GUN_FAR = 0.5
@@ -251,10 +251,10 @@ function buildBot(hello: Hello): Bot {
     }
     return best * cubeDamage(me.cubes)
   }
-  /** Build 14: what an enemy `d` m away deals per second if every shot lands: each weapon it is seen holding that reaches us, × its cube bonus. */
+  /** Build 14: what an enemy `d` m away deals per second: each weapon it is seen holding that reaches us, × the same hit-rate guess as ours, × its cube bonus. */
   function enemyDps(e: { weapons?: WeaponKind[]; cubes?: number }, d: number): number {
     let sum = 0
-    for (const kind of e.weapons ?? ["gun"]) if (baseReach[kind] >= d) sum += baseDps[kind]
+    for (const kind of e.weapons ?? ["gun"]) if (baseReach[kind] >= d) sum += baseDps[kind] * hitRate(kind, d)
     return sum * cubeDamage(e.cubes)
   }
 
@@ -479,19 +479,30 @@ function buildBot(hello: Hello): Bot {
         for (const [id, t] of mechHitBy) if (obs.t - t < THREAT_HIT_S) hitters.push(id)
         const alone = (id: number) => !los.some((e) => e.id !== id) && !hitters.some((h) => h !== id)
         const rested = (id: number) => obs.t - (engageGiveUp.get(id) ?? -Infinity) > ENGAGE_REST_S
-        let pick: (typeof enemies)[number] | undefined
-        let why: "ttk" | "finish" = "finish"
-        // Finish rule: the weakest enemy within one magazine of dying, while no second enemy sees us or is hitting us.
-        pick = threats
-          .filter((e) => e.hp !== undefined && rested(e.id) && alone(e.id) && e.hp <= ourMagazine(me, flat(e.pos, me.pos)))
-          .sort((a, b) => a.hp! - b.hp!)[0]
-        // TTK rule: where the HP retreat would trigger, with exactly one threat and it in sight, fight on if we kill it first.
-        if (!pick && hurt && los.length === 1 && los[0].hp !== undefined && alone(los[0].id) && rested(los[0].id)) {
-          const e = los[0], d = flat(e.pos, me.pos)
+        // Our time to kill `e` and its time to kill us (s), both sides at their hit-rate guess. Both rules use it.
+        const race = (e: (typeof enemies)[number]) => {
+          const d = flat(e.pos, me.pos)
           const out = ourDps(me, d)
           const taken = enemyDps(e, d) * (1 - clamp(me.stats.armor ?? 0, 0, 0.9))
-          const ttk = out > 0 ? e.hp! / out : Infinity
-          const ttd = taken > 0 ? me.hp / taken : Infinity
+          return { ttk: out > 0 ? e.hp! / out : Infinity, ttd: taken > 0 ? me.hp / taken : Infinity }
+        }
+        const outlive = (e: (typeof enemies)[number]) => {
+          const r = race(e)
+          return r.ttk < r.ttd
+        }
+        let pick: (typeof enemies)[number] | undefined
+        let why: "ttk" | "finish" = "finish"
+        // Finish rule: the weakest enemy within one magazine of dying, while no second enemy sees us or is hitting us,
+        // and only if we survive it: our HP at or above ENGAGE_FINISH_HP and the kill coming before our death (ttk < ttd).
+        // House bots hunt the weakest first as one squad with shared vision, so a low-HP commit draws the rest.
+        if (me.hp >= ENGAGE_FINISH_HP * me.max_hp)
+          pick = threats
+            .filter((e) => e.hp !== undefined && rested(e.id) && alone(e.id) && e.hp <= ourMagazine(me, flat(e.pos, me.pos)) && outlive(e))
+            .sort((a, b) => a.hp! - b.hp!)[0]
+        // TTK rule: where the HP retreat would trigger, with exactly one threat and it in sight, fight on if we kill it first.
+        if (!pick && hurt && los.length === 1 && los[0].hp !== undefined && alone(los[0].id) && rested(los[0].id)) {
+          const e = los[0]
+          const { ttk, ttd } = race(e)
           if (ttk < params.aggression * ttd) {
             pick = e
             why = "ttk"

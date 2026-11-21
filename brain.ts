@@ -17,6 +17,8 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 76 (any special trip): in the first 45 s, walk to a laser, lightning, or mortar, ranked by value then
+ * distance, so any special by 30 s counts (see SPECIALTRIP_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -120,6 +122,14 @@ const LASER_LEAD_S = 0.075
  * multi-threat fights when the race looked winning, and changed hit rates). Against real house bots that share
  * vision and hit harder than the sim, a 2-on-1 stand-and-shoot is a fight we cannot finish. */
 const CROSSFIRE_ON = true
+/** Build 76 (any special as an early trip): the champion's Build 17 walk only goes to a laser, or to lightning
+ * while we hold nothing but the gun, and it never walks to a mortar (loot, memory and take-in-reach all skip it).
+ * In the sim the champion holds any special by 30 s in 89/192 games (46%; laser 58, lightning 37, mortar 0), vs
+ * site winners 72% / bottom 47%. When this is on, a remembered laser, lightning, or mortar is a trip target,
+ * ranked so a special we can reach by 30 s beats one we cannot, then by value (laser > lightning > mortar), then
+ * by distance. Take-in-reach into a free slot can also take lightning or mortar. Swap / drop logic is unchanged
+ * (B66 and B68, which changed slots, lost on the site). false = champion. */
+const SPECIALTRIP_ON = true
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -243,7 +253,7 @@ function buildBot(hello: Hello): Bot {
   /** The current route: waypoints from nav.path toward `goal`, planned at time `at`. */
   let route: { goal: Vec3; at: number; points: Vec3[]; next: number; found: boolean } | null = null
   /** Build 17 (early arm-up): laser and lightning pickups seen so far (they are listed only while in view), the ones we gave up on, and the one we are walking to. */
-  const arms = new Map<number, { kind: "laser" | "lightning"; pos: Vec3 }>()
+  const arms = new Map<number, { kind: "laser" | "lightning" | "mortar"; pos: Vec3 }>()
   /** Build 17 fix: when the laser's charge was first seen full (it fires on its own hold_s later), and where the beam last led. */
   let beamFull: number | null = null
   let beamAt: Vec3 | null = null
@@ -446,9 +456,15 @@ function buildBot(hello: Hello): Bot {
         const held = me.weapons.map((x) => x?.kind ?? null)
         const free = held.indexOf(null)
         const swapSlot = free < 0 && enemies.length === 0 && (held.includes("laser") || held.includes("lightning")) ? held.indexOf("gun") : -1
+        const specialVal = (k: string) => (k === "laser" ? 3 : k === "lightning" ? 2 : k === "mortar" ? 1 : 0)
         const want = obs.pickups
-          .filter((p) => (p.kind === "laser" || p.kind === "lightning") && !held.includes(p.kind))
-          .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+          .filter((p) =>
+            (p.kind === "laser" || p.kind === "lightning" || (SPECIALTRIP_ON && p.kind === "mortar" && free >= 0)) &&
+            !held.includes(p.kind))
+          .sort((a, b) =>
+            SPECIALTRIP_ON
+              ? specialVal(b.kind) - specialVal(a.kind) || flat(a.pos, me.pos) - flat(b.pos, me.pos)
+              : flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
         if (want && (free >= 0 || swapSlot >= 0)) {
           if (flat(want.pos, me.pos) < cfg.loot.pickup_radius && Math.abs(want.pos[2] - me.pos[2]) < 4) {
             act.take = want.id
@@ -463,12 +479,15 @@ function buildBot(hello: Hello): Bot {
       const gunOnly = me.weapons.every((x) => !x || x.kind === "gun") && me.weapons.some((x) => x?.kind === "gun")
       if (LASER_RUSH_ON) {
         const eye: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.eye_height ?? cfg.mech.eye_height ?? cfg.mech.height)]
-        for (const p of obs.pickups) if (p.kind === "laser" || p.kind === "lightning") arms.set(p.id, { kind: p.kind, pos: p.pos })
+        for (const p of obs.pickups)
+          if (p.kind === "laser" || p.kind === "lightning" || (SPECIALTRIP_ON && p.kind === "mortar"))
+            arms.set(p.id, { kind: p.kind, pos: p.pos })
         for (const e of obs.events) if (e.type === "take_failed" && e.reason === "gone") arms.delete(e.id)
         for (const [id, a] of arms)
           if (!obs.pickups.some((p) => p.id === id) && flat(a.pos, me.pos) < LASER_GONE_M && clearLine(solids, eye, a.pos, 0, 0)) arms.delete(id)
         const reach = (kind: string) => obs.pickups.find((p) => p.kind === kind && flat(p.pos, me.pos) < cfg.loot.pickup_radius && Math.abs(p.pos[2] - me.pos[2]) < 4)
-        const here = holdsLaser || !me.weapons.includes(null) ? undefined : (reach("laser") ?? (gunOnly ? reach("lightning") : undefined))
+        const here = holdsLaser || !me.weapons.includes(null) ? undefined
+          : (reach("laser") ?? (gunOnly || SPECIALTRIP_ON ? reach("lightning") : undefined) ?? (SPECIALTRIP_ON ? reach("mortar") : undefined))
         if (here) {
           act.take = here.id
           lootTarget = null
@@ -636,11 +655,27 @@ function buildBot(hello: Hello): Bot {
         // `len` m of walking to the weapon at p: a bounded trip, and back in the next circle in time.
         const fits = (p: Vec3, len: number) => len <= LASER_TRIP_M && (len + onward(p)) / pace + ZONE_BUFFER < timeLeft
         // A laser always counts; a lightning only while we hold nothing but the gun. Lasers first, then the nearest.
+        // Build 76: any special is a target; prefer one we can reach by 30 s, then value, then distance.
+        const specialVal = (k: string) => (k === "laser" ? 3 : k === "lightning" ? 2 : k === "mortar" ? 1 : 0)
+        const eta = (p: Vec3) => obs.t + flat(me.pos, p) / pace
+        const freeSlot = me.weapons.includes(null)
         const options = [...arms]
           .filter(([id, a]) =>
-            (a.kind === "laser" || gunOnly) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
+            (SPECIALTRIP_ON
+              ? (a.kind === "laser" || (freeSlot && (a.kind === "lightning" || a.kind === "mortar"))) &&
+                !me.weapons.some((w) => w?.kind === a.kind)
+              : (a.kind === "laser" || gunOnly)) &&
+            !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
             !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4) && fits(a.pos, flat(me.pos, a.pos)))
-          .sort((a, b) => Number(a[1].kind !== "laser") - Number(b[1].kind !== "laser") || flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos))
+          .sort((a, b) => {
+            if (!SPECIALTRIP_ON)
+              return Number(a[1].kind !== "laser") - Number(b[1].kind !== "laser") || flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos)
+            const a30 = eta(a[1].pos) <= 30, b30 = eta(b[1].pos) <= 30
+            if (a30 !== b30) return a30 ? -1 : 1
+            const dv = specialVal(b[1].kind) - specialVal(a[1].kind)
+            if (dv) return dv
+            return flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos)
+          })
         const kept = rush ? options.find(([id]) => id === rush!.id) : undefined
         const pick = kept && kept[1].kind === options[0][1].kind && flat(kept[1].pos, me.pos) - flat(options[0][1].pos, me.pos) < LASER_SWITCH_M ? kept : options[0]
         if (pick && (obs.t < LASER_RUSH_S || pick === kept)) {

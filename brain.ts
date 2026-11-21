@@ -28,7 +28,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, UNSTUCK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -69,6 +69,22 @@ const ROUTE_REPLAN_S = 1
 const ROUTE_GOAL_SHIFT = 10
 /** Move on to the next waypoint within this distance (m). */
 const WAYPOINT_REACHED = 4
+/**
+ * B122 (UNSTUCK_ON): no progress for UNSTUCK_S seconds means under UNSTUCK_GAIN_M closer to the goal and under
+ * UNSTUCK_MOVED_M from where we last gained. 3 s: by then Build 3 has re-planned the route 3 times (ROUTE_REPLAN_S)
+ * and nav.stuck has jumped up to 6 times, and it is under the Watcher's 5 s "stuck" window. At walk speed 3 s is ~35 m.
+ */
+const UNSTUCK_S = 3
+const UNSTUCK_GAIN_M = 2
+const UNSTUCK_MOVED_M = 8
+/** Already this close to the goal: arrived, not stuck. */
+const UNSTUCK_NEAR_M = 8
+/** The sidestep: this long (s), probing this far (m) for a clear side. Then a fresh UNSTUCK_S before the next one. */
+const UNSTUCK_STEP_S = 1.5
+const UNSTUCK_PROBE_M = 10
+/** Hop (jump + jet) only with at least this fraction of max energy, and jet only while above the reserve fraction. */
+const UNSTUCK_HOP_E = 0.5
+const UNSTUCK_RESERVE_E = 0.3
 /** D6, §7 rule 2: hard per-decision guard (ms). A path search starts only while its worst case still fits. */
 const DEADLINE_MS = 30
 const PLAN_RESERVE_MS = 10
@@ -308,6 +324,9 @@ function buildBot(hello: Hello): Bot {
   let claim: { pos: Vec3; until: number } | null = null
   /** P-B-001: the enemy the standoff break walked at last decision (null when it did not run). */
   let standoffId: number | null = null
+  /** B122: progress toward the current travel goal (best distance, where and when we last gained), and a sidestep in progress. */
+  let progress: { goal: Vec3; best: number; at: Vec3; since: number; side: number } | null = null
+  let unstick: { until: number; yaw: number; hop: boolean } | null = null
 
   /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
    * lightning 0.8 × its range, gun GUN_NEAR_M, laser and mortar their reach. */
@@ -871,6 +890,61 @@ function buildBot(hello: Hello): Bot {
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
       if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      // Mid-game unstuck (B122, UNSTUCK_ON): see params.ts. Only healthy travel modes with a goal; every other mode
+      // (zone travel, retreats, crossfire break, ambush, drop run/hold, heal, hide, standoff, hold) clears it.
+      if (UNSTUCK_ON) {
+        const goal =
+          mode === "engage, ttk" || mode === "engage, finish" ? engage?.m.pos
+          : mode === "engage, collect" ? claimGoal
+          : mode === "laser rush" ? (rush ? arms.get(rush.id)?.pos : undefined)
+          : mode === "loot" ? lootTarget
+          : mode === "farm, pickup" || mode === "farm, hunt" ? farmGoal?.pos
+          : undefined
+        const mag = Math.hypot(move[0], move[1])
+        if (!goal || mag < 0.3 || !me.in_zone) progress = unstick = null
+        else {
+          const d = flat(goal, me.pos)
+          if (!progress || flat(progress.goal, goal) > ROUTE_GOAL_SHIFT) progress = { goal, best: d, at: me.pos, since: obs.t, side: 0 }
+          else if (d < progress.best - UNSTUCK_GAIN_M || flat(me.pos, progress.at) > UNSTUCK_MOVED_M) {
+            progress.best = Math.min(progress.best, d)
+            progress.at = me.pos
+            progress.since = obs.t
+          }
+          if (unstick && obs.t >= unstick.until) {
+            // Sidestep done: a fresh UNSTUCK_S window from here before another one (commitment, no flip-flop).
+            unstick = null
+            progress.best = d
+            progress.at = me.pos
+            progress.since = obs.t
+          }
+          if (!unstick && d > UNSTUCK_NEAR_M && obs.t - progress.since >= UNSTUCK_S) {
+            // Pick a side: perpendicular to the goal bearing, the one toward the circle we keep to first, then
+            // alternate on the next try at the same goal. A side whose probe is blocked or outside that circle is
+            // skipped; with neither clear, back straight off the blocker.
+            const g = yawTo(me.pos, goal)
+            const toKeep = Math.sin(yawTo(me.pos, zoneKeep[0]) - g) >= 0 ? 1 : -1
+            const first = progress.side === 0 ? toKeep : -progress.side
+            const eye: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + myHeight / 2]
+            const open = (side: number) => {
+              const yaw = g + (side * Math.PI) / 2
+              const x = me.pos[0] + Math.cos(yaw) * UNSTUCK_PROBE_M, y = me.pos[1] + Math.sin(yaw) * UNSTUCK_PROBE_M
+              if (Math.hypot(x - zoneKeep[0][0], y - zoneKeep[0][1]) > zoneKeep[1]) return false
+              const gz = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+              return gz > -Infinity && clearLine(solids, eye, [x, y, gz + myHeight / 2], 0, 0)
+            }
+            const side = open(first) ? first : open(-first) ? -first : 0
+            progress.side = side || first
+            unstick = { until: obs.t + UNSTUCK_STEP_S, yaw: side ? g + (side * Math.PI) / 2 : g + Math.PI, hop: me.grounded && me.energy >= UNSTUCK_HOP_E * me.max_energy && mag > 0.9 }
+            if (unstick.hop) act.jump = true
+            route = null
+          }
+          if (unstick) {
+            move = [Math.cos(unstick.yaw) * mag, Math.sin(unstick.yaw) * mag]
+            if (unstick.hop && !me.grounded && me.energy > UNSTUCK_RESERVE_E * me.max_energy) boost = true
+            mode = `unstuck, ${mode}`
+          }
+        }
+      }
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

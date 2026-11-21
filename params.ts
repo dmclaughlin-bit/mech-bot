@@ -140,3 +140,16 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * B122 (mid-game unstuck): Watcher Top-16 (coord/data/watcher/movement.md) with 5–8 mechs alive: top teams are stuck
+ * (≈5 s almost unmoved, not in a drop ring) 14.0% of ticks vs 40.7% for low teams. The champion only has Build 3's
+ * nav.stuck (0.5 s of a held move with no speed: jump, re-plan the same route). With this on, when a healthy travel
+ * move (engage ttk/finish close-in, engage collect, laser rush, loot, farm pickup/hunt) has made under UNSTUCK_GAIN_M
+ * of progress toward its goal and we moved under UNSTUCK_MOVED_M for UNSTUCK_S seconds, step sideways off the
+ * blocker for UNSTUCK_STEP_S (the clear side, toward the zone center first, the other side on the next try), with a
+ * jump + jet hop if energy allows (reserve kept), then re-plan. It never runs in zone escape / to next circle, the
+ * hurt retreats, break crossfire, lightning ambush, drop run / drop hold, heal, hide, standoff or hold, and adds no
+ * standing still. false = champion (B113) behavior exactly.
+ */
+export const UNSTUCK_ON = true

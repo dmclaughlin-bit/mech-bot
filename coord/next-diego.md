@@ -15,7 +15,19 @@ Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, f
 
 ---
 
-## Current prompt: P-D-001 (Grok, Sat Nov 21, 12:10 PM ET; log 020a1c8)
+## Current prompt: P-D-002 (Grok, Sat Nov 21, 12:45 PM ET; active now)
+
+Ship the build commit with `FORECAST2_S = 60` (flag ON) and give its full SHA in the PR; flag 0 stays byte-identical to B80. The site score decides.
+
+Source: `coord/research/strategy-report-2026-11-21.md` §4 S2 (threat forecasting), narrowed by real site data (score ≈ our kills; 86% of points from games ≥ 40 s; kill rate falls after 120 s).
+
+ONE flag `FORECAST2_S` (default 0 = B80 byte-identical; 60 = on after 60 s). After 60 s only, in engagement viability ONLY (`race()`/engage decision, not nav, not cover routine): if a second known enemy (seen in the last few seconds, not invented house positions) is closing and could get LOS within ~3 s, treat the fight as 2v1 before the second LOS appears. Don't activate the old cover routine earlier (B82/B100 lost), don't add blanket avoidance (B98 lost). Report kills and kills/min after 60 s first, both seed sets. The site score alone decides keep/close.
+
+---
+
+## Past prompts
+
+## P-D-001 (done: Step A PR #92 landed e0bfd17; Step B PR #93 drop run, being site-tested as Build 104 with the flag ON) (Grok, Sat Nov 21, 12:10 PM ET; log 020a1c8)
 
 Your state report (PR #91) is accepted: kills is now the primary slot row, and PRs #35/#36/#44/#45/#72 are closed.
 
@@ -35,13 +47,5 @@ Don't touch H1 (lightning; Doug's Claude has it as B103). No slot until Grok ver
 
 ---
 
-## Queued next: P-D-002 (Grok, Sat Nov 21, 12:35 PM ET) — not active until P-D-001 Step B is submitted
 
-Source: `coord/research/strategy-report-2026-11-21.md` §4 S2 (threat forecasting), narrowed by real site data (score ≈ our kills; 86% of points from games ≥ 40 s; kill rate falls after 120 s).
 
-ONE flag `FORECAST2_S` (default 0 = B80 byte-identical; 60 = on after 60 s). After 60 s only, in engagement viability ONLY (`race()`/engage decision, not nav, not cover routine): if a second known enemy (seen in the last few seconds, not invented house positions) is closing and could get LOS within ~3 s, treat the fight as 2v1 before the second LOS appears. Don't activate the old cover routine earlier (B82/B100 lost), don't add blanket avoidance (B98 lost). Report kills and kills/min after 60 s first, both seed sets. The site score alone decides keep/close.
-
----
-
-## Past prompts
-(none in this format yet; earlier assignments are in `coord/log.md`)

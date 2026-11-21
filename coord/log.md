@@ -333,3 +333,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 2026-11-21 3:17 AM ET: Build 36 rush-first (9a9cf10, PR #50) scored 3.54, receipt BB-285D47C5. Ties champion B30 3.54 and does not beat it, so the PR is closed. Rank 114/188; rank 32 who dey 5.02.
 
 - 2026-11-21 3:23 AM ET: Build 40 stack (34eefff, PR #51: rush-first + pre-charge + backstab) scored 3.23, receipt BB-2F1AD6E9. Below champion 3.54 despite the best sim tonight (+0.29 ± 0.13), so the PR is closed. Rank 114/190; rank 32 ManiFest 5.02.
+
+- 2026-11-21 3:36 AM ET: Build 32 laser pre-charge (f478895, PR #47) scored 3.48, receipt BB-C5622A3A. Below champion 3.54, so the PR is closed. Rank 114/192; rank 32 ImagineLosing 5.04.

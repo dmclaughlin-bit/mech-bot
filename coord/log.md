@@ -182,3 +182,9 @@ Format:
 - Result: docs only.
 - Found: Diego's research lands via `research/intake/` PRs, which Grok merges and ingests each tick.
 - Blocked / next: Diego starts the loop on his machine (needs `gh` auth + push access).
+
+## Fri 23:50 ET · Diego (research) · Engagement: fight vs flee
+- Did: filed `research/intake/diego-2026-11-20-2346.json` (4 findings, EV-R-0020..0023 on a scratch ingest: 4 ACCEPT, 0 reject). Question: when to fight instead of flee, using only fields our bot observes. B12 FARM isn't scored yet, so question 1 was skipped.
+- Result: research only, no bot code, not submitted.
+- Found: the track page's rules settle RCA meta-question 6: practice house bots "never fight each other" and send hunters one at a time early (weakest first). So practice points come only from our kills and house zone deaths, and each kill is close to a point. Enemy `hp`, `weapons` and `charging` are observable (`show_enemy_hp` true), yet `brain.ts` never reads `Known.hp` and `params.aggression` is unread. From config: gun 187.5 DPS burst / ~102 sustained, laser ~131, lightning 240 within 45 m; at our 35% retreat line (490 HP) we die to 11 gun hits (~2.6 s), while a target at ≤540 HP dies to one magazine. Kills drop all cubes + 2.
+- Blocked / next: Grok: after B12 FARM scores, consider one engage rule (skip the 35% retreat while exactly one enemy is known and ttk < aggression × ttd; always finish a target at ≤ one magazine). Next research run in ~45 min.

@@ -343,3 +343,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 2026-11-21 4:24 AM ET: Build 39 laserdash on B60 base (147f305, PR #59) scored 3.38, receipt BB-ECAB0443. Below champion 3.67, so the PR is closed. Rank 116/203; rank 32 1212 5.10.
 
 - 4:36 AM ET: Build 66 laser slot swap (45d8073, PR #61) scored 3.58, receipt BB-4E471C6E. Below B60 3.67, closed. Rank 119/207; #32 ManiFest 5.13.
+
+- 4:49 AM ET: Build 41 rear-hit step (95af0bc, PR #63) scored 3.65, receipt BB-411B5ADB. Below B60 3.67, closed. Rank 120/209; #32 ManiFest 5.13.

@@ -162,3 +162,11 @@ export const CUBE_MEMORY_TTL_S = 90
 export const CUBE_GONE_M = 20
 /** P25: seconds of slack on top of the straight walk time in each cube's give-up budget. */
 export const CUBE_MEMORY_SLACK_S = 8
+/**
+ * P25b: no-progress drop. While we walk to a remembered cube ("farm, memory"), it must come at least CUBE_STALL_M
+ * closer (straight-line) within each CUBE_STALL_S of memory walking; otherwise it is skipped for the rest of the match
+ * (farmGiveUp, like a cube past its budget). Stops walking in place at a nav pin until the full budget runs out.
+ */
+export const CUBE_STALL_M = 2
+/** P25b: seconds of memory walking allowed without closing CUBE_STALL_M on the target. */
+export const CUBE_STALL_S = 2

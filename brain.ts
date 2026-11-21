@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  CUBE_GONE_M, CUBE_MEMORY_M, CUBE_MEMORY_ON, CUBE_MEMORY_SLACK_S, CUBE_MEMORY_TTL_S,
+  CUBE_GONE_M, CUBE_MEMORY_M, CUBE_MEMORY_ON, CUBE_MEMORY_SLACK_S, CUBE_MEMORY_TTL_S, CUBE_STALL_M, CUBE_STALL_S,
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
@@ -296,6 +296,8 @@ function buildBot(hello: Hello): Bot {
   const cubeBudget = new Map<number, number>()
   const cubeSpent = new Map<number, number>()
   let cubeLastT: number | null = null
+  /** P25b: progress on the cube we walk to: reference distance, memory-walk seconds since it last closed CUBE_STALL_M, last memory tick. */
+  let cubeProg: { id: number; ref: number; s: number; last: number } | null = null
   /** Build 14 (engage): each weapon's DPS and reach from hello.config, read once here. */
   const baseDps = {} as Record<WeaponKind, number>
   const baseReach = {} as Record<WeaponKind, number>
@@ -912,6 +914,7 @@ function buildBot(hello: Hello): Bot {
       // P25: the sticky cube target's clock runs on every farm-walk decision (ours, or a B12/B13 walk that took over), so
       // switching away and back never restarts it. Past its budget the cube is skipped for good, by B12 as well.
       if (CUBE_MEMORY_ON) {
+        const prevT = cubeLastT
         const dt = cubeLastT === null ? 0 : clamp(obs.t - cubeLastT, 0, 0.5)
         cubeLastT = obs.t
         if (cubeTarget !== null && farmOk && (mode === "farm, memory" || mode === "farm, pickup" || mode === "farm, hunt")) {
@@ -921,6 +924,23 @@ function buildBot(hello: Hello): Bot {
             farmGiveUp.add(cubeTarget)
             cubeMem.delete(cubeTarget)
             cubeTarget = null
+          }
+        }
+        // P25b: no-progress drop. On memory walks only; a walk resumed after other modes re-anchors the reference distance.
+        if (mode === "farm, memory" && cubeGoal && cubeTarget === cubeGoal.id) {
+          const d = flat(cubeGoal.pos, me.pos)
+          if (!cubeProg || cubeProg.id !== cubeGoal.id) cubeProg = { id: cubeGoal.id, ref: d, s: 0, last: obs.t }
+          else {
+            if (cubeProg.last !== prevT) cubeProg.ref = d
+            else cubeProg.s += dt
+            cubeProg.last = obs.t
+            if (cubeProg.ref - d >= CUBE_STALL_M) { cubeProg.ref = d; cubeProg.s = 0 }
+            else if (cubeProg.s > CUBE_STALL_S) {
+              farmGiveUp.add(cubeGoal.id)
+              cubeMem.delete(cubeGoal.id)
+              cubeTarget = null
+              cubeProg = null
+            }
           }
         }
       }

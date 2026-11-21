@@ -19,6 +19,8 @@
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  * Build 80 (late lightning): after 45 s, a gun-only bot may walk to a reachable ground lightning or laser
  * (see LATE_LIGHT_ON).
+ * Build 98 (no early finish): in the first 40 s, with no laser, skip the finish-rule engage so the early rush
+ * and the HP retreat outrank a gun-only commit (see NO_EARLY_FINISH_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -129,6 +131,12 @@ const CROSSFIRE_ON = true
  * Take, swap, and drop are unchanged (B66 and B68 lost on the site). Different from B76/B78 (first 45 s only).
  * false = champion. */
 const LATE_LIGHT_ON = true
+/** Build 98 (P12): while t < NO_EARLY_FINISH_S (40 s) and we hold no laser, do not start or keep a finish-rule
+ * engage, so the Build 17 early rush and the 30% HP retreat can outrank a gun-only commit. The hurt TTK override
+ * is unchanged. This is not B76 (any-special early trip) and not B36 (trip-before-finish in the opening on an
+ * older tree). false = champion B80. */
+const NO_EARLY_FINISH_ON = true
+const NO_EARLY_FINISH_S = 40
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -586,7 +594,9 @@ function buildBot(hello: Hello): Bot {
         // Finish rule: the weakest enemy within one magazine of dying, while no second enemy sees us or is hitting us,
         // and only if we survive it: our HP at or above ENGAGE_FINISH_HP and the kill coming before our death (ttk < ttd).
         // House bots hunt the weakest first as one squad with shared vision, so a low-HP commit draws the rest.
-        if (me.hp >= ENGAGE_FINISH_HP * me.max_hp)
+        // Build 98: in the first 40 s with no laser, skip this commit so rush and retreat can go first.
+        const noEarlyFinish = NO_EARLY_FINISH_ON && obs.t < NO_EARLY_FINISH_S && !holdsLaser
+        if (!noEarlyFinish && me.hp >= ENGAGE_FINISH_HP * me.max_hp)
           pick = threats
             .filter((e) => e.hp !== undefined && rested(e.id) && alone(e.id) && e.hp <= ourMagazine(me, flat(e.pos, me.pos)) && outlive(e))
             .sort((a, b) => a.hp! - b.hp!)[0]
@@ -600,7 +610,13 @@ function buildBot(hello: Hello): Bot {
           }
         }
         if (pick) engaged = { id: pick.id, why, since: engaged?.id === pick.id ? engaged.since : obs.t, until: obs.t + ENGAGE_LATCH_S }
-        else if (engaged && obs.t < engaged.until && (pick = threats.find((e) => e.id === engaged!.id && alone(e.id)))) why = engaged.why
+        else if (
+          engaged &&
+          obs.t < engaged.until &&
+          !(noEarlyFinish && engaged.why === "finish") &&
+          (pick = threats.find((e) => e.id === engaged!.id && alone(e.id)))
+        )
+          why = engaged.why
         else engaged = null
         // Give up on a target we have engaged for ENGAGE_CHASE_S without taking any HP off it over the hpLog window.
         if (pick && engaged && obs.t - engaged.since > ENGAGE_CHASE_S) {

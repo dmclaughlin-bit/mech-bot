@@ -1,0 +1,166 @@
+{
+  "author": "Doug",
+  "submitted_at": "2026-11-21T00:40:00-05:00",
+  "findings": [
+    {
+      "claim": "Build 8's laser-seek rule could start a trip at spawn in at most 12-16% of real spawns (19/160 public, 35/224 showdown), because it only knows lasers visible this tick without turning and keeps the 160 m enemy gate; a ground laser is in the spawn view wedge without turning in 28-29% of spawns.",
+      "topic": "contradiction",
+      "sources": [
+        {"ref": "/workspace/watch/research-doug-0040/q1b.out", "kind": "watch_stream", "quote": "b8_go: 12% (19/160) ... b8_go: 16% (35/224)"},
+        {"ref": "git diff 100941f beb9240 -- brain.ts", "kind": "repo", "quote": "if (!enemies.some((m) => flat(m.pos, me.pos) < LOOT_CLEAR))"}
+      ],
+      "confidence": 0.7,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "Do not retry laser-first with a see-it-now rule; add a spawn scan and pickup memory first (see ARM-UP finding).",
+      "mechanism": "A build that changes behaviour in about one spawn in seven cannot move the laser-by-30-s rate toward the winners' 71%, while its aim changes applied in every laser match.",
+      "related_experiments": ["EXP-0009"],
+      "related_rule_ids": ["L1", "L2"],
+      "keywords": ["laser", "build-8", "loot gate"],
+      "sample_size": 384
+    },
+    {
+      "claim": "Showdown winners who hold a laser by 30 s (10 of 14) got it from the floor (7, of which 6 were the nearest laser to spawn) or from a crate they shot (3), never from a roof, after walking a median 78 m (straight line median 58 m, max 176 m), and 9 of 10 of those trips had an enemy inside 160 m at some point.",
+      "topic": "top_team_behavior",
+      "sources": [
+        {"ref": "/workspace/watch/research-doug-0040/q1.out", "kind": "watch_stream", "quote": "trip with an enemy inside 160 m at some point | 90% (9/10)"}
+      ],
+      "confidence": 0.75,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "ARM-UP build: spawn scan plus 60 s pickup memory plus a nav walk to the best remembered ground laser or lightning within about 175 m while gun-only, with no 160 m enemy gate (stop only when a mech is hitting us or the zone test fails).",
+      "mechanism": "After a full turn a ground laser or lightning is visible within 130 m from 58-59% of spawns and within 175 m from 65%, against 12-16% for Build 8's rule. In first engagements, laser against no laser is 14 kills and 2 deaths in 30; the reverse is 5 kills and 16 deaths in 44.",
+      "expected_gain": 0.3,
+      "effort": 3,
+      "regression_risk": 0.4,
+      "failure_classes": [{"class": "AIM_WEAPON", "confidence": 0.5, "basis": "most matches are fought gun-only; winners are 14/14 with a laser"}],
+      "related_experiments": ["EXP-0009"],
+      "related_rule_ids": ["L1", "L2"],
+      "keywords": ["laser", "lightning", "pickup memory", "scan", "arm-up"],
+      "sample_size": 224
+    },
+    {
+      "claim": "The Wolverines bot (rank 3 on the 9:40 PM board) spins its torso for the first 3 s, sweeps around its heading while walking, remembers ground pickups for 60 s, and walks to the best remembered weapon with no distance cap and no enemy-distance gate outside fight mode.",
+      "topic": "top_team_behavior",
+      "sources": [
+        {"ref": "https://github.com/varchaskukreja/TTUN/blob/b7e9a6db75154271185035ef856859be37dff60e/mech-royale/bot/bot.ts#L616-L621", "kind": "repo", "quote": "if (t < 3) aimYaw = me.aim[0] + 1.6"},
+        {"ref": "https://github.com/varchaskukreja/TTUN/blob/b7e9a6db75154271185035ef856859be37dff60e/mech-royale/bot/bot.ts#L154-L162", "kind": "repo", "quote": "this.pickMem.set(p.id, { pos: p.pos, kind: p.kind, t })"},
+        {"ref": "https://github.com/varchaskukreja/TTUN/blob/b7e9a6db75154271185035ef856859be37dff60e/mech-royale/bot/bot.ts#L431-L441", "kind": "repo", "quote": null}
+      ],
+      "confidence": 0.8,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "Same ARM-UP build: scan at spawn, remember pickups, drop the 80 m detour and 160 m gate while gun-only.",
+      "mechanism": "Pickups are listed only while seen (protocol.md:374), so a bot that neither turns nor remembers knows a small share of the weapons near it.",
+      "expected_gain": 0.3,
+      "effort": 3,
+      "keywords": ["scan", "pickup memory", "wolverines"]
+    },
+    {
+      "claim": "Quiet slow-walking costs points in practice for other teams: the same Lance controller scored 4.54 with its 4.6 m/s sneak cap on and 4.75 with it off, and r1ver went from 4.54 to 4.67 with normal speed plus a supply-capture fix.",
+      "topic": "contradiction",
+      "sources": [
+        {"ref": "https://github.com/brycehcmcgrath/mechfight-bot/blob/18ae7c471959166ca4eea7b2a0f2581dbcbcd407/docs/RESULTS.md#L13-L14", "kind": "repo", "quote": "explicit MR_FLAGS empty; quiet speed cap disabled ... 4.75"},
+        {"ref": "https://github.com/moonriver0922/wgsrobot/blob/2f343ebeb3e7121b6e1c322e569e46cef18d8d25/experiments/official-runs.md#L7-L8", "kind": "repo", "quote": null},
+        {"ref": "https://github.com/varchaskukreja/TTUN/blob/596f339454aa7e0c407618299315b7dc57b678a6/mech-royale/bot/bot.ts#L379", "kind": "repo", "quote": "practice: squad focus-fire makes cover-seek too passive; FFA only"}
+      ],
+      "confidence": 0.6,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "STOP SNEAKING build: remove the silent speed cap (brain.ts:417, :629-630) and the hide-from-sight move (brain.ts:619-625) while not hurt, behind one flag.",
+      "mechanism": "The house squad shares vision and hunts the weakest, so creeping and hiding delay farming, arming and first shots without preventing contact.",
+      "expected_gain": 0.15,
+      "effort": 1,
+      "regression_risk": 0.3,
+      "failure_classes": [{"class": "UNDER_AGGRESSION", "confidence": 0.5, "basis": "bot creeps under 5 m/s inside the next circle and walks to hiding spots when seen at full HP"}],
+      "related_rule_ids": ["Q1", "Q2", "H2"],
+      "keywords": ["sneak", "silent", "hide"]
+    },
+    {
+      "claim": "House bots in public matches hit far less often than Build 14 assumes: gun 64-83% at 30-60 m, 26-57% at 60-100 m, 10-35% at 100-150 m, 2-13% at 150-230 m; laser 15-27% overall. Build 14 assumes 80% inside 60 m, 50% beyond, and 90% for lasers.",
+      "topic": "our_weakness",
+      "sources": [
+        {"ref": "/workspace/watch/research-doug-0040/q2.out", "kind": "watch_stream", "quote": "('public', 'expert', 'gun') ... 217/285=76% 169/337=50% 32/149=21% 10/79=13%"},
+        {"ref": "brain.ts:82-84", "kind": "repo", "quote": "const HIT_GUN_NEAR = 0.8 / const HIT_GUN_FAR = 0.5 / const HIT_BEAM = 0.9"}
+      ],
+      "confidence": 0.5,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "CALIBRATED RACE build: replace the enemy-side hit-rate constants with a by-range table from these measurements, and hold a weapon standoff (110 m with a laser, about 80 m gun-only) instead of closing to 60 m.",
+      "mechanism": "ttd is underestimated by 1.5-5x beyond 60 m, so the TTK rule rarely fires (coord/log.md:239) and the finish rule closes to the range where house guns are most accurate.",
+      "expected_gain": 0.2,
+      "effort": 2,
+      "regression_risk": 0.4,
+      "failure_classes": [{"class": "UNDER_AGGRESSION", "confidence": 0.4, "basis": "enemy DPS overestimated beyond 60 m"}],
+      "related_rule_ids": ["F1"],
+      "keywords": ["hit rate", "ttk", "ttd", "standoff"],
+      "sample_size": 160
+    },
+    {
+      "claim": "Showdown lasers keep their hit rate with range (49-89% in every bin from 30 to 230 m; winners 57-84%) while showdown guns fall from 82-95% at 30-60 m to 25-37% at 150-230 m, and every group fires the laser at full charge (median 0.80 s).",
+      "topic": "strategy_mechanics",
+      "sources": [
+        {"ref": "/workspace/watch/research-doug-0040/q2.out", "kind": "watch_stream", "quote": "('showdown', 'winner', 'laser') 3/3=100% 23/37=62% 37/65=57% 39/53=74% 41/49=84%"}
+      ],
+      "confidence": 0.65,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "With a laser in hand, fight at 100-200 m rather than closing; release only at full charge.",
+      "mechanism": "At 100-230 m a laser at about 131 DPS times a 70% hit rate out-damages a gun at 102 DPS times 25-50%, and house guns hit 2-35% there.",
+      "keywords": ["laser", "range", "hit rate"],
+      "sample_size": 847
+    },
+    {
+      "claim": "Our laser releases with up to 3.0 m of sideways aim error (4.2 m at 280 m) against a mech of radius 2.5 m, because yawTol is atan2(radius x size x 1.2, d) with a 0.015 rad floor; the Wolverines bot releases inside 0.9 x a 2.2 m half-width.",
+      "topic": "our_weakness",
+      "sources": [
+        {"ref": "brain.ts:678", "kind": "repo", "quote": "const yawTol = Math.max(0.015, Math.atan2(cfg.mech.radius * size * 1.2, d))"},
+        {"ref": "/workspace/mechfight-kit/protocol.md:101", "kind": "protocol", "quote": "A mech is a vertical cylinder of radius 2.5 m and height 9 m"},
+        {"ref": "https://github.com/varchaskukreja/TTUN/blob/596f339454aa7e0c407618299315b7dc57b678a6/mech-royale/bot/bot.ts#L312", "kind": "repo", "quote": "yawErr < tol * 0.9"}
+      ],
+      "confidence": 0.6,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "Give the laser release its own yaw tolerance of at most 0.8 x the target radius (no 0.015 rad floor).",
+      "mechanism": "A beam released between 2.5 m and 3.0 m off the target axis misses, then costs a 1.65 s cooldown.",
+      "expected_gain": 0.05,
+      "effort": 1,
+      "failure_classes": [{"class": "AIM_WEAPON", "confidence": 0.5, "basis": "release tolerance wider than the target"}],
+      "related_experiments": ["EXP-0009"],
+      "keywords": ["laser", "aim tolerance"]
+    },
+    {
+      "claim": "In showdown first engagements the winner of the match landed the first hit 79% of the time (bottom half 47%); pooled, landing the first hit gives 42 kills and 23 deaths in 119, taking it gives 16 kills and 34 deaths in 103, and having someone else also hitting you gives 26 deaths in 40. Lateral speed does not differ (6.1 vs 6.4 m/s).",
+      "topic": "top_team_behavior",
+      "sources": [
+        {"ref": "/workspace/watch/research-doug-0040/q2.out", "kind": "watch_stream", "quote": "first hit mine: n=119 KILL=42 DIED=23 ... first hit theirs: n=103 KILL=16 DIED=34"}
+      ],
+      "confidence": 0.65,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "Open fire on first clear sight inside effective range instead of moving to a hiding spot first; do not spend a build on strafing.",
+      "mechanism": "The side that starts the damage race ahead wins it more than twice as often.",
+      "keywords": ["first hit", "engagement", "third party"],
+      "sample_size": 222
+    },
+    {
+      "claim": "By protocol values gun_mag is the largest single damage upgrade for a gun fight (sustained gun DPS 102.3 to 133.9, +31%), ahead of laser_damage (+18%), plating (+15% HP) and gun_damage (+15%); sensors adds nothing to a fight yet ranks above every weapon upgrade in our order, and all weapon upgrades tie.",
+      "topic": "resource_upgrade",
+      "sources": [
+        {"ref": "/workspace/mechfight-kit/check/stream.jsonl.gz hello.config.upgrades", "kind": "protocol", "quote": "gun_mag: +8 rounds, -20% reload time"},
+        {"ref": "brain.ts:97-104", "kind": "repo", "quote": "const UPGRADE_FIRST = [\"plating\", \"armor\", \"nanites\", \"sensors\"]"},
+        {"ref": "https://github.com/varchaskukreja/TTUN/blob/b7e9a6db75154271185035ef856859be37dff60e/mech-royale/bot/bot.ts#L15-L18", "kind": "repo", "quote": null}
+      ],
+      "confidence": 0.6,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "Keep plating > armor > nanites, then rank weapon upgrades gun_mag, laser_damage, gun_damage, laser_charge, gun_rate, lightning_efficiency, and move sensors below them.",
+      "mechanism": "A 1,400 HP target needs several magazines at real hit rates, so reload time dominates gun DPS.",
+      "expected_gain": 0.05,
+      "effort": 1,
+      "regression_risk": 0.1,
+      "related_rule_ids": ["L4"],
+      "keywords": ["upgrades", "gun_mag", "sensors"]
+    }
+  ]
+}

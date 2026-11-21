@@ -140,3 +140,14 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P27 (mode 36 of PR #129, P-B-008 iter 3, ported alone): while a drop run or ring hold is active, skip B60's
+ * "break crossfire" unless a mech damaged us in the last XFIRE_HIT_S (2 s, in brain.ts). With 2+ enemies in sight but
+ * not hitting us, we keep walking to the drop / standing in its ring. The drop run's own gates (HP at or above the
+ * retreat line, not hurt, no engage, a reachable zone-safe ring, the give-up timer) are unchanged, so a hurt mech or an
+ * impossible hold still ends the run and the crossfire break then runs as before. No other change.
+ * Evidence (PR #129, 384 sim games on SEED_BASE 2000–5000): drop-run -> crossfire flips 211 -> 39, rings 12 -> 14,
+ * captures 10 -> 12, score -0.016 +- 0.024 (22 games change). 0 = champion (6182d29) behavior exactly.
+ */
+export const DROP_CROSSFIRE_SKIP_ON: number = 1

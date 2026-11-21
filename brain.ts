@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_CROSSFIRE_SKIP_ON, DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -126,6 +126,9 @@ const LASER_LEAD_S = 0.075
  * multi-threat fights when the race looked winning, and changed hit rates). Against real house bots that share
  * vision and hit harder than the sim, a 2-on-1 stand-and-shoot is a fight we cannot finish. */
 const CROSSFIRE_ON = true
+/** P27 (DROP_CROSSFIRE_SKIP_ON, params.ts): during a drop run or ring hold, "break crossfire" still runs if a mech
+ * damaged us within this many seconds. */
+const XFIRE_HIT_S = 2
 /** Build 80 (late lightning for gun-only): the champion's Build 17 trip stops starting new walks at LASER_RUSH_S
  * (45 s), so a bot still holding only the gun after the opening never goes for a known lightning. When this is on,
  * past 45 s, while gun-only, lightning and laser stay trip targets under the existing "no mech hit for 3 s" and
@@ -795,7 +798,9 @@ function buildBot(hello: Hello): Bot {
         // Early arm-up (Build 17): full walk speed (steps carry only 40 m), no boost. Walking does not stop regen.
         move = rushMove
         mode = "laser rush"
-      } else if (CROSSFIRE_ON && (spot = (() => {
+      } else if (CROSSFIRE_ON && !(DROP_CROSSFIRE_SKIP_ON && (dropMove || dropHold) && ![...mechHitBy.values()].some((t) => obs.t - t < XFIRE_HIT_S)) && (spot = (() => {
+        // P27 (mode 36): an active drop run / ring hold keeps going while 2+ enemies only see us (no mech hit for
+        // XFIRE_HIT_S); the drop itself already requires HP at or above the retreat line and a zone-safe, reachable ring.
         const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
         return los.length >= 2 ? hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan) : null
       })())) {

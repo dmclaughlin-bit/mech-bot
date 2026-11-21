@@ -104,6 +104,11 @@ const CLAIM_M = 12
 const CLAIM_S = 12
 /** Build 17 (early laser): turn the torso once around for this long (s) at spawn, to see the pickups on every side (the view is a 120° wedge). */
 const LASER_SCAN_S = 1.8
+/** Build 66 (swap lightning for a laser): if we already hold lightning and see a laser, walk to it and drop the
+ * lightning to take it, even with an enemy in view. The champion only swaps the gun with nobody around, and the
+ * Build 17 take-in-reach / trip need a free slot, so gun+lightning plus any remembered enemy blocks the laser
+ * entirely (a common miss in the first 30 s). false = champion. */
+const LASERSWAP_ON = true
 /** Build 17: a remembered laser we stand this close to (m) with a clear line and no longer see has been taken. */
 const LASER_GONE_M = 30
 /** Build 17: change to another laser only if it is this much nearer (m). */
@@ -462,9 +467,13 @@ function buildBot(hello: Hello): Bot {
         for (const [id, a] of arms)
           if (!obs.pickups.some((p) => p.id === id) && flat(a.pos, me.pos) < LASER_GONE_M && clearLine(solids, eye, a.pos, 0, 0)) arms.delete(id)
         const reach = (kind: string) => obs.pickups.find((p) => p.kind === kind && flat(p.pos, me.pos) < cfg.loot.pickup_radius && Math.abs(p.pos[2] - me.pos[2]) < 4)
-        const here = holdsLaser || !me.weapons.includes(null) ? undefined : (reach("laser") ?? (gunOnly ? reach("lightning") : undefined))
+        const lightSlot = me.weapons.findIndex((x) => x?.kind === "lightning")
+        const here = holdsLaser ? undefined
+          : me.weapons.includes(null) ? (reach("laser") ?? (gunOnly ? reach("lightning") : undefined))
+          : LASERSWAP_ON && lightSlot >= 0 ? reach("laser") : undefined
         if (here) {
           act.take = here.id
+          if (!me.weapons.includes(null) && lightSlot >= 0) act.drop = lightSlot
           lootTarget = null
         }
       }
@@ -619,7 +628,8 @@ function buildBot(hello: Hello): Bot {
       // slack before leaving, not engaging or collecting a kill, not hurt, and no mech damage for FARM_QUIET_S.
       // Fix round: no enemy test (an enemy nearer to the pickup or watching the route no longer stops the trip).
       let rushMove: [number, number] | null = null
-      const rushSlot = me.weapons.includes(null) || (enemies.length === 0 && me.weapons.some((x) => x?.kind === "gun"))
+      const lightSlot = me.weapons.findIndex((x) => x?.kind === "lightning")
+      const rushSlot = me.weapons.includes(null) || (LASERSWAP_ON && lightSlot >= 0) || (enemies.length === 0 && me.weapons.some((x) => x?.kind === "gun"))
       const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
       if (
         LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&

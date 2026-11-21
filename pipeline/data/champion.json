@@ -1,12 +1,12 @@
 {
- "experiment_id": "EXP-0012",
- "commit": "8f2c7c8ef0727a9006956d466e1ad72130ebc495",
- "merge_commit": "12a26df2fffe78a3337a93df8257f4a966c8b74b",
+ "experiment_id": "B80",
+ "commit": "28c3acc1a0f58571163e90b562da1c25067085c4",
+ "merge_commit": "cb939807143f1602a7b63db674c78082c9a3d2ce",
  "branch": "main",
- "score": 2.44,
- "submission_id": "BB-35E5C75F",
+ "score": 3.79,
+ "submission_id": "BB-78A44AAF",
  "target_score": 6.0,
- "updated_at": "2026-11-20T23:49:00-05:00",
+ "updated_at": "2026-11-21T11:35:00-05:00",
  "history": [
   {
    "experiment_id": "EXP-0000",
@@ -37,6 +37,54 @@
    "commit": "100941f",
    "score": 2.38,
    "at": "2026-11-20T22:35:00-05:00"
+  },
+  {
+   "experiment_id": "EXP-0012",
+   "commit": "8f2c7c8",
+   "score": 2.44,
+   "at": "2026-11-20T23:48:00-05:00"
+  },
+  {
+   "experiment_id": "B13",
+   "commit": "c2e7f60",
+   "score": 2.54,
+   "at": "2026-11-21T00:16:00-05:00"
+  },
+  {
+   "experiment_id": "B14",
+   "commit": "0ed6ffc",
+   "score": 2.88,
+   "at": "2026-11-21T00:26:00-05:00"
+  },
+  {
+   "experiment_id": "B16",
+   "commit": "8887d80",
+   "score": 2.98,
+   "at": "2026-11-21T00:38:00-05:00"
+  },
+  {
+   "experiment_id": "B19",
+   "commit": "0905b70",
+   "score": 3.08,
+   "at": "2026-11-21T01:16:00-05:00"
+  },
+  {
+   "experiment_id": "B17",
+   "commit": "38ce57b",
+   "score": 3.5,
+   "at": "2026-11-21T01:23:00-05:00"
+  },
+  {
+   "experiment_id": "B30",
+   "commit": "7b71e43",
+   "score": 3.54,
+   "at": "2026-11-21T02:48:00-05:00"
+  },
+  {
+   "experiment_id": "B60",
+   "commit": "b889814",
+   "score": 3.67,
+   "at": "2026-11-21T04:17:00-05:00"
   }
  ]
 }

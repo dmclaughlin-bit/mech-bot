@@ -21,6 +21,8 @@
  * (see LATE_LIGHT_ON).
  * P-B-001 (standoff break): after 60 s, instead of healing or holding while one lone enemy stands 45–90 m away,
  * close to our best weapon's effective range (see STANDOFF_BREAK_S).
+ * P-B-004 (zone unpin): outside the circle, when the edge distance has not dropped for 6 s, step sideways off the
+ * commanded line and re-path (see ZONE_UNPIN_S).
  * P-D-003 (drop run): walk to a called supply drop within 150 m, timed to arrive as it lands, and hold its ring
  * (see DROP_RUN_M).
  */
@@ -28,7 +30,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, ZONE_UNPIN_S, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -152,6 +154,11 @@ const STANDOFF_MIN_M = 45
 const STANDOFF_MAX_M = 90
 const STANDOFF_SECOND_S = 3
 const STANDOFF_HP_MARGIN = 0.2
+/** P-B-004 (zone unpin, see ZONE_UNPIN_S): the edge distance must fall this far (m) below its best to count as dropping;
+ * the sideways step aims at a waypoint this far (m) to the side (reached at WAYPOINT_REACHED), and is given up after this long (s). */
+const UNPIN_DROP_M = 1
+const UNPIN_STEP_M = 8
+const UNPIN_STEP_S = 2
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -308,6 +315,9 @@ function buildBot(hello: Hello): Bot {
   let claim: { pos: Vec3; until: number } | null = null
   /** P-B-001: the enemy the standoff break walked at last decision (null when it did not run). */
   let standoffId: number | null = null
+  /** P-B-004: outside the circle, the best edge distance (m) since when, the side of the last sideways step (+1 left,
+   * -1 right of the move, 0 none yet), and the step under way. Null while inside. */
+  let unpin: { best: number; at: number; side: number; step: { to: Vec3; until: number } | null } | null = null
 
   /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
    * lightning 0.8 × its range, gun GUN_NEAR_M, laser and mortar their reach. */
@@ -744,11 +754,43 @@ function buildBot(hello: Hello): Bot {
       let move: [number, number] = [0, 0]
       let boost = false
       let mode = "hold"
+      if (ZONE_UNPIN_S > 0 && me.in_zone) unpin = null
       if (!me.in_zone) {
         // Outside the circle every tick costs HP and stops regen (Z2): head in along a path, boosting.
         move = travel(me.pos, [z.center[0], z.center[1], me.pos[2]], obs.t, canPlan()).move
         boost = true
         mode = "zone escape"
+        // Zone unpin (P-B-004, see ZONE_UNPIN_S): the edge distance has not dropped for ZONE_UNPIN_S, so step sideways
+        // to a waypoint off the commanded line, then plan a fresh path. Lets go once the distance drops.
+        if (ZONE_UNPIN_S > 0) {
+          const edge = flat(me.pos, z.center) - z.radius
+          unpin ??= { best: edge, at: obs.t, side: 0, step: null }
+          if (edge < unpin.best - UNPIN_DROP_M) {
+            unpin.best = edge
+            unpin.at = obs.t
+            unpin.step = null
+          } else if (!unpin.step && obs.t - unpin.at >= ZONE_UNPIN_S) {
+            const yaw = Math.atan2(move[1], move[0])
+            const side = (s: number): Vec3 => [me.pos[0] + Math.cos(yaw + (s * Math.PI) / 2) * UNPIN_STEP_M, me.pos[1] + Math.sin(yaw + (s * Math.PI) / 2) * UNPIN_STEP_M, me.pos[2]]
+            unpin.side = unpin.side ? -unpin.side : flat(side(1), z.center) <= flat(side(-1), z.center) ? 1 : -1
+            unpin.step = { to: side(unpin.side), until: obs.t + UNPIN_STEP_S }
+          }
+          if (unpin.step && (flat(me.pos, unpin.step.to) < WAYPOINT_REACHED || obs.t >= unpin.step.until)) {
+            // Step done: a fresh path from here, and a fresh ZONE_UNPIN_S before the next step (to the other side).
+            unpin.step = null
+            unpin.best = edge
+            unpin.at = obs.t
+            route = null
+          }
+          if (unpin.step) {
+            // Walk it on the ground: no boost (a jet climbs, and air accel is a fifth of ground accel), no unstick jump
+            // (below), and the give-up clock waits while we are still in the air.
+            if (!me.grounded) unpin.step.until = Math.max(unpin.step.until, obs.t + UNPIN_STEP_S)
+            move = heading(unpin.step.to)
+            boost = false
+            mode = "zone escape, unpin"
+          }
+        }
       } else if (leaveNow) {
         const go = trip ?? travel(me.pos, entry, obs.t, canPlan())
         move = go.move
@@ -873,7 +915,8 @@ function buildBot(hello: Hello): Bot {
       if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
-      if (nav.stuck(me, move)) {
+      // P-B-004: not during the zone unpin step, which stays on the ground (nav.stuck still runs every decision).
+      if (nav.stuck(me, move) && mode !== "zone escape, unpin") {
         if (me.grounded) act.jump = true
         else if (me.energy > 15) boost = true
         route = null

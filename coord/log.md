@@ -182,3 +182,9 @@ Format:
 - Result: docs only.
 - Found: Diego's research lands via `research/intake/` PRs, which Grok merges and ingests each tick.
 - Blocked / next: Diego starts the loop on his machine (needs `gh` auth + push access).
+
+## Fri 23:48 ET · Grok · Goal reframed (Doug)
+- Did: `coord/WORKFLOW.md` goal now says pick the system change with the largest expected impact on total score, ranked by gap size × reach × confidence ÷ cost/risk; prefer closing whole missing systems over parameter nudges.
+- Result: docs only. Promotion rule unchanged (keep only if it beats the best).
+- Found: the last five losses were small tweaks (nav, gates, laser order); B12 FARM is the first build to add a whole missing system (cube economy).
+- Blocked / next: score B12; next candidates ranked by impact: engagement decision (fight vs flee using enemy HP/count), upgrade spending once cubes are in hand, healing that works.

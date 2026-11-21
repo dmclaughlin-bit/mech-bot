@@ -122,5 +122,5 @@ export const NO_SNEAK_QUIET_S = 3
  * Engage, retreat, kill-claim, the laser walk and B60's crossfire break all rank above it; firing is unchanged.
  * 0 = off, identical to the champion.
  */
-export const DROP_RUN_M = 0
+export const DROP_RUN_M = 150
 

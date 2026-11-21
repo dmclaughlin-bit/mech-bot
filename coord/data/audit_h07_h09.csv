@@ -1,0 +1,225 @@
+screen,hypothesis,seed_base,n_matches,metric,value,definition,caveat
+audit-main-2026-11-21,H07,0,96,matches_reaching_120s,17,matches still alive or running at 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,late_gun_sounds_total,942,"obs.sounds gun events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,late_gun_sounds_per_match,55.4,gun events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,late_laser_sounds_total,79,"obs.sounds laser events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,late_laser_sounds_per_match,4.6,laser events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,late_death_sounds_total,37,"obs.sounds death events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,late_death_sounds_per_match,2.2,death events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,late_gun_unseen_share,0.084,"gun sounds after 120 s whose true source mech is not in obs.mechs, over all gun sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,0,96,late_laser_unseen_share,0.051,"laser sounds after 120 s whose true source mech is not in obs.mechs, over all laser sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,0,96,late_lightning_unseen_share,0.114,"lightning sounds after 120 s whose true source mech is not in obs.mechs, over all lightning sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,0,96,late_death_sound_source_visible_share,0.0,death sounds: the source is dead so it is never in view; no enemy to point at,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,late_gun_laser_lightning_unseen_share,0.083,"share of gun, laser and lightning sounds after 120 s from an enemy not currently in view",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,unseen_source_distance_m_p25_med_p75,52/68/114,"true distance to unseen sound sources (gun, laser, lightning, death), all late decisions",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,unseen_source_share_le160m,0.968,"share of unseen sources within 160 m (the sim ""mid"" band edge)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,idle_unseen_source_distance_m_p25_med_p75,98/104/105,"same, only while idle (nothing in view, HP>=90%, in zone)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,late_idle_share_of_decisions,0.597,"share of decisions after 120 s with nothing in view, HP>=90% and in zone (H07 gate, not counting leaving-for-circle)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,usable_idle_decisions,140,idle decisions after 120 s with a gun/laser/lightning/death sound heard in the last 5 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,usable_idle_share_of_idle_decisions,0.015,usable_idle_decisions / idle decisions after 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,0,96,matches_with_usable_idle,5,matches reaching 120 s with at least one usable idle decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,0,96,share_matches_any_enemy_mortar,0.99,matches in which any house mech ever holds a mortar (ground truth),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,0,96,mortar_holders_per_match_mean,3.6,distinct house mechs that hold a mortar at some decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,0,96,mortar_enemy_seconds_per_match_mean,252.4,enemy-seconds (alive house mech x time) holding a mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,0,96,mortar_share_of_enemy_seconds,0.244,mortar-holding enemy-seconds over all alive enemy-seconds,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,0,96,mortar_share_of_enemy_seconds_after_120s,0.359,"same, after 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,0,96,visible_mortar_holder_share_of_decisions,0.164,decisions with at least one visible enemy that holds a mortar / all decisions,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,0,96,visible_mortar_holder_share_of_visible_enemy_decisions,0.3,same over decisions with any visible enemy,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,0,96,matches_with_visible_mortar_holder,70,matches where we ever see a mortar holder,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,0,96,visible_mortar_decisions_while_we_hold_laser,6199,decisions with a visible mortar holder while we hold a laser (the H09 case),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,0,96,mortar_holder_is_nearest_visible_share,0.587,"of decisions with a visible mortar holder, share where one is the nearest visible enemy (proxy: the bot target is not observable from a wrapper)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,0,96,our_kills_that_were_mortar_holders,54/294,kills where the victim held a mortar at its last decision / our kills,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,0,96,mortar_hits_on_us,66,damaged events from mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,0,96,deaths_by_mortar,8/93,our deaths whose killer weapon is mortar / our deaths,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,matches_reaching_120s,21,matches still alive or running at 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,late_gun_sounds_total,1552,"obs.sounds gun events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,late_gun_sounds_per_match,73.9,gun events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,late_laser_sounds_total,94,"obs.sounds laser events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,late_laser_sounds_per_match,4.5,laser events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,late_death_sounds_total,36,"obs.sounds death events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,late_death_sounds_per_match,1.7,death events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,late_gun_unseen_share,0.05,"gun sounds after 120 s whose true source mech is not in obs.mechs, over all gun sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,5000,96,late_laser_unseen_share,0.096,"laser sounds after 120 s whose true source mech is not in obs.mechs, over all laser sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,5000,96,late_lightning_unseen_share,0.0,"lightning sounds after 120 s whose true source mech is not in obs.mechs, over all lightning sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,5000,96,late_death_sound_source_visible_share,0.0,death sounds: the source is dead so it is never in view; no enemy to point at,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,late_gun_laser_lightning_unseen_share,0.052,"share of gun, laser and lightning sounds after 120 s from an enemy not currently in view",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,unseen_source_distance_m_p25_med_p75,74/94/106,"true distance to unseen sound sources (gun, laser, lightning, death), all late decisions",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,unseen_source_share_le160m,0.935,"share of unseen sources within 160 m (the sim ""mid"" band edge)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,idle_unseen_source_distance_m_p25_med_p75,100/108/237,"same, only while idle (nothing in view, HP>=90%, in zone)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,late_idle_share_of_decisions,0.604,"share of decisions after 120 s with nothing in view, HP>=90% and in zone (H07 gate, not counting leaving-for-circle)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,usable_idle_decisions,209,idle decisions after 120 s with a gun/laser/lightning/death sound heard in the last 5 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,usable_idle_share_of_idle_decisions,0.017,usable_idle_decisions / idle decisions after 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,5000,96,matches_with_usable_idle,7,matches reaching 120 s with at least one usable idle decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,5000,96,share_matches_any_enemy_mortar,0.99,matches in which any house mech ever holds a mortar (ground truth),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,5000,96,mortar_holders_per_match_mean,3.91,distinct house mechs that hold a mortar at some decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,5000,96,mortar_enemy_seconds_per_match_mean,284.3,enemy-seconds (alive house mech x time) holding a mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,5000,96,mortar_share_of_enemy_seconds,0.255,mortar-holding enemy-seconds over all alive enemy-seconds,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,5000,96,mortar_share_of_enemy_seconds_after_120s,0.334,"same, after 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,5000,96,visible_mortar_holder_share_of_decisions,0.167,decisions with at least one visible enemy that holds a mortar / all decisions,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,5000,96,visible_mortar_holder_share_of_visible_enemy_decisions,0.316,same over decisions with any visible enemy,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,5000,96,matches_with_visible_mortar_holder,70,matches where we ever see a mortar holder,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,5000,96,visible_mortar_decisions_while_we_hold_laser,8529,decisions with a visible mortar holder while we hold a laser (the H09 case),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,5000,96,mortar_holder_is_nearest_visible_share,0.594,"of decisions with a visible mortar holder, share where one is the nearest visible enemy (proxy: the bot target is not observable from a wrapper)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,5000,96,our_kills_that_were_mortar_holders,72/338,kills where the victim held a mortar at its last decision / our kills,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,5000,96,mortar_hits_on_us,71,damaged events from mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,5000,96,deaths_by_mortar,14/92,our deaths whose killer weapon is mortar / our deaths,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,matches_reaching_120s,13,matches still alive or running at 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,late_gun_sounds_total,867,"obs.sounds gun events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,late_gun_sounds_per_match,66.7,gun events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,late_laser_sounds_total,54,"obs.sounds laser events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,late_laser_sounds_per_match,4.2,laser events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,late_death_sounds_total,22,"obs.sounds death events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,late_death_sounds_per_match,1.7,death events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,late_gun_unseen_share,0.005,"gun sounds after 120 s whose true source mech is not in obs.mechs, over all gun sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,9000,96,late_laser_unseen_share,0.0,"laser sounds after 120 s whose true source mech is not in obs.mechs, over all laser sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,9000,96,late_lightning_unseen_share,0.0,"lightning sounds after 120 s whose true source mech is not in obs.mechs, over all lightning sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,9000,96,late_death_sound_source_visible_share,0.0,death sounds: the source is dead so it is never in view; no enemy to point at,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,late_gun_laser_lightning_unseen_share,0.004,"share of gun, laser and lightning sounds after 120 s from an enemy not currently in view",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,unseen_source_distance_m_p25_med_p75,75/118/136,"true distance to unseen sound sources (gun, laser, lightning, death), all late decisions",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,unseen_source_share_le160m,0.885,"share of unseen sources within 160 m (the sim ""mid"" band edge)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,idle_unseen_source_distance_m_p25_med_p75,118/131/137,"same, only while idle (nothing in view, HP>=90%, in zone)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,late_idle_share_of_decisions,0.614,"share of decisions after 120 s with nothing in view, HP>=90% and in zone (H07 gate, not counting leaving-for-circle)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,usable_idle_decisions,348,idle decisions after 120 s with a gun/laser/lightning/death sound heard in the last 5 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,usable_idle_share_of_idle_decisions,0.059,usable_idle_decisions / idle decisions after 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,9000,96,matches_with_usable_idle,6,matches reaching 120 s with at least one usable idle decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,9000,96,share_matches_any_enemy_mortar,0.99,matches in which any house mech ever holds a mortar (ground truth),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,9000,96,mortar_holders_per_match_mean,3.54,distinct house mechs that hold a mortar at some decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,9000,96,mortar_enemy_seconds_per_match_mean,222.6,enemy-seconds (alive house mech x time) holding a mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,9000,96,mortar_share_of_enemy_seconds,0.23,mortar-holding enemy-seconds over all alive enemy-seconds,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,9000,96,mortar_share_of_enemy_seconds_after_120s,0.322,"same, after 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,9000,96,visible_mortar_holder_share_of_decisions,0.141,decisions with at least one visible enemy that holds a mortar / all decisions,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,9000,96,visible_mortar_holder_share_of_visible_enemy_decisions,0.23,same over decisions with any visible enemy,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,9000,96,matches_with_visible_mortar_holder,61,matches where we ever see a mortar holder,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,9000,96,visible_mortar_decisions_while_we_hold_laser,5649,decisions with a visible mortar holder while we hold a laser (the H09 case),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,9000,96,mortar_holder_is_nearest_visible_share,0.574,"of decisions with a visible mortar holder, share where one is the nearest visible enemy (proxy: the bot target is not observable from a wrapper)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,9000,96,our_kills_that_were_mortar_holders,44/303,kills where the victim held a mortar at its last decision / our kills,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,9000,96,mortar_hits_on_us,48,damaged events from mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,9000,96,deaths_by_mortar,4/94,our deaths whose killer weapon is mortar / our deaths,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,matches_reaching_120s,9,matches still alive or running at 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,late_gun_sounds_total,401,"obs.sounds gun events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,late_gun_sounds_per_match,44.6,gun events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,late_laser_sounds_total,24,"obs.sounds laser events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,late_laser_sounds_per_match,2.7,laser events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,late_death_sounds_total,6,"obs.sounds death events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,late_death_sounds_per_match,0.7,death events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,late_gun_unseen_share,0.005,"gun sounds after 120 s whose true source mech is not in obs.mechs, over all gun sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,2147483600,48,late_laser_unseen_share,0.0,"laser sounds after 120 s whose true source mech is not in obs.mechs, over all laser sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,2147483600,48,late_lightning_unseen_share,0.0,"lightning sounds after 120 s whose true source mech is not in obs.mechs, over all lightning sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,2147483600,48,late_death_sound_source_visible_share,0.0,death sounds: the source is dead so it is never in view; no enemy to point at,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,late_gun_laser_lightning_unseen_share,0.004,"share of gun, laser and lightning sounds after 120 s from an enemy not currently in view",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,unseen_source_distance_m_p25_med_p75,41/56/84,"true distance to unseen sound sources (gun, laser, lightning, death), all late decisions",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,unseen_source_share_le160m,0.875,"share of unseen sources within 160 m (the sim ""mid"" band edge)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,idle_unseen_source_distance_m_p25_med_p75,,"same, only while idle (nothing in view, HP>=90%, in zone)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,late_idle_share_of_decisions,0.687,"share of decisions after 120 s with nothing in view, HP>=90% and in zone (H07 gate, not counting leaving-for-circle)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,usable_idle_decisions,0,idle decisions after 120 s with a gun/laser/lightning/death sound heard in the last 5 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,usable_idle_share_of_idle_decisions,0.0,usable_idle_decisions / idle decisions after 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2147483600,48,matches_with_usable_idle,0,matches reaching 120 s with at least one usable idle decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2147483600,48,share_matches_any_enemy_mortar,1.0,matches in which any house mech ever holds a mortar (ground truth),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2147483600,48,mortar_holders_per_match_mean,3.9,distinct house mechs that hold a mortar at some decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2147483600,48,mortar_enemy_seconds_per_match_mean,240.1,enemy-seconds (alive house mech x time) holding a mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2147483600,48,mortar_share_of_enemy_seconds,0.242,mortar-holding enemy-seconds over all alive enemy-seconds,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2147483600,48,mortar_share_of_enemy_seconds_after_120s,0.331,"same, after 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2147483600,48,visible_mortar_holder_share_of_decisions,0.149,decisions with at least one visible enemy that holds a mortar / all decisions,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2147483600,48,visible_mortar_holder_share_of_visible_enemy_decisions,0.296,same over decisions with any visible enemy,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2147483600,48,matches_with_visible_mortar_holder,31,matches where we ever see a mortar holder,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2147483600,48,visible_mortar_decisions_while_we_hold_laser,1404,decisions with a visible mortar holder while we hold a laser (the H09 case),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2147483600,48,mortar_holder_is_nearest_visible_share,0.534,"of decisions with a visible mortar holder, share where one is the nearest visible enemy (proxy: the bot target is not observable from a wrapper)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2147483600,48,our_kills_that_were_mortar_holders,16/108,kills where the victim held a mortar at its last decision / our kills,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2147483600,48,mortar_hits_on_us,29,damaged events from mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2147483600,48,deaths_by_mortar,8/47,our deaths whose killer weapon is mortar / our deaths,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,matches_reaching_120s,16,matches still alive or running at 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,late_gun_sounds_total,938,"obs.sounds gun events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,late_gun_sounds_per_match,58.6,gun events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,late_laser_sounds_total,90,"obs.sounds laser events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,late_laser_sounds_per_match,5.6,laser events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,late_death_sounds_total,19,"obs.sounds death events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,late_death_sounds_per_match,1.2,death events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,late_gun_unseen_share,0.049,"gun sounds after 120 s whose true source mech is not in obs.mechs, over all gun sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,2000,96,late_laser_unseen_share,0.056,"laser sounds after 120 s whose true source mech is not in obs.mechs, over all laser sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,2000,96,late_lightning_unseen_share,0.034,"lightning sounds after 120 s whose true source mech is not in obs.mechs, over all lightning sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,2000,96,late_death_sound_source_visible_share,0.0,death sounds: the source is dead so it is never in view; no enemy to point at,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,late_gun_laser_lightning_unseen_share,0.049,"share of gun, laser and lightning sounds after 120 s from an enemy not currently in view",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,unseen_source_distance_m_p25_med_p75,64/75/100,"true distance to unseen sound sources (gun, laser, lightning, death), all late decisions",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,unseen_source_share_le160m,0.944,"share of unseen sources within 160 m (the sim ""mid"" band edge)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,idle_unseen_source_distance_m_p25_med_p75,153/167/215,"same, only while idle (nothing in view, HP>=90%, in zone)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,late_idle_share_of_decisions,0.391,"share of decisions after 120 s with nothing in view, HP>=90% and in zone (H07 gate, not counting leaving-for-circle)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,usable_idle_decisions,125,idle decisions after 120 s with a gun/laser/lightning/death sound heard in the last 5 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,usable_idle_share_of_idle_decisions,0.029,usable_idle_decisions / idle decisions after 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,2000,96,matches_with_usable_idle,3,matches reaching 120 s with at least one usable idle decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2000,96,share_matches_any_enemy_mortar,0.99,matches in which any house mech ever holds a mortar (ground truth),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2000,96,mortar_holders_per_match_mean,3.59,distinct house mechs that hold a mortar at some decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2000,96,mortar_enemy_seconds_per_match_mean,188.2,enemy-seconds (alive house mech x time) holding a mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2000,96,mortar_share_of_enemy_seconds,0.207,mortar-holding enemy-seconds over all alive enemy-seconds,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2000,96,mortar_share_of_enemy_seconds_after_120s,0.24,"same, after 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2000,96,visible_mortar_holder_share_of_decisions,0.168,decisions with at least one visible enemy that holds a mortar / all decisions,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2000,96,visible_mortar_holder_share_of_visible_enemy_decisions,0.263,same over decisions with any visible enemy,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2000,96,matches_with_visible_mortar_holder,67,matches where we ever see a mortar holder,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2000,96,visible_mortar_decisions_while_we_hold_laser,5168,decisions with a visible mortar holder while we hold a laser (the H09 case),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2000,96,mortar_holder_is_nearest_visible_share,0.599,"of decisions with a visible mortar holder, share where one is the nearest visible enemy (proxy: the bot target is not observable from a wrapper)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2000,96,our_kills_that_were_mortar_holders,58/318,kills where the victim held a mortar at its last decision / our kills,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2000,96,mortar_hits_on_us,67,damaged events from mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,2000,96,deaths_by_mortar,12/92,our deaths whose killer weapon is mortar / our deaths,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,matches_reaching_120s,17,matches still alive or running at 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,late_gun_sounds_total,1119,"obs.sounds gun events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,late_gun_sounds_per_match,65.8,gun events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,late_laser_sounds_total,64,"obs.sounds laser events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,late_laser_sounds_per_match,3.8,laser events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,late_death_sounds_total,25,"obs.sounds death events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,late_death_sounds_per_match,1.5,death events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,late_gun_unseen_share,0.068,"gun sounds after 120 s whose true source mech is not in obs.mechs, over all gun sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,3000,96,late_laser_unseen_share,0.0,"laser sounds after 120 s whose true source mech is not in obs.mechs, over all laser sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,3000,96,late_lightning_unseen_share,0.0,"lightning sounds after 120 s whose true source mech is not in obs.mechs, over all lightning sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,3000,96,late_death_sound_source_visible_share,0.0,death sounds: the source is dead so it is never in view; no enemy to point at,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,late_gun_laser_lightning_unseen_share,0.062,"share of gun, laser and lightning sounds after 120 s from an enemy not currently in view",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,unseen_source_distance_m_p25_med_p75,74/91/94,"true distance to unseen sound sources (gun, laser, lightning, death), all late decisions",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,unseen_source_share_le160m,1.0,"share of unseen sources within 160 m (the sim ""mid"" band edge)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,idle_unseen_source_distance_m_p25_med_p75,82/91/98,"same, only while idle (nothing in view, HP>=90%, in zone)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,late_idle_share_of_decisions,0.533,"share of decisions after 120 s with nothing in view, HP>=90% and in zone (H07 gate, not counting leaving-for-circle)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,usable_idle_decisions,145,idle decisions after 120 s with a gun/laser/lightning/death sound heard in the last 5 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,usable_idle_share_of_idle_decisions,0.019,usable_idle_decisions / idle decisions after 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,3000,96,matches_with_usable_idle,4,matches reaching 120 s with at least one usable idle decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,3000,96,share_matches_any_enemy_mortar,0.969,matches in which any house mech ever holds a mortar (ground truth),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,3000,96,mortar_holders_per_match_mean,3.77,distinct house mechs that hold a mortar at some decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,3000,96,mortar_enemy_seconds_per_match_mean,276.3,enemy-seconds (alive house mech x time) holding a mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,3000,96,mortar_share_of_enemy_seconds,0.245,mortar-holding enemy-seconds over all alive enemy-seconds,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,3000,96,mortar_share_of_enemy_seconds_after_120s,0.326,"same, after 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,3000,96,visible_mortar_holder_share_of_decisions,0.183,decisions with at least one visible enemy that holds a mortar / all decisions,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,3000,96,visible_mortar_holder_share_of_visible_enemy_decisions,0.315,same over decisions with any visible enemy,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,3000,96,matches_with_visible_mortar_holder,77,matches where we ever see a mortar holder,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,3000,96,visible_mortar_decisions_while_we_hold_laser,6436,decisions with a visible mortar holder while we hold a laser (the H09 case),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,3000,96,mortar_holder_is_nearest_visible_share,0.565,"of decisions with a visible mortar holder, share where one is the nearest visible enemy (proxy: the bot target is not observable from a wrapper)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,3000,96,our_kills_that_were_mortar_holders,74/321,kills where the victim held a mortar at its last decision / our kills,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,3000,96,mortar_hits_on_us,76,damaged events from mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,3000,96,deaths_by_mortar,13/95,our deaths whose killer weapon is mortar / our deaths,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,matches_reaching_120s,93,matches still alive or running at 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,late_gun_sounds_total,5819,"obs.sounds gun events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,late_gun_sounds_per_match,62.6,gun events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,late_laser_sounds_total,405,"obs.sounds laser events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,late_laser_sounds_per_match,4.4,laser events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,late_death_sounds_total,145,"obs.sounds death events heard after 120 s, matches reaching 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,late_death_sounds_per_match,1.6,death events per match reaching 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,late_gun_unseen_share,0.049,"gun sounds after 120 s whose true source mech is not in obs.mechs, over all gun sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,ALL,528,late_laser_unseen_share,0.044,"laser sounds after 120 s whose true source mech is not in obs.mechs, over all laser sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,ALL,528,late_lightning_unseen_share,0.027,"lightning sounds after 120 s whose true source mech is not in obs.mechs, over all lightning sounds",sim house model is invented (house.ts): weak evidence; true source matched by nearest house mech within 4 m of the sound position
+audit-main-2026-11-21,H07,ALL,528,late_death_sound_source_visible_share,0.0,death sounds: the source is dead so it is never in view; no enemy to point at,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,late_gun_laser_lightning_unseen_share,0.048,"share of gun, laser and lightning sounds after 120 s from an enemy not currently in view",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,unseen_source_distance_m_p25_med_p75,63/88/107,"true distance to unseen sound sources (gun, laser, lightning, death), all late decisions",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,unseen_source_share_le160m,0.956,"share of unseen sources within 160 m (the sim ""mid"" band edge)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,idle_unseen_source_distance_m_p25_med_p75,91/104/133,"same, only while idle (nothing in view, HP>=90%, in zone)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,late_idle_share_of_decisions,0.569,"share of decisions after 120 s with nothing in view, HP>=90% and in zone (H07 gate, not counting leaving-for-circle)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,usable_idle_decisions,967,idle decisions after 120 s with a gun/laser/lightning/death sound heard in the last 5 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,usable_idle_share_of_idle_decisions,0.022,usable_idle_decisions / idle decisions after 120 s,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H07,ALL,528,matches_with_usable_idle,25,matches reaching 120 s with at least one usable idle decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,ALL,528,share_matches_any_enemy_mortar,0.987,matches in which any house mech ever holds a mortar (ground truth),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,ALL,528,mortar_holders_per_match_mean,3.7,distinct house mechs that hold a mortar at some decision,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,ALL,528,mortar_enemy_seconds_per_match_mean,244.3,enemy-seconds (alive house mech x time) holding a mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,ALL,528,mortar_share_of_enemy_seconds,0.238,mortar-holding enemy-seconds over all alive enemy-seconds,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,ALL,528,mortar_share_of_enemy_seconds_after_120s,0.324,"same, after 120 s",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,ALL,528,visible_mortar_holder_share_of_decisions,0.164,decisions with at least one visible enemy that holds a mortar / all decisions,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,ALL,528,visible_mortar_holder_share_of_visible_enemy_decisions,0.286,same over decisions with any visible enemy,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,ALL,528,matches_with_visible_mortar_holder,376,matches where we ever see a mortar holder,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,ALL,528,visible_mortar_decisions_while_we_hold_laser,33385,decisions with a visible mortar holder while we hold a laser (the H09 case),sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,ALL,528,mortar_holder_is_nearest_visible_share,0.579,"of decisions with a visible mortar holder, share where one is the nearest visible enemy (proxy: the bot target is not observable from a wrapper)",sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,ALL,528,our_kills_that_were_mortar_holders,318/1682,kills where the victim held a mortar at its last decision / our kills,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,ALL,528,mortar_hits_on_us,357,damaged events from mortar,sim house model is invented (house.ts): weak evidence
+audit-main-2026-11-21,H09,ALL,528,deaths_by_mortar,59/513,our deaths whose killer weapon is mortar / our deaths,sim house model is invented (house.ts): weak evidence

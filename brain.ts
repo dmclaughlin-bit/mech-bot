@@ -5,6 +5,7 @@
  * Build 2 (survival-min): setup that cannot fail, terrain in the cover check, laser and lightning
  * only, a fire gate on the gun, zone travel that leaves just in time and holds silently,
  * unsticking, retreat when hurt, and an upgrade order. The rules are §9 of the team plan.
+ * Build 3: zone travel along nav.ts paths, nav.stuck for unsticking, and a 30 ms deadline guard.
  */
 import { clearLine, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -47,6 +48,11 @@ const ROUTE_REPLAN_S = 1
 const ROUTE_GOAL_SHIFT = 10
 /** Move on to the next waypoint within this distance (m). */
 const WAYPOINT_REACHED = 4
+/** D6, §7 rule 2: hard per-decision guard (ms). A path search starts only while its worst case still fits. */
+const DEADLINE_MS = 30
+const PLAN_RESERVE_MS = 10
+/** Line-of-sight checks per decision go to the nearest few enemies only. */
+const LOS_TARGETS = 8
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -216,6 +222,9 @@ function buildBot(hello: Hello): Bot {
   return {
     name: "mech-bot",
     act(obs: Observation): BotAction {
+      const started = performance.now()
+      // Deadline guard (D6, §7 rule 2): start a path search only while its worst case still fits in 30 ms.
+      const canPlan = () => performance.now() - started < DEADLINE_MS - PLAN_RESERVE_MS
       remember(obs)
       const me = obs.self
       const muzzle: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.muzzle_height ?? cfg.mech.muzzle_height * scale(me.cubes))]
@@ -265,7 +274,7 @@ function buildBot(hello: Hello): Bot {
       let trip: { move: [number, number]; dist: number; points: Vec3[] } | null = null
       let needed = toEnter / (ZONE_WALK * walkSpeed) + ZONE_BUFFER
       if (toEnter > 0 && (2 * toEnter) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + ROUTE_TRACK_S * known.size >= timeLeft) {
-        trip = travel(me.pos, entry, obs.t, true)
+        trip = travel(me.pos, entry, obs.t, canPlan())
         needed = trip.dist / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + ROUTE_TRACK_S * tracksAlong(me.pos, trip.points, obs.t)
       }
       const leaveNow = toEnter > 0 && needed >= timeLeft
@@ -278,11 +287,11 @@ function buildBot(hello: Hello): Bot {
       let mode = "hold"
       if (!me.in_zone) {
         // Outside the circle every tick costs HP and stops regen (Z2): head in along a path, boosting.
-        move = travel(me.pos, [z.center[0], z.center[1], me.pos[2]], obs.t, true).move
+        move = travel(me.pos, [z.center[0], z.center[1], me.pos[2]], obs.t, canPlan()).move
         boost = true
         mode = "zone escape"
       } else if (leaveNow) {
-        const go = trip ?? travel(me.pos, entry, obs.t, true)
+        const go = trip ?? travel(me.pos, entry, obs.t, canPlan())
         move = go.move
         boost = go.dist / walkSpeed > timeLeft
         mode = "to next circle"
@@ -318,13 +327,15 @@ function buildBot(hello: Hello): Bot {
 
       // Target: the nearest enemy mech with a clear shot, else the nearest one we know is there.
       const slotOf = (kind: WeaponKind) => me.weapons.findIndex((w) => w?.kind === kind)
-      const options = obs.mechs
-        .filter((m) => m.kind === "mech")
+      const options = enemies
         .map((m) => {
           const c = centerOf(m)
-          return { m, c, d: span(muzzle, c), clear: clearLine(solids, muzzle, c) }
+          return { m, c, d: span(muzzle, c), clear: false }
         })
-        .sort((a, b) => Number(b.clear) - Number(a.clear) || a.d - b.d)
+        .sort((a, b) => a.d - b.d)
+        .slice(0, LOS_TARGETS)
+      for (const o of options) o.clear = clearLine(solids, muzzle, o.c)
+      options.sort((a, b) => Number(b.clear) - Number(a.clear) || a.d - b.d)
       const target = options[0]
       let label = `knows ${known.size}`
 
@@ -408,6 +419,8 @@ function buildBot(hello: Hello): Bot {
       act.aim = [aim[0], clamp(aim[1], minPitch, maxPitch)]
       act.fire = fire
       draw.label(`${label} · ${mode}`)
+      const took = performance.now() - started
+      if (took > DEADLINE_MS) log(`decision at tick ${obs.tick} took ${took.toFixed(1)} ms`)
       return act
     },
   }

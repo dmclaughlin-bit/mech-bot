@@ -231,6 +231,7 @@ function buildBot(hello: Hello): Bot {
   const maxPitch = cfg.mech.max_pitch ?? 1.3
   const known = new Map<number, Known>()
   let lastHit: { bearing: number; t: number } | null = null
+  let glance: { bearing: number; until: number } | null = null
   /** attacker id → last time it damaged us */
   const hitBy = new Map<number, number>()
   const nav = createNav(hello)
@@ -432,6 +433,10 @@ function buildBot(hello: Hello): Bot {
         act.pick = ranks.indexOf(Math.min(...ranks))
       }
       const enemies = obs.mechs.filter((m) => m.kind === "mech")
+      // Glance: a rear hit from a mech we do not see turns the torso toward it once, so it enters our view (and our threat list).
+      for (const e of obs.events)
+        if (e.type === "damaged" && e.rear && e.by !== null && e.weapon !== "npc" && e.bearing !== null && !enemies.some((m) => m.id === e.by) && !(glance && obs.t < glance.until))
+          glance = { bearing: e.bearing, until: obs.t + 0.9 }
 
       // Loot (D3, L1, L2): laser and lightning only, never a mortar, and only with no enemy within 160 m.
       // Keep the gun until the second of the two shows up, then swap the gun out, never with an enemy in view.
@@ -934,6 +939,10 @@ function buildBot(hello: Hello): Bot {
 
       act.move = move
       act.boost = boost
+      if (glance && obs.t < glance.until && !((me.weapons.find((x) => x?.kind === "laser")?.charge ?? 0) > 0)) {
+        if (enemies.some((m) => Math.abs(wrap(yawTo(me.pos, m.pos) - glance!.bearing)) < 0.35)) glance = null
+        else aim = [glance.bearing, 0]
+      }
       act.aim = [aim[0], clamp(aim[1], minPitch, maxPitch)]
       act.fire = fire
       draw.label(`${label} · ${mode}`)

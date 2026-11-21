@@ -9,10 +9,11 @@
  * Build 5 (survival half): retreat to the nearest in-zone spot out of the attackers' line of sight (F3), then
  * heal there silently until HP is back over 90% (F4; Build 5b keeps normal fire while healing), and while holding, slip out of any
  * enemy's sight: its 45 m proximity ring and its 120° wedge around its aim (Q2). Q1 (silent hold) is unchanged.
+ * Build 12 (farm): with no enemy mech near or in view, shoot drones and crates and walk to cubes and drops (see farmPlan).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
-import { params } from "./params.ts"
+import { FARM_ENEMY_M, FARM_ON, FARM_PICKUP_M, params } from "./params.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
 // ------------------------------------------------------------------ geometry helpers
@@ -61,6 +62,14 @@ const HEAL_HP = 0.9
 /** F3, Q2 hiding spots: this many bearings around us, at the distances we walk in 1, 2 and 3 s, nearest first. */
 const HIDE_BEARINGS = 12
 const HIDE_STEPS_S = [1, 2, 3]
+/** Build 12 (farm): no farming for this long (s) after damage from anything but a drone. */
+const FARM_QUIET_S = 3
+/** Build 12: known enemies seen this recently (s) count against the FARM_ENEMY_M ring. */
+const FARM_MEMORY_S = 10
+/** Build 12: give up on a cube or drop we have chased this long (s) without reaching it (roofs, blocked paths). */
+const FARM_CHASE_S = 15
+/** Build 12: stand this far (m) inside a drop's ring while capturing. */
+const DROP_INSET = 1.5
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -165,6 +174,10 @@ function buildBot(hello: Hello): Bot {
   const nav = createNav(hello)
   /** The current route: waypoints from nav.path toward `goal`, planned at time `at`. */
   let route: { goal: Vec3; at: number; points: Vec3[]; next: number } | null = null
+  /** Build 12: last time a mech (or the zone) damaged us, the item we are walking to, and items we gave up on. */
+  let lastMechHit = -Infinity
+  let farmChase: { id: number; since: number } | null = null
+  const farmGiveUp = new Set<number>()
 
   /** Follow a path to `goal`, re-planning at most once a second (Z1, Build 3). Returns the move and the distance left. */
   function travel(from: Vec3, goal: Vec3, t: number, canPlan: boolean): { move: [number, number]; dist: number; points: Vec3[] } {
@@ -270,6 +283,7 @@ function buildBot(hello: Hello): Bot {
       if (e.type === "kill") known.delete(e.target)
       if (e.type === "damaged" && e.bearing !== null) lastHit = { bearing: e.bearing, t: obs.t }
       if (e.type === "damaged" && e.by !== null) hitBy.set(e.by, obs.t)
+      if (e.type === "damaged" && e.weapon !== "npc") lastMechHit = obs.t
     }
     for (const [id, k] of known) if (obs.t - k.lastSeen > 30) known.delete(id)
   }
@@ -342,6 +356,36 @@ function buildBot(hello: Hello): Bot {
       const myHeight = me.stats.height ?? cfg.mech.height * scale(me.cubes)
       const threats = enemies.slice().sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos)).slice(0, LOS_TARGETS)
       const zoneKeep: [number[], number] = toEnter === 0 ? [z.next_center, inner] : [z.center, Math.max(0, z.radius - margin)]
+      // Farm (Build 12): only in the zone, not leaving for the next circle, no enemy mech in view or known within
+      // FARM_ENEMY_M, and no damage from a mech for FARM_QUIET_S. Drone fire does not stop farming.
+      const farmOk =
+        FARM_ON && me.in_zone && !leaveNow && enemies.length === 0 && obs.t - lastMechHit > FARM_QUIET_S &&
+        ![...known.values()].some((k) => obs.t - k.lastSeen < FARM_MEMORY_S && flat(k.pos, me.pos) < FARM_ENEMY_M)
+      let farmGoal: { id: number; pos: Vec3 } | null = null
+      let farmHold = false
+      if (farmOk) {
+        // Zone safety: the item is inside the current circle (with margin), and from it we still reach the next
+        // circle's inner ring before the shrink ends, with the usual buffer (plus the capture time for a drop).
+        const pace = ZONE_WALK * walkSpeed
+        const zoneSafe = (p: number[], stay: number) =>
+          flat(p, z.center) < Math.max(0, z.radius - margin) &&
+          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
+        const near = (p: number[]) => flat(p, me.pos) < FARM_PICKUP_M
+        const drop = obs.drops
+          .filter((d) => d.lands_in <= 0 && (d.holder === null || d.holder === hello.slot) && !farmGiveUp.has(d.id) && near(d.pos) && zoneSafe(d.pos, d.capture_s - d.progress))
+          .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+        const cube = obs.cubes
+          .filter((c) => !farmGiveUp.has(c.id) && near(c.pos) && zoneSafe(c.pos, 0))
+          .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+        if (drop && flat(drop.pos, me.pos) < drop.radius - DROP_INSET) farmHold = true
+        else if (drop || cube) farmGoal = drop ?? cube
+      }
+      if (farmGoal && farmChase?.id !== farmGoal.id) farmChase = { id: farmGoal.id, since: obs.t }
+      if (!farmGoal && !farmHold) farmChase = null
+      if (farmGoal && farmChase && obs.t - farmChase.since > FARM_CHASE_S) {
+        farmGiveUp.add(farmGoal.id)
+        farmGoal = null
+      }
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -385,6 +429,12 @@ function buildBot(hello: Hello): Bot {
       } else if (lootTarget) {
         move = heading(lootTarget)
         mode = "loot"
+      } else if (farmHold) {
+        // Build 12: inside a landed drop's ring, stand still for capture_s to take its cubes, full HP and energy.
+        mode = "farm, capture"
+      } else if (farmGoal) {
+        move = travel(me.pos, farmGoal.pos, obs.t, canPlan()).move
+        mode = "farm, pickup"
       } else if (threats.length && seenAt(me.pos, myHeight, threats, true)) {
         // Hold out of sight (Q2, Build 5): outside every enemy's 45 m ring and 120° wedge, moving silently.
         spot = hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan)
@@ -416,7 +466,25 @@ function buildBot(hello: Hello): Bot {
         .slice(0, LOS_TARGETS)
       for (const o of options) o.clear = clearLine(solids, muzzle, o.c)
       options.sort((a, b) => Number(b.clear) - Number(a.clear) || a.d - b.d)
-      const target = options[0]
+      // Farm targets (Build 12): with no enemy mech to shoot, the nearest drone or crate in view with a clear line,
+      // within the gun gate, unless we are hurt to retreat level. They go through the same aim and fire code.
+      let farmShot = false
+      let target = options[0]
+      if (!target && farmOk && me.hp >= RETREAT_HP * me.max_hp) {
+        const marks = [
+          ...obs.mechs.filter((m) => m.kind === "npc").map((m) => ({ m, c: [m.pos[0], m.pos[1], m.pos[2] + cfg.npc.height / 2] as Vec3 })),
+          ...obs.crates.map((k) => ({
+            m: { id: k.id, kind: "npc" as const, pos: k.pos, vel: [0, 0, 0] as Vec3, aim: [0, 0] as [number, number], hp: k.hp, max_hp: cfg.crates.hp },
+            c: [k.pos[0], k.pos[1], k.pos[2] + cfg.crates.height / 2] as Vec3,
+          })),
+        ]
+          .map((x) => ({ ...x, d: span(muzzle, x.c), clear: false }))
+          .filter((x) => x.d <= GUN_GATE)
+          .sort((a, b) => a.d - b.d)
+          .slice(0, LOS_TARGETS)
+        target = marks.find((x) => (x.clear = clearLine(solids, muzzle, x.c)))!
+        farmShot = !!target
+      }
       let label = `knows ${known.size}`
 
       if (target) {
@@ -445,7 +513,7 @@ function buildBot(hello: Hello): Bot {
         } else if (clear && gun >= 0 && d <= w(gun).stats.range) {
           leading = "gun"
           aim = gunAim
-        } else if (mortar >= 0 && w(mortar).cooldown <= 0.3 && d > 15) {
+        } else if (!farmShot && mortar >= 0 && w(mortar).cooldown <= 0.3 && d > 15) {
           const g = w(mortar).stats.gravity ?? cfg.weapons.mortar.gravity
           const shell = lob(tube, c, vel, w(mortar).stats.speed, g, !clear)
           if (shell && shell.pitch >= minPitch && shell.pitch <= maxPitch) {
@@ -485,7 +553,7 @@ function buildBot(hello: Hello): Bot {
         if (gun >= 0 && (w(gun).ammo ?? 1) === 0 && (w(gun).reload ?? 0) <= 0) act.reload = true
 
         draw.line(muzzle, c, clear ? "#ff5040" : "#888888")
-        label += ` · ${leading} at ${m.id} ${d.toFixed(0)}m${clear ? "" : " (behind cover)"}`
+        label += ` · ${farmShot ? "farm " : ""}${leading} at ${m.id} ${d.toFixed(0)}m${clear ? "" : " (behind cover)"}`
       } else {
         // Nobody known nearby: face whoever hit us last (hits from behind do 1.5x), and top up the gun.
         if (lastHit && obs.t - lastHit.t < 2) aim = [lastHit.bearing, 0]

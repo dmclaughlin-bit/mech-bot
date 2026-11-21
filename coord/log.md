@@ -183,6 +183,22 @@ Format:
 - Found: Diego's research lands via `research/intake/` PRs, which Grok merges and ingests each tick.
 - Blocked / next: Diego starts the loop on his machine (needs `gh` auth + push access).
 
+## Fri 23:48 ET · Grok · Goal reframed (Doug)
+- Did: `coord/WORKFLOW.md` goal now says pick the system change with the largest expected impact on total score, ranked by gap size × reach × confidence ÷ cost/risk; prefer closing whole missing systems over parameter nudges.
+- Result: docs only. Promotion rule unchanged (keep only if it beats the best).
+- Found: the last five losses were small tweaks (nav, gates, laser order); B12 FARM is the first build to add a whole missing system (cube economy).
+- Blocked / next: score B12; next candidates ranked by impact: engagement decision (fight vs flee using enemy HP/count), upgrade spending once cubes are in hand, healing that works.
+## Fri 23:45 ET · Doug · Build 12: farm cubes when safe
+- Did: one mechanism on top of 5b (`100941f`) on branch `build-12-farm`: with no enemy mech within `FARM_ENEMY_M` (160 m) or in view and no damage from a mech for 3 s, shoot the nearest clear drone or crate within the 100 m gun gate through the existing aim/fire code (no mortar), and walk via nav to visible cubes and landed, unheld supply drops within `FARM_PICKUP_M` (80 m), standing in the ring to capture. Zone safety: only in the zone, never while leaving for the next circle, item inside the current circle and still reaching the next circle's inner ring by shrink end with the 10 s buffer. Farm movement ranks after retreat, heal and weapon loot. `FARM_ON` in `params.ts` rolls it back exactly.
+- Result: `bun build` OK; `check.py --map-dir arena` PASS, 300/300 in time, p99 1.1 ms. Offline `tools/farm_check.ts` on the kit stream (non-reactive, not a score): farm active 8 of 300 ticks, all crate shots; the stream has no drones in view and cubes in only 2 observations. Not submitted.
+- Found: drone return fire (weapon `npc`) does not exit farm, or drones could never be farmed; any other damage does. A cube or drop chased for 15 s without reaching it is dropped (roof items).
+- Blocked / next: submit the PR head on practice; keep if ≥ 2.38, else `FARM_ON = false` / close.
+
+## Fri 23:48 ET · Grok · Build 12 FARM kept, new champion
+- Did: submitted PR #21 head `8f2c7c8` (BB-35E5C75F) at 23:45 ET; merged into main as `12a26df`.
+- Result: 2.44 vs champion 5b 2.38 (+0.06), a KEEP. New best and automatic final entry. Board 11:48 PM ET: 112th of 144; 1st 5.58, 16th 4.77, 32nd 4.29.
+- Found: first gain after five losses, and the first build that adds a missing system (cube economy). Offline, farm fired in only 8/300 ticks (crates only), so there's room to widen it: spend cubes on upgrades, farm drones, a larger radius.
+- Blocked / next: next slot 00:12 ET. Candidates by expected impact: upgrade spending/order with cubes in hand; farm radius/drones; engagement decision.
 ## Fri 23:50 ET · Diego (research) · Engagement: fight vs flee
 - Did: filed `research/intake/diego-2026-11-20-2346.json` (4 findings, EV-R-0020..0023 on a scratch ingest: 4 ACCEPT, 0 reject). Question: when to fight instead of flee, using only fields our bot observes. B12 FARM isn't scored yet, so question 1 was skipped.
 - Result: research only, no bot code, not submitted.

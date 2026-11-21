@@ -405,3 +405,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - Fix queue: UF100 (PR #88), then the early heal-under-fire walk to cover (re-measure first). `ourMagazine` is parked.
 
 - 11:52 AM ET: brought PR #86 research files (research/intake/diego-2026-11-21-1058.json, diego-1058-probe/) onto main. The PR conflicted only in coord/log.md. Diego audit §7.1: its numbers are superseded by the 11:15 audit on fresh seeds.
+
+- 11:47 AM ET: UF100 (PR #88, 3ee37ca) verified as GO. Gate PASS at flag 100 (max 6.2 ms) and flag 0. Flag 0 changed 0/192 games vs B80. Flag 100: +0.250 ± 0.136, 37 games changed, laser by 30 s 58→82, died <40 s 56→54, lightning at end 56→56 (standard CSV; the handoff used other instrumentation and got 65→66). No veto. Submitting in the 11:57 slot.

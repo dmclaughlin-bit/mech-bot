@@ -315,3 +315,8 @@ e0710b6 scored 3.46 (BB-1AFE6423, 1:35 AM), below champion 3.50 → not kept, PR
 ## Sat 01:55 ET · Grok · Build 23 (laser-safe early spacing) result
 5b36504 scored 3.46 (BB-D6AC95A2, Sat 1:47 AM ET), below champion 3.50 → not kept, PR #38 closed.
 Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate factory screens builds on fresh sim seeds (SEED_BASE 2000+) before they take a site slot.
+
+### Builds 20+22 stack (PR #37, 1c05189) — Sat 2:16 AM ET
+- Did: standoff + calibrated race (audit top pick; fresh-seed sim -0.09 ± 0.12).
+- Score: 3.35 (BB-F9B0A975), below 3.50. Closed.
+- Next: B24 rear-glance at 2:23 slot; lane B multi-threat engage (B26), lane A strafe (B27).

@@ -22,6 +22,8 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
 const LOOT_CLEAR = 160
 /** L2: walk at most this far (m) to a wanted weapon. */
 const LOOT_DETOUR = 80
+/** D4, A2: the gun fires only inside this range (m), unless the target is hitting us, below half HP, or not moving sideways. */
+const GUN_GATE = 100
 
 // ------------------------------------------------------------------ aiming
 /** Where to aim a straight-flying shot so it meets a target moving at a steady velocity. */
@@ -110,6 +112,8 @@ function buildBot(hello: Hello): Bot {
   const maxPitch = cfg.mech.max_pitch ?? 1.3
   const known = new Map<number, Known>()
   let lastHit: { bearing: number; t: number } | null = null
+  /** attacker id → last time it damaged us */
+  const hitBy = new Map<number, number>()
 
   const scale = (cubes = 0) => 1 + growth * cubes
   const centerOf = (m: { pos: Vec3; cubes?: number }): Vec3 => [m.pos[0], m.pos[1], m.pos[2] + (cfg.mech.height / 2) * scale(m.cubes)]
@@ -133,6 +137,7 @@ function buildBot(hello: Hello): Bot {
     for (const e of obs.events) {
       if (e.type === "kill") known.delete(e.target)
       if (e.type === "damaged" && e.bearing !== null) lastHit = { bearing: e.bearing, t: obs.t }
+      if (e.type === "damaged" && e.by !== null) hitBy.set(e.by, obs.t)
     }
     for (const [id, k] of known) if (obs.t - k.lastSeen > 30) known.delete(id)
   }
@@ -220,8 +225,17 @@ function buildBot(hello: Hello): Bot {
           }
         }
 
+        // Fire gate on the gun (D4, A2): inside 100 m, or at a target that is hitting us, is below half HP, or is
+        // moving mostly toward or away from us. Past that a sideways mover dodges, and a shot is heard 320 m away.
+        const dx = c[0] - muzzle[0], dy = c[1] - muzzle[1], dl = Math.hypot(dx, dy) || 1
+        const radial = Math.abs((m.vel[0] * dx + m.vel[1] * dy) / dl)
+        const sideways = Math.abs((m.vel[0] * dy - m.vel[1] * dx) / dl)
+        const hittingUs = obs.t - (hitBy.get(m.id) ?? -Infinity) < 2
+        const weak = (m.hp ?? 1) / (m.max_hp ?? 1) < 0.5
+        const gunOpen = d <= GUN_GATE || hittingUs || weak || sideways <= radial
+
         // Fire only what can hit from where the torso actually points.
-        if (clear && gun >= 0) {
+        if (clear && gun >= 0 && gunOpen) {
           const g = w(gun)
           if ((g.ammo ?? 1) > 0 && (g.reload ?? 0) <= 0 && d <= g.stats.range && onTarget(gunAim[0], gunAim[1])) fire[gun] = true
         }

@@ -140,3 +140,52 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P-B-008 (movement & evasion training track, sim-only): how the mech moves while the champion's rules are already in
+ * force. No trigger, threshold or rank changes: the variants only replace "stand still" (move [0, 0]) in a gunfight,
+ * bend a close the champion is already walking, or steer a straight-line move around a wall.
+ *   0 = champion exactly (the committed default; nothing below runs).
+ *   1 = strafe: in a standing gunfight (engage with a clear shot and not closing, or heal/hold with a clear line to an
+ *       enemy mech that is within EVADE_RANGE_M, hit us in the last 2 s, or is charging a laser), walk perpendicular to
+ *       the threat bearing. One direction, reversed only when the next step is blocked, leaves the circle we keep to,
+ *       loses the shot, or nav.stuck trips.
+ *   2 = jittered strafe: variant 1, and the direction also reverses on a random 0.5 to 1.4 s timer (seeded from hello.seed).
+ *   3 = orbit: variant 1 with a radial correction that holds a ring around the foe: our best weapon's effective range
+ *       when we are within 15 m of it, else the range the fight started at. A close the champion is already walking
+ *       with a clear walkable line (finish rule, standoff break) is bent into an arc (30 degrees off the straight line).
+ *   4 = dodge: only on a telegraph. A mortar shell in view whose landing point is within its splash of us: walk away
+ *       from the landing point. An enemy charging a laser along our bearing: step out of its sight (the nearest hiding
+ *       spot), else sidestep. Only from the same standing situations as variant 1. Not B101 (no gun-round dodge).
+ *   5 = slide around cover: a straight-line move (retreat, crossfire break, ambush, hiding, loot, or a path-less
+ *       travel fallback) whose next step is blocked follows a nav path to its goal instead, else turns up to 86 degrees
+ *       to the first open heading.
+ *   6 = all: jittered orbit + dodge + slide.
+ * Every variant above 0 also checks each evasion step against the nav grid and the zone (nav.open, the circle we keep
+ * to), keeps calling nav.stuck once per decision, aims from where the muzzle will be when the action lands (our own
+ * velocity x AIM_LAG_S; the kit's projectiles fly straight at `speed` from the muzzle and the protocol gives them no
+ * shooter velocity), and keeps the torso on the foe instead of the move heading. Never ship above 0 as a site default.
+ *
+ * Iteration 3 (sim-only, constants in brain.ts after AIM_LAG_S; no muzzle-aim correction in any of these). No new
+ * movement ever replaces "drop, run" or "drop, hold"; the strafe only replaces a stand-still in an engage, heal or hold.
+ *   30 = pathing: mode 5's slide with a 0.6 s commitment, an oscillation breaker (20 s with >120 m walked and <15 m net
+ *        turns the new movement off for 10 s), jump + jet over what the slide finds no way round (energy >= 40), keep
+ *        jetting after the unstick jump, and boost to the next circle while energy >= 50%. v2 adds a quiet flap breaker
+ *        (8 s, no enemy in view for most of it, >35 m walked, <6 m net: give up the farm goal, re-plan, movement off
+ *        10 s) and recharge-then-jet (stuck under 15 energy: no boost until 60, then jump and jet for 4 s).
+ *   31 = 30 + calibrated strafe in danger only: T = (d/252 + 0.1) x U(0.8, 1.4) clamped to 0.20-0.40 s; danger = an
+ *        enemy with a line on us inside its reach aiming at us / hitting us / charging, 2+ lines on us, a mech hit in
+ *        2 s, or low HP with a line on us. A laser charging at us: cover, else step off the beam.
+ *   32 = 31 + boost during that strafe while energy > 50%.
+ *   34 = 32 + a jump at a strafe reversal (energy >= 60%, at most every 1.5 s), plus 30's pathing jets.
+ *   35 = 30 + outnumbered escape: 2+ attackers and the champion would hold/heal/hide/ambush/standoff: cover 4-6 s away,
+ *        else away from the attackers (DPS-weighted) leaning to the circle; boost above 20% energy (crossfire too).
+ *   36 = champion + drop commitment: an active drop run or ring hold is not dropped for "break crossfire" unless a mech
+ *        damaged us in the last 2 s (HP above the retreat line and a reachable, zone-safe ring are already required).
+ *   37 = champion + literal torso sway in danger (+-0.6 rad, 1.2 s period). 38 = champion + front-arc discipline.
+ *   39 = champion with the silent cap lifted while hurt and an enemy seen within 120 m (Grok addendum).
+ *   40 = 30 + 36. 41 = 34 + 36. 42 = 30 + 35 + 36. 43 = 37's sway only while no held weapon could fire at a clear
+ *   target in its reach. The escape (35, 42) keeps its heading 1.5 s once started (commitment).
+ *   44 = 40 without the boost to the next circle (ablation).
+ */
+export const EVADE_MODE: number = 0

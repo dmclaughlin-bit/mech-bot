@@ -32,3 +32,10 @@ bun tools/sim/run.ts --bot bot.ts --seeds 48 --out sim.csv
 ```
 
 It prints the mean of `16 - place` over the fixed seeds and writes one CSV row per match. It needs the kit at `/workspace/mechfight-kit`, `$MECHFIGHT_KIT` or `--kit <dir>`. The house bots are our model, not the real ones: read `tools/sim/ASSUMPTIONS.md` before trusting a number.
+
+`tools/sim/measure_movement.ts` (P-B-008) runs the same matches and writes the same columns, followed by movement columns: damage taken by weapon, our gun hit rate while moving vs still, and stuck, pin, oscillation and collision counts. It reads only the sim and the bot's actions, so it works on any commit. The movement variants it measures are behind `EVADE_MODE` in `params.ts` (0 = champion, the committed default).
+
+```sh
+SEED_BASE=2000 bun tools/sim/measure_movement.ts --bot bot.ts --seeds 96 --out move.csv
+bun tools/sim/measure_movement.ts --summary move.csv
+```

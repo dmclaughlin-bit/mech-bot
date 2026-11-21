@@ -1,0 +1,14 @@
+score-kills mean 0.172, games score==kills 164/192, corr 0.989
+died 0-40s: 56 games, score 1.66, kills/min 3.19
+died 40-60s: 51 games, score 3.04, kills/min 3.54
+died 60-120s: 51 games, score 4.59, kills/min 3.13
+died 120-240s: 24 games, score 4.75, kills/min 1.50
+died 240-480s: 6 games, score 3.83, kills/min 0.66
+variant,mean,delta,se,changed,better,worse,died<40,laser_end,lightning_end,gun_only_end,cubes,kills
+b80,3.536,+0.000,0.000,0,0,0,56,79,56,77,457,646
+hq,3.354,-0.182,0.098,37,13,24,56,77,57,78,448,609
+sc,3.323,-0.214,0.130,81,36,45,51,76,55,78,385,605
+lt,3.427,-0.109,0.041,15,3,12,55,75,56,80,448,626
+lc,3.427,-0.109,0.054,25,10,15,57,80,56,77,476,627
+rl,3.500,-0.036,0.099,45,22,23,55,79,57,77,496,639
+zc,3.469,-0.068,0.026,11,1,10,56,79,55,77,452,632

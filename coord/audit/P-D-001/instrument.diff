@@ -1,0 +1,116 @@
+diff --git a/brain.ts b/brain.ts
+index 36a4270..742b7e8 100644
+--- a/brain.ts
++++ b/brain.ts
+@@ -238,6 +238,11 @@ function fallbackBot(): Bot {
+   }
+ }
+ 
++import { appendFileSync } from "node:fs"
++const __I = process.env.INSTR_FILE
++const __buf: string[] = []
++const __flush = () => { if (__I && __buf.length) { appendFileSync(__I, __buf.join("\n") + "\n"); __buf.length = 0 } }
++process.on("exit", __flush)
+ function buildBot(hello: Hello): Bot {
+   const cfg = hello.config
+   const solids = loadMap(hello)
+@@ -616,6 +621,7 @@ function buildBot(hello: Hello): Bot {
+       // Collect (Build 14): after our kill, walk to the cubes it dropped (all of its cubes plus two) if it is safe:
+       // nobody has line of sight to us, no mech hit us in the last 2 s, and the same zone test as farming.
+       let claimGoal: Vec3 | null = null
++      let __cb: string[] | null = null, __cd = -1, __cn = -1
+       if (claim && obs.t > claim.until) claim = null
+       if (claim && me.in_zone && !leaveNow && !engage) {
+         const at = claim.pos
+@@ -625,7 +631,19 @@ function buildBot(hello: Hello): Bot {
+           flat(goal, z.center) < Math.max(0, z.radius - margin) &&
+           (flat(me.pos, goal) + Math.max(0, flat(goal, z.next_center) - inner)) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER < timeLeft
+         if (!cube && flat(me.pos, at) < Number(cfg.cubes.pickup_radius ?? cfg.loot.pickup_radius)) claim = null
+-        else if (zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && !seenAt(me.pos, myHeight, threats, false)) claimGoal = goal
++        else {
++          __cb = []
++          if (!zoneSafe) __cb.push("zone")
++          if (obs.t - lastMechHit <= THREAT_HIT_S) __cb.push("hit<2s")
++          if (seenAt(me.pos, myHeight, threats, false)) __cb.push("seen")
++          __cd = Math.round(flat(me.pos, goal)); __cn = obs.cubes.filter((c) => flat(c.pos, at) < CLAIM_M).length
++          if (zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && !seenAt(me.pos, myHeight, threats, false)) claimGoal = goal
++        }
++      } else if (claim) {
++        __cb = []
++        if (!me.in_zone) __cb.push("out of zone")
++        if (leaveNow) __cb.push("leaving")
++        if (engage) __cb.push("engage")
+       }
+       // Stop sneaking (Build 19): not hurt (HP at or above the retreat line, no damage for NO_SNEAK_QUIET_S), so no
+       // silent speed cap and no walk to a hiding spot. While hurt, the retreat, the heal and their hiding are unchanged.
+@@ -966,6 +984,13 @@ function buildBot(hello: Hello): Bot {
+       act.aim = [aim[0], clamp(aim[1], minPitch, maxPitch)]
+       act.fire = fire
+       draw.label(`${label} · ${mode}`)
++      if (__I) {
++        const tg = target && target.m.kind === "mech" ? target.m : null
++        const kv = [...known.values()].filter((k) => obs.t - k.lastSeen <= 5); const wk = kv.map((k) => [k.id, +(k.hp / (k.maxHp || 1)).toFixed(2), +(obs.t - k.lastSeen).toFixed(1), Math.round(flat(k.pos, me.pos)), kv.some((o) => o !== k && flat(o.pos, k.pos) < 40) ? 0 : 1])
++        __buf.push(JSON.stringify({ t: +obs.t.toFixed(1), m: mode, hp: +(me.hp / me.max_hp).toFixed(2), cubes: me.cubes, claim: !!claim, cb: __cb, cd: __cd, cn: __cn, cg: !!claimGoal,
++          tg: tg ? tg.id : null, tgc: tg ? !!target.clear : null, eng: engage ? [engage.m.id, engage.why] : null, kills: obs.events.filter((e) => e.type === "kill").map((e: any) => e.target), known: wk, nen: enemies.length, los: threats.filter((e) => seenAt(me.pos, myHeight, [e], false)).length, w: me.weapons.map((x) => x?.kind ?? "-").join("+") }))
++        if (__buf.length > 200) __flush()
++      }
+       const took = performance.now() - started
+       if (took > DEADLINE_MS) log(`decision at tick ${obs.tick} took ${took.toFixed(1)} ms`)
+       return act
+diff --git a/tools/sim/engine.ts b/tools/sim/engine.ts
+index e65b522..889f19d 100644
+--- a/tools/sim/engine.ts
++++ b/tools/sim/engine.ts
+@@ -616,12 +616,13 @@ export function tick(S: Sim, first: boolean) {
+     if (S.t < d.lands) continue
+     if (!d.landed) { d.landed = true; sound(S, "drop", d.pos, -1) }
+     const inRing = S.mechs.filter((m: Mech) => m.alive && hdist(m.pos, d.pos) <= cfg.drops.radius && Math.abs(m.pos[2] - d.pos[2]) < 6)
++    if (S.me.alive) { const st = ((S.dropSt ??= {})[d.id] ??= { arrived: S.t, meIn: 0, contested: 0 }); if (inRing.includes(S.me)) st.meIn += DT; if (inRing.length > 1) st.contested += DT }
+     if (inRing.length === 1) {
+       if (d.holder !== inRing[0].id) { d.holder = inRing[0].id; d.progress = 0 }
+       d.progress += DT
+       if (d.progress >= cfg.drops.capture_s) {
+         const m = inRing[0]
+-        gainCubes(S, m, cfg.drops.cubes); m.hp = m.maxHp; m.energy = m.stats.energy; d.taken = true
++        gainCubes(S, m, cfg.drops.cubes); m.hp = m.maxHp; m.energy = m.stats.energy; d.taken = true; (S.dropLog ??= []).push({ id: d.id, by: m === S.me ? "me" : "house", t: S.t })
+         if (m === S.me) S.events.push({ type: "drop", id: d.id, cubes: m.cubes })
+       }
+     } else if (inRing.length === 0) { d.holder = null; d.progress = 0 }
+diff --git a/tools/sim/run.ts b/tools/sim/run.ts
+index f6160ca..c4da352 100644
+--- a/tools/sim/run.ts
++++ b/tools/sim/run.ts
+@@ -17,7 +17,7 @@ import { squadDecide } from "./house.ts"
+ const args = process.argv.slice(2)
+ const opt = (name: string, def?: string) => { const i = args.indexOf("--" + name); return i >= 0 ? args[i + 1] : def }
+ const flag = (name: string) => args.includes("--" + name)
+-const SEED_BASE = 1000
++const SEED_BASE = Number(process.env.SEED_BASE ?? 1000)
+ /** Wall-clock wait for one answer. Longer than the server's 50 ms so a loaded machine does not change results; late answers are counted. */
+ const ANSWER_MS = 2000
+ 
+@@ -27,7 +27,7 @@ class BotProc {
+   wake: (() => void) | null = null
+   dead = false
+   constructor(path: string) {
+-    this.proc = Bun.spawn(["bun", path], { cwd: dirname(path), stdin: "pipe", stdout: "pipe", stderr: "ignore" })
++    this.proc = Bun.spawn(["bun", path], { cwd: dirname(path), stdin: "pipe", stdout: "pipe", stderr: "ignore", env: { ...process.env, INSTR_FILE: process.env.INSTR_DIR ? process.env.INSTR_DIR + "/" + (globalThis as any).__SEED + ".jsonl" : "" } })
+     this.pump()
+   }
+   async pump() {
+@@ -69,6 +69,7 @@ class BotProc {
+ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena: string) {
+   const S = createSim(geo, cfg, seed)
+   const me = S.me
++  ;(globalThis as any).__SEED = seed
+   const bot = new BotProc(botPath)
+   bot.send({ type: "hello", protocol: "mechfight/1", slot: S.meId, seed: (Math.imul(S.meId + 1, 2654435761) >>> 0), map: { dir: arena, files: ["v2/world.json", "v2/terrain.i16"] }, config: cfg })
+   let ready = false
+@@ -118,6 +119,7 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
+   await bot.close({ type: "end", place, kills: me.kills })
+   const k = me.killer
+   return {
++    drop_arrivals: Object.keys(S.dropSt ?? {}).length, drop_claims: (S.dropLog ?? []).filter((x: any) => x.by === "me").length, drop_house: (S.dropLog ?? []).filter((x: any) => x.by === "house").length, drop_me_in: Object.values(S.dropSt ?? {}).filter((x: any) => x.meIn > 0).length, drop_contested: Object.values(S.dropSt ?? {}).filter((x: any) => x.contested > 0).length,
+     seed, slot: S.meId, place, score: 16 - place, death_t: me.alive ? "" : me.deathT.toFixed(2),
+     killer: me.alive ? "" : k ? (k.kind === "npc" ? "npc" : `house:${k.tier}#${k.id}`) : me.killWeapon ?? "", killer_weapon: me.alive ? "" : me.killWeapon ?? "",
+     kills: me.kills, damage_dealt: Math.round(me.dmgDealt), damage_taken: Math.round(me.dmgTaken), cubes: me.cubes, upgrades: me.upList.join("+"),

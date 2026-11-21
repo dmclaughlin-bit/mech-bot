@@ -40,7 +40,7 @@ flowchart TD
 |---|---|---|
 | Grok (coordinator) | picks the next change, submits, scores, merges or closes, logs | writes bot code itself |
 | Grok's Claude (Doug's Max) | builds assigned changes: one change per branch, check must pass | merges, submits |
-| Diego's Claude | code audits and research; builds a change only when Diego approves it and Grok assigns it (UF100, Sat 11:15 ET) | merges, submits, builds anything unassigned |
+| Diego's Claude | code audits, research, AND bot code (Doug approved Sat 12:14 PM ET): edits `*.ts` only for the change Grok assigns in `coord/next-diego.md`, on its own branch, one flag with flag 0 = champion byte-identical | merges, submits, pushes to main, touches files or logic another builder is assigned (lightning/H1 is Doug's Claude's now) |
 | Doug's own Claude | stopped (handoff in `coord/handoff-doug-claude.md`) | — |
 | Doug / Diego | set direction, approve big pivots | — |
 
@@ -53,10 +53,11 @@ flowchart TD
 
 ## Slot rules (Sat Nov 21, 11:50 AM ET; from Diego's audit `coord/audit/perf-fix-handoff-2026-11-21-1115.md` §3, §4, §7)
 1. **One builder per change.** Grok assigns it in `coord/log.md` before anyone codes. A second thread on the same idea stops.
-2. **No slot without the table.** The PR body must show, for the 192 paired games (SEED_BASE 2000 + 3000) vs the champion: sim Δ ± SE, games changed (better/worse), laser by 30 s, died before 40 s, gun-only at end, lightning at end, 2+ attackers at death, stuck, and decision p99/max. Grok re-runs or spot-checks it.
+2. **No slot without the table.** The PR body must show, for the 192 paired games (SEED_BASE 2000 + 3000) vs the champion: sim Δ ± SE, games changed (better/worse), **kills and kills per minute after 60 s (primary: in practice score ≈ our kills, r 0.989)**, laser by 30 s, died before 40 s, gun-only at end, lightning at end, 2+ attackers at death, stuck, and decision p99/max. Grok re-runs or spot-checks it.
 3. **Pre-slot gate.** `check.py --map-dir arena` PASS with max under 30 ms. Any new flag set to 0 must match the champion's actions exactly (0 games changed).
-4. **Vetoes (no slot if any trips).** Died before 40 s up by more than 3/192, lightning at end down by more than 5, or sim Δ below −0.3.
-5. **The sim screens; it doesn't predict.** Sim score vs site has r = 0.22 over 28 builds (`coord/research/site-corr-2026-11-21.txt`). Rank candidates by the behavior metrics in rule 2 and the mechanism, not by sim Δ alone.
+4. **Vetoes (no slot if any trips).** Died before 40 s up by more than 3/192, or lightning at end down by more than 5. (The sim Δ −0.3 veto is retired Sat 12:35 PM ET: it caught 0 of 10 real site drops.)
+0. **Real site score is the only source of truth (Doug, Sat 12:32 PM ET).** Keep/close is decided only by the official site score strictly beating the verified champion. The sim is a screen for crashes, timing (check.py), flag-0 byte-identity and gross vetoes; it never ranks builds or justifies a keep.
+5. **The sim screens; it doesn't predict.** Sim score vs site has r = 0.22 over 28 builds (`coord/research/site-corr-2026-11-21.txt`). Rank candidates by kills first, then the other behavior metrics in rule 2 and the mechanism, not by sim Δ alone. Lightning at end stays a veto but is a proxy, not a ranking metric (Diego state report d). Every screen also runs held-out SEED_BASE 4000+5000.
 6. **No rematches or near-copies.** Old open PRs and builds that change fewer than about 10 of 192 games don't get slots (B26 3.48, B51 3.79 tie, B94 6/192 → 3.73).
 7. **Keep rule.** Keep only if strictly above the current best. A tie keeps the old champion (the earlier submission holds the final entry).
 8. **One follow-up per idea.** If a change ties, it gets at most one variant (for UF100, `UNDER_FIRE_RUSH_M = 80`). No third variant.
@@ -64,7 +65,7 @@ flowchart TD
 10. **Lock.** Final build locked by Sun 9:00 AM ET on the best verified site score. After that, no merges to main.
 
 ## Cut (no longer used)
-- `next-doug.md` / per-person prompts for coding, the §4 file-ownership split, the −0.6/+1.2 noise band, repeating the log in PR descriptions.
+- `next-doug.md` (per-person coding prompts for Doug's Claude; `next-diego.md` is back as Grok's prompt inbox for Diego's Claude, Sat 12:12 PM ET), the §4 file-ownership split, the −0.6/+1.2 noise band, repeating the log in PR descriptions.
 - Kept: `coord/log.md`, `EXPERIMENTS.md`, `coord/learnings.md`, this file.
 
 ## Pipeline (from Fri 23:15 ET)

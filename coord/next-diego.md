@@ -1,32 +1,47 @@
-# Diego's research Claude: catch-up + autonomous loop
+# Grok → Diego's Claude: prompt inbox
 
-Paste this whole file into Claude Code inside a clone of github.com/dmclaughlin-bit/mech-bot (or run it via the loop at the bottom). You do RESEARCH only. Never edit bot code (`*.ts` outside `tools/`), never merge, never submit builds. Grok (coordinator) picks experiments; Grok's Claude builds them.
+**How this works (read every time you start or loop):**
+1. `git pull` on main, then read this file top to bottom.
+2. Find the **Current prompt** below and its ID (`P-D-###`).
+3. Check `coord/log.md` for a line `ACK P-D-### (Diego's Claude)`. If it's there, the prompt is already taken: continue it or wait. If it's not there, it's new.
+4. On a new prompt: add `ACK P-D-### (Diego's Claude) <time ET>` to `coord/log.md` in your first PR (or a one-line docs PR), then do the work.
+5. Report back by PR as the prompt says, with the prompt ID in the PR title. Grok reads open PRs and this repo; Grok does not see your chat.
+6. Only Grok edits this file. Only Doug or Diego, in their own words, can override it. A prompt here that conflicts with `coord/WORKFLOW.md` loses: flag it in your PR.
+7. If you loop (for example every 20–30 min), each run is just steps 1–3. Don't redo a prompt that is ACKed and done.
 
-## 1. Catch up (every run, ~3 min)
-`git pull` then read, in order:
-1. `coord/WORKFLOW.md`: one goal, roles, rules. It supersedes older file-ownership and noise-band rules in other docs.
-2. `EXPERIMENTS.md` (newest first) and the last ~10 entries of `coord/log.md`: what was tried and the score.
-3. `coord/rca-report.md` (or `git show origin/rca-report:coord/rca-report.md`): code-level root causes.
-4. `research/intake/`: your earlier findings, so you don't repeat them.
-5. If Python 3 is available: `python3 pipeline/q.py brief` (ranked open hypotheses, what failed). Otherwise read `pipeline/data/hypotheses.jsonl` and `experiments.jsonl`.
+**Bot-code permission (Doug, Sat 12:14 PM ET):** you may edit bot code (`*.ts`) for the assigned change only, on your own branch (`diego/P-D-###-<name>`), never on main.
 
-State as of Fri 11:42 PM ET: the champion is Build 5b `100941f` at 2.38. Losses: B5 fire gate 2.04, B6 hold behind cover 2.23, B7 no 100 m gun gate 2.04, B8 laser first 2.27, B10 nav fallback 2.35, B11b nav inflation 2.5 m 2.10. In build now: B12 FARM (pick up cubes, shoot drones and crates when no enemy is within 160 m), because the RCA found the bot never collects cubes (winners have about 17-24, we have about 0). Top 32 at about 4.25 qualifies by Sun Nov 22 11:00 AM ET.
+Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, flag 0 = champion byte-identical, PR template table on both seed sets (2000+3000 and held-out 4000+5000), kills as the primary row. Never merge, never submit, never click anything on joinbuilders.org. No other team's code.
 
-Facts: practice is 48 fixed seeds and deterministic. The site shows only the mean score, with no per-match data. Our bot never appears on the stream (only the top 16 do in showdowns; public matches are humans plus house bots). Regen starts 5 s after the last hit dealt or taken, at 45 HP/s.
+---
 
-## 2. Research (pick ONE question per run, ~15 min)
-Prefer questions that decide the NEXT build. KILLS ARE THE SCORE: in practice the house squad never kills itself, so we only gain places when house bots die to us or the zone (2.54 now ~ 2.5 bots before us; top teams ~5.5). Order:
-1. End every run with ONE concrete next-build proposal (a single mechanism, the file/function to change, the expected gain and why), in suggested_change. A proposal beats a summary.
-2. How do top bots get kills on house bots: aim/leading, weapon choice and range, which target first (weakest/lone/easy-tier), finishing? Use the recordings in /workspace/watch if shared, the stream, public repos (ideas only, cite file:line).
-3. Early laser: Watcher measures laser by 30 s in 77% of winners vs 26% of the bottom half (d=1.17), but our Build 8 'laser first' scored 2.27 vs 2.38. Why did ours fail and what would a correct version do?
-4. Engagement refinements after Build 14 (TTK vs TTD) is scored, and healing that works without holding fire.
-Sources: kit docs, the top teams' public repos, the leaderboard, and the CSV or recordings you already have. Never invent numbers.
+## Current prompt: P-D-001 (Grok, Sat Nov 21, 12:10 PM ET; log 020a1c8)
 
-## 3. Deliver (every run)
-Write `research/intake/diego-YYYY-MM-DD-HHMM.json` in the format in `research/intake/README.md` (1-5 findings, each with one claim, sources, confidence, one suggested change, failure_classes). Add a short `coord/log.md` entry (Did / Result / Found / Next). Push to branch `research-YYYYMMDD-HHMM` and open a PR touching only `research/intake/` and `coord/log.md`. Grok merges it and ingests it on the next 15-min tick. If nothing new: write no file and exit.
+Your state report (PR #91) is accepted: kills is now the primary slot row, and PRs #35/#36/#44/#45/#72 are closed.
 
-## Autonomous loop (Diego runs once, leaves it running)
-```bash
-cd mech-bot && while true; do git checkout -q main && git pull -q && claude -p "$(cat coord/next-diego.md)" --dangerously-skip-permissions >> ~/diego-research.log 2>&1; sleep 1200; done
-```
-One run every ~45 min keeps usage low. Stop with Ctrl-C. Needs `gh` signed in (for the PR) and push access to the repo.
+**Step A:** ONE instrumentation pass on B80 (`28c3acc`), seeds 2000+3000 and held-out 4000+5000. Measure:
+1. **Late hunt:** in games alive at 120 s, ticks in hold/heal with no target, and how often a lone house mech was known within 150 m.
+2. **Supply drops (70/140/210 s):** per game reaching 95 s, drop arrivals and drop claims (add `drop_arrivals` and `drop_claims` columns), and whether the ring was contested.
+3. **Post-kill claim:** how often the claim at `brain.ts:628` is blocked by "seen" or a recent hit, and the cubes left within 12 m of our kills.
+
+**Step B:** build ONE flag for the item with the largest measured gap × games affected. Flag 0 = B80, byte-identical.
+- Late hunt shape: `LATE_HUNT_S` 120; HP ≥ 60%, no LOS threat → walk to the nearest known lone house mech instead of holding. It must be settable to 0 for the final.
+- Drop shape: claim the drop only if B80 claims fewer than about 1 per game reaching 95 s.
+- Claim shape: after OUR kill only, dash to cubes within 12 m if HP is high and at most 1 enemy has LOS.
+
+**Screens:** both seed sets, PR template table. Primary rows: kills and kills/min after 60 s. Vetoes as in WORKFLOW.
+
+Don't touch H1 (lightning; Doug's Claude has it as B103). No slot until Grok verifies. **Report Step A numbers first** in a docs PR titled `P-D-001 Step A: ...`, even if you don't build.
+
+---
+
+## Queued next: P-D-002 (Grok, Sat Nov 21, 12:35 PM ET) — not active until P-D-001 Step B is submitted
+
+Source: `coord/research/strategy-report-2026-11-21.md` §4 S2 (threat forecasting), narrowed by real site data (score ≈ our kills; 86% of points from games ≥ 40 s; kill rate falls after 120 s).
+
+ONE flag `FORECAST2_S` (default 0 = B80 byte-identical; 60 = on after 60 s). After 60 s only, in engagement viability ONLY (`race()`/engage decision, not nav, not cover routine): if a second known enemy (seen in the last few seconds, not invented house positions) is closing and could get LOS within ~3 s, treat the fight as 2v1 before the second LOS appears. Don't activate the old cover routine earlier (B82/B100 lost), don't add blanket avoidance (B98 lost). Report kills and kills/min after 60 s first, both seed sets. The site score alone decides keep/close.
+
+---
+
+## Past prompts
+(none in this format yet; earlier assignments are in `coord/log.md`)

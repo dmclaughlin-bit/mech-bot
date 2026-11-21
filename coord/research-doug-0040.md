@@ -60,7 +60,7 @@ The 4 winners without a laser by 30 s took one at 39.6, 62.6, 66.8 and 76.2 s. T
 
 1. **The seek almost never ran.** Replaying its conditions on real spawns (`q1b.out`, building line of sight only, so an upper bound): a ground laser is in the spawn view wedge without turning in 28–29% of spawns, and the full rule passes in 12% (19/160, public) to 16% (35/224, showdown). It kept the two things that block winners' trips: it only knows pickups it sees this tick (`obs.pickups`, no memory, no scan), and it kept the 160 m gate that 9 of 10 winner trips break. Part of that 12–16% was already covered by the parent's 80 m rule.
 2. **The cost side ran in every laser match.** While the laser leads, the torso aims with no lead and the gun's `onTarget(gunAim)` test fails against a sideways mover, so the gun is silent for about 31% of each laser cycle (Diego's intake, PR #28). Build 8 widened that to charges held behind cover or past range. A held charge moves at half speed (`charge_move_mult` 0.5 in the kit hello) for up to 0.75 + 2 s (`protocol.md:305`).
-3. **Our laser release is looser than the target is wide.** `yawTol` is `atan2(radius × size × 1.2, d)` with a 0.015 rad floor (`brain.ts:678`), so a full charge releases with up to 3.0 m of sideways error, or 4.2 m at 280 m. A mech's radius is 2.5 m (`protocol.md:101`). The Wolverines bot releases inside 0.9 × a 2.2 m half-width (`varchaskukreja/TTUN@596f339 mech-royale/bot/bot.ts:289,312`).
+3. **Our laser release is looser than the target is wide.** `yawTol` is `atan2(radius × size × 1.2, d)` with a 0.015 rad floor (`brain.ts:678`), so a full charge releases with up to 3.0 m of sideways error, or 4.2 m at 280 m. A mech's radius is 2.5 m (`protocol.md:101`). The Team A bot releases inside 0.9 × a 2.2 m half-width.
 4. **A laser on our bot is an ungated long-range weapon.** The 100 m gate covers only the gun (`brain.ts:716`). The laser fires at any clear mech inside 280 m (`brain.ts:691`) and is heard at 380 m (`protocol.md:385`). Build 7 removed the gun's gate and lost 0.34 (`EXPERIMENTS.md:13`).
 5. **Holding a laser early is not enough.** Bottom-half mechs that take a laser take it at a median 6.0 s and still finish bottom half. Diego's rows agree: laser at ≤15 s averaged 7.60 points and >15 s averaged 10.51 (`research/intake/diego-match-data-1129.md:38-39`).
 
@@ -70,8 +70,8 @@ The loss was 0.11, which is about 5 placement points over 48 matches. I cannot s
 
 One mechanism: know where the weapons are and go for one while still gun-only.
 
-- **Scan:** sweep the torso through a full turn in the first 3 s when no enemy is in view, then sweep around the heading while walking. The Wolverines bot does both (`varchaskukreja/TTUN@b7e9a6d mech-royale/bot/bot.ts:616-621`).
-- **Remember:** keep ground-level pickups for 60 s and forget one on `took`, `take_failed`, or when we stand next to it and it is gone (same repo, `bot.ts:154-162`).
+- **Scan:** sweep the torso through a full turn in the first 3 s when no enemy is in view, then sweep around the heading while walking. The Team A bot does both.
+- **Remember:** keep ground-level pickups for 60 s and forget one on `took`, `take_failed`, or when we stand next to it and it is gone (same public bot).
 - **Go:** while gun-only, walk a nav path to the best remembered laser or lightning within about 175 m (the longest early winner trip was 176 m). Prefer the laser. Drop the 160 m gate. Stop only when a mech is hitting us or the zone test fails.
 - **Reach this buys (MEASURED, `q1b.out`):** after a full turn, a ground laser is visible within 130 m from 38–42% of spawns and within 175 m from 47–51%. A laser or lightning is visible within 130 m from 58–59% and within 175 m from 65%. Build 8's rule passed in 12–16%.
 - **Do not copy from Build 8:** the charge-steers-torso and hold-behind-cover changes.
@@ -142,11 +142,11 @@ A KILL engagement lasts a median 8.2 s, deals 1,197 and takes 393, and leaves th
 | Difference | We observe it in | Action |
 |---|---|---|
 | Winners land the first hit (79% vs 47%) | A mech entering `obs.mechs` with a clear line | Shoot on first clear sight inside effective range. Do not creep to a hiding spot first (`brain.ts:619-625`). Start the laser charge on sight |
-| Laser in hand (64% vs 13%) | `self.weapons` | ARM-UP before contact. Mid-fight, a gun-only bot detours to a remembered weapon within 60 m unless losing (`TTUN@b7e9a6d bot.ts:396`) |
+| Laser in hand (64% vs 13%) | `self.weapons` | ARM-UP before contact. Mid-fight, a gun-only bot detours to a remembered weapon within 60 m unless losing (Team A) |
 | Cube lead (2.64 vs 0.31) | `self.cubes` against `mechs[i].cubes` | Add the cube bonus to both sides of the Build 14 race (already there) and avoid opening on a target with more cubes unless it is hurt |
 | Nobody else on me (7% vs 30%) | Distinct `damaged.by` ids in the last 2–3 s, plus enemies with line of sight | Break off at two attackers. Build 14's `alone` test does this |
-| Rear hits (deal 31%, take 3%) | `mechs[i].aim` yaw against the bearing to us (`protocol.md:295`) | Open on a target whose aim is more than 75–90° off us (`brycehcmcgrath/mechfight-bot@18ae7c4 vendor/lance/bot.py:466-467`). Keep facing whoever hits us |
-| Winners hold range, losers close | Distance to target | Hold a standoff by weapon instead of closing: 110 m with a laser, 70–85 m gun-only, 28 m with lightning (`TTUN@596f339 bot.ts:352`; `vendor/lance/bot.py:982-984`) |
+| Rear hits (deal 31%, take 3%) | `mechs[i].aim` yaw against the bearing to us (`protocol.md:295`) | Open on a target whose aim is more than 75–90° off us (Team B). Keep facing whoever hits us |
+| Winners hold range, losers close | Distance to target | Hold a standoff by weapon instead of closing: 110 m with a laser, 70–85 m gun-only, 28 m with lightning (Team A; Team B) |
 | Laser keeps its hit rate with range | Distance, `self.weapons` | With a laser, fight at 100–200 m, where house guns hit 2–35% |
 | Cover between shots (0.35 vs 0.13) | `clearLine` on the map | Weak for us: Build 6 lost 0.15 moving to cover (`EXPERIMENTS.md:14`). Only step behind a corner during a reload or laser cooldown |
 | Strafing speed (6.1 vs 6.4 m/s) | — | Not a lever. Do not spend a build on it |
@@ -169,7 +169,7 @@ Values from the kit hello (`check/stream.jsonl.gz`, `config.upgrades`) and `prot
 | `nanites` | regen ×1.6, starts 1.5 s sooner | None during a fight. Heals 35% → 90% in 14.2 s instead of 22.1 s |
 | `sensors` | +15 m near range, +25 m vision | None |
 
-- **The top three are right.** Both public bots I read open with plating, armor, nanites (`TTUN@b7e9a6d bot.ts:15-18`; `vendor/lance/bot.py:23-28`). The squad focuses one target, so HP pays against every attacker while DPS pays against one.
+- **The top three are right.** Both public bots I read open with plating, armor, nanites (Team A; Team B). The squad focuses one target, so HP pays against every attacker while DPS pays against one.
 - **Sensors is too high.** It sits above every weapon upgrade and adds nothing to a fight. The two public bots rank it 18th of 22 and 14th of 22.
 - **Weapon upgrades need an order.** Today all of them tie at rank 4, so `gun_velocity`, `laser_pierce` and mortar upgrades can beat `gun_mag`. Suggested: `gun_mag`, `laser_damage`, `gun_damage`, `laser_charge`, `gun_rate`, `lightning_efficiency`, then the rest.
 - **The recordings do not settle order.** Winners' first upgrades are mixed and the defensive share is 49% vs 47% (`ladder.md:58-59`, low confidence). Winners have more upgrades because they have more cubes (6.46 vs 0.42, `findings.md:73`).
@@ -177,41 +177,43 @@ Values from the kit hello (`check/stream.jsonl.gz`, `config.upgrades`) and `prot
 
 ## 4. Public repos of other teams
 
-Ideas only. All `bot.ts` and `bot.py` lines below were re-read at the stated commits. Not read: AT, BobBuildIt and ranks 4–9 (no public repo found); `shanmukha-here/eagle-eye-mech-royale`, `atharvatripathi2026/gtgoats_mech_royale` and `moonriver0922/mech-royale-planner` (found, not opened).
+Ideas only, from public bots we read. File, commit, URL, and receipt references omitted.
 
-### `varchaskukreja/TTUN` — Wolverines, rank 3 on the 9:40 PM board
+Not read: Team G, Team H, and ranks 4–9 (no public repo found); Team F, Team E, and a planner repo from Team C (found, not opened).
 
-Team link is second-hand: r1ver's notes cite a TTUN receipt (`moonriver0922/wgsrobot@2f343eb experiments/README.md:7`). Commit `b7e9a6d` is "v8-econ"; a later commit message calls it the 5.19 economy bot.
+### Team A — rank 3 on the 9:40 PM board
 
-- **Spawn scan:** for the first 3 s it commands the torso 1.6 rad ahead of its current aim, which is a continuous spin, then sweeps ±0.9 rad around the heading while walking (`@b7e9a6d bot.ts:616-621`).
-- **Pickup memory:** ground-level pickups kept 60 s (`@b7e9a6d bot.ts:154-162`).
-- **Loot choice:** distance minus a weapon preference (laser 3.2, lightning 2.5, mortar 1) and minus 50 when gun-only. No distance cap and no enemy-distance gate outside fight mode (`@b7e9a6d bot.ts:14,431-441`).
-- **Mid-fight detours:** to a cube within 70 m above half HP, and to a weapon within 60 m when gun-only (`@b7e9a6d bot.ts:393-396`).
-- **Gun gate:** fires at any distance under the weapon's range when the yaw error is inside 1.2 × the target's angular half-width. No fixed range gate (`@596f339 bot.ts:289,297`).
-- **Laser:** starts charging once the target is seen in range, releases only at full charge and aligned (`@596f339 bot.ts:310-315`).
-- **Finish and losing:** never retreats from a target under 20% HP while above 20% itself with at most 2 threats. Losing is HP under 35% and behind the enemy, or 2 threats under 55% (`@596f339 bot.ts:349-350`).
-- **Practice note in code:** cover-seeking against a charging laser is disabled in practice as too passive against squad focus fire (`@596f339 bot.ts:379`). It infers a free-for-all when at least 3 mechs have died that it did not kill (`@596f339 bot.ts:113-118`).
-- **Upgrade order:** plating, armor, nanites, lightning_efficiency, laser_damage, laser_charge, gun_damage, gun_rate, …, sensors 18th (`@b7e9a6d bot.ts:15-18`).
+A published note from Team C cited a receipt for Team A's bot. The revision we read was an economy-focused version; a later note called it a 5.19 economy bot.
 
-### `LanceHuang245/mech-royale` — read as vendored in `brycehcmcgrath/mechfight-bot@18ae7c4 vendor/lance/bot.py`
+- **Spawn scan:** for the first 3 s it commands the torso 1.6 rad ahead of its current aim, which is a continuous spin, then sweeps ±0.9 rad around the heading while walking.
+- **Pickup memory:** ground-level pickups kept 60 s.
+- **Loot choice:** distance minus a weapon preference (laser 3.2, lightning 2.5, mortar 1) and minus 50 when gun-only. No distance cap and no enemy-distance gate outside fight mode.
+- **Mid-fight detours:** to a cube within 70 m above half HP, and to a weapon within 60 m when gun-only.
+- **Gun gate:** fires at any distance under the weapon's range when the yaw error is inside 1.2 × the target's angular half-width. No fixed range gate.
+- **Laser:** starts charging once the target is seen in range, releases only at full charge and aligned.
+- **Finish and losing:** never retreats from a target under 20% HP while above 20% itself with at most 2 threats. Losing is HP under 35% and behind the enemy, or 2 threats under 55%.
+- **Practice note in code:** cover-seeking against a charging laser is disabled in practice as too passive against squad focus fire. It infers a free-for-all when at least 3 mechs have died that it did not kill.
+- **Upgrade order:** plating, armor, nanites, lightning_efficiency, laser_damage, laser_charge, gun_damage, gun_rate, …, sensors 18th.
 
-- **Weapon reach:** remembered pickups up to 240 m when holding neither laser nor lightning, 160 m otherwise (`bot.py:738-746`).
-- **Opening rule:** opens only cheap fights: under 55 m, target under 55% HP, target shot us in the last 6 s or is charging, or its aim is more than 75° off us (`bot.py:453-468`).
-- **Standoff:** 110 m with a laser, 28 m with lightning, 85 m gun-only, 55 m when finishing (`bot.py:982-986`).
-- **Quiet walking is a flag,** capping speed at 4.6 m/s near enemies or recent sounds (`bot.py:1071-1076`).
+### Team B — read as vendored in Team D's public repo
+
+- **Weapon reach:** remembered pickups up to 240 m when holding neither laser nor lightning, 160 m otherwise.
+- **Opening rule:** opens only cheap fights: under 55 m, target under 55% HP, target shot us in the last 6 s or is charging, or its aim is more than 75° off us.
+- **Standoff:** 110 m with a laser, 28 m with lightning, 85 m gun-only, 55 m when finishing.
+- **Quiet walking is a flag,** capping speed at 4.6 m/s near enemies or recent sounds.
 
 ### Official scores other teams published
 
-`brycehcmcgrath/mechfight-bot@18ae7c4 docs/RESULTS.md` (BackwardsDeployeds, rank 10):
+Team D's published results (rank 10):
 
-| Change | Score | Line |
-|---|---:|---|
-| Raise loot priority 1.0 → 1.6 on a GT Goats controller | 3.71 → 3.65 | `:10-11` |
-| Magazine-aware finishing | → 4.10 | `:12` |
-| Lance controller, quiet walking on | 4.54 | `:13` |
-| Same source, quiet walking off | 4.75 | `:14` |
+| Change | Score |
+|---|---:|
+| Raise loot priority 1.0 → 1.6 on a Team E controller | 3.71 → 3.65 |
+| Magazine-aware finishing | → 4.10 |
+| Team B controller, quiet walking on | 4.54 |
+| Same source, quiet walking off | 4.75 |
 
-r1ver (`moonriver0922/wgsrobot@2f343eb experiments/official-runs.md:7-10`, in Chinese, my translation): 4.54 for a Lance derivative with slow walking, 4.67 with normal speed plus a supply-capture fix, 5.08 after rebasing on TTUN v8-econ, 5.10 with a short ground-path check.
+Team C published official runs: 4.54 for a Team B derivative with slow walking, 4.67 with normal speed plus a supply-capture fix, 5.08 after rebasing on Team A's economy bot, 5.10 with a short ground-path check.
 
 ## Ranked next builds
 

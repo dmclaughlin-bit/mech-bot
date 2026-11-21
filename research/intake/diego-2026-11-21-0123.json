@@ -10,7 +10,7 @@
         {"ref": "mechfight-kit/check/stream.jsonl.gz hello.config.drops", "kind": "protocol", "quote": "\"times\": [70, 140, 210], \"fall_s\": 25, \"radius\": 8, \"capture_s\": 4, \"cubes\": 3, \"repair\": 1"},
         {"ref": "brain.ts:456-476 (main @ 5eb3915)", "kind": "repo", "quote": ".filter((d) => d.lands_in <= 0 && (d.holder === null || d.holder === hello.slot) && ... near(d.pos) && zoneSafe(...))"},
         {"ref": "params.ts:32-34 (main @ 5eb3915)", "kind": "repo", "quote": "export const FARM_ENEMY_M = 160 ... export const FARM_PICKUP_M = 80"},
-        {"ref": "coord/learnings.md:14 (watcher, 2 showdown wins)", "kind": "watch_stream", "quote": "Mustikas 34 cubes, 7 upgrades ..., all 3 supply drops"}
+        {"ref": "coord/learnings.md:14 (watcher, 2 showdown wins)", "kind": "watch_stream", "quote": "Team L 34 cubes, 7 upgrades ..., all 3 supply drops"}
       ],
       "confidence": 0.6,
       "is_guess": false,

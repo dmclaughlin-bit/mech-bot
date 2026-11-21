@@ -4,7 +4,7 @@ Short by request. No audit was redone; this builds on `coord/audit/` and `coord/
 
 ## 1. Verified status
 - **Champion:** B80 `28c3acc` (merged as `cb93980`), site **3.79**, receipt BB-78A44AAF. `pipeline/data/champion.json` was updated to match (commit `0d2444f`). Bot code on main hasn't changed since.
-- **Board at 10:59 AM ET:** 137th of 256, #32 at 5.33, #1 kyoto-max at 6.31.
+- **Board at 10:59 AM ET:** 137th of 256, #32 at 5.33, #1 at 6.31.
 - **Today's site tests:** B26 multi-threat race 3.48 (closed); B51 corner duel 3.79, a tie (closed). Since B80, everything has tied or lost (B82, B86, B88, B43, B90, B92, B98, B100, B94, B26, B51).
 - **UF100 (PR #88, head `3ee37ca`):** Grok is verifying it now: the kit gate, the flag-0 identity check (must change 0 of 192 games vs B80), and the 192-game screen with handoff §4's vetoes.
 

@@ -1,5 +1,7 @@
 # Grok coordinator brief
 
+> **Prompt inbox (Sat Nov 21, 12:12 PM ET, Doug):** Grok writes prompts for Diego's Claude in [`coord/next-diego.md`](next-diego.md), one current prompt with an ID (`P-D-###`). Diego's Claude ACKs in `coord/log.md` and reports by PR with the ID in the title.
+
 > **NEW (Sat Nov 21, 11:52 AM ET, from Diego):** review the code audit: read [`coord/grok-review-code-audit-2026-11-21.md`](grok-review-code-audit-2026-11-21.md), decide if it is useful, and implement what you judge necessary under the WORKFLOW slot rules.
 
 > **OPEN DIRECTIVE (Sat Nov 21, 11:18 AM ET, from Diego, highest priority):** read [`coord/DIRECTIVE-2026-11-21-master-audit.md`](DIRECTIVE-2026-11-21-master-audit.md) first and answer its §18. Today's audits are in `coord/audit/`; don't redo them.

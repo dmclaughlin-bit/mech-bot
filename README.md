@@ -7,7 +7,7 @@ A bot for **Mech Royale**, the Builders track of the Builders Buildathon at Ohio
 This repository starts from the official mechfight bot kit on the Mech Royale track page:
 
 - `mechfight.ts` is the kit's TypeScript wrapper.
-- `bot.ts` began as the kit's `example.ts`.
+- `brain.ts` began as the kit's `example.ts`. `bot.ts` is the entry point.
 - `Dockerfile` and `package.json` come from the kit's `ts/` folder.
 
 All work here is released under the MIT license, as the event rules require.

@@ -6,5 +6,5 @@ node_modules/
 .env.*
 
 # Private notes never belong in this public repo
-STRATEGY.md
+mech-strategy.md
 LOG.md

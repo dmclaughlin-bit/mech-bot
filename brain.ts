@@ -17,6 +17,8 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 74 (close laser): in the first 45 s, once a known laser is within LASER_CLOSE_M, keep walking to it even if
+ * a finish engage, heal, or claim would otherwise cancel the trip (see LASERCLOSE_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -120,6 +122,16 @@ const LASER_LEAD_S = 0.075
  * multi-threat fights when the race looked winning, and changed hit rates). Against real house bots that share
  * vision and hit harder than the sim, a 2-on-1 stand-and-shoot is a fight we cannot finish. */
 const CROSSFIRE_ON = true
+/** Build 74 (finish a close laser trip): diagnosis on champion b889814, n=192: of 134 games with no laser by 30 s,
+ * 64 had started a laser walk and still didn't have one (12 died on the way, 52 were alive at 30 s). In those walks
+ * the path was nearly straight, but combat took over before we got within 15 m of the pickup, so the last stretch
+ * never ran. When this is on, once a remembered in-reach laser is within LASER_CLOSE_M we keep walking (and can take
+ * it) even if engage, heal, claim, or a recent poke would cancel the Build 17 trip. Zone travel and a hurt retreat
+ * still win. Aim and fire stay on the target. Different from B36 (that blocked finish/TTK for the whole 250 m trip
+ * unless hit in 3 s, and tied 3.54). Different from B66/B68 (those change the lightning slot, not the last stretch
+ * of an already-started walk). false = champion. */
+const LASERCLOSE_ON = true
+const LASER_CLOSE_M = 30
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -740,11 +752,33 @@ function buildBot(hello: Hello): Bot {
           mode = "hide"
         }
       }
+      // Build 74: last stretch of a laser trip. After the usual priority chain, so it only overrides engage / heal /
+      // claim / farm / hide / hold, never zone travel or a hurt retreat. Take-in-reach is unchanged and still fires
+      // once we are inside the pickup radius.
+      if (
+        LASERCLOSE_ON && LASER_RUSH_ON && obs.t < LASER_RUSH_S && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip &&
+        !mode.startsWith("zone") && !mode.startsWith("to next") && !mode.startsWith("retreat") && mode !== "laser rush"
+      ) {
+        const pace = ZONE_WALK * walkSpeed
+        const onward = (p: Vec3) => Math.max(0, flat(p, z.next_center) - inner)
+        const close = [...arms]
+          .filter(([id, a]) =>
+            a.kind === "laser" && !laserSkip.has(id) &&
+            flat(a.pos, me.pos) <= LASER_CLOSE_M &&
+            flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
+            !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4) &&
+            (flat(a.pos, me.pos) + onward(a.pos)) / pace + ZONE_BUFFER < timeLeft)
+          .sort((a, b) => flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos))[0]
+        if (close) {
+          move = travel(me.pos, close[1].pos, obs.t, canPlan()).move
+          mode = "laser close"
+        }
+      }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush" && mode !== "laser close") move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

@@ -17,12 +17,14 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 49 (mid-game laser hunt): after the 45 s window, the same laser trip, only while safe: HP over the retreat line,
+ * no mech hit for 5 s, no enemy with line of sight within the gun gate and no second one at all (see MID_LASER_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, MID_LASER_ON, MID_LASER_QUIET_S, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -248,7 +250,8 @@ function buildBot(hello: Hello): Bot {
   let beamFull: number | null = null
   let beamAt: Vec3 | null = null
   const laserSkip = new Set<number>()
-  let rush: { id: number; since: number } | null = null
+  /** Build 49: `mid` marks a trip started after LASER_RUSH_S, which must pass the mid-game safety test every tick. */
+  let rush: { id: number; since: number; mid?: boolean } | null = null
   /** Build 12: last time a mech (or the zone) damaged us, the item we are walking to, and items we gave up on. */
   let lastMechHit = -Infinity
   /** Build 19: the last time we took damage from anything (mech, drone or zone). */
@@ -627,9 +630,20 @@ function buildBot(hello: Hello): Bot {
       let rushMove: [number, number] | null = null
       const rushSlot = me.weapons.includes(null) || (enemies.length === 0 && me.weapons.some((x) => x?.kind === "gun"))
       const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
+      // Mid-game laser hunt (Build 49): see MID_LASER_ON in params.ts. After LASER_RUSH_S a trip to a laser starts, and a
+      // trip started then goes on, only while HP is at or above the retreat line, no mech hit us for MID_LASER_QUIET_S, and
+      // no enemy with line of sight to us is within the gun gate, nor a second one anywhere. A trip started before
+      // LASER_RUSH_S keeps the Build 17 rules.
+      const midSafe = () => {
+        if (me.hp < RETREAT_HP * me.max_hp || obs.t - lastMechHit <= MID_LASER_QUIET_S) return false
+        const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        return los.length < 2 && !los.some((e) => flat(e.pos, me.pos) < GUN_GATE)
+      }
+      let midTrip = false
       if (
-        LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
-        !claimGoal && !hurt && !cubeFirst && obs.t - lastMechHit > FARM_QUIET_S
+        LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush || MID_LASER_ON) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
+        !claimGoal && !hurt && !cubeFirst && obs.t - lastMechHit > FARM_QUIET_S &&
+        (obs.t < LASER_RUSH_S || (!!rush && !rush.mid) || (midTrip = midSafe()))
       ) {
         const pace = ZONE_WALK * walkSpeed
         const onward = (p: Vec3) => Math.max(0, flat(p, z.next_center) - inner)
@@ -643,9 +657,9 @@ function buildBot(hello: Hello): Bot {
           .sort((a, b) => Number(a[1].kind !== "laser") - Number(b[1].kind !== "laser") || flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos))
         const kept = rush ? options.find(([id]) => id === rush!.id) : undefined
         const pick = kept && kept[1].kind === options[0][1].kind && flat(kept[1].pos, me.pos) - flat(options[0][1].pos, me.pos) < LASER_SWITCH_M ? kept : options[0]
-        if (pick && (obs.t < LASER_RUSH_S || pick === kept)) {
+        if (pick && (obs.t < LASER_RUSH_S || pick === kept || (midTrip && pick[1].kind === "laser"))) {
           const [id, { pos }] = pick
-          if (rush?.id !== id) rush = { id, since: obs.t }
+          if (rush?.id !== id) rush = midTrip ? { id, since: obs.t, mid: true } : { id, since: obs.t }
           const go = travel(me.pos, pos, obs.t, canPlan())
           const planned = !!route && flat(route.goal, pos) <= ROUTE_GOAL_SHIFT
           // No path (a ledge, a walled yard) or a walk that has taken too long: leave this one for good.
@@ -709,7 +723,7 @@ function buildBot(hello: Hello): Bot {
       } else if (rushMove) {
         // Early arm-up (Build 17): full walk speed (steps carry only 40 m), no boost. Walking does not stop regen.
         move = rushMove
-        mode = "laser rush"
+        mode = rush?.mid ? "laser rush, mid" : "laser rush"
       } else if (CROSSFIRE_ON && (spot = (() => {
         const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
         return los.length >= 2 ? hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan) : null
@@ -744,7 +758,7 @@ function buildBot(hello: Hello): Bot {
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && !mode.startsWith("laser rush")) move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

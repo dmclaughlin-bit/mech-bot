@@ -85,6 +85,18 @@ export const LASER_TRIP_M = 250
 /** Give up on a weapon we have walked toward this long (s) without reaching it. */
 export const LASER_CHASE_S = 20
 /**
+ * Build 49 (mid-game laser hunt): after LASER_RUSH_S, while we still hold no laser, also start a Build 17 trip to a laser
+ * we see or remember (same LASER_TRIP_M path bound, same zone clock test with its ZONE_BUFFER margin, same LASER_CHASE_S
+ * give-up, and the same ranking: zone travel, engage, retreat and collecting a kill's cubes come first), but only when it
+ * is safe: HP at or above params.retreatHp of max, no mech damage for MID_LASER_QUIET_S, no enemy with line of sight to
+ * us within params.gunRange, and fewer than two enemies with line of sight to us (no crossfire to break). This replaces
+ * the 160 m enemy-free bubble the loot walk needs. Re-tested every tick, so the trip stops the tick we are hit or hurt.
+ * A lightning trip after LASER_RUSH_S is not added. Set MID_LASER_ON to false to roll back to Build 60 behavior exactly.
+ */
+export const MID_LASER_ON = true
+/** Mid-game trip: no mech damage on us for this long (s). */
+export const MID_LASER_QUIET_S = 5
+/**
  * Build 16 (target pick): instead of the nearest enemy with a clear line, lock the enemy mech with the best kill
  * value (target.ts: a shot from here, short time-to-kill from our DPS, low hp, weak weapons, alone) and keep it until
  * it dies or has had no shot for TARGET_LOST_S. An enemy outside the circle is picked only while we can shoot it from

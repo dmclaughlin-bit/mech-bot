@@ -331,3 +331,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 2026-11-21 2:48 AM ET: Build 30 settings comboA (7b71e43, PR #46: aggression 1.5, retreatHp 0.30, LASER_TRIP_M 250) scored 3.54, receipt BB-5E7DE301. NEW CHAMPION (was 3.50 B17); merged. Site auto-set it as final entry. Rank 108/184; rank 32 Hachimi 4.96.
 
 - 2026-11-21 3:17 AM ET: Build 36 rush-first (9a9cf10, PR #50) scored 3.54, receipt BB-285D47C5. Ties champion B30 3.54 and does not beat it, so the PR is closed. Rank 114/188; rank 32 who dey 5.02.
+
+- 2026-11-21 3:23 AM ET: Build 40 stack (34eefff, PR #51: rush-first + pre-charge + backstab) scored 3.23, receipt BB-2F1AD6E9. Below champion 3.54 despite the best sim tonight (+0.29 ± 0.13), so the PR is closed. Rank 114/190; rank 32 ManiFest 5.02.

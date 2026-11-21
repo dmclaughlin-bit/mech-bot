@@ -9,6 +9,8 @@
  * Build 5 (survival half): retreat to the nearest in-zone spot out of the attackers' line of sight (F3), then
  * heal there silently until HP is back over 90% (F4; Build 5b keeps normal fire while healing), and while holding, slip out of any
  * enemy's sight: its 45 m proximity ring and its 120° wedge around its aim (Q2). Q1 (silent hold) is unchanged.
+ * Build 8 (laser first): seek a laser early (then lightning) when it is safely reachable inside the zone with no enemy
+ * within 160 m, and let a charging laser keep steering the torso until it fires.
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -294,23 +296,6 @@ function buildBot(hello: Hello): Bot {
       }
       const enemies = obs.mechs.filter((m) => m.kind === "mech")
 
-      // Loot (D3, L1, L2): laser and lightning only, never a mortar, and only with no enemy within 160 m.
-      // Keep the gun until the second of the two shows up, then swap the gun out, never with an enemy in view.
-      let lootTarget: Vec3 | null = null
-      if (!enemies.some((m) => flat(m.pos, me.pos) < LOOT_CLEAR)) {
-        const held = me.weapons.map((x) => x?.kind ?? null)
-        const free = held.indexOf(null)
-        const swapSlot = free < 0 && enemies.length === 0 && (held.includes("laser") || held.includes("lightning")) ? held.indexOf("gun") : -1
-        const want = obs.pickups
-          .filter((p) => (p.kind === "laser" || p.kind === "lightning") && !held.includes(p.kind))
-          .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
-        if (want && (free >= 0 || swapSlot >= 0)) {
-          if (flat(want.pos, me.pos) < cfg.loot.pickup_radius && Math.abs(want.pos[2] - me.pos[2]) < 4) {
-            act.take = want.id
-            if (free < 0) act.drop = swapSlot
-          } else if (flat(want.pos, me.pos) < LOOT_DETOUR) lootTarget = want.pos
-        }
-      }
       // Zone (Z1, Z2, H2, Q1): leave for the next circle just in time, walk there, then hold silently.
       const z = obs.zone
       const walkSpeed = me.stats.walk_speed ?? cfg.mech.walk_speed
@@ -342,6 +327,42 @@ function buildBot(hello: Hello): Bot {
       const myHeight = me.stats.height ?? cfg.mech.height * scale(me.cubes)
       const threats = enemies.slice().sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos)).slice(0, LOS_TARGETS)
       const zoneKeep: [number[], number] = toEnter === 0 ? [z.next_center, inner] : [z.center, Math.max(0, z.radius - margin)]
+      // Loot (D3, L1, L2): laser and lightning only, never a mortar, and only with no enemy within 160 m.
+      // Keep the gun until the second of the two shows up, then swap the gun out, never with an enemy in view.
+      // Laser first (Build 8): until we hold a laser, go for the nearest one we can reach safely, ahead of a nearer
+      // lightning and past the 80 m detour: inside the circle we may hide in (zoneKeep), on the ground (within the
+      // 4 m take height of the terrain, so not on a roof), no enemy mech within 160 m of it either, and with the trip
+      // there and on to the next circle still under Z1's leave time at twice the straight line (the same 2x path
+      // bound that gates zone planning above). Other weapons keep the 80 m detour; anything wanted in reach is taken.
+      let lootTarget: Vec3 | null = null
+      let lootByPath = false
+      if (!enemies.some((m) => flat(m.pos, me.pos) < LOOT_CLEAR)) {
+        const held = me.weapons.map((x) => x?.kind ?? null)
+        const free = held.indexOf(null)
+        const swapSlot = free < 0 && enemies.length === 0 && (held.includes("laser") || held.includes("lightning")) ? held.indexOf("gun") : -1
+        const inReach = (p: { pos: Vec3 }) => flat(p.pos, me.pos) < cfg.loot.pickup_radius && Math.abs(p.pos[2] - me.pos[2]) < 4
+        const wanted = obs.pickups
+          .filter((p) => (p.kind === "laser" || p.kind === "lightning") && !held.includes(p.kind))
+          .sort((a, b) => Number(b.kind === "laser") - Number(a.kind === "laser") || flat(a.pos, me.pos) - flat(b.pos, me.pos))
+        const laserSafe = (p: { pos: Vec3 }) => {
+          if (flat(p.pos, zoneKeep[0]) > zoneKeep[1]) return false
+          if (solids?.ground && Math.abs(p.pos[2] - groundAt(solids, p.pos[0], p.pos[1])) >= 4) return false
+          if (enemies.some((m) => flat(m.pos, p.pos) < LOOT_CLEAR)) return false
+          const legs = flat(me.pos, p.pos) + Math.max(0, flat(p.pos, z.next_center) - inner)
+          return (2 * legs) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + ROUTE_TRACK_S * known.size < timeLeft
+        }
+        const laserPick = held.includes("laser") ? undefined : wanted.find((p) => p.kind === "laser" && laserSafe(p))
+        const want = wanted.find(inReach) ?? laserPick ?? wanted.find((p) => p.kind !== "laser" && flat(p.pos, me.pos) < LOOT_DETOUR)
+        if (want && (free >= 0 || swapSlot >= 0)) {
+          if (inReach(want)) {
+            act.take = want.id
+            if (free < 0) act.drop = swapSlot
+          } else {
+            lootTarget = want.pos
+            lootByPath = want === laserPick
+          }
+        }
+      }
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -383,8 +404,9 @@ function buildBot(hello: Hello): Bot {
         if (spot) move = heading(spot)
         mode = spot ? "heal, hiding" : "heal"
       } else if (lootTarget) {
-        move = heading(lootTarget)
-        mode = "loot"
+        // The laser (Build 8) is walked to along a nav path (Build 3), since it may be past the 80 m detour; other loot stays a straight walk.
+        move = lootByPath ? travel(me.pos, lootTarget, obs.t, canPlan()).move : heading(lootTarget)
+        mode = lootByPath ? "loot laser" : "loot"
       } else if (threats.length && seenAt(me.pos, myHeight, threats, true)) {
         // Hold out of sight (Q2, Build 5): outside every enemy's 45 m ring and 120° wedge, moving silently.
         spot = hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan)
@@ -433,10 +455,14 @@ function buildBot(hello: Hello): Bot {
         const gunAim: [number, number] = [yawTo(muzzle, led), pitchTo(muzzle, led)]
         const direct: [number, number] = [yawTo(muzzle, c), pitchTo(muzzle, c)]
 
-        // Pick the weapon that steers the aim this decision.
+        // Pick the weapon that steers the aim this decision. Laser first (Build 8): it is the main damage weapon once
+        // held. A charge can't be cancelled (protocol: let go and it fires; held full for hold_s it fires by itself along
+        // the torso), so a laser that is charging keeps steering the torso onto the target even when lightning or the
+        // gun would otherwise lead, the target is past range, or it has stepped behind cover.
+        const charging = laser >= 0 && (w(laser).charge ?? 0) > 0
         let leading = "track"
         aim = gunAim
-        if (clear && laser >= 0 && w(laser).cooldown <= 0 && d <= w(laser).stats.range) {
+        if (charging || (clear && laser >= 0 && w(laser).cooldown <= 0 && d <= w(laser).stats.range)) {
           leading = "laser"
           aim = direct
         } else if (clear && arc >= 0 && d <= w(arc).stats.range) {
@@ -477,8 +503,9 @@ function buildBot(hello: Hello): Bot {
           const charge = l.charge ?? 0
           if (charge > 0) {
             // Charging: let go to fire once it is full and lined up.
+            // Behind cover the beam would hit the wall, so keep holding while it is (it fires by itself after hold_s).
             const full = charge >= l.stats.charge - 0.03
-            fire[laser] = !(full && leading === "laser" && onTarget(direct[0], direct[1]))
+            fire[laser] = !(full && clear && leading === "laser" && onTarget(direct[0], direct[1]))
           } else if (leading === "laser") fire[laser] = true
         }
         if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true
@@ -489,6 +516,18 @@ function buildBot(hello: Hello): Bot {
       } else {
         // Nobody known nearby: face whoever hit us last (hits from behind do 1.5x), and top up the gun.
         if (lastHit && obs.t - lastHit.t < 2) aim = [lastHit.bearing, 0]
+        // Build 8: a laser still charging (its target just left view) keeps the trigger held and the torso on the enemy
+        // seen last, so the shot it can't cancel goes toward that enemy rather than along our walking direction.
+        const laser = me.weapons.findIndex((x) => x?.kind === "laser")
+        if (laser >= 0 && (me.weapons[laser]?.charge ?? 0) > 0) {
+          fire[laser] = true
+          let last: Known | null = null
+          for (const k of known.values()) if (!last || k.lastSeen > last.lastSeen) last = k
+          if (last) {
+            const c = centerOf(last)
+            aim = [yawTo(muzzle, c), pitchTo(muzzle, c)]
+          }
+        }
         const g = me.weapons.find((x) => x?.kind === "gun")
         if (g && (g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0) act.reload = true
       }

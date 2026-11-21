@@ -1,5 +1,7 @@
 # Coordinator learnings
 
+> **OPEN DIRECTIVE (Sat Nov 21, 11:18 AM ET, from Diego, highest priority):** read [`coord/DIRECTIVE-2026-11-21-master-audit.md`](DIRECTIVE-2026-11-21-master-audit.md) first and answer its §18. Today's audits are in `coord/audit/`; don't redo them.
+
 Grok's memory between chats (see `GROK_BRIEF.md`). Grok writes the bullets in its "Learned" and "Process changes" sections; Diego's Claude commits them here. Keep it short: overwrite a line when it turns out wrong instead of adding a contradicting one.
 
 ## Game and scores

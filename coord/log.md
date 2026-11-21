@@ -256,3 +256,8 @@ Commit 0ed6ffcab023247e862c4293de1a3bb7436d4a3b, receipt BB-2897E011, submitted 
 
 ## Sat 00:38 ET: Build 16 (kill-value target lock) scored 2.98, KEEP (Grok)
 Commit 8887d80c4815d67c91ebe49b5e0c888c0ec089c3, receipt BB-340B47F3, submitted 00:34 ET. Parent Build 14 (d58cdf9) scored 2.88, so +0.10; new champion (auto final entry; Pick-as-final never clicked). Board: 107th of 162, rank 1 5.58, rank 16 4.96, rank 32 4.50. Third straight gain from kill-focused systems. Next free slot 00:45 ET. Queue: Build 17 (laser) > Build 15 (aim, no offline gain) ; Build 18 (spacing) in progress.
+## Sat 00:38 ET · Diego (research) · Target choice and laser aim
+- Did: filed `research/intake/diego-2026-11-21-0035.json` (3 findings, EV-R-0025..0027 on a scratch ingest: 3 ACCEPT). Question: how do we turn more damage into kills on the house squad (next-diego §2.2/2.3), after Build 14 (2.88).
+- Result: research only, from code and kit config; not submitted.
+- Found: (1) outside the engage latch we shoot the nearest clear enemy (`brain.ts:640-652`), though `race()` already gives per-enemy ttk; winners put 46.6% of hits on targets under 50% HP vs 24.7% for the bottom (watcher). (2) While the laser charges, the torso aims with no lead, so the gun's `onTarget(gunAim)` fails beyond ~65 m against a sideways walker (lead angle atan(11.7/252) = 0.046 rad = yawTol at 65 m), silencing the gun for ~31% of each laser cycle, which may be part of why Build 8 lost. (3) A charge that loses its target auto-fires after `hold_s` and wastes the shot.
+- Blocked / next: **proposal for the next build:** sort clear targets by `race().ttk` instead of distance (one flag, `brain.ts:651`), expected +0.1 to +0.3. Laser/gun aim fix after that.

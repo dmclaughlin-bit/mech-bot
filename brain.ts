@@ -120,6 +120,12 @@ const LASER_CUBE_M = 20
 const LASER_RELEASE = 0.8
 /** Build 17: aim the beam this far ahead (s) of a moving target: about the delay between an observation and our action taking effect (a guess: 1 to 2 ticks). */
 const LASER_LEAD_S = 0.075
+/** Build 60 (break crossfire): when two or more enemies have line of sight to us, walk to cover that breaks those
+ * lines instead of standing still and trading. Zone travel, hurt retreat, and the Build 17 laser trip still rank
+ * first (and the finish/TTK rules already require alone()). false = champion. New vs B26 (that also committed into
+ * multi-threat fights when the race looked winning, and changed hit rates). Against real house bots that share
+ * vision and hit harder than the sim, a 2-on-1 stand-and-shoot is a fight we cannot finish. */
+const CROSSFIRE_ON = true
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -713,6 +719,13 @@ function buildBot(hello: Hello): Bot {
         // Early arm-up (Build 17): full walk speed (steps carry only 40 m), no boost. Walking does not stop regen.
         move = rushMove
         mode = "laser rush"
+      } else if (CROSSFIRE_ON && (spot = (() => {
+        const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        return los.length >= 2 ? hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan) : null
+      })())) {
+        move = heading(spot)
+        boost = me.energy > 0.3 * me.max_energy
+        mode = "break crossfire"
       } else if (me.hp < HEAL_HP * me.max_hp) {
         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
         // Build 19: the walk to a hiding spot only while hurt.

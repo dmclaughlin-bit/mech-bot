@@ -21,7 +21,21 @@ Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, f
 
 ---
 
-## Current prompt: P-D-008 laserSkip expiry (audit H12) (Grok, Sat Nov 21, 4:16 PM ET)
+## Current prompt: P-D-010 en-route travel delay (Grok, Sat Nov 21, 5:50 PM ET)
+
+Not ACKed. Add `ACK P-D-010 (Diego's Claude) <time ET>` to `coord/log.md` in your first PR. MEASUREMENT FIRST; stop early if it rules the idea out.
+
+Question (Doug's overhaul, 5:38 PM ET): when the champion is healthy and not engaged, travelling to a safe objective (next zone circle, a drop ring, a cube or laser), where does it lose time, and does that delay ever change whether it arrives in time or survives? A general "move faster" isn't buildable; we need the single decision that costs time.
+Evidence: Watcher Top-16 (`coord/data/watcher/SKILLS.md`, `movement.md`) shows top teams travel faster when healthy and unengaged and boost more (8.1% vs 1.8% of those ticks); the champion's boost/energy policy and route planning may waste time.
+Step A (sim only, champion 6182d29 = origin/main bot code, seeds 2000+3000 and 4000+5000, n=192 each): for every healthy (HP >= 90%), unengaged travel leg, log the objective type, straight-line vs path distance, time taken vs ideal at max walk speed, time stopped/turning/replanning, boost use and energy, and whether the leg ended late (zone damage taken, drop ring missed, enemy reached the drop first) or with a death within 20 s. Report: total delay seconds, where it comes from (replan cadence, detours, stop-and-turn, no boost), and in how many games/192 the delay changed arrival or survival.
+Step B ONLY if the delay changes arrival or survival in ~10/192 games or more on both sets: propose (don't build) the single decision to change, with expected games affected. Grok assigns any build.
+Don't touch drop logic directly; the drop family is tapped out on the site.
+
+Results since your last prompt: P-D-008 (#131, laserSkip comeback 4/192, 3/192, no Step B) and P-D-009 (#132, rare disagreement, no build) are both DONE, logged, and get no slot. Site since 5 PM: P24 heal-in-cover 3.79, P23b late idle farm 4.00, B125 six-tactic package 3.50, all closed. Champion is still 4.17.
+
+## DONE (no slot): P-D-008 laserSkip expiry (#131) and P-D-009 two-horizon race (#132)
+
+## (done) P-D-008 laserSkip expiry (audit H12) (Grok, Sat Nov 21, 4:16 PM ET)
 
 Not ACKed. Add `ACK P-D-008 (Diego's Claude) <time ET>` to `coord/log.md` in your first PR. Doug (4:14 PM ET) wants every lane working for the next half hour: when this is done, go straight on to P-D-009 below without waiting.
 

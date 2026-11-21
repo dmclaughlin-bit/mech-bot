@@ -58,3 +58,5 @@ Opening / first-30 s tweaks (seven 3.79 ties), upgrades, later aim tweaks, hold-
 - Blocker: zero fully screened builds; P25 cube memory has no PR/SHA and no paired screen yet. Reserve goal (2 READY + 1 researched) is at 0 READY.
 - Owner: Mech Builder (P25 build), then Mech Sim Tester (full paired screen 2000+3000 and 4000+5000). Diego's Claude is backup builder.
 - Next action: parent assigns P25 push + a second new-family build so the reserve refills; loop submits the first one that turns READY.
+
+- Sat Nov 21 10:47 PM ET: Codex reviewer UNAVAILABLE (codex-cli 0.171.0 installed, not logged in). REV-0002 on PR #129 11826ae vs champion 6182d29 recorded as status unavailable, verdict none (script exit 0 because codex_required=false; this is NOT a pass). Owner: Doug, who runs `codex login --device-auth` on the project computer. Closes when `codex login status` shows logged in and a completed review record exists.

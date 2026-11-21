@@ -6,6 +6,7 @@ Related data: `screens.csv` (sim screens), `hazard_screens.csv` (Wild Sim), `pos
 
 | Submitted (ET) | Build | Change | Family | Champion then | Site | Delta | Verdict | Receipt |
 |---|---|---|---|---|---|---|---|---|
+| 2026-11-21 17:33 ET | B125 | six-tactic package (space early, fire-move, dodge, jet loot, laser reach, finish ammo), on 4.17 main | movement | 4.17 | 3.50 | -0.67 | CLOSE | BB-C6A19503 |
 | 2026-11-21 17:24 ET | P23b | P23b late idle farm sweep + 3 s abort, on 4.17 main | farm | 4.17 | 4.00 | -0.17 | CLOSE | BB-AEFC0FA8 |
 | 2026-11-21 17:15 ET | P24 | P24 heal in cover, HEAL_COVER=2, on 4.17 main | heal | 4.17 | 3.79 | -0.38 | CLOSE | BB-BE220066 |
 | 2026-11-21 16:05 ET | B111 | B111 ambush far edge 100 m, on 4.17 main | ambush | 4.17 | 4.10 | -0.07 | CLOSE | BB-D985B698 |

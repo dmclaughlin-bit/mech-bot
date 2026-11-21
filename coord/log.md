@@ -193,3 +193,9 @@ Format:
 - Result: `bun build` OK; `check.py --map-dir arena` PASS, 300/300 in time, p99 1.1 ms. Offline `tools/farm_check.ts` on the kit stream (non-reactive, not a score): farm active 8 of 300 ticks, all crate shots; the stream has no drones in view and cubes in only 2 observations. Not submitted.
 - Found: drone return fire (weapon `npc`) does not exit farm, or drones could never be farmed; any other damage does. A cube or drop chased for 15 s without reaching it is dropped (roof items).
 - Blocked / next: submit the PR head on practice; keep if ≥ 2.38, else `FARM_ON = false` / close.
+
+## Fri 23:48 ET · Grok · Build 12 FARM kept, new champion
+- Did: submitted PR #21 head `8f2c7c8` (BB-35E5C75F) at 23:45 ET; merged into main as `12a26df`.
+- Result: 2.44 vs champion 5b 2.38 (+0.06), a KEEP. New best and automatic final entry. Board 11:48 PM ET: 112th of 144; 1st 5.58, 16th 4.77, 32nd 4.29.
+- Found: first gain after five losses, and the first build that adds a missing system (cube economy). Offline, farm fired in only 8/300 ticks (crates only), so there's room to widen it: spend cubes on upgrades, farm drones, a larger radius.
+- Blocked / next: next slot 00:12 ET. Candidates by expected impact: upgrade spending/order with cubes in hand; farm radius/drones; engagement decision.

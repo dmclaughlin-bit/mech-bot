@@ -129,3 +129,18 @@ export const NO_SNEAK_QUIET_S = 3
  * standoff where neither side closes, most often while we heal. 0 = Build 103 (champion) behavior exactly.
  */
 export const STANDOFF_BREAK_S = 60
+
+/**
+ * P-B-004 (zone unpin): outside the circle the zone escape walks a nav path to its center. When our distance to the
+ * circle's edge has not dropped for ZONE_UNPIN_S seconds of that, step sideways: a waypoint a few metres perpendicular
+ * to the commanded move (first toward the side nearer the center, then alternating), walked straight on the ground
+ * (no boost, no unstick jump; its 2 s give-up clock waits while we are in the air), then a fresh path. It lets go as
+ * soon as the edge distance drops or we are back inside. Movement only: the aim, fire and every other mode's code are
+ * unchanged.
+ * Evidence (Wild Sim hazard screen, coord/data/hazard_screens.csv): SEED_BASE 0 seed 92 stands 57 s outside the circle
+ * and dies to the zone. A cube grew our radius while we walked along the map's north edge, so the body overlaps the
+ * edge by 0.065 m; the escape heading is mostly along the edge, its first accel-limited step is too short to clear the
+ * overlap, the step is refused and the speed reset, every tick. A step straight away from the edge clears it at once.
+ * 0 = P-B-001 (champion) behavior exactly.
+ */
+export const ZONE_UNPIN_S = 6

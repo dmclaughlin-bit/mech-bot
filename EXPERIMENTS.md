@@ -4,6 +4,8 @@ One row per practice submission, newest first. Keep a change only if it gains ab
 
 | Time (ET) | Commit | Parent | Params | Score | Hypothesis (rule ID) | Result |
 | --- | --- | --- | --- | --- | --- | --- |
+| Sat 2:40 PM | `6182d29` (PR #116, B113 / P-B-011) | `4d6e71b` | `params.ts` defaults + `DROP_RUN_M` 200 | **4.17** (BB-09AE8A68) | Build 113: drop reach 150 → 200 m on 4.10 drop-run main (only change) | **KEEP**: +0.07 over P-D-003 4.10, new champion and auto final entry (no final-entry click). Site showed wait 202 ms (earlier entries 35–127 ms). Merged 8b6e7b2. Bot code on main equals 6182d29 |
+| Sat 2:04 PM | `049787d` (PR #107, P-B-006) | `9168d84` | `STANDOFF_BREAK_S` 45 | 4.02 (BB-A1312E8D) | Standoff break at 45 s instead of 60, on 4.10 drop-run main | CLOSE (−0.08 vs 4.10). PR closed. 60 s stays |
 | Sat 1:55 PM | `4d6e71b` (PR #99, P-D-003 / Build 107) | `5e9da75` | `params.ts` defaults + `DROP_RUN_M` 150 | **4.10** (BB-DA9AC664) | Build 107: supply-drop run rebuilt on 4.06 main (Diego's P-D-003; same logic as B104 / PR #95) | **KEEP**: +0.04 over P-B-001 4.06, new champion and auto final entry (no final-entry click). Merged 9168d84. Bot code on main equals 4d6e71b |
 | Sat 1:48 PM | `4c42170` (PR #102, P-D-002) | `42a19d7` | `FORECAST2_S` 60 | 3.79 (BB-8DA0CF9D) | Second-hunter threat forecast in the engage decision, built on 4.06 (bot-code commit `c49b425`; `4c42170` adds docs only) | CLOSE (−0.27 vs 4.06). PR closed. Threat-forecast type now ranks lower after a loss |
 | Sat 1:39 PM | `aeb6f85` (PR #101, P-D-004 / Build 108) | `8608a8e` | `FINISH_BURST_ON` | 3.75 (BB-26BA2735) | Finish burst: finish rule compares target HP to summed magazines in reach, built on 4.06 | CLOSE (−0.31 vs 4.06). Post-mortem requested from Sim Tester |

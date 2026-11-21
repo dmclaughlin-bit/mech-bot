@@ -1,22 +1,31 @@
 # Next for Diego
 
-Written by Grok, the coordinator (see `GROK_BRIEF.md`); committed here by Diego's Claude. Do steps 1 to 3 yourself, then paste everything below the second line into your Claude.
+Written by Grok, the coordinator. Do the logging step first, then the coding task.
 
-1. **Submit S1 now:** `main` at commit `76aabfa` (Build 1), as it is. Add its row to `EXPERIMENTS.md` when the score comes back.
-2. While it runs, check the track and team pages for **replays** (Q2) and **whether the latest or the best submission counts** (Q3). Note what you find in `coord/log.md`.
-3. When Doug merges Build 2 (target 10:30 PM ET), submit it (S2), and at about midnight submit the **same commit again** (S3) to test determinism.
+## Logging step (do this first)
+Pull latest main. Then:
 
----
+1. Add this row at the top of the table in EXPERIMENTS.md:
+| Fri 7:50 PM | `76aabfa` | — | 1.67 | Build 1 aiming + tracking | +0.52 vs kit baseline |
 
-Read `AI-Structure-Development.md` (the team's single source of truth) and `coord/log.md` in `dmclaughlin-bit/mech-bot`. Your task is **`nav.ts`**, a standalone pathfinding module on a branch `nav` off `main`. Don't edit `brain.ts` or any file Doug owns.
+2. Append this entry to the bottom of coord/log.md:
+## Fri 20:22 ET · Diego · S1 logged
+- Did: logged S1 score for Build 1 (`76aabfa`)
+- Result: 1.67 (+0.52 vs kit)
+- Found: —
+- Blocked / next: Doug starts Build 2; Diego starts nav.ts
 
-Implement exactly the interface in section 4 of the plan (`createNav`, `path`, `eta`, `stuck`):
-- A\* on a 2 m grid built at hello from `v2/world.json` prisms and `v2/terrain.i16`. Cells are blocked by buildings and the stadium, and by terrain or ledges steeper than `mech.step_up`. A bridge's underside is walkable.
-- Use flatqueue (ISC, vendored in `vendor/` with its license) or an equivalent typed-array heap, integer costs and a closed stamp. A Float32 cost with no closed set took 1.8 s per query in research.
-- `path` stops at `budget` node expansions and returns null. `createNav` never throws: on any failure it returns a straight-line Nav.
-- Warm up with 20 dummy queries at the end of `createNav`.
-- Add `tools/nav-bench.ts`, which builds the grid from the kit's `arena/` and times 1,000 random queries. Target median under 1 ms and max under 10 ms in bun. Put the numbers in the PR.
+Commit and push those changes.
 
-Open the PR and append an entry to `coord/log.md`. Doug wires it into `brain.ts` for Build 3 on Saturday morning.
+## Coding task
+Read AI-Structure-Development.md and coord/log.md before starting. Your coding task is **nav.ts**, a standalone pathfinding module on branch `nav` off main. Do not edit brain.ts or any file Doug owns.
 
-**Standing rule for every task:** every push you make, on any branch, includes a new entry at the bottom of `coord/log.md` in the format at the top of that file, and every PR description repeats it. The coordinator only sees what reaches GitHub. If you learn something without changing code, push a log-only commit.
+Implement exactly the interface in plan §4 (`createNav`, `path`, `eta`, `stuck`):
+- A* on a 2 m grid from `v2/world.json` prisms + `v2/terrain.i16`. Block cells by buildings/stadium and by terrain/ledges steeper than `mech.step_up`. Bridge undersides walkable.
+- Use flatqueue (ISC, vendored in `vendor/` with license) or equivalent typed-array heap, integer costs, closed stamp.
+- `path` stops at `budget` expansions and returns null. `createNav` never throws (straight-line Nav on failure). Warm up with 20 dummy queries.
+- Add `tools/nav-bench.ts` that times 1,000 random queries against the kit arena. Target median <1 ms, max <10 ms in bun. Put numbers in the PR.
+
+Open the PR and append a coord/log.md entry. Doug wires it for Build 3 on Saturday.
+
+**Every push includes a new entry at the bottom of coord/log.md (format at the top of that file), and every PR description repeats it.**

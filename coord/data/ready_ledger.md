@@ -4,6 +4,10 @@ Updated Saturday 21 November 2026, about 5:50 PM ET. Expands the 5:45 PM ET loop
 
 ## HOLD — P25 cube memory (`CUBE_MEMORY_ON`)
 
+**6:05 PM ET update (Grok):** the full paired screen is DONE on `b34271c` vs `6182d29` (Sim Tester, 5:51–6:02 PM ET, comment https://github.com/dmclaughlin-bit/mech-bot/pull/136#issuecomment-7070616608, screens.csv `03efb84`). Fired / behavior differs / score differs: 2000+3000 30/30/15; 4000+5000 32/32/23; base-0 14/13/10. Flag-0 identical. check.py max 3.3 ms (Builder; independent re-run is due before any click). Sim 2000+3000 −0.073 ± 0.057, held-out +0.036 ± 0.102 (information only). Hazards: pin windows down on every set, games with a ≥20 s pin 15→13, died <40 s unchanged, drop-ring arrivals 11 in 10 → 9 in 8 on 2000–5000.
+**Decision: STILL HOLD.** Veto rule (6) says no NEW pins of 20 s or more. Seed 3043 has a new 21 s pin (t=38–59 s) that IS caused by cube memory (83 ticks walking in place until the give-up budget dropped the cube). Seeds 72, 4091 and 5048 also have new ≥20 s pins, not caused by memory. Sim Tester rated it PASS on net (fewer pinned games overall), but rule (6) is written per new pin, and only Doug can grant an exception.
+**Blocker / owner / next action:** (a) Mech Builder fixes the walk-in-place on 3043 in the same single change (a no-progress check that drops the remembered cube sooner); the new SHA then gets a fresh full screen. (b) In parallel, Doug decides whether a net-fewer-pins result can pass. Closes when either a re-screened SHA shows no change-caused new pin, or Doug says yes in his own words.
+
 - **Decision: HOLD**
 - **Exact SHA:** `b34271c15df17bac4fda4275a7928643034f5e83` (branch `p25-cube-memory`). **PR #136** opened 5:47 PM ET: https://github.com/dmclaughlin-bit/mech-bot/pull/136 . The 5:45 stub had no SHA; the 5:55 loop tick recorded this SHA and correctly left it HOLD.
 - **Tested against:** commit message says flag-0 vs main and a base-0 96-game hazard. Branch **contains** `6182d29`. There is **no** paired 2000+3000 or 4000+5000 screen vs `6182d29` in `screens.csv`.

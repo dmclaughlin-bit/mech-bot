@@ -113,3 +113,30 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 51 (corner duel): in the first CORNER_S seconds, holding no laser, below CORNER_MAX_HP of max HP (where Build 5
+ * would stand in the open to heal, and regen cannot start while we trade shots), when exactly one enemy mech is known within
+ * CORNER_ENEMY_M and it is closing on us (its distance fell at least CORNER_CLOSE_M over the last second), walk to the
+ * nearest spot within CORNER_SPOT_M that it cannot see and that no other known enemy sees, then stand there: heal while
+ * it is out of sight, and stand and shoot when it comes round the cover (the torso tracks it the whole time). The spot is
+ * a peek corner: following the nav path from the enemy to the spot, the first point where it sees the spot is at most
+ * CORNER_PEEK_M from it, so the fight restarts at short range. Zone travel, engage, the hurt retreat, collecting a kill's
+ * cubes, the Build 17 laser trip (the trip always wins) and the Build 60 crossfire break all rank first.
+ * No other mech may have hit us in the last 2 s. Sim note (Build 51 diagnosis): at full HP in the open we already win the
+ * mid-range trade (60-100 m: our gun hits 0.85-0.93, theirs 0.10-0.24), and their hit rate climbs to 0.49 under 40 m,
+ * so the duel starts only once hurt. Set CORNER_DUEL_ON to false to roll back to Build 60 behavior exactly.
+ */
+export const CORNER_DUEL_ON = true
+/** Only this early in the match (s). */
+export const CORNER_S = 40
+/** The closing enemy is within this distance (m), and no other enemy is known that near. */
+export const CORNER_ENEMY_M = 150
+/** Its distance fell at least this much (m) over the last second. */
+export const CORNER_CLOSE_M = 3
+/** Look for the corner spot at most this far from us (m). */
+export const CORNER_SPOT_M = 20
+/** The enemy's path to the spot first sees it at most this far from it (m). 0 drops the test (the nearest hidden spot). */
+export const CORNER_PEEK_M = 60
+/** Start a duel only below this fraction of max HP (1 = at any HP). */
+export const CORNER_MAX_HP = 0.9

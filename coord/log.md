@@ -305,3 +305,6 @@ Doug approved: Lane A = movement (nav/map/positioning), Lane B = combat (target/
 - Did: merged `origin/main` @ `5eb3915` (Build 19 no-sneak, 3.08 keep) into `build-17-laser`. `brain.ts`: import union; Build 19's `noSneak` flag placed before the Build 17 arm-up block; the silent-cap line now carries both conditions (`!noSneak` and `mode !== "laser rush"`). Docs: both sides kept; parent `5eb3915`, champion 3.08.
 - Result: `check.py` PASS, p99 0.9 ms. `LASER_RUSH_ON = false`: all 302 kit-stream responses identical to `5eb3915`; on: 154 differ (same as before the merge). `tools/laser_check.ts`: 136 rush ticks, 0 below full walk speed; gate table 18/18, lost-target table 7/7. Interaction: the rush needs not-hurt, which is when no-sneak is active too, so both walk at full speed; hide walks are skipped while not hurt, so they never preempt the rush.
 - Blocked / next: Coordinator scores; keep if above 3.08.
+
+## Sat 01:27 ET · Grok · Build 17 (ARM-UP early laser) KEEP
+38ce57b scored 3.50 (BB-FE8FEA0F, 1:23 AM), +0.42 over 3.08 → KEEP, PR #32 merged; new champion. Biggest single gain so far. Queue: B20+22 stack → B21 → B23 (fix round), all to be re-merged onto new main.

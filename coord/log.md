@@ -359,3 +359,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 6:26 AM ET: Build 53 post-kill cover (dc7f26f, PR #73) scored 3.50, receipt BB-290B6BD3. Below B60 3.67, closed. Rank 129/228; #32 Kuki 5.23.
 
 - 6:37 AM ET: Build 80 late gun-only walk to lightning/laser (28c3acc, PR #74) scored 3.79, receipt BB-78A44AAF. NEW CHAMPION (beats B60 3.67). Merged as cb93980. Site auto-set it as final entry. Rank 120/229; #32 Kuki 5.23. B82 merged with new main -> e7df41f (gate PASS).
+
+- 6:49 AM ET: Build 82 wider crossfire cover search on B80 (e7df41f, PR #76) scored 3.46, receipt BB-4023B260. Below B80 3.79, closed. Rank 121/229; #32 Kuki 5.23.

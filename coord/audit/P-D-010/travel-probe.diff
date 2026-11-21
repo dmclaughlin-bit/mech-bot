@@ -1,0 +1,59 @@
+diff --git a/brain.ts b/brain.ts
+index 8b8e5b7..3b10af7 100644
+--- a/brain.ts
++++ b/brain.ts
+@@ -259,6 +259,11 @@ function fallbackBot(): Bot {
+   }
+ }
+ 
++import { appendFileSync } from "node:fs"
++const __I = process.env.INSTR_FILE
++const __buf: string[] = []
++const __flush = () => { if (__I && __buf.length) { appendFileSync(__I, __buf.join("\n") + "\n"); __buf.length = 0 } }
++process.on("exit", __flush)
+ function buildBot(hello: Hello): Bot {
+   const cfg = hello.config
+   const solids = loadMap(hello)
+@@ -657,6 +662,7 @@ function buildBot(hello: Hello): Bot {
+       // Collect (Build 14): after our kill, walk to the cubes it dropped (all of its cubes plus two) if it is safe:
+       // nobody has line of sight to us, no mech hit us in the last 2 s, and the same zone test as farming.
+       let claimGoal: Vec3 | null = null
++      let __cb: string[] | null = null, __cd = -1, __cn = -1
+       if (claim && obs.t > claim.until) claim = null
+       if (claim && me.in_zone && !leaveNow && !engage) {
+         const at = claim.pos
+@@ -666,7 +672,19 @@ function buildBot(hello: Hello): Bot {
+           flat(goal, z.center) < Math.max(0, z.radius - margin) &&
+           (flat(me.pos, goal) + Math.max(0, flat(goal, z.next_center) - inner)) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER < timeLeft
+         if (!cube && flat(me.pos, at) < Number(cfg.cubes.pickup_radius ?? cfg.loot.pickup_radius)) claim = null
+-        else if (zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && !seenAt(me.pos, myHeight, threats, false)) claimGoal = goal
++        else {
++          __cb = []
++          if (!zoneSafe) __cb.push("zone")
++          if (obs.t - lastMechHit <= THREAT_HIT_S) __cb.push("hit<2s")
++          if (seenAt(me.pos, myHeight, threats, false)) __cb.push("seen")
++          __cd = Math.round(flat(me.pos, goal)); __cn = obs.cubes.filter((c) => flat(c.pos, at) < CLAIM_M).length
++          if (zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && !seenAt(me.pos, myHeight, threats, false)) claimGoal = goal
++        }
++      } else if (claim) {
++        __cb = []
++        if (!me.in_zone) __cb.push("out of zone")
++        if (leaveNow) __cb.push("leaving")
++        if (engage) __cb.push("engage")
+       }
+       // Stop sneaking (Build 19): not hurt (HP at or above the retreat line, no damage for NO_SNEAK_QUIET_S), so no
+       // silent speed cap and no walk to a hiding spot. While hurt, the retreat, the heal and their hiding are unchanged.
+@@ -1076,6 +1094,13 @@ function buildBot(hello: Hello): Bot {
+       act.aim = [aim[0], clamp(aim[1], minPitch, maxPitch)]
+       act.fire = fire
+       draw.label(`${label} · ${mode}`)
++      if (__I) {
++        const tg = target && target.m.kind === "mech" ? target.m : null
++        const kv = [...known.values()].filter((k) => obs.t - k.lastSeen <= 5); const wk = kv.map((k) => [k.id, +(k.hp / (k.maxHp || 1)).toFixed(2), +(obs.t - k.lastSeen).toFixed(1), Math.round(flat(k.pos, me.pos)), kv.some((o) => o !== k && flat(o.pos, k.pos) < 40) ? 0 : 1])
++        __buf.push(JSON.stringify({ t: +obs.t.toFixed(1), m: mode, hp: +(me.hp / me.max_hp).toFixed(2), cubes: me.cubes, claim: !!claim, cb: __cb, cd: __cd, cn: __cn, cg: !!claimGoal,
++          tg: tg ? tg.id : null, tgc: tg ? !!target.clear : null, eng: engage ? [engage.m.id, engage.why] : null, kills: obs.events.filter((e) => e.type === "kill").map((e: any) => e.target), known: wk, nen: enemies.length, los: threats.filter((e) => seenAt(me.pos, myHeight, [e], false)).length, w: me.weapons.map((x) => x?.kind ?? "-").join("+"), att: [...mechHitBy.values()].filter((t) => obs.t - t < 5).length, spd: +Math.hypot(me.vel[0], me.vel[1]).toFixed(1), mv: +Math.hypot(act.move?.[0] ?? 0, act.move?.[1] ?? 0).toFixed(2), ms: +(performance.now() - started).toFixed(2), x: +me.pos[0].toFixed(1), y: +me.pos[1].toFixed(1), iz: me.in_zone ? 1 : 0, bo: act.boost ? 1 : 0, en: Math.round(me.energy), ws: walkSpeed, rg: route ? [+route.goal[0].toFixed(1), +route.goal[1].toFixed(1)] : null, rpl: route && route.at === obs.t ? 1 : 0, rf: route ? (route.found ? 1 : 0) : -1, rl: route ? +(() => { let d = 0, p: number[] = me.pos; for (const q of route!.points.slice(route!.next)) { d += flat(p as any, q); p = q } return d })().toFixed(1) : -1, lt: lootTarget ? [+lootTarget[0].toFixed(1), +lootTarget[1].toFixed(1)] : null, dropEv: obs.events.some((e: any) => e.type === "drop") ? 1 : 0, mhp: me.max_hp }))
++        if (__buf.length > 200) __flush()
++      }
+       const took = performance.now() - started
+       if (took > DEADLINE_MS) log(`decision at tick ${obs.tick} took ${took.toFixed(1)} ms`)
+       return act

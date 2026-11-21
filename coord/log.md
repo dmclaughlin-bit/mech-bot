@@ -325,3 +325,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - Did: torso turns toward unseen rear attacker (fresh sim +0.06 ± 0.07).
 - Score: 3.40 (BB-F54B5674), below 3.50. Closed.
 - Next: B27 strafe-while-holding at 2:35 slot.
+
+- 2026-11-21 2:35 AM ET: Build 27 strafe-while-holding (d5fb49d, PR #43) scored 3.38, receipt BB-0D0F93D6. Below champion 3.50, so the PR is closed. Rank 106/183; rank 32 is at 4.92.

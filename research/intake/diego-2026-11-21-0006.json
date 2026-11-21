@@ -1,0 +1,65 @@
+{
+  "author": "Diego",
+  "submitted_at": "2026-11-21T00:06:00-05:00",
+  "findings": [
+    {
+      "claim": "Both observations are true because they describe different match modes: the track rules say practice house bots act as one squad and never fight each other, while the 62-of-65 house-on-house kills were measured in public play.joinbuilders.org matches (humans plus house bots). Nothing in the kit says the two modes share house-bot behavior. Public-match infighting is therefore no evidence about practice, and practice placement points come only from our kills and house zone deaths.",
+      "topic": "contradiction",
+      "sources": [
+        {
+          "ref": "https://www.joinbuilders.org/buildathon/tracks/builders (Rules, read Sat 00:05 ET)",
+          "kind": "doc",
+          "quote": "acting as one squad: they share vision, never fight each other"
+        },
+        {
+          "ref": "coord/rca-report.md, Measurements row 2 and question 9",
+          "kind": "repo",
+          "quote": "62 of 65 house-bot deaths were kills by other house bots ... MEASURED (public matches only. Practice house config is unverified.)"
+        },
+        {
+          "ref": "mechfight-kit/protocol.md §1 and README.md step 2",
+          "kind": "protocol",
+          "quote": "played in 48 practice matches against built-in bots"
+        },
+        {
+          "ref": "mechfight-kit/check/stream.jsonl.gz (300 recorded obs)",
+          "kind": "protocol",
+          "quote": null
+        }
+      ],
+      "confidence": 0.85,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "For practice and qualifying-for-top-32 work, plan on fighting: take winnable 1v1s against the early lone hunters and finish wounded targets (EV-R-0020..0023). Don't tune hiding or outlasting on practice. Revisit hiding only for the final, where the track page says the qualifying round and the series are 16-mech free-for-alls between team bots, which do kill each other.",
+      "mechanism": "If no house bot ever kills another, a 48-match practice score of 2.38 means about 2.4 squad deaths before ours, from our kills or the zone. Hiding only delays our death against a squad that shares vision and adds hunters over time, so it cannot add places. Kills add places directly and drop cubes.",
+      "expected_gain": 0.5,
+      "effort": 1,
+      "regression_risk": 0.3,
+      "failure_classes": [
+        {
+          "class": "UNDER_AGGRESSION",
+          "confidence": 0.5,
+          "basis": "practice rules: placement only from our kills and zone deaths; the bot flees at 35% of its own HP regardless of the enemy"
+        }
+      ],
+      "related_rule_ids": [
+        "F1",
+        "F2",
+        "F3",
+        "F4"
+      ],
+      "related_experiments": [
+        "EXP-0006",
+        "EXP-0007"
+      ],
+      "keywords": [
+        "house squad",
+        "practice vs public",
+        "infighting",
+        "hide vs fight",
+        "verdict",
+        "EV-R-0020"
+      ]
+    }
+  ]
+}

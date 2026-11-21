@@ -5,8 +5,8 @@
 export const params = {
   /** D4, A2: the gun fires only inside this range (m), unless the target is hitting us, below half HP, or not moving sideways. */
   gunRange: 100,
-  /** F2: retreat when HP is below this fraction of max while under fire. */
-  retreatHp: 0.30,
+  /** F2: retreat when HP is below this fraction of max while under fire. Build 84: 0.30 → 0.25 (one step past B30). */
+  retreatHp: 0.25,
   /** Z1: plan the trip to the next circle at this fraction of walk speed. */
   zoneWalk: 0.8,
   /** Z1: seconds of buffer when deciding to leave for the next circle. */
@@ -18,8 +18,9 @@ export const params = {
    * retreating while ttk < aggression × ttd (our time to kill it vs its time to kill us, see ENGAGE_ON below).
    * 1 = fight only the races the estimate says we win. Above 1 is bolder (1.5 accepts a race we lose by up to 50%),
    * below 1 is more careful, and 0 never overrides the retreat on TTK (the finish rule, which tests ttk < ttd, still applies).
+   * Build 84: 1.5 → 2.0 (one step past B30, same +0.5 as 1 → 1.5).
    */
-  aggression: 1.5,
+  aggression: 2.0,
 }
 
 /**

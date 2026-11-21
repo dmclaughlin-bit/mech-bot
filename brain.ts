@@ -17,6 +17,12 @@ const yawTo = (from: number[], to: number[]) => Math.atan2(to[1] - from[1], to[0
 const pitchTo = (from: number[], to: number[]) => Math.atan2(to[2] - from[2], flat(from, to))
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
 
+// ------------------------------------------------------------------ rule constants (plan §9)
+/** L2: loot only when no enemy mech is within this distance (m). */
+const LOOT_CLEAR = 160
+/** L2: walk at most this far (m) to a wanted weapon. */
+const LOOT_DETOUR = 80
+
 // ------------------------------------------------------------------ aiming
 /** Where to aim a straight-flying shot so it meets a target moving at a steady velocity. */
 function lead(from: Vec3, at: Vec3, vel: Vec3, speed: number): Vec3 {
@@ -141,11 +147,27 @@ function buildBot(hello: Hello): Bot {
       const act: BotAction = {}
       const fire: [boolean, boolean] = [false, false]
 
-      // Starter behavior, unchanged in build 1: default upgrade, grab a weapon, walk to the next circle.
       if (obs.offer) act.pick = 0
-      const pickup = obs.pickups.find((p) => flat(p.pos, me.pos) < cfg.loot.pickup_radius && p.kind !== "gun")
-      if (!me.weapons[1] && pickup) act.take = pickup.id
-      const walk = yawTo(me.pos, obs.zone.next_center)
+      const enemies = obs.mechs.filter((m) => m.kind === "mech")
+
+      // Loot (D3, L1, L2): laser and lightning only, never a mortar, and only with no enemy within 160 m.
+      // Keep the gun until the second of the two shows up, then swap the gun out, never with an enemy in view.
+      let lootTarget: Vec3 | null = null
+      if (!enemies.some((m) => flat(m.pos, me.pos) < LOOT_CLEAR)) {
+        const held = me.weapons.map((x) => x?.kind ?? null)
+        const free = held.indexOf(null)
+        const swapSlot = free < 0 && enemies.length === 0 && (held.includes("laser") || held.includes("lightning")) ? held.indexOf("gun") : -1
+        const want = obs.pickups
+          .filter((p) => (p.kind === "laser" || p.kind === "lightning") && !held.includes(p.kind))
+          .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+        if (want && (free >= 0 || swapSlot >= 0)) {
+          if (flat(want.pos, me.pos) < cfg.loot.pickup_radius && Math.abs(want.pos[2] - me.pos[2]) < 4) {
+            act.take = want.id
+            if (free < 0) act.drop = swapSlot
+          } else if (flat(want.pos, me.pos) < LOOT_DETOUR) lootTarget = want.pos
+        }
+      }
+      const walk = yawTo(me.pos, lootTarget ?? obs.zone.next_center)
       act.move = [Math.cos(walk), Math.sin(walk)]
       act.boost = !me.in_zone
       act.jump = obs.tick % 40 === 0

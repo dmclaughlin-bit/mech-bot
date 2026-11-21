@@ -30,6 +30,8 @@ const ZONE_WALK = 0.8
 const ZONE_BUFFER = 10
 /** H2, Q1: stay under this ground speed (m/s) inside the next circle, so our steps make no sound. */
 const SILENT_SPEED = 5
+/** F2: retreat when HP is below this fraction of max while under fire. */
+const RETREAT_HP = 0.35
 
 // ------------------------------------------------------------------ aiming
 /** Where to aim a straight-flying shot so it meets a target moving at a steady velocity. */
@@ -204,12 +206,27 @@ function buildBot(hello: Hello): Bot {
         move = heading(z.next_center)
         boost = toEnter / walkSpeed > timeLeft
         mode = "to next circle"
+      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp) {
+        // Retreat (F2, F3): hurt and under fire, so back away from the attacker with the torso still on it
+        // (legs and torso are independent). Lean toward the center near the circle's edge; boost only above 30% energy.
+        const away = lastHit.bearing + Math.PI
+        let mx = Math.cos(away), my = Math.sin(away)
+        const edge = clamp((flat(me.pos, z.center) - (z.radius - 40)) / 40, 0, 1)
+        if (edge > 0) {
+          const [cx, cy] = heading(z.center)
+          mx += 1.5 * edge * cx
+          my += 1.5 * edge * cy
+        }
+        const n = Math.hypot(mx, my) || 1
+        move = [mx / n, my / n]
+        boost = me.energy > 0.3 * me.max_energy
+        mode = "retreat"
       } else if (lootTarget) {
         move = heading(lootTarget)
         mode = "loot"
       }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1).
-      if (toEnter === 0 && !boost) move = [move[0] * silent, move[1] * silent]
+      if (toEnter === 0 && !boost && mode !== "retreat") move = [move[0] * silent, move[1] * silent]
       // Unstick: jump, then jet, only when we've been trying to move but covered under 1 m in 0.5 s.
       trail.push({ t: obs.t, pos: me.pos, moving: Math.hypot(move[0], move[1]) > 0.2 })
       while (trail.length > 1 && obs.t - trail[0].t > 0.5) trail.shift()

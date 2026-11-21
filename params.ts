@@ -59,3 +59,20 @@ export const FARM_HUNT_M = 150
 export const ENGAGE_ON = true
 /** Finish rule: commit only at or above this fraction of max HP. House bots hunt the weakest first and share vision. */
 export const ENGAGE_FINISH_HP = 0.35
+
+/**
+ * Build 18 (early spacing): in the first EARLY_SPACE_S seconds, keep away from enemy mechs while choosing where to walk.
+ * The enemies counted are those in view or seen in the last 10 s, at their last seen position.
+ * 1. Targets: for a weapon pickup, cube, drop, drone or crate, each metre the straight walk to it takes us inside an
+ *    enemy's EARLY_SPACE_M ring (closer than we already are) counts as 2 extra metres against the usual walk limits
+ *    (80 m pickups, 150 m hunt). The lowest such distance wins, so targets on the far side from the enemies come first.
+ * 2. Idle: with nothing else to do (where Build 14 holds or hides) and an enemy inside the ring, walk at full speed
+ *    (steps carry 40 m) to a spot within 4 s that opens the distance, inside the circle we keep to.
+ * Engage, retreat, heal and collecting a kill's cubes are unchanged and rank first, as do zone escape and leaving for
+ * the next circle. Set EARLY_SPACE_ON to false to roll back to Build 14 behavior exactly.
+ */
+export const EARLY_SPACE_ON = true
+/** Early spacing applies while match time is below this (s). */
+export const EARLY_SPACE_S = 40
+/** Early spacing keeps this far (m) from enemy mechs. */
+export const EARLY_SPACE_M = 120

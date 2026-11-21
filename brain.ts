@@ -12,10 +12,12 @@
  * Build 12 (farm): with no enemy mech near or in view, shoot drones and crates and walk to cubes and drops (see farmPlan).
  * Build 14 (engage): fight or flee by time-to-kill vs time-to-die (F1): against one enemy we would kill first, or one
  * within a magazine of dying, fight on instead of the HP retreat, then collect its cubes (see engageChoice, ENGAGE_ON).
+ * Build 18 (early spacing): in the first 40 s, targets that take us inside an enemy's 120 m ring cost extra, and with
+ * nothing else to do we walk away from enemies inside it (see reach and spaceSpot, EARLY_SPACE_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
-import { ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, params } from "./params.ts"
+import { EARLY_SPACE_M, EARLY_SPACE_ON, EARLY_SPACE_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, params } from "./params.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
 // ------------------------------------------------------------------ geometry helpers
@@ -93,6 +95,15 @@ const ENGAGE_REST_S = 10
 /** Build 14: after a kill, walk to cubes within CLAIM_M (m) of where the target died, for at most CLAIM_S (s). */
 const CLAIM_M = 12
 const CLAIM_S = 12
+/** Build 18 (early spacing): enemies seen this recently (s) count, at their last seen position. */
+const SPACE_MEMORY_S = 10
+/** Build 18: each metre a walk takes us inside an enemy's ring counts as this many extra metres of walking. */
+const SPACE_WEIGHT = 2
+/** Build 18: idle spacing spots: this many bearings around us, at the distances we walk in 2 and 4 s. */
+const SPACE_BEARINGS = 16
+const SPACE_STEPS_S = [2, 4]
+/** Build 18: keep a chosen spot this long (s), so the walk does not flip between bearings. */
+const SPACE_HOLD_S = 3
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -170,10 +181,13 @@ type Known = {
   hpLog: [number, number][]
 }
 
+/** Rule switches a tool may override to compare builds offline. A match always runs on the params.ts values. */
+export type Flags = { earlySpace: boolean }
+
 /** Never throws: a failed setup gets the fallback bot instead of idling the whole match (plan D6). */
-export function createBot(hello: Hello): Bot {
+export function createBot(hello: Hello, flags: Flags = { earlySpace: EARLY_SPACE_ON }): Bot {
   try {
-    return buildBot(hello)
+    return buildBot(hello, flags)
   } catch (e) {
     log("bot setup failed, using the fallback bot:", e)
     return fallbackBot()
@@ -200,7 +214,7 @@ function fallbackBot(): Bot {
   }
 }
 
-function buildBot(hello: Hello): Bot {
+function buildBot(hello: Hello, flags: Flags): Bot {
   const cfg = hello.config
   const solids = loadMap(hello)
   const growth = Number(cfg.cubes.size_per_cube ?? 0.05)
@@ -232,6 +246,8 @@ function buildBot(hello: Hello): Bot {
   /** Build 14: targets we gave up on (id → time), and where our last kill died, to collect its cubes. */
   const engageGiveUp = new Map<number, number>()
   let claim: { pos: Vec3; until: number } | null = null
+  /** Build 18 (early spacing): the spot we are walking to, to open the distance to nearby enemies, and until when we keep it. */
+  let spaceTo: { pos: Vec3; until: number } | null = null
 
   /** Build 14: what we deal per second to a target `d` m away: every held weapon that reaches, × its hit-rate guess × our cube bonus. */
   function ourDps(me: Observation["self"], d: number): number {
@@ -393,6 +409,17 @@ function buildBot(hello: Hello): Bot {
         act.pick = ranks.indexOf(Math.min(...ranks))
       }
       const enemies = obs.mechs.filter((m) => m.kind === "mech")
+      // Early spacing (Build 18): in the first EARLY_SPACE_S seconds, the enemies in view or seen in the last 10 s.
+      // `inside` is how many metres a straight walk to `p` takes us inside their EARLY_SPACE_M rings, beyond where we
+      // already are, and `reach` is the walk to `p` with each of those metres counted SPACE_WEIGHT times extra.
+      // With no such enemy (and always after the window, or with EARLY_SPACE_ON false) `reach` is the plain distance.
+      const crowd = flags.earlySpace && obs.t < EARLY_SPACE_S ? [...known.values()].filter((k) => obs.t - k.lastSeen < SPACE_MEMORY_S) : []
+      const inside = (p: number[]) => {
+        let sum = 0
+        for (const k of crowd) sum += Math.max(0, Math.min(EARLY_SPACE_M, flat(k.pos, me.pos)) - segmentDistance(k.pos, me.pos, p))
+        return sum
+      }
+      const reach = (p: number[]) => flat(p, me.pos) + (crowd.length ? SPACE_WEIGHT * inside(p) : 0)
 
       // Loot (D3, L1, L2): laser and lightning only, never a mortar, and only with no enemy within 160 m.
       // Keep the gun until the second of the two shows up, then swap the gun out, never with an enemy in view.
@@ -403,12 +430,12 @@ function buildBot(hello: Hello): Bot {
         const swapSlot = free < 0 && enemies.length === 0 && (held.includes("laser") || held.includes("lightning")) ? held.indexOf("gun") : -1
         const want = obs.pickups
           .filter((p) => (p.kind === "laser" || p.kind === "lightning") && !held.includes(p.kind))
-          .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+          .sort((a, b) => reach(a.pos) - reach(b.pos))[0]
         if (want && (free >= 0 || swapSlot >= 0)) {
           if (flat(want.pos, me.pos) < cfg.loot.pickup_radius && Math.abs(want.pos[2] - me.pos[2]) < 4) {
             act.take = want.id
             if (free < 0) act.drop = swapSlot
-          } else if (flat(want.pos, me.pos) < LOOT_DETOUR) lootTarget = want.pos
+          } else if (reach(want.pos) < LOOT_DETOUR) lootTarget = want.pos
         }
       }
       // Zone (Z1, Z2, H2, Q1): leave for the next circle just in time, walk there, then hold silently.
@@ -457,13 +484,13 @@ function buildBot(hello: Hello): Bot {
         const zoneSafe = (p: number[], stay: number) =>
           flat(p, z.center) < Math.max(0, z.radius - margin) &&
           (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
-        const near = (p: number[]) => flat(p, me.pos) < FARM_PICKUP_M
+        const near = (p: number[]) => reach(p) < FARM_PICKUP_M
         const drop = obs.drops
           .filter((d) => d.lands_in <= 0 && (d.holder === null || d.holder === hello.slot) && !farmGiveUp.has(d.id) && near(d.pos) && zoneSafe(d.pos, d.capture_s - d.progress))
-          .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+          .sort((a, b) => reach(a.pos) - reach(b.pos))[0]
         const cube = obs.cubes
           .filter((c) => !farmGiveUp.has(c.id) && near(c.pos) && zoneSafe(c.pos, 0))
-          .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+          .sort((a, b) => reach(a.pos) - reach(b.pos))[0]
         if (drop && flat(drop.pos, me.pos) < drop.radius - DROP_INSET) farmHold = true
         else if (drop || cube) farmGoal = drop ?? cube
         // Hunt (Build 13): nothing to pick up, so walk toward the nearest drone or crate in view within FARM_HUNT_M
@@ -473,8 +500,8 @@ function buildBot(hello: Hello): Bot {
             ...obs.mechs.filter((m) => m.kind === "npc").map((m) => ({ id: m.id, pos: m.pos, c: [m.pos[0], m.pos[1], m.pos[2] + cfg.npc.height / 2] as Vec3 })),
             ...obs.crates.map((k) => ({ id: k.id, pos: k.pos, c: [k.pos[0], k.pos[1], k.pos[2] + cfg.crates.height / 2] as Vec3 })),
           ]
-            .filter((x) => !farmGiveUp.has(x.id) && flat(x.pos, me.pos) < FARM_HUNT_M && zoneSafe(x.pos, 0))
-            .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+            .filter((x) => !farmGiveUp.has(x.id) && reach(x.pos) < FARM_HUNT_M && zoneSafe(x.pos, 0))
+            .sort((a, b) => reach(a.pos) - reach(b.pos))[0]
           if (prey && (flat(prey.pos, me.pos) > HUNT_STAND_M || !clearLine(solids, muzzle, prey.c))) {
             farmGoal = prey
             farmHunt = true
@@ -555,6 +582,38 @@ function buildBot(hello: Hello): Bot {
         if (!cube && flat(me.pos, at) < Number(cfg.cubes.pickup_radius ?? cfg.loot.pickup_radius)) claim = null
         else if (zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && !seenAt(me.pos, myHeight, threats, false)) claimGoal = goal
       }
+      // Idle spacing (Build 18): with an enemy inside the ring, the spot within 4 s of walking that takes us inside
+      // no ring further and then leaves the nearest enemy farthest, so we end up on the far side from a cluster.
+      // It must lie in the circle we keep to, leave time to reach the next circle (the farm zone test), have a clear
+      // straight line from us, and open the distance. A chosen spot is kept for SPACE_HOLD_S. Null when there is none.
+      const spaceSpot = (): Vec3 | null => {
+        const gap = (p: number[]) => Math.min(...crowd.map((k) => flat(k.pos, p)))
+        if (!crowd.length || gap(me.pos) >= EARLY_SPACE_M) return (spaceTo = null)
+        if (spaceTo && obs.t < spaceTo.until && flat(spaceTo.pos, me.pos) > WAYPOINT_REACHED && gap(spaceTo.pos) > gap(me.pos)) return spaceTo.pos
+        const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + myHeight / 2]
+        let best: Vec3 | null = null
+        let bestIn = Infinity, bestGap = gap(me.pos)
+        for (const s of SPACE_STEPS_S) {
+          for (let b = 0; b < SPACE_BEARINGS; b++) {
+            if (!canPlan()) break
+            const yaw = (2 * Math.PI * b) / SPACE_BEARINGS
+            const x = me.pos[0] + Math.cos(yaw) * walkSpeed * s, y = me.pos[1] + Math.sin(yaw) * walkSpeed * s
+            if (Math.hypot(x - zoneKeep[0][0], y - zoneKeep[0][1]) > zoneKeep[1]) continue
+            const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+            if (g === -Infinity) continue
+            const p: Vec3 = [x, y, g]
+            if ((walkSpeed * s + Math.max(0, flat(p, z.next_center) - inner)) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER >= timeLeft) continue
+            const into = inside(p), open = gap(p)
+            if (open <= gap(me.pos) || into > bestIn || (into === bestIn && open <= bestGap)) continue
+            if (!clearLine(solids, from, [x, y, g + myHeight / 2], 0, 0)) continue
+            best = p
+            bestIn = into
+            bestGap = open
+          }
+        }
+        spaceTo = best ? { pos: best, until: obs.t + SPACE_HOLD_S } : null
+        return best
+      }
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -616,6 +675,10 @@ function buildBot(hello: Hello): Bot {
       } else if (farmGoal) {
         move = travel(me.pos, farmGoal.pos, obs.t, canPlan()).move
         mode = farmHunt ? "farm, hunt" : "farm, pickup"
+      } else if ((spot = spaceSpot())) {
+        // Early spacing (Build 18): nothing else to do and an enemy inside the ring, so open the distance along a path.
+        move = travel(me.pos, spot, obs.t, canPlan()).move
+        mode = "space"
       } else if (threats.length && seenAt(me.pos, myHeight, threats, true)) {
         // Hold out of sight (Q2, Build 5): outside every enemy's 45 m ring and 120° wedge, moving silently.
         spot = hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan)
@@ -626,8 +689,9 @@ function buildBot(hello: Hello): Bot {
       }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
+      // Early spacing also walks at full speed (Build 18): a step is heard only within 40 m (sound.range.step).
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if ((toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage")) move = [move[0] * silent, move[1] * silent]
+      if ((toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "space") move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

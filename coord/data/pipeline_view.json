@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 18:49 ET",
- "origin_main": "616a4db5b87f394972fd3c5e58a9386480a22e28",
+ "generated_at_et": "2026-11-21 18:53 ET",
+ "origin_main": "0862c9220d15ac101395415f36e127e9a09a9ece",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -25,9 +25,9 @@
   "pending": [],
   "slots": {
    "limit": 6,
-   "used_rolling_60": 0,
-   "used_clock_hour": 0,
-   "last_submit": "2026-11-21 17:33 ET"
+   "used_rolling_60": 1,
+   "used_clock_hour": 1,
+   "last_submit": "2026-11-21 18:50 ET"
   },
   "ready_count": 0,
   "ready_items": [],
@@ -43,19 +43,19 @@
   ],
   "reserve_target": "2 fully screened + 1 researched (WORKFLOW.md, Doug 5:41 PM ET)",
   "since": "2026-11-21 12:00 ET",
-  "tests_since": 19,
+  "tests_since": 20,
   "wins_since": 4,
-  "scored_since": 19,
+  "scored_since": 20,
   "wins_vs_champion_at_time": [
    "B103",
    "B105-PB001",
    "B107",
    "B113"
   ],
-  "tests_vs_current_champion": 10,
+  "tests_vs_current_champion": 11,
   "wins_vs_current_champion": 0,
-  "pre_click_screen_complete": 1,
-  "site_items_since": 19
+  "pre_click_screen_complete": 2,
+  "site_items_since": 20
  },
  "board": {
   "Idea": 0,
@@ -67,10 +67,10 @@
   "Submitted": 0,
   "Scored": 0,
   "Merged": 4,
-  "Retired": 26
+  "Retired": 27
  },
  "board_detail": {
-  "Retired_loss": 12,
+  "Retired_loss": 13,
   "Retired_tie": 3,
   "Retired_unsubmitted": 11
  },
@@ -1489,6 +1489,108 @@
    "pr_state": "closed",
    "head": "ec50d23285f2c681069160848121c2abfc7f4b41",
    "pr_closed": "2026-11-21 17:37 ET",
+   "pr_merged": null,
+   "contains_champion": true,
+   "stage_idx": 7,
+   "stage": "Retired",
+   "outcome": "loss",
+   "blocker": null
+  },
+  {
+   "id": "P27",
+   "title": "P27 drop crossfire skip (DROP_CROSSFIRE_SKIP_ON): keep drop run / ring hold when 2+ enemies see us but none hit us in 2 s, on 4.17 main",
+   "kind": "build",
+   "source": "unknown",
+   "owner": "unknown",
+   "decision": "P27 drop crossfire skip (DROP_CROSSFIRE_SKIP_ON): keep drop run / ring hold when 2+ enemies see us but none hit us in 2 s, on 4.17 main",
+   "changes": 1,
+   "changes_basis": "one behavior in the summary",
+   "multi": false,
+   "site": {
+    "submitted_et": "2026-11-21 18:50 ET",
+    "score": 4.13,
+    "champion_then": 4.17,
+    "delta": -0.04,
+    "outcome": "loss",
+    "receipt": "BB-004FA2FF",
+    "verdict": "CLOSE",
+    "result_logged_et": null,
+    "result_url": null
+   },
+   "screen": {
+    "both": true,
+    "status": "both_before_click",
+    "sets": [
+     "A",
+     "B"
+    ],
+    "when_both": "2026-11-21 18:33 ET",
+    "events": [
+     {
+      "src": "PR #137 comment",
+      "sets": [
+       "A",
+       "B"
+      ],
+      "at": "2026-11-21 18:33 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/137#issuecomment-7070954834",
+      "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "PR #137 body table (time = PR opened; body may have been edited)",
+      "sets": [
+       "A",
+       "B"
+      ],
+      "at": "2026-11-21 17:56 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/137",
+      "after_click": false,
+      "exact_sha": false
+     },
+     {
+      "src": "screens.csv P27",
+      "sets": [
+       "A"
+      ],
+      "at": "2026-11-21 18:34 ET",
+      "url": null,
+      "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "screens.csv P27",
+      "sets": [
+       "B"
+      ],
+      "at": "2026-11-21 18:34 ET",
+      "url": null,
+      "after_click": false,
+      "exact_sha": true
+     }
+    ]
+   },
+   "screened_before_click": true,
+   "postmortems": [],
+   "first_mention": "2026-11-21 18:07 ET",
+   "sha": "7df3a4a6ab809aae28ef4e63e6629db5b9aedd81",
+   "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",
+   "research": [],
+   "prs": [
+    {
+     "n": 137,
+     "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/137",
+     "state": "open",
+     "head": "7df3a4a6ab809aae28ef4e63e6629db5b9aedd81",
+     "title": "P27 mode 36: skip break-crossfire during drop runs (single flag)"
+    }
+   ],
+   "pr_opened": "2026-11-21 17:56 ET",
+   "primary_pr": 137,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/137",
+   "pr_state": "open",
+   "head": "7df3a4a6ab809aae28ef4e63e6629db5b9aedd81",
+   "pr_closed": null,
    "pr_merged": null,
    "contains_champion": true,
    "stage_idx": 7,
@@ -5426,6 +5528,32 @@
     "TAC_SPACE_EARLY"
    ],
    "multi": true
+  },
+  {
+   "build": "P27",
+   "submitted_et": "2026-11-21 18:50 ET",
+   "sub_dt": "2026-11-21T18:50:00-05:00",
+   "sha": "7df3a4a6ab809aae28ef4e63e6629db5b9aedd81",
+   "parent": "6182d29c673d99f5186d742a5f019c0b007234f2",
+   "champion_then": 4.17,
+   "champion_recorded": 4.17,
+   "score": 4.13,
+   "delta": -0.04,
+   "outcome": "loss",
+   "receipt": "BB-004FA2FF",
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/137",
+   "pr": 137,
+   "summary": "P27 drop crossfire skip (DROP_CROSSFIRE_SKIP_ON): keep drop run / ring hold when 2+ enemies see us but none hit us in 2 s, on 4.17 main",
+   "family": "drops",
+   "verdict": "CLOSE",
+   "changes": 1,
+   "changes_basis": "one behavior in the summary",
+   "diff_bool_flags": 1,
+   "diff_knobs_changed": 0,
+   "diff_flag_names": [
+    "DROP_CROSSFIRE_SKIP_ON"
+   ],
+   "multi": false
   }
  ],
  "change_audit": {
@@ -5566,9 +5694,9 @@
     "submitted_et": "2026-11-21 17:33 ET"
    }
   ],
-  "all_tests": 70,
+  "all_tests": 71,
   "single": {
-   "n": 54,
+   "n": 55,
    "wins": 11
   },
   "multi": {
@@ -5581,7 +5709,7 @@
    "B125"
   ],
   "since_noon_single": {
-   "n": 16,
+   "n": 17,
    "wins": 4
   },
   "since_noon_multi_rate": {
@@ -5618,12 +5746,12 @@
   {
    "id": "q_py_store",
    "ok": false,
-   "text": "pipeline/data/experiments.jsonl (what q.py eligible reads) has 13 records; coord/data/site_results.csv has 70"
+   "text": "pipeline/data/experiments.jsonl (what q.py eligible reads) has 13 records; coord/data/site_results.csv has 71"
   },
   {
    "id": "screens_csv",
    "ok": false,
-   "text": "16 of 19 site-tested builds since noon have no complete (both-set) screens.csv rows for their exact SHA: B105-PB001, B106, B108, P-D-002, B107, P-B-006, B113, B115, B118, P20, B117, P21, B110, B111, P24, B125"
+   "text": "16 of 20 site-tested builds since noon have no complete (both-set) screens.csv rows for their exact SHA: B105-PB001, B106, B108, P-D-002, B107, P-B-006, B113, B115, B118, P20, B117, P21, B110, B111, P24, B125"
   },
   {
    "id": "ideas_md_families",
@@ -5633,7 +5761,7 @@
   {
    "id": "status_stale",
    "ok": false,
-   "text": "coord/STATUS.md says 'Updated Sat Nov 21 2026, 3:44 PM ET'; the newest site result is 5:33 PM ET"
+   "text": "coord/STATUS.md says 'Updated Sat Nov 21 2026, 3:44 PM ET'; the newest site result is 6:50 PM ET"
   },
   {
    "id": "log_utc_as_et",

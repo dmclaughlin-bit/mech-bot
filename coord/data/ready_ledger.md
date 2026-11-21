@@ -121,3 +121,5 @@ These were listed in the stub as “not eligible / do not submit.” They stay H
 - Screens complete and rated PASS by Sim Tester, but new 20 s+ pins 4018 (22 s) and 5053 (20 s) with boost not active in the window. Rule (6) is per new pin. Owner: Doug (decide whether pins with the feature inactive veto). Next: Doug's answer; then loop check.py re-run.
 ### HOLD - P25b cube memory + no-progress drop (CUBE_MEMORY_ON), PR #136, 47d0e6ce
 - Screens complete; seed 3043 pin fixed, but new 20 s+ pins 72 (20 s), 4091 (26 s), 5048 (25 s), 5054 (20 s), memory not active in any window. Also D3 question: memory plus no-progress drop may be two behaviors under one flag. Owner: Doug (pin rule + D3). Next: Doug's answer.
+
+### 6:54 PM ET: P27 submitted 6:50 PM ET, BB-004FA2FF, scored 4.13 (-0.04 vs 4.17). CLOSE. READY count now 0.

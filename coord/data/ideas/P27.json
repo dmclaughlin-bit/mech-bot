@@ -4,7 +4,7 @@
  "family": "drops",
  "flag": "DROP_CROSSFIRE_SKIP_ON",
  "owner": "Mech Builder",
- "stage": "READY",
+ "stage": "scored",
  "pr": 137,
  "sha": "7df3a4a6ab809aae28ef4e63e6629db5b9aedd81",
  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
@@ -19,8 +19,8 @@
   "single_change": "PASS (brain.ts one condition + params.ts one flag)",
   "novelty": "closest prior: P21 drop contest (BB-1D97890A, tie), P20 drop-when-hurt (BB-36A427E0, tie); different trigger (2+ enemies in sight, no hit in 2 s, drop active) and action (skip crossfire hide)"
  },
- "receipt": null,
- "score": null,
- "decision": "READY - submit",
- "updated": "2026-11-21 18:55 ET"
+ "receipt": "BB-004FA2FF",
+ "score": 4.13,
+ "decision": "CLOSE (-0.04 vs 4.17)",
+ "updated": "2026-11-21 18:54 ET"
 }

@@ -70,3 +70,10 @@ Opening / first-30 s tweaks (seven 3.79 ties), upgrades, later aim tweaks, hold-
 4. Slots: 3 of 6 used. Lost: 5:45 and 5:55 PM ET ticks had no READY build (zero fully screened builds); a third slot went unused. Ready next: none. P25 #136 (b34271c) finished its full screen but is HOLD on a 21 s pin caused by the change (seed 3043); the Builder is fixing it and an exception needs Doug's yes. P26 #138 (c566fba) and P27 mode 36 #137 (7df3a4a) are new, not screened yet.
 5. Decision that changed: the B125 package loss (3.50) retired bundled tactic packages; one change per build only.
 Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 against the current champion (3 ties at 4.17). Planning prior for the next test: about 15%.
+
+
+## Loop 6:55 PM ET (Sat Nov 21)
+- P27 #137 (7df3a4a6) submitted 6:50 PM ET, BB-004FA2FF, scored 4.13 (-0.04 vs 4.17): CLOSE. Champion unchanged: B113 6182d29, 4.17.
+- Empty reserve: 0 READY. P26 #138 and P25b #136 screens are complete but HOLD on rule (6) new 20 s+ pins with the feature not active in the window (P26: 4018 22 s, 5053 20 s; P25b: 72, 4091, 5048, 5054). Owner: Doug (does a pin with the feature inactive veto?). P25b also has a D3 question (memory + no-progress drop under one flag).
+- Site banner (seen 6:50 PM ET): "New rule: excessive code reuse may result in disqualification." Counter 5 of 6 left; next frees 7:50 PM ET.
+- Next action: parent assigns a new non-drop build to Mech Builder (Diego's Claude backup) to refill the reserve.

@@ -113,3 +113,19 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * P-B-001 (standoff break): after STANDOFF_BREAK_S seconds of match time, stop sitting in a heal or hold standoff
+ * against a lone enemy and close to our best weapon's effective range, then fight under the existing engage/target code.
+ * It runs only where the champion would heal ("heal", "heal, hiding") or hold, and only when: exactly one enemy has line
+ * of sight to us and it is 45–90 m away, no other enemy has been seen in the last 3 s, our HP is at least
+ * params.retreatHp + 20% of max, that enemy is not charging a laser, and it stands inside the circle we keep to.
+ * Best weapon = the held weapon with the highest sustained DPS; its effective range is the engage code's: lightning
+ * 0.8 × its range, gun GUN_NEAR_M (60 m), laser and mortar their reach (so a laser-without-lightning holder already has
+ * its range and never walks). Once walking at one enemy, it keeps closing on it below 45 m until that range.
+ * Engage, hurt retreat, zone travel, crossfire break, the laser walk and the Build 103 lightning ambush all rank first.
+ * Aim, nav and cover are unchanged.
+ * Evidence (B103 Step A, PR #94): lightning holders spend 54%/51% of clear-target decisions at 45–90 m, half of it a
+ * standoff where neither side closes, most often while we heal. 0 = Build 103 (champion) behavior exactly.
+ */
+export const STANDOFF_BREAK_S = 60

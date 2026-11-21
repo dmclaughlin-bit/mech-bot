@@ -19,12 +19,14 @@
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  * Build 80 (late lightning): after 45 s, a gun-only bot may walk to a reachable ground lightning or laser
  * (see LATE_LIGHT_ON).
+ * P-B-001 (standoff break): after 60 s, instead of healing or holding while one lone enemy stands 45–90 m away,
+ * close to our best weapon's effective range (see STANDOFF_BREAK_S).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -142,6 +144,12 @@ const LIGHT_AMBUSH_ON = true
 const AMBUSH_MAX_M = 90
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
+/** P-B-001 (standoff break, see STANDOFF_BREAK_S): the lone enemy's distance window (m), no other enemy seen for this
+ * long (s), and our HP at least this far above params.retreatHp (fraction of max). */
+const STANDOFF_MIN_M = 45
+const STANDOFF_MAX_M = 90
+const STANDOFF_SECOND_S = 3
+const STANDOFF_HP_MARGIN = 0.2
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -293,6 +301,23 @@ function buildBot(hello: Hello): Bot {
   /** Build 14: targets we gave up on (id → time), and where our last kill died, to collect its cubes. */
   const engageGiveUp = new Map<number, number>()
   let claim: { pos: Vec3; until: number } | null = null
+  /** P-B-001: the enemy the standoff break walked at last decision (null when it did not run). */
+  let standoffId: number | null = null
+
+  /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
+   * lightning 0.8 × its range, gun GUN_NEAR_M, laser and mortar their reach. */
+  function bestWeaponRange(me: Observation["self"]): number {
+    let best = -1, range = 0
+    for (const w of me.weapons) {
+      if (!w) continue
+      const stats = { ...cfg.weapons[w.kind], ...w.stats }
+      const dps = weaponDps(w.kind, stats), reach = weaponReach(w.kind, stats)
+      if (dps <= best) continue
+      best = dps
+      range = w.kind === "lightning" ? 0.8 * reach : w.kind === "gun" ? Math.min(GUN_NEAR_M, reach) : reach
+    }
+    return range
+  }
 
   /** Build 14: what we deal per second to a target `d` m away: every held weapon that reaches, × its hit-rate guess × our cube bonus. */
   function ourDps(me: Observation["self"], d: number): number {
@@ -780,6 +805,31 @@ function buildBot(hello: Hello): Bot {
           move = heading(spot)
           mode = "hide"
         }
+      }
+      // Standoff break (P-B-001, see STANDOFF_BREAK_S): where we would heal or hold, late in the match, against one lone
+      // enemy 45–90 m away that is not charging a laser, while we are well above the retreat line: walk at it along a
+      // path until our best weapon reaches it. Everything above (engage, retreat, zone, crossfire, laser walk, lightning
+      // ambush) ranks first, and the target/aim/fire code below is unchanged. Named "engage, ..." so the silent cap does not apply.
+      if (STANDOFF_BREAK_S > 0) {
+        let foe: (typeof enemies)[number] | undefined
+        if (obs.t >= STANDOFF_BREAK_S && (mode === "heal" || mode === "heal, hiding" || mode === "hold") && me.hp >= (RETREAT_HP + STANDOFF_HP_MARGIN) * me.max_hp) {
+          const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+          const e = los.length === 1 ? los[0] : undefined
+          const d = e ? flat(e.pos, me.pos) : Infinity
+          const reach = bestWeaponRange(me)
+          // A new break starts inside 45–90 m; one already walking at this enemy keeps closing until our weapon reaches it.
+          const from = e && e.id === standoffId ? reach : Math.max(STANDOFF_MIN_M, reach)
+          if (
+            e && !e.charging && d <= STANDOFF_MAX_M && d >= from && d > reach && flat(e.pos, zoneKeep[0]) < zoneKeep[1] &&
+            ![...known.values()].some((k) => k.id !== e.id && obs.t - k.lastSeen < STANDOFF_SECOND_S)
+          ) foe = e
+        }
+        if (foe) {
+          move = travel(me.pos, foe.pos, obs.t, canPlan()).move
+          boost = false
+          mode = "engage, standoff"
+        }
+        standoffId = foe?.id ?? null
       }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.

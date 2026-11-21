@@ -114,6 +114,8 @@ const LASER_CUBE_M = 20
 const LASER_RELEASE = 0.8
 /** Build 17: aim the beam this far ahead (s) of a moving target: about the delay between an observation and our action taking effect (a guess: 1 to 2 ticks). */
 const LASER_LEAD_S = 0.075
+/** Build 32 (pre-charge): start the laser charge on a tracked mech behind cover inside laser range, so a full beam is ready when it shows. false = Build 17. */
+const PRECHARGE_ON = true
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -907,6 +909,8 @@ function buildBot(hello: Hello): Bot {
             }
             fire[laser] = !(full && lined)
           } else if (leading === "laser") fire[laser] = true
+          // Pre-charge: the target is tracked but behind cover, inside laser range; start the charge so a full shot is ready when it shows.
+          else if (PRECHARGE_ON && !clear && !farmShot && m.kind === "mech" && d <= l.stats.range && l.cooldown <= 0 && me.hp >= RETREAT_HP * me.max_hp && !leaveNow && me.in_zone) fire[laser] = true
           if (LASER_RUSH_ON && leading === "laser") beamAt = c
         }
         if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true

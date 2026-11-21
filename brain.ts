@@ -584,7 +584,8 @@ function buildBot(hello: Hello): Bot {
         let why: "ttk" | "finish" | "race" = "finish"
         let fin = false
         // Build 26 race: every watcher's DPS on us (hit rates by range) vs our DPS on one focus target, at any HP, no alone() veto.
-        if (RACE_MULTI_ON) {
+        // Build 26 fix: not while the Build 17 early laser trip can still run (a race win set `engage` and blocked the trip).
+        if (RACE_MULTI_ON && (holdsLaser || obs.t >= LASER_RUSH_S)) {
           const armor = 1 - clamp(me.stats.armor ?? 0, 0, 0.9)
           const taken = threats.reduce((s, e) => (los.includes(e) || hitters.includes(e.id) ? s + enemyDps(e, flat(e.pos, me.pos), raceHitTheirs) * armor : s), 0)
           const ttd = taken > 0 ? me.hp / taken : Infinity

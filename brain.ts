@@ -129,6 +129,17 @@ const CROSSFIRE_ON = true
  * Take, swap, and drop are unchanged (B66 and B68 lost on the site). Different from B76/B78 (first 45 s only).
  * false = champion. */
 const LATE_LIGHT_ON = true
+/** Build 103 (H1, lightning ambush): lightning reaches 45 m, but house bots hold at their preferred range (55 to 95 m)
+ * and strafe, so a gun+lightning holder spends most of a fight in a standoff the lightning can't reach (local paired
+ * sim of B80, seeds 2000 and 3000: 54% of lightning holders' clear-target decisions at 45 to 90 m, 55% of those a
+ * standoff where neither side closes, most often while we stand in "heal"). When this is on, a holder of lightning and no laser that is
+ * seen by exactly one enemy at lightning range to AMBUSH_MAX_M steps out of that enemy's sight (B60's hideSpot) and
+ * waits there. A hunter that loses sight walks to where it last saw us, so it comes back inside lightning range; the
+ * normal target code then fires the lightning. Not a walk-in (H1's walk-in screened -0.109). Engage, the hurt retreat,
+ * zone travel, the laser walks and the crossfire break all rank first. false = champion. */
+const LIGHT_AMBUSH_ON = true
+/** Build 103: the far edge (m) of the standoff band the ambush answers. */
+const AMBUSH_MAX_M = 90
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -671,6 +682,10 @@ function buildBot(hello: Hello): Bot {
       }
       if (!rushMove) rush = null
       else farmChase = null
+      // Build 103: the ambush is for a lightning holder without a laser (a laser fights at range anyway).
+      const arcHeld = LIGHT_AMBUSH_ON ? me.weapons.find((w) => w?.kind === "lightning") : undefined
+      const ambushArc = !!arcHeld && !me.weapons.some((w) => w?.kind === "laser")
+      const arcReach = Number(arcHeld?.stats.range ?? baseReach.lightning)
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -733,6 +748,16 @@ function buildBot(hello: Hello): Bot {
         move = heading(spot)
         boost = me.energy > 0.3 * me.max_energy
         mode = "break crossfire"
+      } else if (LIGHT_AMBUSH_ON && ambushArc && (spot = (() => {
+        // Build 103 (H1): one enemy sees us from beyond lightning range but inside the standoff band: step out of its
+        // sight and wait for it to come round. No boost: the lightning needs the energy when it does.
+        const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        if (los.length !== 1) return null
+        const d = flat(los[0].pos, me.pos)
+        return d > arcReach && d <= AMBUSH_MAX_M ? hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan) : null
+      })())) {
+        move = heading(spot)
+        mode = "lightning ambush"
       } else if (me.hp < HEAL_HP * me.max_hp) {
         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
         // Build 19: the walk to a hiding spot only while hurt.

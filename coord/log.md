@@ -357,3 +357,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 6:19 AM ET: Build 76 any-special early trip (56cb559, PR #71) scored 3.25, receipt BB-3AB97F36. Below B60 3.67, closed. Chasing lightning/mortar early hurts on site. Rank 128/224; #32 Kuki 5.23.
 
 - 6:26 AM ET: Build 53 post-kill cover (dc7f26f, PR #73) scored 3.50, receipt BB-290B6BD3. Below B60 3.67, closed. Rank 129/228; #32 Kuki 5.23.
+
+- 6:37 AM ET: Build 80 late gun-only walk to lightning/laser (28c3acc, PR #74) scored 3.79, receipt BB-78A44AAF. NEW CHAMPION (beats B60 3.67). Merged as cb93980. Site auto-set it as final entry. Rank 120/229; #32 Kuki 5.23. B82 merged with new main -> e7df41f (gate PASS).

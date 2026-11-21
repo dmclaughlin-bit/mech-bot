@@ -12,10 +12,12 @@
  * Build 12 (farm): with no enemy mech near or in view, shoot drones and crates and walk to cubes and drops (see farmPlan).
  * Build 14 (engage): fight or flee by time-to-kill vs time-to-die (F1): against one enemy we would kill first, or one
  * within a magazine of dying, fight on instead of the HP retreat, then collect its cubes (see engageChoice, ENGAGE_ON).
+ * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
-import { ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, params } from "./params.ts"
+import { ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, TARGET_PICK_ON, params } from "./params.ts"
+import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
 // ------------------------------------------------------------------ geometry helpers
@@ -224,6 +226,9 @@ function buildBot(hello: Hello): Bot {
     baseDps[kind] = weaponDps(kind, cfg.weapons[kind] ?? {})
     baseReach[kind] = weaponReach(kind, cfg.weapons[kind] ?? {})
   }
+  /** Build 16: the enemy we are focusing, kept until it dies or is lost for TARGET_LOST_S, and the scale for "weak weapons". */
+  const targetLock = createTargetLock()
+  const topPairDps = WEAPON_KINDS.map((k) => baseDps[k]).sort((a, b) => b - a).slice(0, 2).reduce((a, b) => a + b, 0) || 1
   const cubeDamage = (cubes = 0) => 1 + Number(cfg.cubes.damage_per_cube ?? 0) * Math.min(cubes, Number(cfg.cubes.stat_cap ?? cubes))
   /** Build 14: mech attacker id → last time it damaged us (drones and the zone left out). */
   const mechHitBy = new Map<number, number>()
@@ -637,7 +642,7 @@ function buildBot(hello: Hello): Bot {
       }
       let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
 
-      // Target: the nearest enemy mech with a clear shot, else the nearest one we know is there.
+      // Target: the nearest enemy mech with a clear shot, else the nearest one we know is there (Build 16 re-picks below).
       const slotOf = (kind: WeaponKind) => me.weapons.findIndex((w) => w?.kind === kind)
       const options = enemies
         .map((m) => {
@@ -645,7 +650,8 @@ function buildBot(hello: Hello): Bot {
           return { m, c, d: span(muzzle, c), clear: false }
         })
         .sort((a, b) => a.d - b.d)
-        .slice(0, LOS_TARGETS)
+        // Line-of-sight checks go to the nearest few, plus the locked target however far it is (Build 16).
+        .filter((o, i) => i < LOS_TARGETS || (TARGET_PICK_ON && o.m.id === targetLock.id))
       for (const o of options) o.clear = clearLine(solids, muzzle, o.c)
       // Build 14: among equally clear targets, the one we are engaged with comes first.
       const engagedId = engage?.m.id
@@ -654,6 +660,30 @@ function buildBot(hello: Hello): Bot {
       // within the gun gate, unless we are hurt to retreat level. They go through the same aim and fire code.
       let farmShot = false
       let target = options[0]
+      let pickNote = ""
+      if (TARGET_PICK_ON) {
+        // Build 16: score every option by kill value and hold a lock on the best one (target.ts). Our DPS is Build 14's
+        // ourDps, so the pick and the fight-or-flee test read one estimate, and the enemy Build 14 is engaged with takes
+        // the lock. The pick runs every decision, also with nobody in view, so the lost timer keeps counting.
+        const scored = scoreTargets(
+          options.map((o) => {
+            const k = known.get(o.m.id)
+            const held = o.m.weapons ?? (k?.weapons.length ? k.weapons : undefined)
+            return {
+              id: o.m.id, pos: o.m.pos, d: o.d, clear: o.clear,
+              hp: o.m.hp ?? k?.hp ?? cfg.mech.hp, maxHp: o.m.max_hp ?? k?.maxHp ?? cfg.mech.hp,
+              threat: held ? Math.min(1, held.reduce((a, kind) => a + (baseDps[kind] ?? 0), 0) / topPairDps) : 0.5,
+            }
+          }),
+          [...known.values()].filter((k) => obs.t - k.lastSeen <= (cfg.vision.memory_s ?? 5)),
+          (d) => ourDps(me, d), z,
+        )
+        const killed = obs.events.flatMap((e) => (e.type === "kill" ? [e.target] : []))
+        const pick = targetLock.pick(scored, obs.t, killed, engagedId)
+        target = options.find((o) => o.m.id === pick.target?.id)!
+        // Kept short: the debug label is capped at debug.max_text_chars (80).
+        if (pick.target) pickNote = ` [${pick.role}${pick.locked ? `+${pick.locked}` : ""} ${pick.target.score.toFixed(2)}]`
+      }
       if (!target && farmOk && me.hp >= RETREAT_HP * me.max_hp) {
         const marks = [
           ...obs.mechs.filter((m) => m.kind === "npc").map((m) => ({ m, c: [m.pos[0], m.pos[1], m.pos[2] + cfg.npc.height / 2] as Vec3 })),
@@ -737,7 +767,7 @@ function buildBot(hello: Hello): Bot {
         if (gun >= 0 && (w(gun).ammo ?? 1) === 0 && (w(gun).reload ?? 0) <= 0) act.reload = true
 
         draw.line(muzzle, c, clear ? "#ff5040" : "#888888")
-        label += ` · ${farmShot ? "farm " : ""}${leading} at ${m.id} ${d.toFixed(0)}m${clear ? "" : " (behind cover)"}`
+        label += ` · ${farmShot ? "farm " : ""}${leading} at ${m.id} ${d.toFixed(0)}m${clear ? "" : " (behind cover)"}${pickNote}`
       } else {
         // Nobody known nearby: face whoever hit us last (hits from behind do 1.5x), and top up the gun.
         if (lastHit && obs.t - lastHit.t < 2) aim = [lastHit.bearing, 0]

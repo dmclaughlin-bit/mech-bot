@@ -1,0 +1,95 @@
+diff --git a/brain.ts b/brain.ts
+index 8b8e5b7..141ccea 100644
+--- a/brain.ts
++++ b/brain.ts
+@@ -259,6 +259,11 @@ function fallbackBot(): Bot {
+   }
+ }
+ 
++import { appendFileSync } from "node:fs"
++const __I = process.env.INSTR_FILE
++const __buf: string[] = []
++const __flush = () => { if (__I && __buf.length) { appendFileSync(__I, __buf.join("\n") + "\n"); __buf.length = 0 } }
++process.on("exit", __flush)
+ function buildBot(hello: Hello): Bot {
+   const cfg = hello.config
+   const solids = loadMap(hello)
+@@ -278,6 +283,8 @@ function buildBot(hello: Hello): Bot {
+   let beamFull: number | null = null
+   let beamAt: Vec3 | null = null
+   const laserSkip = new Set<number>()
++  const __skipLog: any[] = []
++  const __reach = new Map<number, [number, boolean]>()
+   let rush: { id: number; since: number } | null = null
+   /** Build 12: last time a mech (or the zone) damaged us, the item we are walking to, and items we gave up on. */
+   let lastMechHit = -Infinity
+@@ -657,6 +664,7 @@ function buildBot(hello: Hello): Bot {
+       // Collect (Build 14): after our kill, walk to the cubes it dropped (all of its cubes plus two) if it is safe:
+       // nobody has line of sight to us, no mech hit us in the last 2 s, and the same zone test as farming.
+       let claimGoal: Vec3 | null = null
++      let __cb: string[] | null = null, __cd = -1, __cn = -1
+       if (claim && obs.t > claim.until) claim = null
+       if (claim && me.in_zone && !leaveNow && !engage) {
+         const at = claim.pos
+@@ -666,7 +674,19 @@ function buildBot(hello: Hello): Bot {
+           flat(goal, z.center) < Math.max(0, z.radius - margin) &&
+           (flat(me.pos, goal) + Math.max(0, flat(goal, z.next_center) - inner)) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER < timeLeft
+         if (!cube && flat(me.pos, at) < Number(cfg.cubes.pickup_radius ?? cfg.loot.pickup_radius)) claim = null
+-        else if (zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && !seenAt(me.pos, myHeight, threats, false)) claimGoal = goal
++        else {
++          __cb = []
++          if (!zoneSafe) __cb.push("zone")
++          if (obs.t - lastMechHit <= THREAT_HIT_S) __cb.push("hit<2s")
++          if (seenAt(me.pos, myHeight, threats, false)) __cb.push("seen")
++          __cd = Math.round(flat(me.pos, goal)); __cn = obs.cubes.filter((c) => flat(c.pos, at) < CLAIM_M).length
++          if (zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && !seenAt(me.pos, myHeight, threats, false)) claimGoal = goal
++        }
++      } else if (claim) {
++        __cb = []
++        if (!me.in_zone) __cb.push("out of zone")
++        if (leaveNow) __cb.push("leaving")
++        if (engage) __cb.push("engage")
+       }
+       // Stop sneaking (Build 19): not hurt (HP at or above the retreat line, no damage for NO_SNEAK_QUIET_S), so no
+       // silent speed cap and no walk to a hiding spot. While hurt, the retreat, the heal and their hiding are unchanged.
+@@ -675,6 +695,7 @@ function buildBot(hello: Hello): Bot {
+       // slack before leaving, not engaging or collecting a kill, not hurt, and no mech damage for FARM_QUIET_S.
+       // Fix round: no enemy test (an enemy nearer to the pickup or watching the route no longer stops the trip).
+       let rushMove: [number, number] | null = null
++      let __skc: any[] | null = null, __alt = -1
+       const rushSlot = me.weapons.includes(null) || (enemies.length === 0 && me.weapons.some((x) => x?.kind === "gun"))
+       const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
+       // Build 80: after the opening, a gun-only bot may start a new lightning/laser walk (champion only continues one).
+@@ -693,6 +714,9 @@ function buildBot(hello: Hello): Bot {
+             (a.kind === "laser" || gunOnly) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
+             !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4) && fits(a.pos, flat(me.pos, a.pos)))
+           .sort((a, b) => Number(a[1].kind !== "laser") - Number(b[1].kind !== "laser") || flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos))
++        __skc = []; __alt = options.length
++        for (const [sid, a] of arms) if (laserSkip.has(sid) && (a.kind === "laser" || gunOnly) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
++            !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4) && fits(a.pos, flat(me.pos, a.pos))) __skc.push([sid, a.kind, +flat(me.pos, a.pos).toFixed(1), a.pos])
+         const kept = rush ? options.find(([id]) => id === rush!.id) : undefined
+         const pick = kept && kept[1].kind === options[0][1].kind && flat(kept[1].pos, me.pos) - flat(options[0][1].pos, me.pos) < LASER_SWITCH_M ? kept : options[0]
+         if (pick && (obs.t < LASER_RUSH_S || pick === kept || lateLight)) {
+@@ -701,7 +725,7 @@ function buildBot(hello: Hello): Bot {
+           const go = travel(me.pos, pos, obs.t, canPlan())
+           const planned = !!route && flat(route.goal, pos) <= ROUTE_GOAL_SHIFT
+           // No path (a ledge, a walled yard) or a walk that has taken too long: leave this one for good.
+-          if ((planned && !route!.found) || obs.t - rush.since > LASER_CHASE_S) laserSkip.add(id)
++          if ((planned && !route!.found) || obs.t - rush.since > LASER_CHASE_S) { laserSkip.add(id); __skipLog.push({ id, kind: pick[1].kind, why: planned && !route!.found ? "noroute" : "timeout", t: obs.t }) }
+           else if (planned && fits(pos, go.dist)) rushMove = go.move
+         }
+       }
+@@ -1076,6 +1100,13 @@ function buildBot(hello: Hello): Bot {
+       act.aim = [aim[0], clamp(aim[1], minPitch, maxPitch)]
+       act.fire = fire
+       draw.label(`${label} · ${mode}`)
++      if (__I) {
++        const tg = target && target.m.kind === "mech" ? target.m : null
++        const kv = [...known.values()].filter((k) => obs.t - k.lastSeen <= 5); const wk = kv.map((k) => [k.id, +(k.hp / (k.maxHp || 1)).toFixed(2), +(obs.t - k.lastSeen).toFixed(1), Math.round(flat(k.pos, me.pos)), kv.some((o) => o !== k && flat(o.pos, k.pos) < 40) ? 0 : 1])
++        __buf.push(JSON.stringify({ t: +obs.t.toFixed(1), m: mode, hp: +(me.hp / me.max_hp).toFixed(2), cubes: me.cubes, claim: !!claim, cb: __cb, cd: __cd, cn: __cn, cg: !!claimGoal,
++          tg: tg ? tg.id : null, tgc: tg ? !!target.clear : null, eng: engage ? [engage.m.id, engage.why] : null, kills: obs.events.filter((e) => e.type === "kill").map((e: any) => e.target), known: wk, nen: enemies.length, los: threats.filter((e) => seenAt(me.pos, myHeight, [e], false)).length, w: me.weapons.map((x) => x?.kind ?? "-").join("+"), att: [...mechHitBy.values()].filter((t) => obs.t - t < 5).length, spd: +Math.hypot(me.vel[0], me.vel[1]).toFixed(1), mv: +Math.hypot(act.move?.[0] ?? 0, act.move?.[1] ?? 0).toFixed(2), ms: +(performance.now() - started).toFixed(2), sk: __skc ? __skc.map(([sid, k, d, pos]: any) => { let c = __reach.get(sid); if (!c || obs.t - c[0] >= 1) { c = [obs.t, !!nav.path(me.pos, pos, PATH_BUDGET)]; __reach.set(sid, c) } return [sid, k, d, c[1] ? 1 : 0] }) : null, alt: __alt, skips: __skipLog.splice(0) }))
++        if (__buf.length > 200) __flush()
++      }
+       const took = performance.now() - started
+       if (took > DEADLINE_MS) log(`decision at tick ${obs.tick} took ${took.toFixed(1)} ms`)
+       return act

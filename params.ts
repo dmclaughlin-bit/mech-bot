@@ -140,3 +140,33 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P25 (cube memory): top teams pick up 3.94 cubes/min while idle vs our 2.27 (coord/data/watcher/SKILLS.md), and the
+ * champion only walks to cubes in view within FARM_PICKUP_M. Cubes are listed only while in view, so remember every cube
+ * seen (id, position, last seen). When the Build 12 farm gate is open (same farmOk: in the zone, not leaving, no enemy
+ * in view or known within FARM_ENEMY_M, no mech hit for 3 s) and B12/B13 have nothing to walk to, walk along a path to
+ * the nearest remembered (or visible) zone-safe ground cube within CUBE_MEMORY_M. The target is sticky: kept until it is
+ * taken, expires, or is skipped. A remembered cube is forgotten once we stand within CUBE_GONE_M with a clear line and it
+ * is not listed (taken), or CUBE_MEMORY_TTL_S after it was last seen. Strict give-up: the total time each cube was our
+ * target while we farmed (summed across switches, never reset) may not exceed its distance at first pick / walk speed +
+ * CUBE_MEMORY_SLACK_S; then it is skipped for the rest of the match (B12 skips it too, so the two cannot trade it).
+ * false = the champion (B113) exactly.
+ */
+export const CUBE_MEMORY_ON = true
+/** P25: walk to remembered or visible cubes at most this far (m). */
+export const CUBE_MEMORY_M = 150
+/** P25: forget a cube this long (s) after we last saw it. */
+export const CUBE_MEMORY_TTL_S = 90
+/** P25: a remembered cube we stand this close to (m) with a clear line, and no longer see, has been taken. */
+export const CUBE_GONE_M = 20
+/** P25: seconds of slack on top of the straight walk time in each cube's give-up budget. */
+export const CUBE_MEMORY_SLACK_S = 8
+/**
+ * P25b: no-progress drop. While we walk to a remembered cube ("farm, memory"), it must come at least CUBE_STALL_M
+ * closer (straight-line) within each CUBE_STALL_S of memory walking; otherwise it is skipped for the rest of the match
+ * (farmGiveUp, like a cube past its budget). Stops walking in place at a nav pin until the full budget runs out.
+ */
+export const CUBE_STALL_M = 2
+/** P25b: seconds of memory walking allowed without closing CUBE_STALL_M on the target. */
+export const CUBE_STALL_S = 2

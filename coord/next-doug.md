@@ -1,25 +1,19 @@
 # Next for Doug
 
-Written by Grok, the coordinator (see `GROK_BRIEF.md`); committed here by Diego's Claude. Paste everything below the line into your Claude.
+Written by Grok, the coordinator (see `GROK_BRIEF.md`); committed here at Doug's request. Paste everything below the line into your Claude.
 
 ---
 
-Read `AI-Structure-Development.md` (the team's single source of truth, sections 2 to 5) and `coord/log.md` in `dmclaughlin-bit/mech-bot` before starting. Your task is **Build 2: survival-min**, on a branch `build-2` off `main`. PR by 10:30 PM ET so it can be submitted by 11 PM.
+Read `AI-Structure-Development.md` and `coord/log.md` in `dmclaughlin-bit/mech-bot` before starting.
 
-Change only `brain.ts`, plus new `map.ts` and `params.ts` if you want them. Keep Build 1's aiming and tracking. The rules marked Build 2 in section 9 (behavior rulebook) are the spec. Make these changes, one commit each:
+Build 2 is already on `main` @ `4726cfc`. Your task is **Build 3: wire `nav.ts`**, on a branch `build-3` off current `main` **after PR #5 is merged**. If `nav.ts` is not yet on `main`, wait. Do not edit `nav.ts`, and do not start Build 4.
 
-1. **Constructor safety:** `createBot` must never throw. Guard `hello.map` and fall back to a no-map mode.
-2. **Terrain in `clearLine`:** load `v2/terrain.i16` (int16 cm, bilinear, protocol §11) and treat a sample point below the ground as blocked.
-3. **Pickups:** take only laser or lightning, and only when no enemy is within 160 m. Never take a mortar. Don't swap weapons while an enemy is in view.
-4. **Fire gate:** fire the gun only inside 100 m, or at a target that is damaging us, below 50% HP, or moving mostly toward or away from us. Laser and lightning keep Build 1's rules.
-5. **Zone travel:** leave for the next circle when ETA / (0.8 × walk_speed) + 10 s ≥ time left to `zone.shrink_end`. Boost only when walking can't make it. Once inside the next circle, move under 5 m/s (silent).
-6. **Unstick:** replace "jump every 40 ticks" with a jump (and jet if needed) only when we've commanded movement but moved under 1 m in 0.5 s.
-7. **Retreat:** when HP < 35% and we took damage in the last 2 s, walk away from the attacker with the torso still facing them (legs and torso are independent).
-8. **Upgrades:** pick by order plating > armor > nanites > sensors > weapon upgrade > mobility, matched on choice `id` (look the ids up in `hello.config.upgrades`; only `armor` and `sensors` are confirmed in the protocol).
-9. Put the thresholds (100 m, 35%, 0.8, 10 s, 5 m/s, aggression) in `params.ts`. Six knobs at most.
+Change only files you own in plan §4: `brain.ts`, and `bot.ts` / `params.ts` / `Dockerfile` only if the wiring requires it. Do not edit `nav.ts` or `tools/`.
 
-Read every game number from `hello.config`. Then run `python3 check/check.py --map-dir arena -- bun ../mech-bot/bot.ts` from the kit, paste the result into the PR, merge it once it passes, and append an entry to `coord/log.md` in the format at the top of that file. Don't start Build 3; Diego's Claude is writing `nav.ts` against the interface in section 4 of the plan.
+Spec: the plan §4 `Nav` interface (`createNav`, `path`, `eta`, `stuck`) and the §9 rules tagged Build 3 — **Z1** (switch zone travel from straight-line distance to path distance via `nav.eta` / `nav.path`, and add the per-track route buffer written in Z1). Also add the **30 ms deadline guard** required by D6 and §7 rule 2 once A* can run in a tick (target p99 ≤ 15 ms). Use `nav.stuck` for stuck recovery. Diego's PR #5 log says in-tick calls should use a 20k expansion budget; use that, don't pick a new one. Read every game number from `hello.config` or from existing `params.ts`. Do not add a new tuning knob (Build 2 already has six).
 
-If you have findings in your private `mech-strategy.md` or `LOG.md` that the plan doesn't cover, add the non-secret ones to `coord/log.md` under "Found".
+Keep Build 2 behavior otherwise. This PR is one change: path-aware navigation plus the deadline guard. Jump/jet edges are not in PR #5; do not add them in `nav.ts` (Diego owns that file).
 
-**Standing rule for every task:** every push you make, on any branch, includes a new entry at the bottom of `coord/log.md` in the format at the top of that file, and every PR description repeats it. The coordinator only sees what reaches GitHub. If you learn something without changing code, push a log-only commit.
+Done when: from the kit, `python3 check/check.py --map-dir arena -- bun ../mech-bot/bot.ts` passes (if bun is still missing on your Mac, say so in the log and use the node command you already have). Paste the check numbers in the PR. The Docker-flagged gate in `research/protocol.md` §1 should also be run before this build is submitted — ask Diego if you cannot run Docker. Merge your own PR once the gate passes (§4). Target: **PR by Sat 1:00 PM ET** (plan window Sat 9 AM to 1 PM; you may start tonight once PR #5 is on `main`). Do not start Build 4, and do not treat this as submittable until Diego has finished S3 (the identical Build 2 resubmit).
+
+Every push includes a new entry at the bottom of `coord/log.md` (format at the top of that file), and every PR description repeats it.

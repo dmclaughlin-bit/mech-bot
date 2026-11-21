@@ -1,0 +1,74 @@
+{
+  "author": "Diego",
+  "submitted_at": "2026-11-21T00:35:00-05:00",
+  "findings": [
+    {
+      "claim": "Outside an engagement latch, brain.ts shoots the nearest clear enemy, not the one it would kill fastest, even though Build 14 already computes per-enemy time-to-kill (race()).",
+      "topic": "our_weakness",
+      "sources": [
+        {"ref": "brain.ts:640-652 (main @ d58cdf9)", "kind": "repo", "quote": "// Target: the nearest enemy mech with a clear shot, else the nearest one we know is there."},
+        {"ref": "brain.ts:502-507 (main @ d58cdf9)", "kind": "repo", "quote": "return { ttk: out > 0 ? e.hp! / out : Infinity, ttd: taken > 0 ? me.hp / taken : Infinity }"},
+        {"ref": "watcher evidence EV-W-D-showdown-tgt_hp50_pct", "kind": "watch_stream", "quote": "% of mech hits on targets under 50% HP: winner 46.6 top4 37.1 bottom 24.7"}
+      ],
+      "confidence": 0.6,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "Next build (one mechanism, brain.ts target sort at :651): among clear targets, after the engaged-target tiebreak, sort by ttk from race() (enemy hp / ourDps at its distance) instead of distance; fall back to distance on ties or when hp is missing. Behind a flag (e.g. TARGET_TTK_ON) so it rolls back to Build 14 exactly. Expected: +0.1 to +0.3, more kills, because the squad converges late (more targets at once) and split damage across full-HP hunters kills nobody.",
+      "mechanism": "In practice every point is a squad death before ours. With two or more hunters in view, concentrating fire on the one closest to dying turns damage into kills (each worth about a point and its cubes + 2) before the squad's damage turns into our death. The finish rule only covers the engaged target; this applies the same idea to every shot.",
+      "expected_gain": 0.2,
+      "effort": 1,
+      "regression_risk": 0.2,
+      "failure_classes": [
+        {"class": "UNDER_AGGRESSION", "confidence": 0.3, "basis": "damage spread over full-HP enemies yields no kill"},
+        {"class": "MULTI_ENEMY_TRAP", "confidence": 0.3, "basis": "late-match squad convergence: several hunters in view at once (track rules)"}
+      ],
+      "related_rule_ids": ["A1", "F1"],
+      "related_experiments": ["EXP-0006"],
+      "keywords": ["target selection", "ttk", "focus fire", "kills", "next build"]
+    },
+    {
+      "claim": "While the laser leads, the torso aims straight at the target with no lead, so the gun's onTarget(gunAim) check fails against a sideways mover beyond about 65 m and the gun stays silent for the whole 0.75 s charge.",
+      "topic": "our_weakness",
+      "sources": [
+        {"ref": "brain.ts:691-693 and :718-721 (main @ d58cdf9)", "kind": "repo", "quote": "leading = \"laser\"\n          aim = direct"},
+        {"ref": "brain.ts:677-679 (yawTol from target radius x 1.2)", "kind": "repo", "quote": null},
+        {"ref": "mechfight-kit/check/stream.jsonl.gz hello.config (gun speed 252, mech radius 2.5, walk_speed 11.7, laser charge 0.75, cooldown 1.65)", "kind": "protocol", "quote": null}
+      ],
+      "confidence": 0.55,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "When both laser and gun are held, fire the gun with the laser's direct aim when the lead offset (sideways speed x d / gun speed) is under the target radius, and otherwise aim at gunAim during the charge and release the laser only when |aim - direct| is within yawTol. Candidate for after the target-choice build.",
+      "mechanism": "The lead a sideways mover needs at walk speed is 11.7 x d / 252 = 0.046 x d m. That passes the 3 m tolerance (radius 2.5 x 1.2) at about 65 m. The charge is 0.75 of each 2.4 s laser cycle, so about 31% of the time the gun (about 102 DPS sustained) is silenced against moving targets at mid range. This may be part of why Build 8 (laser first) lost: a laser can replace gun DPS instead of adding to it.",
+      "expected_gain": 0.15,
+      "effort": 2,
+      "regression_risk": 0.25,
+      "failure_classes": [
+        {"class": "AIM_WEAPON", "confidence": 0.4, "basis": "code reading plus arithmetic from config, no per-match data"}
+      ],
+      "related_rule_ids": ["A2"],
+      "related_experiments": ["EXP-0009"],
+      "keywords": ["laser", "gun", "lead", "charge", "Build 8"]
+    },
+    {
+      "claim": "A started laser charge keeps charging when the target loses line of sight or the laser stops leading, so it auto-fires after hold_s (2 s past full charge) along whatever the torso faces and then spends its 1.65 s cooldown.",
+      "topic": "our_weakness",
+      "sources": [
+        {"ref": "brain.ts:727-735 (main @ d58cdf9)", "kind": "repo", "quote": "fire[laser] = !(full && leading === \"laser\" && onTarget(direct[0], direct[1]))"},
+        {"ref": "mechfight-kit/protocol.md §7 Weapons, laser row", "kind": "protocol", "quote": "a full charge held for `hold_s` 2 s more fires on its own"}
+      ],
+      "confidence": 0.5,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "When charging and the target is no longer clear or in range, release only if it is on target; otherwise keep the charge and re-aim at the nearest clear enemy before the hold_s auto-fire. Small fix, can ride with the laser-aim change.",
+      "mechanism": "A wasted full charge throws away 315 damage plus 2.4 s of laser cycle, and charging also halves our walk speed (charge_move_mult 0.5) while it lasts, during retreats too.",
+      "expected_gain": 0.05,
+      "effort": 1,
+      "regression_risk": 0.1,
+      "failure_classes": [
+        {"class": "AIM_WEAPON", "confidence": 0.3, "basis": "code reading; frequency unknown without match data"}
+      ],
+      "related_rule_ids": ["A2"],
+      "keywords": ["laser", "auto-fire", "hold_s", "charge"]
+    }
+  ]
+}

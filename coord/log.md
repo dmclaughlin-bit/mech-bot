@@ -379,3 +379,9 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 2026-11-21 8:50 AM ET: B94 lateclaim 1657334 (PR #82, P9+P10, submitted by routine tick) site 3.73 (BB-EA74B72B). Below champion B80 3.79. Closed. Sim was +0.000 with only 6/192 changed, yet it scored 0.06 lower, so near-inert builds do not always reproduce the champion score exactly. Rank 129/239, #1 kyoto-max 6.00, #32 5.25. Overnight push ended; final entry stays B80 3.79.
 
 - 2026-11-21 afternoon ET: Added `coord/RESEARCH.md` (and `coord/research/` tables) as a self-contained dossier of everything learned through B94, for a deep-research pass on the next change. No bot code changed, no PR touched, nothing submitted. Champion stays B80 28c3acc, site 3.79, receipt BB-78A44AAF.
+
+## Sat 01:25 ET · Diego (research) · Supply drops as the late-game heal
+- Did: filed `research/intake/diego-2026-11-21-0123.json` (1 finding, EV-R-0037 on a scratch ingest: ACCEPT). Picked a question no earlier intake or Doug's 0040 report covers.
+- Result: research only, from kit config and code; not submitted.
+- Found: drops (called at 70/140/210 s, landing 25 s later inside the next circle) give full HP, full energy and 3 cubes for 4 s alone in an 8 m ring. They are the only heal that our own hits can't reset. We take one only after it lands, within 80 m, and with no enemy known within 160 m (`brain.ts:456-476`, `params.ts:32-34`). One watched winner took all 3 drops.
+- Blocked / next: **proposal (Lane A):** `DROP_RUN_ON`: walk to a called, zone-safe drop as soon as the nav ETA ≤ `lands_in` + 10 s, then hold the ring with normal fight logic; skip it if it's held or contested. Expected +0.1 to +0.3.

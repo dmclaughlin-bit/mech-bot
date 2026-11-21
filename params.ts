@@ -11,7 +11,7 @@ export const params = {
   zoneWalk: 0.8,
   /** Z1: seconds of buffer when deciding to leave for the next circle. */
   zoneBuffer: 10,
-  /** H2, Q1: stay under this ground speed (m/s) inside the next circle, so our steps make no sound. */
+  /** H2, Q1: stay under this ground speed (m/s) inside the next circle, so our steps make no sound. Build 19: only while hurt (see NO_SNEAK_ON). */
   silentSpeed: 5,
   /**
    * F1 (Build 14): the fight-or-flee ratio. Hurt and under fire from exactly one enemy, we fight on instead of
@@ -100,3 +100,16 @@ export const TARGET_ALONE_M = 40
 export const TARGET_TTK_REF_S = 5
 /** Kill-value weights. `shot` is above the sum of hp, weak and alone, so an enemy we can shoot always outranks one we can't. */
 export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
+
+/**
+ * Build 19 (stop sneaking): while not hurt, drop the silent speed cap (H2, Q1: params.silentSpeed inside the next
+ * circle and on hide moves) and the hide-from-sight move (Q2: the hold-out-of-sight walk, and the walk to a hiding
+ * spot while healing). Loot, farm and zone moves then go at full walk speed, and the bot stands and shoots an enemy
+ * that sees it instead of creeping away first. Not hurt = HP at or above params.retreatHp of max and no damage of any
+ * kind for NO_SNEAK_QUIET_S. While hurt, the retreat, the heal and their silent hiding run unchanged. Standing still
+ * to heal under 90% HP is also unchanged. Practice house bots are one squad sharing vision, so hiding from one does
+ * not hide us (research: coord/research-doug-0040.md). Set NO_SNEAK_ON to false to roll back to Build 16 behavior exactly.
+ */
+export const NO_SNEAK_ON = true
+/** Not hurt needs no damage (mech, drone or zone) for this long (s). */
+export const NO_SNEAK_QUIET_S = 3

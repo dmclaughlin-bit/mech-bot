@@ -1,16 +1,11 @@
 # next-diego.md
 
-Diego: no manual steps. Your Claude's only job is outside research (light use, every few hours). See `coord/WORKFLOW.md`.
+Diego: research only (light use, every few hours), with your own AI subscriptions. No bot code. See `coord/WORKFLOW.md`.
 
-## Prompt for Diego's Claude
+**How to hand in research:** follow `research/intake/README.md`. It has the reusable prompt to paste into any AI and the required JSON format. Drop the JSON (plus optional markdown notes) in `research/intake/` via a PR on branch `research-YYYYMMDD-HHMM`. Grok ingests it with `python3 pipeline/q.py ingest-research` (validated, deduplicated, stored as unverified `research_claim` evidence).
 
-Read `AI-Structure-Development.md`, `coord/WORKFLOW.md`, `coord/learnings.md` and the bottom of `coord/log.md` in `dmclaughlin-bit/mech-bot` before starting.
+Before researching, see what's already tested so you don't re-propose failures: `python3 pipeline/q.py brief` and `python3 pipeline/q.py tested <keyword>`.
 
-You are the research Claude. Do not write or change bot code. Goal: find ideas that raise our practice score (currently 2.38; 32nd place is about 4.17).
-
-1. From the Mech Royale leaderboard on https://www.joinbuilders.org/buildathon/tracks/builders , find the public GitHub repos of the top 10 teams (submissions must be public repos; search GitHub if links aren't shown). Read them for ideas only, no copying code.
-2. For each, note: weapon/pickup priority (laser? lightning?), upgrade order, target selection, when they fire (range, target HP), zone/positioning, healing, NPC farming, supply drops.
-3. Compare with our `brain.ts`. Write `coord/research-ideas.md`: a ranked list of single changes, each with the evidence (which teams, what they do), the mechanism, and why it should raise our score. Mark guesses as guesses. No invented numbers.
-4. Push only `coord/research-ideas.md` on branch `research-ideas` and open a PR. Grok merges it.
+Current priorities from your 11:05 PM handoff (P0 to P4) are hypotheses HYP-018 to HYP-022 in `pipeline/data/hypotheses.jsonl`. Most useful next: top-10 teams' public repos (weapon/upgrade order, target choice, cover, farming), and anything that explains why Build 6 (cover) and Build 7 (gun range) lost.
 
 Every push includes a new entry at the bottom of `coord/log.md` (format at the top of that file), and every PR description repeats it.

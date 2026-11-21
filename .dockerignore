@@ -3,3 +3,4 @@ coord/
 tools/
 *.md
 .git
+pipeline/

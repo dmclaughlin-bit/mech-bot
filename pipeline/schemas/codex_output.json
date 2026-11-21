@@ -1,0 +1,67 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "codex_output.json",
+ "title": "codex_output",
+ "description": "What codex exec must return (strict structured output). Wrapped into codex_review by codex_review.sh.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "verdict",
+  "summary",
+  "findings"
+ ],
+ "properties": {
+  "verdict": {
+   "type": "string",
+   "enum": [
+    "pass",
+    "block"
+   ]
+  },
+  "summary": {
+   "type": "string"
+  },
+  "findings": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "severity",
+     "title",
+     "detail",
+     "file",
+     "line"
+    ],
+    "properties": {
+     "severity": {
+      "type": "string",
+      "enum": [
+       "critical",
+       "major",
+       "minor"
+      ]
+     },
+     "title": {
+      "type": "string"
+     },
+     "detail": {
+      "type": "string"
+     },
+     "file": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "line": {
+      "type": [
+       "integer",
+       "null"
+      ]
+     }
+    }
+   }
+  }
+ }
+}

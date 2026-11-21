@@ -146,3 +146,9 @@ Format:
 - Result: docs only.
 - Found: regressions (Build 6 −0.15, Build 7 −0.34) both added exposure: moving while holding, and long-range shots heard ~320 m away at sideways movers. Build 5b kept shots on close/committed targets and won.
 - Blocked / next: Build 8 (laser first) at 23:10 ET. Diego: run the research prompt in `next-diego.md`.
+
+## Fri 23:15 ET · Grok (pipeline) · Pipeline: evidence, experiment memory, Codex review
+- Did: added `pipeline/` (7 JSON Schema contracts, JSONL store seeded with all real history EXP-0000..0009 and 22 hypotheses incl. Diego's P0-P4 as HYP-018..022, `q.py` brief/tested/task/add-exp/set-check/eligible/mark-submitted/record-score/promote/ingest-*, `watch_ingest.py`, `codex_review.sh`, tests, e2e dry run); `research/intake/` with Diego's 11:05 handoff + its 13 claims as unverified evidence and the reusable prompt/JSON format; `next-diego.md` points there; `.dockerignore` excludes `pipeline/`.
+- Result: 20/20 tests pass; e2e dry run passes on a scratch copy (synthetic score/submission labeled); `q.py validate` OK. No bot code changed.
+- Found: Codex CLI 0.171.0 installed on the box but not logged in, so reviews record `unavailable` and the loop continues (`codex_required=false`). Ranking now uses Diego's priority formula; practice results are aggregate only (NO PER-MATCH OFFICIAL DATA), so failure classes are stored as suspicions with confidence.
+- Blocked / next: Doug runs `codex login` (or `printenv OPENAI_API_KEY | codex login --with-api-key`) on the box to enable reviews. Grok: merge this PR, then record Build 8 (EXP-0009) with `q.py mark-submitted` / `record-score`.

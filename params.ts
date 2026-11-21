@@ -129,3 +129,13 @@ export const NO_SNEAK_QUIET_S = 3
  * standoff where neither side closes, most often while we heal. 0 = Build 103 (champion) behavior exactly.
  */
 export const STANDOFF_BREAK_S = 60
+
+/**
+ * P-D-002 (threat forecast, Diego's Claude; Grok 12:45 PM ET, strategy report §4 S2): from FORECAST2_S seconds of match
+ * time, the engage decision (finish and TTK rules) treats a fight as 2-on-1 before the second enemy has line of sight:
+ * a known enemy seen in the last FORECAST_SEEN_S, closing on us, that would see us from where it will be in
+ * FORECAST_LEAD_S counts as a second threat, so alone() fails. Engage decision only: nav, cover and retreat unchanged.
+ * 0 = off, identical to main.
+ */
+export const FORECAST2_S = 0
+

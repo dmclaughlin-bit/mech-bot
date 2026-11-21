@@ -25,7 +25,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  ENGAGE_FINISH_HP, FORECAST2_S, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -140,6 +140,10 @@ const LATE_LIGHT_ON = true
  * normal target code then fires the lightning. Not a walk-in (H1's walk-in screened -0.109). Engage, the hurt retreat,
  * zone travel, the laser walks and the crossfire break all rank first. false = champion. */
 const LIGHT_AMBUSH_ON = true
+/** P-D-002 (see FORECAST2_S): look-ahead (s), how recently a known enemy was seen (s), and the closing speed (m/s) that counts. */
+const FORECAST_LEAD_S = 3
+const FORECAST_SEEN_S = 3
+const FORECAST_CLOSE_MS = 1
 /** Build 103: the far edge (m) of the standoff band the ambush answers. */
 const AMBUSH_MAX_M = 90
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
@@ -604,7 +608,20 @@ function buildBot(hello: Hello): Bot {
         const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
         const hitters: number[] = []
         for (const [id, t] of mechHitBy) if (obs.t - t < THREAT_HIT_S) hitters.push(id)
-        const alone = (id: number) => !los.some((e) => e.id !== id) && !hitters.some((h) => h !== id)
+        // P-D-002 (FORECAST2_S): known enemies, seen lately and not yet in sight of us, that are closing and would see us
+        // from where they will be in FORECAST_LEAD_S. They count as a second threat in alone().
+        const closers: number[] = []
+        if (FORECAST2_S > 0 && obs.t >= FORECAST2_S) {
+          for (const k of known.values()) {
+            if (obs.t - k.lastSeen > FORECAST_SEEN_S || los.some((e) => e.id === k.id)) continue
+            const dx = me.pos[0] - k.pos[0], dy = me.pos[1] - k.pos[1]
+            const d = Math.hypot(dx, dy) || 1
+            if ((k.vel[0] * dx + k.vel[1] * dy) / d < FORECAST_CLOSE_MS) continue
+            const at: Vec3 = [k.pos[0] + k.vel[0] * FORECAST_LEAD_S, k.pos[1] + k.vel[1] * FORECAST_LEAD_S, k.pos[2]]
+            if (seenAt(me.pos, myHeight, [{ pos: at, aim: [0, 0], cubes: k.cubes }], false)) closers.push(k.id)
+          }
+        }
+        const alone = (id: number) => !los.some((e) => e.id !== id) && !hitters.some((h) => h !== id) && !closers.some((c) => c !== id)
         const rested = (id: number) => obs.t - (engageGiveUp.get(id) ?? -Infinity) > ENGAGE_REST_S
         // Our time to kill `e` and its time to kill us (s), both sides at their hit-rate guess. Both rules use it.
         const race = (e: (typeof enemies)[number]) => {

@@ -6,12 +6,14 @@
 **Gate:** `check.py --map-dir arena` PASS? max ms:
 **Flag at 0 matches champion:** games changed = __ / 192
 
-**192-game screen (SEED_BASE 2000 + 3000) vs champion:**
+**192-game screen (SEED_BASE 2000 + 3000) vs champion, plus the same table on held-out SEED_BASE 4000 + 5000:**
 
 | Metric | Champion | This build |
 |---|---|---|
 | Sim Δ ± SE | — | |
 | Games changed (better / worse) | — | |
+| Kills (total) | | |
+| Kills per minute after 60 s | | |
 | Laser by 30 s | | |
 | Died before 40 s | | |
 | Gun-only at end | | |

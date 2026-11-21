@@ -53,10 +53,10 @@ flowchart TD
 
 ## Slot rules (Sat Nov 21, 11:50 AM ET; from Diego's audit `coord/audit/perf-fix-handoff-2026-11-21-1115.md` §3, §4, §7)
 1. **One builder per change.** Grok assigns it in `coord/log.md` before anyone codes. A second thread on the same idea stops.
-2. **No slot without the table.** The PR body must show, for the 192 paired games (SEED_BASE 2000 + 3000) vs the champion: sim Δ ± SE, games changed (better/worse), laser by 30 s, died before 40 s, gun-only at end, lightning at end, 2+ attackers at death, stuck, and decision p99/max. Grok re-runs or spot-checks it.
+2. **No slot without the table.** The PR body must show, for the 192 paired games (SEED_BASE 2000 + 3000) vs the champion: sim Δ ± SE, games changed (better/worse), **kills and kills per minute after 60 s (primary: in practice score ≈ our kills, r 0.989)**, laser by 30 s, died before 40 s, gun-only at end, lightning at end, 2+ attackers at death, stuck, and decision p99/max. Grok re-runs or spot-checks it.
 3. **Pre-slot gate.** `check.py --map-dir arena` PASS with max under 30 ms. Any new flag set to 0 must match the champion's actions exactly (0 games changed).
 4. **Vetoes (no slot if any trips).** Died before 40 s up by more than 3/192, lightning at end down by more than 5, or sim Δ below −0.3.
-5. **The sim screens; it doesn't predict.** Sim score vs site has r = 0.22 over 28 builds (`coord/research/site-corr-2026-11-21.txt`). Rank candidates by the behavior metrics in rule 2 and the mechanism, not by sim Δ alone.
+5. **The sim screens; it doesn't predict.** Sim score vs site has r = 0.22 over 28 builds (`coord/research/site-corr-2026-11-21.txt`). Rank candidates by kills first, then the other behavior metrics in rule 2 and the mechanism, not by sim Δ alone. Lightning at end stays a veto but is a proxy, not a ranking metric (Diego state report d). Every screen also runs held-out SEED_BASE 4000+5000.
 6. **No rematches or near-copies.** Old open PRs and builds that change fewer than about 10 of 192 games don't get slots (B26 3.48, B51 3.79 tie, B94 6/192 → 3.73).
 7. **Keep rule.** Keep only if strictly above the current best. A tie keeps the old champion (the earlier submission holds the final entry).
 8. **One follow-up per idea.** If a change ties, it gets at most one variant (for UF100, `UNDER_FIRE_RUSH_M = 80`). No third variant.

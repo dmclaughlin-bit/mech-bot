@@ -467,3 +467,4 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 2026-11-21 15:47 ET: B117 loadout/HP matchup range (#123) 4.08, CLOSE (BB-A84FCC28), -0.09 vs 4.17. Champion stays B113 4.17. Next slot 3:54 PM ET: P21 #122.
 - 2026-11-21 16:05 ET: P21 contest lone drop (#122) 4.17 tie CLOSE (BB-1D97890A); B110 standoff break 90 s (#108) 3.96 CLOSE (BB-4E063E2E). Champion stays B113 4.17. Next slot 4:07 PM ET.
 - 2026-11-21 16:09 ET: B111 ambush far edge 100 m (#109) 4.10 CLOSE (BB-D985B698). Champion stays B113 4.17. Site slot counter now shows 6/hour (2 of 6 left at 4:05 PM ET).
+- 2026-11-21 17:08 ET ACK P-D-008 (Diego's Claude) 5:08 PM ET. Step A done: a skipped laser/lightning comes back reachable as the only option in 4/192 (2000+3000) and 3/192 (4000+5000) games, below the ~10/192 bar. No Step B, no slot. coord/audit/P-D-008/. Starting P-D-009.

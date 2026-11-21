@@ -113,3 +113,23 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 41 (front arc): early deaths (sim, seeds 2000-2047) are mostly the bot standing still in heal or hold mode
+ * under fire from two or three hunters in the open, with 39% of that damage hitting our back at mech.rear_mult (×1.5):
+ * our torso is on the target in front while a second shooter, typically 90°-135° off the torso, hits us from behind.
+ * When a mech has hit us from the rear (damaged.rear) in the last FRONT_ARC_HIT_S and the bot would otherwise stand
+ * still in heal or hold mode, walk to the nearest spot (straight line, 1 to 4 s of walking, inside the circle we keep
+ * to, no nearer to any shooter than now) from which every shooter is within FRONT_ARC_KEEP_DEG of the torso's target:
+ * the rear shooter at its known position if that matches the hit's bearing (else 65 m out along it), the enemies in
+ * view with line of sight to us at their positions. No such spot (typically: we stand between two shooters), no move.
+ * It walks at full speed (we are already under fire, so no silent cap), never boosts, and ends as soon as every shooter
+ * is in front. Not a dodge (no random or alternating sidestep), not hiding (the shooters keep their line of sight) and
+ * not spacing (no distance goal). Retreat, engage, hiding, zone and loot moves are untouched. Set FRONT_ARC_ON to false to roll
+ * back to Build 30 behavior exactly.
+ */
+export const FRONT_ARC_ON = true
+/** A rear hit this recent (s) counts its shooter in. */
+export const FRONT_ARC_HIT_S = 2
+/** Keep every shooter within this many degrees of the torso's target (the front arc is ±90°; the rest is margin). */
+export const FRONT_ARC_KEEP_DEG = 75

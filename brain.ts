@@ -17,11 +17,12 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 41 (front arc): hit from behind while standing in heal or hold, step so every shooter is back in front of the torso (see FRONT_ARC_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, FRONT_ARC_HIT_S, FRONT_ARC_KEEP_DEG, FRONT_ARC_ON,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -116,6 +117,13 @@ const LASER_RELEASE = 0.8
 const LASER_LEAD_S = 0.075
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
+/** Build 41 (front arc): candidate spots at this many bearings around us, at the distances we walk in 1 to 4 s, nearest first. */
+const ARC_BEARINGS = 16
+const ARC_STEPS_S = [1, 2, 3, 4]
+/** Build 41: a rear shooter we have not seen is assumed this far away (m) along the bearing of its hit (house gun range). */
+const ARC_ASSUME_M = 65
+/** Build 41: a candidate spot may lie at most this much (m) above or below us. */
+const ARC_STEP_DZ = 3
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -267,6 +275,8 @@ function buildBot(hello: Hello): Bot {
   /** Build 14: targets we gave up on (id → time), and where our last kill died, to collect its cubes. */
   const engageGiveUp = new Map<number, number>()
   let claim: { pos: Vec3; until: number } | null = null
+  /** Build 41 (front arc): mech id → last time it hit us from outside the front arc, and the bearing that hit came from. */
+  const rearHits = new Map<number, { t: number; bearing: number }>()
 
   /** Build 14: what we deal per second to a target `d` m away: every held weapon that reaches, × its hit-rate guess × our cube bonus. */
   function ourDps(me: Observation["self"], d: number): number {
@@ -384,6 +394,56 @@ function buildBot(hello: Hello): Bot {
     return null
   }
 
+  /**
+   * Build 41 (front arc): the nearest spot, walkable in a straight line within 4 s and inside `keepIn`, from which every
+   * shooter is within FRONT_ARC_KEEP_DEG of the torso's target and no shooter is nearer than now; null when there is
+   * none (then we stand, as before: a partial step leaves the shooter in the rear arc and only moves us about).
+   * Shooters: mechs that hit us from the rear in the last FRONT_ARC_HIT_S (at their known position if it matches the
+   * hit's bearing, else ARC_ASSUME_M out along it) and enemies in view with line of sight to us. The anchor is the
+   * enemy in view nearest the torso's aim (what we are shooting), else the aim yaw itself.
+   */
+  function arcStep(
+    me: Observation["self"], t: number, height: number, walk: number, enemies: Observation["mechs"], losIds: Set<number>,
+    keepIn: [number[], number], timeOk: () => boolean,
+  ): Vec3 | null {
+    const shooters = new Map<number, number[]>()
+    for (const [id, h] of rearHits) {
+      if (t - h.t >= FRONT_ARC_HIT_S) continue
+      const k = known.get(id)
+      const fresh = k && Math.abs(wrap(yawTo(me.pos, k.pos) - h.bearing)) < 0.35
+      shooters.set(id, fresh ? k!.pos : [me.pos[0] + Math.cos(h.bearing) * ARC_ASSUME_M, me.pos[1] + Math.sin(h.bearing) * ARC_ASSUME_M])
+    }
+    if (!shooters.size) return null
+    for (const e of enemies) if (losIds.has(e.id) && !shooters.has(e.id)) shooters.set(e.id, e.pos)
+    const halfFov = (cfg.vision.fov_deg * Math.PI) / 360
+    const anchor = enemies
+      .filter((e) => Math.abs(wrap(yawTo(me.pos, e.pos) - me.aim[0])) < halfFov)
+      .sort((a, b) => Math.abs(wrap(yawTo(me.pos, a.pos) - me.aim[0])) - Math.abs(wrap(yawTo(me.pos, b.pos) - me.aim[0])))[0]
+    const keep = (FRONT_ARC_KEEP_DEG * Math.PI) / 180
+    const inFront = (p: number[]) => {
+      const facing = anchor ? yawTo(p, anchor.pos) : me.aim[0]
+      for (const [id, s] of shooters) if (id !== anchor?.id && Math.abs(wrap(yawTo(p, s) - facing)) > keep) return false
+      return true
+    }
+    if (inFront(me.pos)) return null
+    const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
+    for (const s of ARC_STEPS_S) {
+      for (let b = 0; b < ARC_BEARINGS; b++) {
+        if (!timeOk()) return null
+        const yaw = (2 * Math.PI * b) / ARC_BEARINGS
+        const x = me.pos[0] + Math.cos(yaw) * walk * s, y = me.pos[1] + Math.sin(yaw) * walk * s
+        if (Math.hypot(x - keepIn[0][0], y - keepIn[0][1]) > keepIn[1]) continue
+        const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+        if (g === -Infinity || Math.abs(g - me.pos[2]) > ARC_STEP_DZ) continue
+        if (!inFront([x, y])) continue
+        // Never toward a shooter: the spot past a flanker has it in front too.
+        if ([...shooters.values()].some((q) => flat(q, [x, y]) < flat(q, me.pos))) continue
+        if (clearLine(solids, from, [x, y, g + height / 2], 0, 0)) return [x, y, g]
+      }
+    }
+    return null
+  }
+
   /** Keep track of every enemy mech seen, and of where the last hit came from. */
   function remember(obs: Observation) {
     for (const m of obs.mechs) {
@@ -409,6 +469,7 @@ function buildBot(hello: Hello): Bot {
       if (e.type === "damaged" && e.by !== null) hitBy.set(e.by, obs.t)
       if (e.type === "damaged" && e.weapon !== "npc") lastMechHit = obs.t
       if (e.type === "damaged") lastDamaged = obs.t
+      if (FRONT_ARC_ON && e.type === "damaged" && e.rear && e.by !== null && e.bearing !== null && e.weapon !== "npc") rearHits.set(e.by, { t: obs.t, bearing: e.bearing })
     }
     for (const [id, k] of known) if (obs.t - k.lastSeen > 30) known.delete(id)
   }
@@ -727,11 +788,21 @@ function buildBot(hello: Hello): Bot {
           mode = "hide"
         }
       }
+      // Front arc (Build 41): about to stand still in heal or hold while a mech hits us from behind, so step to bring
+      // it back in front of the torso (see FRONT_ARC_ON). Full walk speed: we are under fire, so silence buys nothing.
+      if (FRONT_ARC_ON && (mode === "heal" || mode === "hold") && me.in_zone && !leaveNow) {
+        const losIds = new Set(threats.filter((e) => seenAt(me.pos, myHeight, [e], false)).map((e) => e.id))
+        const step = arcStep(me, obs.t, myHeight, walkSpeed, enemies, losIds, zoneKeep, canPlan)
+        if (step) {
+          move = heading(step)
+          mode = "front arc"
+        }
+      }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush" && mode !== "front arc") move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

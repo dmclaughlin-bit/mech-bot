@@ -113,3 +113,14 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * P-D-001 (supply-drop run, Diego's Claude): B80 never takes a supply drop once enemies are around (0 claims in 106
+ * sim games reaching 95 s), because farming needs no enemy known within 160 m. With this set above 0: a called drop
+ * within DROP_RUN_M (m), not held by another mech, zone-safe for the capture, and not hurt (HP at or above retreatHp),
+ * we walk to it timed to arrive as it lands and stand in the ring until it is ours (full HP, full energy, +3 cubes).
+ * Engage, retreat, kill-claim, the laser walk and B60's crossfire break all rank above it; firing is unchanged.
+ * 0 = off, identical to the champion.
+ */
+export const DROP_RUN_M = 0
+

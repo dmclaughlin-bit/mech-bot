@@ -23,7 +23,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -264,6 +264,9 @@ function buildBot(hello: Hello): Bot {
   let lastDamaged = -Infinity
   let farmChase: { id: number; since: number } | null = null
   const farmGiveUp = new Set<number>()
+  /** P-D-001: the drop we are walking to, and drops we gave up on. */
+  let dropRun: { id: number; since: number } | null = null
+  const dropSkip = new Set<number>()
   /** Build 14 (engage): each weapon's DPS and reach from hello.config, read once here. */
   const baseDps = {} as Record<WeaponKind, number>
   const baseReach = {} as Record<WeaponKind, number>
@@ -671,6 +674,30 @@ function buildBot(hello: Hello): Bot {
       }
       if (!rushMove) rush = null
       else farmChase = null
+      // P-D-001 (DROP_RUN_M): walk to a called supply drop, timed to arrive as it lands, then hold the ring.
+      let dropMove: [number, number] | null = null
+      let dropHold = false
+      if (DROP_RUN_M > 0) {
+        const pace = ZONE_WALK * walkSpeed
+        const safe = (p: number[], stay: number) =>
+          flat(p, z.center) < Math.max(0, z.radius - margin) &&
+          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
+        const d = me.in_zone && !leaveNow && !trip && !engage && !claimGoal && !hurt && me.hp >= RETREAT_HP * me.max_hp
+          ? (obs.drops ?? [])
+            .filter((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M &&
+              safe(x.pos, x.lands_in + x.capture_s - x.progress))
+            .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+          : undefined
+        if (!d) dropRun = null
+        else {
+          if (dropRun?.id !== d.id) dropRun = { id: d.id, since: obs.t }
+          const dist = flat(d.pos, me.pos)
+          if (dist < d.radius - DROP_INSET) dropHold = true
+          else if (obs.t - dropRun.since > d.lands_in + DROP_RUN_M / walkSpeed + 10) { dropSkip.add(d.id); dropRun = null }
+          else if (dist / walkSpeed + 5 >= d.lands_in) dropMove = travel(me.pos, d.pos, obs.t, canPlan()).move
+          else dropRun = null
+        }
+      }
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -733,6 +760,12 @@ function buildBot(hello: Hello): Bot {
         move = heading(spot)
         boost = me.energy > 0.3 * me.max_energy
         mode = "break crossfire"
+      } else if (dropHold) {
+        // P-D-001: inside a called drop's ring, stand still until it lands and the capture completes.
+        mode = "drop, hold"
+      } else if (dropMove) {
+        move = dropMove
+        mode = "drop, run"
       } else if (me.hp < HEAL_HP * me.max_hp) {
         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
         // Build 19: the walk to a hiding spot only while hurt.

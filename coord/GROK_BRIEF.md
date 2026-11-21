@@ -20,8 +20,8 @@ Check any mechanic against `research/protocol.md`. The facts that drive this loo
 - **Practice is not the final.** In practice we face 15 house bots acting as one squad: shared vision, they never fight each other, they hunt the weakest first, and more of them hunt as the match goes on. In the final, other teams' bots kill each other for us. The final is what pays, **but only the top 32 practice teams play in it** (we were 72nd of 94 on Fri 9 PM ET). So plan D9 is: **qualify first.** Until our best score is about 0.5 above the 32nd team's, practice score is the target and any knob may be tuned on it. Once we're safely in, go back to tuning for the free-for-all, with only `aggression` tuned on practice. Track the 32nd-place score on every update.
 - The zone shrinks 560 → 380 → 240 → 140 → 70 → 25 → 0 m and closes by about 6:55, at 20 to 260 HP/s outside, with no regen. Supply drops come at 70, 140 and 210 s. Regen is 45 HP/s after 5 s without dealing or taking damage. Rear hits do 1.5×. A gunshot is heard 320 m away, steps 40 m (only above 5 m/s), boost 90 m.
 - **There are no replays.** The only signals are the score, `check.py` timing, and what the Claudes log from local runs (the kit's recorded match through `brain.ts`). You can't see why we died, so reason from mechanism: which §9 rule should change *when* we die, and in which direction.
-- **Leaderboard:** it ranks each team's *best* practice score. At the cutoff the best submission goes to the final unless we press "Pick as our final entry". Noise can only lift our board rank, but the final entry must be picked on a mean, never on one lucky run.
-- **Limits:** 4 submissions per hour, one `main` commit each.
+- **Leaderboard:** it ranks each team's *best* practice score. At the cutoff our best submission goes to the final automatically. NEVER click "Pick as our final entry" (Doug's rule).
+- **Limits:** 6 submissions per hour (Doug, Sat Nov 21 4:10 PM ET), one commit each, one at a time, never while a score is pending.
 
 ## Where the state lives
 
@@ -62,13 +62,13 @@ Steps 1 to 6 are the starting loop. Adapt it (see above).
 
 For the newest `EXPERIMENTS.md` row, find its **parent**: the commit it changed from, which is not always the previous row. Compute **Δ = score − parent score**. When either side has repeats, use the mean of its runs.
 
-### 2. Decide with the noise threshold
+### 2. Decide with the noise threshold *(Superseded Sat Nov 21 5:45 PM ET to match Doug's approved rules: practice is deterministic, so no resubmits; keep only if strictly above the champion; NEVER click "Pick as our final entry", the best score is used automatically; 6 submissions per hour, Doug 4:10 PM ET.)*
 
 One submission has a standard error of about 0.58 (per-match SD about 4, divided by √48), so one run against one run only detects about **1.2** points.
 
 | Δ vs parent | Verdict |
 | --- | --- |
-| ≥ +1.2 | **Keep.** It becomes the new parent. Resubmit it once in a free slot before calling it the best. |
+| > 0 (strictly above champion) | **Keep.** It becomes the new champion. Do not resubmit it (practice is deterministic). |
 | +1.2 > Δ ≥ −0.6 | **Inconclusive.** Keep only if the mechanism is clearly right: it implements a §9 rule, it should matter more in the free-for-all than in practice, and the log shows it does what it says (`check.py` passes, local replay behaves). Otherwise revert. If the change matters for the final, resubmit once and decide on the mean of 2. |
 | < −0.6 | **Revert.** Doug's next prompt reverts that commit on a new branch. Exception: a §9 rule we need in the final may get one resubmit, and it's reverted if the mean of 2 is still below −0.6. |
 
@@ -79,7 +79,7 @@ State the verdict in one line. If Diego's row already gives one and it disagrees
 - **S3 = Build 2 (`4726cfc`) resubmitted unchanged** (plan D7). It answers Q1, whether practice is deterministic.
   - **Same score to two decimals:** practice is frozen (the same 48 worlds). A resubmit gives no new information, so stop spending slots on repeats. Any behavior change still reshuffles all 48 matches, so keep the 1.2 threshold, lean harder on mechanism, and ask Doug for seeded tie-breaks. Treat Q5 and Q6 the same way.
   - **Different score:** log the gap. Once one commit has 3 or more runs, set the threshold to **2 × the SD of those runs**, rounded to 0.1. Put the new number in your Status and ask Diego to record it in the plan (§3 and §6 Q4) by PR. Use it from then on.
-- About every 4th slot, or whenever a slot would sit empty with no build ready, resubmit the **current best**. It adds a sample for the final pick and can only raise the board score. Skip this if practice proved deterministic.
+- Never resubmit a scored commit (practice proved deterministic). An empty slot is a blocker to record with owner and next action, never a reason to resubmit.
 
 ### 4. Pick the next single change
 
@@ -105,7 +105,7 @@ List any of these you find:
 - **Redundancy:** the same thing built twice.
 - **Drift:** work outside the §3 queue, or work that contradicts a decision or a §9 rule.
 - **Gaps:** a merged build with no submission, a score with no `EXPERIMENTS.md` row, a row with no parent or verdict, a push with no `coord/log.md` entry, a §6 question that has been answered.
-- **Clock:** anything late against §3. Nothing large after **Sat 11 PM**. From Sun 7 AM: submit the final candidate 3 times, pick by mean, press "Pick as our final entry" if that isn't already the best, and lock at 9 AM.
+- **Clock:** anything late against §3. Nothing large after **Sat 11 PM**. Lock at Sun 9 AM ET: no submissions or merges after. The best official score is the final entry automatically; NEVER click "Pick as our final entry".
 
 ## Output format (always exactly this)
 

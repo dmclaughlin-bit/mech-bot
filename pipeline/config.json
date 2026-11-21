@@ -1,6 +1,6 @@
 {
   "target_score": 6.0,
-  "max_submissions_per_hour": 4,
+  "max_submissions_per_hour": 6,
   "slot_window_minutes": 60,
   "promotion": {
     "rule": "score > champion.score + min_gain (practice is deterministic: 48 fixed seeds)",

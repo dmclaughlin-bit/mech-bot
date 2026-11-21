@@ -122,3 +122,9 @@ Format:
 - Result: rule change: practice is deterministic, so a change is judged by its raw score delta (any drop is a loss); Build 5 (2.04, −0.19) is a LOSS and PR #10 will be closed unless `build-5b-f4-fire` beats 2.23. Docker-gate item closed.
 - Found: house bots never kill each other; we only gain places by kills or outlasting them in the collapse. Watch recorder now runs continuously.
 - Blocked / next: after 5b scores, next single changes in order: hold behind cover; then drop D4's 100 m gun gate in practice (H1-H3 stay per D9).
+
+## Fri 22:35 ET · Grok · Build 5b kept and merged
+- Did: merged PR #11 (`build-5b-f4-fire`) as `516f3b3`; closed PR #10 (Build 5 with the F4 fire gate).
+- Result: 5b scored 2.38 (BB-54EDF93F) vs Build 3 2.23 (+0.15) and Build 5 2.04. KEEP. Board 10:24 PM ET: 88th of 121; 1st 5.48, 16th 4.52, 32nd 4.15.
+- Found: fire gates cost practice points (F4 gate was −0.34), which supports the handoff's point 3.
+- Blocked / next: Build 6 "hold behind cover" rebuilt off the new main; after it, drop D4's 100 m gun gate in practice.

@@ -6,6 +6,7 @@ Related data: `screens.csv` (sim screens), `hazard_screens.csv` (Wild Sim), `pos
 
 | Submitted (ET) | Build | Change | Family | Champion then | Site | Delta | Verdict | Receipt |
 |---|---|---|---|---|---|---|---|---|
+| 2026-11-21 15:44 ET | B117 | B117 loadout/HP matchup range, on 4.17 main | loadout | 4.17 | 4.08 | -0.09 | CLOSE | BB-A84FCC28 |
 | 2026-11-21 15:07 ET | P20 | P20 drop run when hurt and unseen, on 4.17 main | drops | 4.17 | 4.17 | +0.00 | CLOSE | BB-36A427E0 |
 | 2026-11-21 14:57 ET | B118 | B118 drop reach DROP_RUN_M 200 -> 260, on 4.17 main | drops | 4.17 | 4.17 | +0.00 | CLOSE | BB-BAC9670C |
 | 2026-11-21 14:54 ET | B115 | B115 drop-run arrival lead 5 -> 10 s, on 4.17 main | drops | 4.17 | 4.13 | -0.04 | CLOSE | BB-D76FEDCF |

@@ -16,9 +16,9 @@
 flowchart TD
     GOAL["Each build = the change with the largest expected score impact · keep only if it beats our best · target > 32nd place"]
     W["Live watcher (Grok's computer, nonstop)<br/>records top-team matches → /workspace/watch/findings.md"]
-    D["Diego's Claude (light use, every few hours)<br/>outside research only → coord/research-ideas.md"]
+    D["Diego's Claude<br/>code audits + research → coord/audit/, research/intake/"]
     G["Grok (coordinator, every 15 min)<br/>picks ONE change from evidence"]
-    C["Grok's Claude (Doug's Max)<br/>codes it on a branch, runs kit check, opens PR"]
+    C["Assigned builder (Grok's Claude or Diego's Claude)<br/>codes it on a branch, kit check, flag-off identity, 192-game table in PR"]
     S["Grok submits the commit SHA (4 slots/hour)"]
     R{"Score vs current best"}
     K["Higher → merge, new best"]
@@ -27,7 +27,9 @@ flowchart TD
     GOAL --> G
     W --> G
     D --> G
-    G --> C --> S --> R
+    G --> C --> V{"Gate + vetoes pass?"}
+    V -- no --> X
+    V -- yes --> S --> R
     R -- higher --> K --> L
     R -- same or lower --> X --> L
     L --> G
@@ -37,17 +39,29 @@ flowchart TD
 | Who | Does | Never |
 |---|---|---|
 | Grok (coordinator) | picks the next change, submits, scores, merges or closes, logs | writes bot code itself |
-| Grok's Claude (Doug's Max) | the only code writer: one change per branch, check must pass | merges, submits |
-| Diego's Claude (light) | outside research: top teams' public repos, protocol details → ranked ideas with evidence | writes bot code, edits main bot files |
+| Grok's Claude (Doug's Max) | builds assigned changes: one change per branch, check must pass | merges, submits |
+| Diego's Claude | code audits and research; builds a change only when Diego approves it and Grok assigns it (UF100, Sat 11:15 ET) | merges, submits, builds anything unassigned |
 | Doug's own Claude | stopped (handoff in `coord/handoff-doug-claude.md`) | — |
 | Doug / Diego | set direction, approve big pivots | — |
 
 ## Rules
-- Practice is deterministic (fixed seeds): judge by the raw delta vs the current best. Higher = keep and merge. Same or lower = close.
+- Practice is deterministic (fixed seeds): judge by the raw delta vs the current best. Higher = keep and merge. Same or lower = close. See Slot rules below for what earns a slot.
 - One change per submission, always branched off current main (the best build).
 - Don't resubmit a scored commit. Never click "Pick as our final entry" (best score is used automatically).
 - Guard against overfitting: the final uses new seeds, so prefer changes with a clear mechanism.
 - Hard caps H1–H3 stay.
+
+## Slot rules (Sat Nov 21, 11:50 AM ET; from Diego's audit `coord/audit/perf-fix-handoff-2026-11-21-1115.md` §3, §4, §7)
+1. **One builder per change.** Grok assigns it in `coord/log.md` before anyone codes. A second thread on the same idea stops.
+2. **No slot without the table.** The PR body must show, for the 192 paired games (SEED_BASE 2000 + 3000) vs the champion: sim Δ ± SE, games changed (better/worse), laser by 30 s, died before 40 s, gun-only at end, lightning at end, 2+ attackers at death, stuck, and decision p99/max. Grok re-runs or spot-checks it.
+3. **Pre-slot gate.** `check.py --map-dir arena` PASS with max under 30 ms. Any new flag set to 0 must match the champion's actions exactly (0 games changed).
+4. **Vetoes (no slot if any trips).** Died before 40 s up by more than 3/192, lightning at end down by more than 5, or sim Δ below −0.3.
+5. **The sim screens; it doesn't predict.** Sim score vs site has r = 0.22 over 28 builds (`coord/research/site-corr-2026-11-21.txt`). Rank candidates by the behavior metrics in rule 2 and the mechanism, not by sim Δ alone.
+6. **No rematches or near-copies.** Old open PRs and builds that change fewer than about 10 of 192 games don't get slots (B26 3.48, B51 3.79 tie, B94 6/192 → 3.73).
+7. **Keep rule.** Keep only if strictly above the current best. A tie keeps the old champion (the earlier submission holds the final entry).
+8. **One follow-up per idea.** If a change ties, it gets at most one variant (for UF100, `UNDER_FIRE_RUSH_M = 80`). No third variant.
+9. **Re-measure after every keep.** Re-run Diego's death and opening instrumentation on the new champion before picking the next fix. Current queue: UF100 (PR #88), then the early heal-under-fire walk to cover (re-measure first), then park `ourMagazine`. Dropped: new positioning or cover search, readiness-aware combat estimates, and nav detour patches.
+10. **Lock.** Final build locked by Sun 9:00 AM ET on the best verified site score. After that, no merges to main.
 
 ## Cut (no longer used)
 - `next-doug.md` / per-person prompts for coding, the §4 file-ownership split, the −0.6/+1.2 noise band, repeating the log in PR descriptions.

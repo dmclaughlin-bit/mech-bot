@@ -19,6 +19,8 @@
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  * Build 80 (late lightning): after 45 s, a gun-only bot may walk to a reachable ground lightning or laser
  * (see LATE_LIGHT_ON).
+ * Build 96 (late walk over finish-engage): after 45 s, the gun-only late walk outranks a finish-rule engage
+ * (see LATE_FINISH_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -129,6 +131,12 @@ const CROSSFIRE_ON = true
  * Take, swap, and drop are unchanged (B66 and B68 lost on the site). Different from B76/B78 (first 45 s only).
  * false = champion. */
 const LATE_LIGHT_ON = true
+/** Build 96 (P11): when lateLight is on, the gun-only late walk may start even if engage.why === "finish",
+ * and finish-engage movement yields to that walk. The hurt TTK override still blocks the walk and still
+ * ranks ahead of it. Zone travel, the HP retreat, the 3 s no-hit gate, and B60's crossfire yield stay
+ * ahead of the walk. This is not B36 (trip-before-finish in the opening) and not P8 (hold a charge under
+ * fire). false = champion B80. */
+const LATE_FINISH_ON = true
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -639,7 +647,8 @@ function buildBot(hello: Hello): Bot {
       // Build 80: after the opening, a gun-only bot may start a new lightning/laser walk (champion only continues one).
       const lateLight = LATE_LIGHT_ON && gunOnly && obs.t >= LASER_RUSH_S
       if (
-        LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush || lateLight) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
+        LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush || lateLight) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip &&
+        (!engage || (LATE_FINISH_ON && lateLight && engage.why === "finish")) &&
         !claimGoal && !hurt && !(cubeFirst && !lateLight) && obs.t - lastMechHit > FARM_QUIET_S
       ) {
         const pace = ZONE_WALK * walkSpeed
@@ -685,7 +694,7 @@ function buildBot(hello: Hello): Bot {
         move = go.move
         boost = go.dist / walkSpeed > timeLeft
         mode = "to next circle"
-      } else if (engage) {
+      } else if (engage && !(LATE_FINISH_ON && lateLight && rushMove && engage.why === "finish")) {
         // Engage (F1, Build 14): fight on instead of the HP retreat. Hold the line of fire, and close in along a path
         // when the target is behind cover, or (finish rule) beyond our best range. Never walk outside the circle we keep to.
         const d = flat(engage.m.pos, me.pos)

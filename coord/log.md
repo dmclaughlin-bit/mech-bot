@@ -1,6 +1,6 @@
 # Coordination log
 
-Append-only. Each worker Claude adds one entry at the end of every task, newest at the bottom. The coordinator reads this, open PRs and `EXPERIMENTS.md`, then rewrites `next-doug.md` and `next-diego.md`. Rules and roles: `../AI-Structure-Development.md`.
+Append-only. **Each worker Claude adds one entry in the same push as every change**, newest at the bottom. Grok, the coordinator, reads only what is on GitHub: this file, open PRs, `EXPERIMENTS.md` and the plan. It then writes the next prompts, which Diego's Claude commits to `next-doug.md` and `next-diego.md`. Work on a branch counts: log it on that branch and in its PR description. Rules and roles: `../AI-Structure-Development.md`.
 
 Format:
 
@@ -25,3 +25,9 @@ Format:
 - Result: docs only.
 - Found: the tactics report's `U_fight` risk term `(16 − n)/8` is backwards (0 at 16 alive). Use the game-bots engagement gate (F1) instead, tighter while more than 8 are alive.
 - Blocked / next: Doug builds the rules tagged Build 2.
+
+## Fri 20:20 ET · Diego · Grok as coordinator
+- Did: added `coord/GROK_BRIEF.md`, made Grok the coordinator in plan §4, and made a `coord/log.md` entry mandatory in every push (plan §5, both next prompts).
+- Result: docs only (PR #4).
+- Found: Grok can't push, so Diego's Claude commits Grok's prompts into `coord/next-*.md`. Grok reads raw files from `main`, so PR #4 must be merged first.
+- Blocked / next: merge PR #4, then start Grok with the onboarding prompt.

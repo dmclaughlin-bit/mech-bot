@@ -67,7 +67,7 @@ Ownership is by file, so the two Claudes never edit the same lines.
 | --- | --- | --- |
 | **Doug + his Claude** (5x plan) | `bot.ts`, `brain.ts`, `map.ts`, `params.ts`, `Dockerfile` | All bot behavior, Builds 2 and 4 to 8, wiring `nav.ts` in, latency. Merges his own PRs once `check.py` passes. |
 | **Diego + his Claude** (lighter plan) | `nav.ts`, `tools/`, `EXPERIMENTS.md`, this file | Submits to practice and logs every result. Writes `nav.ts` as a standalone module against the interface below. Writes the scenario harness in `tools/` when there's time. Closes the open questions in §6. Can veto a merge. |
-| **Coordinator** (separate Claude, never writes bot code) | `coord/next-doug.md`, `coord/next-diego.md` | Reads `coord/log.md`, open PRs, `EXPERIMENTS.md` and this file. Flags duplicated or conflicting work, and rewrites each person's next prompt. Until it is scheduled, Diego's project thread does this on request. |
+| **Coordinator: Grok** (never writes bot code) | The content of `coord/next-doug.md` and `coord/next-diego.md` | Reads the repo on GitHub: this file, `coord/log.md`, `EXPERIMENTS.md`, open PRs. Flags duplicated or conflicting work and writes each person's next prompt. Grok can't push, so Diego's Claude commits Grok's prompts into `coord/next-*.md` verbatim. Onboarding: `coord/GROK_BRIEF.md`. |
 
 **`nav.ts` interface** (agreed now so the two sides can work in parallel):
 
@@ -86,7 +86,7 @@ export interface Nav {
 2. **Offline gate:** `python3 check/check.py --map-dir arena -- bun ../mech-bot/bot.ts` passes. Before Build 3, also run it once under the Docker flags in protocol §1. Once `tools/` exists, its cases pass too.
 3. Open the PR, merge when the gate passes. Diego can veto.
 4. Diego submits the merged commit and adds a row to `EXPERIMENTS.md` when the score comes back: time, commit, change, score, keep or revert.
-5. The worker appends one entry to `coord/log.md` (format in that file).
+5. **Every push that changes anything carries a `coord/log.md` entry in the same push** (format in that file). Grok only knows what reaches GitHub: work that isn't logged doesn't exist for the coordinator.
 
 At 4 submissions an hour, plan on about 50 in total. Never submit two changes at once.
 
@@ -106,7 +106,7 @@ At 4 submissions an hour, plan on about 50 in total. Never submit two changes at
 1. **Read all numbers from `hello.config`.** Balance can change.
 2. **Runtime limits:** 50 ms per decision (hard guard at 30 ms once A\* exists, target p99 ≤ 15 ms), `ready` within 20 s, 1 CPU, 512 MB, stdout for protocol lines only, logs to stderr.
 3. **No large refactor on Sunday.** After 9:00 AM, only changes already validated.
-4. **Findings go in the repo.** Strategy that only lives in a gitignored file or one person's chat doesn't exist for the other Claude. Put non-secret findings in `coord/log.md` or a PR. Nothing secret belongs in this public repo.
+4. **Findings go in the repo.** Strategy that only lives in a gitignored file or one person's chat doesn't exist for the other Claude or for Grok. Put non-secret findings in `coord/log.md` or a PR. Nothing secret belongs in this public repo.
 5. **README credits** before the final: the kit, and flatqueue / flatbush (ISC) if vendored, and Diamond (zlib) if its min-risk idea is used.
 
 ## 8. Docs map
@@ -116,7 +116,8 @@ At 4 submissions an hour, plan on about 50 in total. Never submit two changes at
 | `AI-Structure-Development.md` | This plan, including the behavior rulebook (§9) | PR only |
 | `EXPERIMENTS.md` | One row per submission | Diego |
 | `coord/log.md` | Append-only status from both workers | Both workers |
-| `coord/next-doug.md`, `coord/next-diego.md` | The next prompt for each person | Coordinator |
+| `coord/next-doug.md`, `coord/next-diego.md` | The next prompt for each person | Grok writes, Diego's Claude commits |
+| `coord/GROK_BRIEF.md` | Grok's role and how it reads state | PR only |
 | `research/FINAL_RECOMMENDATION.md` | Research synthesis (evidence) | Frozen |
 | `research/GAME_CONTEXT.md`, `research/protocol.md` | Fact sheet and rules | Frozen |
 | `research/agents/`, `research/SOURCE_REGISTRY.md`, `research/bench/` | Detail behind the synthesis | Frozen |

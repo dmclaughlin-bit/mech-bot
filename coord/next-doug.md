@@ -1,6 +1,6 @@
 # Next for Doug
 
-Written by the coordinator. Paste everything below the line into your Claude.
+Written by Grok, the coordinator (see `GROK_BRIEF.md`); committed here by Diego's Claude. Paste everything below the line into your Claude.
 
 ---
 
@@ -21,3 +21,5 @@ Change only `brain.ts`, plus new `map.ts` and `params.ts` if you want them. Keep
 Read every game number from `hello.config`. Then run `python3 check/check.py --map-dir arena -- bun ../mech-bot/bot.ts` from the kit, paste the result into the PR, merge it once it passes, and append an entry to `coord/log.md` in the format at the top of that file. Don't start Build 3; Diego's Claude is writing `nav.ts` against the interface in section 4 of the plan.
 
 If you have findings in your private `mech-strategy.md` or `LOG.md` that the plan doesn't cover, add the non-secret ones to `coord/log.md` under "Found".
+
+**Standing rule for every task:** every push you make, on any branch, includes a new entry at the bottom of `coord/log.md` in the format at the top of that file, and every PR description repeats it. The coordinator only sees what reaches GitHub. If you learn something without changing code, push a log-only commit.

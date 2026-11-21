@@ -1,6 +1,6 @@
 # Next for Diego
 
-Written by the coordinator. Do steps 1 to 3 yourself, then paste everything below the second line into your Claude.
+Written by Grok, the coordinator (see `GROK_BRIEF.md`); committed here by Diego's Claude. Do steps 1 to 3 yourself, then paste everything below the second line into your Claude.
 
 1. **Submit S1 now:** `main` at commit `76aabfa` (Build 1), as it is. Add its row to `EXPERIMENTS.md` when the score comes back.
 2. While it runs, check the track and team pages for **replays** (Q2) and **whether the latest or the best submission counts** (Q3). Note what you find in `coord/log.md`.
@@ -18,3 +18,5 @@ Implement exactly the interface in section 4 of the plan (`createNav`, `path`, `
 - Add `tools/nav-bench.ts`, which builds the grid from the kit's `arena/` and times 1,000 random queries. Target median under 1 ms and max under 10 ms in bun. Put the numbers in the PR.
 
 Open the PR and append an entry to `coord/log.md`. Doug wires it into `brain.ts` for Build 3 on Saturday morning.
+
+**Standing rule for every task:** every push you make, on any branch, includes a new entry at the bottom of `coord/log.md` in the format at the top of that file, and every PR description repeats it. The coordinator only sees what reaches GitHub. If you learn something without changing code, push a log-only commit.

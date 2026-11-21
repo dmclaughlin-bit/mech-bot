@@ -1,0 +1,87 @@
+--- /home/claude/mech-bot/brain.ts	2026-11-21 15:57:44.277445963 +0000
++++ uf/brain.ts	2026-11-21 16:07:42.806038335 +0000
+@@ -238,6 +238,11 @@
+   }
+ }
+ 
++import { appendFileSync } from "node:fs"
++const __I = process.env.INSTR_FILE
++const __buf: string[] = []
++const __flush = () => { if (__I && __buf.length) { appendFileSync(__I, __buf.join("\n") + "\n"); __buf.length = 0 } }
++process.on("exit", __flush)
+ function buildBot(hello: Hello): Bot {
+   const cfg = hello.config
+   const solids = loadMap(hello)
+@@ -434,6 +439,7 @@
+       const started = performance.now()
+       // Deadline guard (D6, §7 rule 2): start a path search only while its worst case still fits in 30 ms.
+       const canPlan = () => performance.now() - started < DEADLINE_MS - PLAN_RESERVE_MS
++      const __ev: string[] = []
+       remember(obs)
+       const me = obs.self
+       const muzzle: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.muzzle_height ?? cfg.mech.muzzle_height * scale(me.cubes))]
+@@ -638,9 +644,12 @@
+       const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
+       // Build 80: after the opening, a gun-only bot may start a new lightning/laser walk (champion only continues one).
+       const lateLight = LATE_LIGHT_ON && gunOnly && obs.t >= LASER_RUSH_S
++      const UNDER_FIRE_M = Number(process.env.UF_M ?? 0)
++      const ufLaser = obs.t < 30 && UNDER_FIRE_M > 0 && [...arms.values()].some((x) => x.kind === "laser" && flat(x.pos, me.pos) <= UNDER_FIRE_M)
++      const quiet = obs.t - lastMechHit > FARM_QUIET_S
+       if (
+         LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush || lateLight) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
+-        !claimGoal && !hurt && !(cubeFirst && !lateLight) && obs.t - lastMechHit > FARM_QUIET_S
++        !claimGoal && !hurt && !(cubeFirst && !lateLight) && (quiet || ufLaser)
+       ) {
+         const pace = ZONE_WALK * walkSpeed
+         const onward = (p: Vec3) => Math.max(0, flat(p, z.next_center) - inner)
+@@ -649,7 +658,7 @@
+         // A laser always counts; a lightning only while we hold nothing but the gun. Lasers first, then the nearest.
+         const options = [...arms]
+           .filter(([id, a]) =>
+-            (a.kind === "laser" || gunOnly) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
++            (a.kind === "laser" || (gunOnly && quiet)) && !(!quiet && flat(a.pos, me.pos) > UNDER_FIRE_M) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
+             !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4) && fits(a.pos, flat(me.pos, a.pos)))
+           .sort((a, b) => Number(a[1].kind !== "laser") - Number(b[1].kind !== "laser") || flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos))
+         const kept = rush ? options.find(([id]) => id === rush!.id) : undefined
+@@ -660,7 +669,8 @@
+           const go = travel(me.pos, pos, obs.t, canPlan())
+           const planned = !!route && flat(route.goal, pos) <= ROUTE_GOAL_SHIFT
+           // No path (a ledge, a walled yard) or a walk that has taken too long: leave this one for good.
+-          if ((planned && !route!.found) || obs.t - rush.since > LASER_CHASE_S) laserSkip.add(id)
++          if ((planned && !route!.found) || obs.t - rush.since > LASER_CHASE_S) { laserSkip.add(id); __ev.push(planned && !route!.found ? 'skip_nopath' : 'skip_timeout') }
++          else if (planned && !fits(pos, go.dist)) __ev.push('path_too_long')
+           else if (planned && fits(pos, go.dist)) rushMove = go.move
+         }
+       }
+@@ -764,6 +774,7 @@
+       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
+       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
+       if (nav.stuck(me, move)) {
++        __ev.push('stuck')
+         if (me.grounded) act.jump = true
+         else if (me.energy > 15) boost = true
+         route = null
+@@ -967,6 +978,23 @@
+       act.fire = fire
+       draw.label(`${label} · ${mode}`)
+       const took = performance.now() - started
++      if (__I) {
++        const losN = threats.filter((e) => seenAt(me.pos, myHeight, [e], false)).length
++        const hitters2 = [...mechHitBy].filter(([, t]) => obs.t - t < 2).length
++        const dmg = obs.events.filter((e: any) => e.type === "damaged" && e.weapon !== "npc" && e.weapon !== "zone").map((e: any) => [e.by, Math.round(e.amount), e.weapon, e.rear ? 1 : 0])
++        const near100 = enemies.filter((m) => flat(m.pos, me.pos) < 100).length
++        const near160 = enemies.filter((m) => flat(m.pos, me.pos) < 160).length
++        const ls = [...arms].filter(([id, a]) => a.kind === "laser" && !laserSkip.has(id))
++        const ld = ls.length ? Math.min(...ls.map(([, a]) => flat(a.pos, me.pos))) : -1
++        const ltn = [...arms].filter(([id, a]) => a.kind === "lightning" && !laserSkip.has(id)).length
++        const g = {
++          win: +(obs.t < LASER_RUSH_S || !!rush || lateLight), slot: +rushSlot, zone: +me.in_zone, leave: +leaveNow, trip: +!!trip,
++          eng: engage ? engage.why : 0, claim: +!!claimGoal, hurt: +hurt, cube: +(cubeFirst && !lateLight), quiet: +(obs.t - lastMechHit > FARM_QUIET_S),
++        }
++        __buf.push(JSON.stringify({ t: +obs.t.toFixed(2), hp: Math.round(me.hp), mhp: Math.round(me.max_hp), w: me.weapons.map((x) => x?.kind ?? null), mode, g, rm: +!!rushMove,
++          ld: Math.round(ld), lc: ls.length, ltn, los: losN, h2: hitters2, inview: enemies.length, n100: near100, n160: near160, dmg, ev: __ev, ms: +took.toFixed(2), cubes: me.cubes }))
++        if (__buf.length >= 200) __flush()
++      }
+       if (took > DEADLINE_MS) log(`decision at tick ${obs.tick} took ${took.toFixed(1)} ms`)
+       return act
+     },

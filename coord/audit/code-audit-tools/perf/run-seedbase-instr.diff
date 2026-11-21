@@ -1,0 +1,28 @@
+--- /home/claude/mech-bot/tools/sim/run.ts	2026-11-21 15:57:44.283032955 +0000
++++ audit/tools/sim/run.ts	2026-11-21 15:59:45.099714762 +0000
+@@ -17,7 +17,7 @@
+ const args = process.argv.slice(2)
+ const opt = (name: string, def?: string) => { const i = args.indexOf("--" + name); return i >= 0 ? args[i + 1] : def }
+ const flag = (name: string) => args.includes("--" + name)
+-const SEED_BASE = 1000
++const SEED_BASE = Number(process.env.SEED_BASE ?? 1000)
+ /** Wall-clock wait for one answer. Longer than the server's 50 ms so a loaded machine does not change results; late answers are counted. */
+ const ANSWER_MS = 2000
+ 
+@@ -27,7 +27,7 @@
+   wake: (() => void) | null = null
+   dead = false
+   constructor(path: string) {
+-    this.proc = Bun.spawn(["bun", path], { cwd: dirname(path), stdin: "pipe", stdout: "pipe", stderr: "ignore" })
++    this.proc = Bun.spawn(["bun", path], { cwd: dirname(path), stdin: "pipe", stdout: "pipe", stderr: "ignore", env: { ...process.env, INSTR_FILE: process.env.INSTR_DIR ? process.env.INSTR_DIR + "/" + (globalThis as any).__SEED + ".jsonl" : "" } })
+     this.pump()
+   }
+   async pump() {
+@@ -69,6 +69,7 @@
+ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena: string) {
+   const S = createSim(geo, cfg, seed)
+   const me = S.me
++  ;(globalThis as any).__SEED = seed
+   const bot = new BotProc(botPath)
+   bot.send({ type: "hello", protocol: "mechfight/1", slot: S.meId, seed: (Math.imul(S.meId + 1, 2654435761) >>> 0), map: { dir: arena, files: ["v2/world.json", "v2/terrain.i16"] }, config: cfg })
+   let ready = false

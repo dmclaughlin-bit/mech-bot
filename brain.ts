@@ -17,12 +17,13 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 82 (crossfire retune): B60's cover search uses CROSSFIRE_HIDE_S / CROSSFIRE_LOS in params.ts.
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  CROSSFIRE_HIDE_S, CROSSFIRE_LOS, LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -371,9 +372,10 @@ function buildBot(hello: Hello): Bot {
   function hideSpot(
     me: Observation["self"], height: number, walk: number, threats: { pos: Vec3; aim: [number, number]; cubes?: number }[],
     cone: boolean, keepIn: [number[], number], timeOk: () => boolean,
+    steps: number[] = HIDE_STEPS_S,
   ): Vec3 | null {
     const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
-    for (const s of HIDE_STEPS_S) {
+    for (const s of steps) {
       for (let b = 0; b < HIDE_BEARINGS; b++) {
         if (!timeOk()) return null
         const yaw = (2 * Math.PI * b) / HIDE_BEARINGS
@@ -712,7 +714,7 @@ function buildBot(hello: Hello): Bot {
         mode = "laser rush"
       } else if (CROSSFIRE_ON && (spot = (() => {
         const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
-        return los.length >= 2 ? hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan) : null
+        return los.length >= CROSSFIRE_LOS ? hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan, CROSSFIRE_HIDE_S) : null
       })())) {
         move = heading(spot)
         boost = me.energy > 0.3 * me.max_energy

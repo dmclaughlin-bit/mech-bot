@@ -113,3 +113,13 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 82 (retune B60 crossfire cover): B60 walks to a hideSpot when at least CROSSFIRE_LOS enemies have
+ * line of sight (champion 2; kept at 2 because dropping to 1 would hide in the 1-v-1s we already win).
+ * hideSpot searches CROSSFIRE_HIDE_S seconds of walk (~11.7 m/s) on 12 bearings. Champion / B60 is [1, 2, 3]
+ * (~35 m). This adds a closer 0.5 s step and 4 s / 5 s steps (~47–58 m) so cover is found earlier (nearer
+ * wall) and more often (farther cover that used to miss). Other hideSpot callers stay on [1, 2, 3].
+ */
+export const CROSSFIRE_LOS = 2
+export const CROSSFIRE_HIDE_S = [0.5, 1, 2, 3, 4, 5]

@@ -87,3 +87,8 @@ A sim-only track (currently P-B-008, movement and evasion) may iterate in the lo
 - Mech Wild Sim is the top of the idea funnel. It explores only strange, unconventional tactics other teams are unlikely to try, never standard gameplay. Each Wild Sim batch still needs Doug's direct yes.
 - Mech Sim Tester is the checkpoint: trigger counts, flag-0 identity, crash and timing screens.
 - A Wild Sim idea earns a site slot only if it's deemed valuable enough: it triggers in about 10 of 192 sim games or more, flag 0 is identical to the champion, and it shows a real edge. There is no guaranteed slot.
+
+## Source of truth data (Doug, Sat Nov 21 2:12 PM ET)
+- coord/data is the single source of truth for every improvement and every loss: site_results.csv, screens.csv, hazard_screens.csv, postmortems/, ideas.md.
+- coord/data/SOURCE_OF_TRUTH.md summarizes every change with its site delta and per-family record. Regenerate it after every site result.
+- The idea queue is ranked from this data. Every track (Wild Sim, movement, Diego research) enters the queue; nothing skips it to go straight to a builder.

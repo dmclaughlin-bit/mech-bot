@@ -159,6 +159,51 @@ Format:
 - Found: laser-first alone doesn't pay even though 8/8 watched winners carry a laser; the laser likely needs the upgrades/positioning behind it, or costs us the early-game weapon we used. Build 9 (laser upgrades) sits on this losing parent and is parked. Site confirmed: no per-match data for practice submissions.
 - Blocked / next: Build 10 (nav fallback, PR #16, `b4a65ba`) at the 23:21 ET slot; Build 11 (inflation 2.5 m, PR #18) only after Build 10 scores.
 
+## Fri 23:24 ET · Grok · Build 10 reverted
+- Did: submitted PR #16 head `b4a65ba` (BB-9A951653) at 23:21 ET; closed it without merging.
+- Result: 2.35 vs champion 5b 2.38 (−0.03), a loss (smallest drop so far). Board 11:24 PM ET: 108th of 140; 1st 5.58, 16th 4.73, 32nd 4.23.
+- Found: fixing failed paths (179→85 of 2,000 offline) doesn't move practice score; path failures aren't the bottleneck. Build 11 (inflation 2.5 m) was stacked on Build 10, so it must be re-based on main before scoring.
+- Blocked / next: root-cause audit (branch rca-report) running; next slot 23:32 ET.
+
+## Fri 23:30 ET · Grok · Diego research #2 filed
+- Did: added `research/intake/diego-match-data-1129.md` (analysis of 208 opponent rows / 13 recorded matches) and `diego-experiments-1129.csv` (EXP-A..G backlog).
+- Result: docs only; all claims associative (our team absent from recordings).
+- Found: laser acquired >15 s scores better than <=15 s (10.51 vs 7.60 mean points, n=43/57), consistent with Build 8 laser-first losing; winners stand in the open 6.2% vs bottom-8 36.6%. Top hypotheses: conditional engage on isolated threats (EXP-A), threat-aware path costs (EXP-B), regen verification (EXP-F).
+- Blocked / next: fold into root-cause audit result before picking the next experiment.
+
+## Fri 23:36 ET · Grok · Build 11b reverted
+- Did: submitted PR #19 head `8bfc89e` (BB-5BB9D164) at 23:33 ET; closed it without merging.
+- Result: 2.10 vs champion 5b 2.38 (−0.28), a loss. Board 11:36 PM ET: 110th of 142; 1st 5.58, 16th 4.75, 32nd 4.25.
+- Found: wider wall padding hurts (offline: more cut-off goals 210→230, more null paths); narrower routes/gaps matter. Nav changes (B10 −0.03, B11b −0.28) are not where the ceiling is. Five straight losses vs 5b: stop blind variants; next build comes from the root-cause audit + Diego/watcher evidence.
+- Blocked / next: RCA report (branch rca-report); public-match entry research.
+
+## Fri 23:45 ET · Grok · Diego back in the loop
+- Did: rewrote `coord/next-diego.md` as a catch-up + autonomous research loop (git pull, read state, one question per run, JSON intake PR every ~45 min).
+- Result: docs only.
+- Found: Diego's research lands via `research/intake/` PRs, which Grok merges and ingests each tick.
+- Blocked / next: Diego starts the loop on his machine (needs `gh` auth + push access).
+
+## Fri 23:48 ET · Grok · Goal reframed (Doug)
+- Did: `coord/WORKFLOW.md` goal now says pick the system change with the largest expected impact on total score, ranked by gap size × reach × confidence ÷ cost/risk; prefer closing whole missing systems over parameter nudges.
+- Result: docs only. Promotion rule unchanged (keep only if it beats the best).
+- Found: the last five losses were small tweaks (nav, gates, laser order); B12 FARM is the first build to add a whole missing system (cube economy).
+- Blocked / next: score B12; next candidates ranked by impact: engagement decision (fight vs flee using enemy HP/count), upgrade spending once cubes are in hand, healing that works.
+## Fri 23:45 ET · Doug · Build 12: farm cubes when safe
+- Did: one mechanism on top of 5b (`100941f`) on branch `build-12-farm`: with no enemy mech within `FARM_ENEMY_M` (160 m) or in view and no damage from a mech for 3 s, shoot the nearest clear drone or crate within the 100 m gun gate through the existing aim/fire code (no mortar), and walk via nav to visible cubes and landed, unheld supply drops within `FARM_PICKUP_M` (80 m), standing in the ring to capture. Zone safety: only in the zone, never while leaving for the next circle, item inside the current circle and still reaching the next circle's inner ring by shrink end with the 10 s buffer. Farm movement ranks after retreat, heal and weapon loot. `FARM_ON` in `params.ts` rolls it back exactly.
+- Result: `bun build` OK; `check.py --map-dir arena` PASS, 300/300 in time, p99 1.1 ms. Offline `tools/farm_check.ts` on the kit stream (non-reactive, not a score): farm active 8 of 300 ticks, all crate shots; the stream has no drones in view and cubes in only 2 observations. Not submitted.
+- Found: drone return fire (weapon `npc`) does not exit farm, or drones could never be farmed; any other damage does. A cube or drop chased for 15 s without reaching it is dropped (roof items).
+- Blocked / next: submit the PR head on practice; keep if ≥ 2.38, else `FARM_ON = false` / close.
+
+## Fri 23:48 ET · Grok · Build 12 FARM kept, new champion
+- Did: submitted PR #21 head `8f2c7c8` (BB-35E5C75F) at 23:45 ET; merged into main as `12a26df`.
+- Result: 2.44 vs champion 5b 2.38 (+0.06), a KEEP. New best and automatic final entry. Board 11:48 PM ET: 112th of 144; 1st 5.58, 16th 4.77, 32nd 4.29.
+- Found: first gain after five losses, and the first build that adds a missing system (cube economy). Offline, farm fired in only 8/300 ticks (crates only), so there's room to widen it: spend cubes on upgrades, farm drones, a larger radius.
+- Blocked / next: next slot 00:12 ET. Candidates by expected impact: upgrade spending/order with cubes in hand; farm radius/drones; engagement decision.
+## Fri 23:50 ET · Diego (research) · Engagement: fight vs flee
+- Did: filed `research/intake/diego-2026-11-20-2346.json` (4 findings, EV-R-0020..0023 on a scratch ingest: 4 ACCEPT, 0 reject). Question: when to fight instead of flee, using only fields our bot observes. B12 FARM isn't scored yet, so question 1 was skipped.
+- Result: research only, no bot code, not submitted.
+- Found: the track page's rules settle RCA meta-question 6: practice house bots "never fight each other" and send hunters one at a time early (weakest first). So practice points come only from our kills and house zone deaths, and each kill is close to a point. Enemy `hp`, `weapons` and `charging` are observable (`show_enemy_hp` true), yet `brain.ts` never reads `Known.hp` and `params.aggression` is unread. From config: gun 187.5 DPS burst / ~102 sustained, laser ~131, lightning 240 within 45 m; at our 35% retreat line (490 HP) we die to 11 gun hits (~2.6 s), while a target at ≤540 HP dies to one magazine. Kills drop all cubes + 2.
+- Blocked / next: Grok: after B12 FARM scores, consider one engage rule (skip the 35% retreat while exactly one enemy is known and ttk < aggression × ttd; always finish a target at ≤ one magazine). Next research run in ~45 min.
 ## Sat 2026-11-21 · Claude · Root-cause audit (read-only)
 - Did: audited `brain.ts`/`nav.ts`/`map.ts`/`params.ts` at `100941f` (identical to `main` bot code); added `tools/rca_replay.ts` (regen + house-squad + cubes over 14 replays) and `tools/rca_hide.ts` (offline hideSpot geometry on the kit arena); wrote `coord/rca-report.md`. No bot code changed.
 - Result: MEASURED regen = 45 HP/s after 5.0 s without dealing or taking damage; hide spots exist only 24% of the time vs an enemy at 60–120 m and are re-seen after 4–8 s of walking; places 1–2 average 17.3 cubes vs 0.7 for 9–16; in public matches 62/65 house deaths were house-on-house kills. CODE: bot never seeks cubes/drones/crates/drops, has no TTK logic, A* has no threat cost.

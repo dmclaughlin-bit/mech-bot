@@ -22,7 +22,8 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, RACE_BANDS_M,
+  RACE_HIT_HOUSE, RACE_HIT_OURS, RACE_MULTI_ON, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -177,6 +178,16 @@ function weaponReach(kind: WeaponKind, s: Record<string, number>): number {
 }
 const hitRate = (kind: WeaponKind, d: number) =>
   kind === "gun" ? (d <= GUN_NEAR_M ? HIT_GUN_NEAR : HIT_GUN_FAR) : kind === "mortar" ? HIT_MORTAR : HIT_BEAM
+/** Build 26: a measured by-range hit rate from `table` (params.ts RACE_HIT_*), or the Build 14 guess for a weapon it lacks. */
+const bandRate = (table: Partial<Record<WeaponKind, number[]>>) => (kind: WeaponKind, d: number) => {
+  const row = table[kind]
+  if (!row) return hitRate(kind, d)
+  let i = 0
+  while (i < RACE_BANDS_M.length && d > RACE_BANDS_M[i]) i++
+  return row[Math.min(i, row.length - 1)]
+}
+const raceHitOurs = bandRate(RACE_HIT_OURS)
+const raceHitTheirs = bandRate(RACE_HIT_HOUSE)
 
 // ------------------------------------------------------------------ the bot
 /** What the bot knows about one enemy mech. Kept for a while after it leaves view. */
@@ -263,18 +274,20 @@ function buildBot(hello: Hello): Bot {
   /** Build 14: mech attacker id → last time it damaged us (drones and the zone left out). */
   const mechHitBy = new Map<number, number>()
   /** Build 14: the enemy we are fighting on against, why, since when, and until when the choice holds without a fresh pass. */
-  let engaged: { id: number; why: "ttk" | "finish"; since: number; until: number } | null = null
+  let engaged: { id: number; why: "ttk" | "finish" | "race"; since: number; until: number } | null = null
+  /** Build 26: the last race decision (engage `id`, or break line of sight) and when it may change. */
+  let raceHold: { d: "win" | "break"; id: number; fin: boolean; until: number } | null = null
   /** Build 14: targets we gave up on (id → time), and where our last kill died, to collect its cubes. */
   const engageGiveUp = new Map<number, number>()
   let claim: { pos: Vec3; until: number } | null = null
 
   /** Build 14: what we deal per second to a target `d` m away: every held weapon that reaches, × its hit-rate guess × our cube bonus. */
-  function ourDps(me: Observation["self"], d: number): number {
+  function ourDps(me: Observation["self"], d: number, rate = hitRate): number {
     let sum = 0
     for (const w of me.weapons) {
       if (!w) continue
       const stats = { ...cfg.weapons[w.kind], ...w.stats }
-      if (weaponReach(w.kind, stats) >= d) sum += weaponDps(w.kind, stats) * hitRate(w.kind, d)
+      if (weaponReach(w.kind, stats) >= d) sum += weaponDps(w.kind, stats) * rate(w.kind, d)
     }
     return sum * cubeDamage(me.cubes)
   }
@@ -291,9 +304,9 @@ function buildBot(hello: Hello): Bot {
     return best * cubeDamage(me.cubes)
   }
   /** Build 14: what an enemy `d` m away deals per second: each weapon it is seen holding that reaches us, × the same hit-rate guess as ours, × its cube bonus. */
-  function enemyDps(e: { weapons?: WeaponKind[]; cubes?: number }, d: number): number {
+  function enemyDps(e: { weapons?: WeaponKind[]; cubes?: number }, d: number, rate = hitRate): number {
     let sum = 0
-    for (const kind of e.weapons ?? ["gun"]) if (baseReach[kind] >= d) sum += baseDps[kind] * hitRate(kind, d)
+    for (const kind of e.weapons ?? ["gun"]) if (baseReach[kind] >= d) sum += baseDps[kind] * rate(kind, d)
     return sum * cubeDamage(e.cubes)
   }
 
@@ -547,7 +560,8 @@ function buildBot(hello: Hello): Bot {
       // Engage (F1, Build 14): fight or flee by time-to-kill vs time-to-die. Only in the zone and not leaving for the
       // next circle, so zone safety always wins. `hurt` is the Build 5 retreat trigger, unchanged.
       const hurt = !!lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp
-      let engage: { m: (typeof enemies)[number]; why: "ttk" | "finish"; clear: boolean } | null = null
+      let engage: { m: (typeof enemies)[number]; why: "ttk" | "finish" | "race"; fin?: boolean; clear: boolean } | null = null
+      let raceBreak = false
       if (ENGAGE_ON && me.in_zone && !leaveNow && threats.length) {
         // Who threatens us: enemies with line of sight to us (wherever they look), and mechs that hit us in the last 2 s.
         const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
@@ -567,16 +581,34 @@ function buildBot(hello: Hello): Bot {
           return r.ttk < r.ttd
         }
         let pick: (typeof enemies)[number] | undefined
-        let why: "ttk" | "finish" = "finish"
+        let why: "ttk" | "finish" | "race" = "finish"
+        let fin = false
+        // Build 26 race: every watcher's DPS on us (hit rates by range) vs our DPS on one focus target, at any HP, no alone() veto.
+        if (RACE_MULTI_ON) {
+          const armor = 1 - clamp(me.stats.armor ?? 0, 0, 0.9)
+          const taken = threats.reduce((s, e) => (los.includes(e) || hitters.includes(e.id) ? s + enemyDps(e, flat(e.pos, me.pos), raceHitTheirs) * armor : s), 0)
+          const ttd = taken > 0 ? me.hp / taken : Infinity
+          const ttkOf = (e: (typeof enemies)[number]) => e.hp! / (ourDps(me, flat(e.pos, me.pos), raceHitOurs) || 1e-9)
+          const ready = threats.filter((e) => e.hp !== undefined && rested(e.id))
+          const finish = me.hp >= ENGAGE_FINISH_HP * me.max_hp ? ready.filter((e) => e.hp! <= ourMagazine(me, flat(e.pos, me.pos))).sort((a, b) => a.hp! - b.hp!)[0] : undefined
+          const focus = finish ?? ready.filter((e) => los.includes(e) || hitters.includes(e.id)).sort((a, b) => ttkOf(a) - ttkOf(b))[0]
+          const ttk = focus ? ttkOf(focus) : Infinity
+          const d = !focus ? null : ttk < params.aggression * ttd ? "win" : ttk >= ttd && (me.hp < HEAL_HP * me.max_hp || los.length > 1) ? "break" : null
+          // Hold a decision at least ENGAGE_LATCH_S (a held win keeps its target while it is still a threat).
+          const held = raceHold && obs.t < raceHold.until && (raceHold.d === "break" || threats.some((e) => e.id === raceHold!.id))
+          if (!held) raceHold = d && focus ? { d, id: focus.id, fin: focus === finish, until: obs.t + ENGAGE_LATCH_S } : null
+          if (raceHold?.d === "break") raceBreak = true
+          else if (raceHold && rested(raceHold.id)) [pick, why, fin] = [threats.find((e) => e.id === raceHold!.id), "race", raceHold.fin]
+        } else raceHold = null
         // Finish rule: the weakest enemy within one magazine of dying, while no second enemy sees us or is hitting us,
         // and only if we survive it: our HP at or above ENGAGE_FINISH_HP and the kill coming before our death (ttk < ttd).
         // House bots hunt the weakest first as one squad with shared vision, so a low-HP commit draws the rest.
-        if (me.hp >= ENGAGE_FINISH_HP * me.max_hp)
+        if (!pick && !raceBreak && me.hp >= ENGAGE_FINISH_HP * me.max_hp)
           pick = threats
             .filter((e) => e.hp !== undefined && rested(e.id) && alone(e.id) && e.hp <= ourMagazine(me, flat(e.pos, me.pos)) && outlive(e))
             .sort((a, b) => a.hp! - b.hp!)[0]
         // TTK rule: where the HP retreat would trigger, with exactly one threat and it in sight, fight on if we kill it first.
-        if (!pick && hurt && los.length === 1 && los[0].hp !== undefined && alone(los[0].id) && rested(los[0].id)) {
+        if (!pick && !raceBreak && hurt && los.length === 1 && los[0].hp !== undefined && alone(los[0].id) && rested(los[0].id)) {
           const e = los[0]
           const { ttk, ttd } = race(e)
           if (ttk < params.aggression * ttd) {
@@ -585,7 +617,7 @@ function buildBot(hello: Hello): Bot {
           }
         }
         if (pick) engaged = { id: pick.id, why, since: engaged?.id === pick.id ? engaged.since : obs.t, until: obs.t + ENGAGE_LATCH_S }
-        else if (engaged && obs.t < engaged.until && (pick = threats.find((e) => e.id === engaged!.id && alone(e.id)))) why = engaged.why
+        else if (!raceBreak && engaged && obs.t < engaged.until && (pick = threats.find((e) => e.id === engaged!.id && alone(e.id)))) why = engaged.why
         else engaged = null
         // Give up on a target we have engaged for ENGAGE_CHASE_S without taking any HP off it over the hpLog window.
         if (pick && engaged && obs.t - engaged.since > ENGAGE_CHASE_S) {
@@ -594,10 +626,14 @@ function buildBot(hello: Hello): Bot {
             engageGiveUp.set(pick.id, obs.t)
             engaged = null
             pick = undefined
+            raceHold = null
           }
         }
-        if (pick) engage = { m: pick, why, clear: clearLine(solids, muzzle, centerOf(pick)) }
-      } else engaged = null
+        if (pick) engage = { m: pick, why, fin, clear: clearLine(solids, muzzle, centerOf(pick)) }
+      } else {
+        engaged = null
+        raceHold = null
+      }
       // Collect (Build 14): after our kill, walk to the cubes it dropped (all of its cubes plus two) if it is safe:
       // nobody has line of sight to us, no mech hit us in the last 2 s, and the same zone test as farming.
       let claimGoal: Vec3 | null = null
@@ -673,9 +709,14 @@ function buildBot(hello: Hello): Bot {
         // hits as well at range, and walking in while charging is at half speed.
         const beam = LASER_RUSH_ON ? me.weapons.find((w) => w?.kind === "laser") : undefined
         const standOff = !!beam && engage.clear && d <= (beam.stats.range ?? baseReach.laser)
-        if ((!engage.clear || (engage.why === "finish" && d > close && !standOff)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1])
+        if ((!engage.clear || ((engage.why === "finish" || engage.fin) && d > close && !standOff)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1])
           move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
         mode = `engage, ${engage.why}`
+      } else if (raceBreak && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
+        // Build 26: losing the group race, so walk out of every watcher's line of sight; torso and targeting stay as they are.
+        move = heading(spot)
+        boost = me.energy > 0.3 * me.max_energy
+        mode = "race, break LOS"
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && seenAt(me.pos, myHeight, threats, false) && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
         // Retreat (F2, F3, Build 5): hurt and under fire, so head for the nearest in-zone spot out of every visible
         // enemy's line of sight, torso still on the attacker (legs and torso are independent). Boost only above 30% energy.
@@ -731,7 +772,7 @@ function buildBot(hello: Hello): Bot {
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("race") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

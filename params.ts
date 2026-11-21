@@ -113,3 +113,26 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 26 (lane B, multi-threat race): in the zone and not leaving, with any threat, decide fight or break at any HP.
+ * ttd = our HP over the summed DPS of every enemy with line of sight to us or that hit us in the last 2 s; ttk = the
+ * focus target's HP over our DPS (focus: the finish-rule candidate, else the threat we kill fastest). Both sides use
+ * hit rates by range (RACE_BANDS_M, RACE_HIT_*: the PR #36/#37 tables from coord/research-doug-0040.md §2; mortar and
+ * lightning keep the Build 14 guesses). Win (ttk < aggression × ttd): engage the focus, no alone() veto. Lose (ttk >= ttd)
+ * and HP under 90% or 2+ watchers: walk to a spot out of their sight. Else the Build 14 rules run. Each decision holds
+ * at least ENGAGE_LATCH_S. Set RACE_MULTI_ON to false to roll back to Build 17 behavior exactly.
+ */
+export const RACE_MULTI_ON = true
+/** Upper edge (m) of each hit-rate band but the last; a distance on an edge falls in the nearer band. */
+export const RACE_BANDS_M = [60, 100, 150]
+/** Our hit rate per band (showdown means): gun 88/71/48/29%, laser 56/63/77/75%. */
+export const RACE_HIT_OURS: Partial<Record<"gun" | "laser" | "lightning" | "mortar", number[]>> = {
+  gun: [0.88, 0.71, 0.48, 0.29],
+  laser: [0.56, 0.63, 0.77, 0.75],
+}
+/** Enemy (house) hit rate on us per band: gun 73/43/22/8%, laser 20%. */
+export const RACE_HIT_HOUSE: Partial<Record<"gun" | "laser" | "lightning" | "mortar", number[]>> = {
+  gun: [0.73, 0.43, 0.22, 0.08],
+  laser: [0.2, 0.2, 0.2, 0.2],
+}

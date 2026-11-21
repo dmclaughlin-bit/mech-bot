@@ -1,70 +1,62 @@
 # AI Structure and Development Plan
 
-How the team (Diego and Doug) and our two Claude sessions split the work on the Mech Royale bot, what we have tried, and what to do next. Keep this file current: it is how neither Claude redoes the other's work.
+How the team (Diego and Doug) and our two Claude sessions split the work on the Mech Royale bot, what we have tried, and what to do next. Both Claudes read this file and `EXPERIMENTS.md` before starting any task, so neither redoes the other's work.
 
-**Deadline:** Sun Nov 22, 11:00 AM ET (final entry locks). Target final submit by 10:30 AM ET.
-**Scoring:** mean of (16 − place) per match. Placement only; kills just yield cubes. Baseline starter bot scores 1.15.
+**Deadline:** Sun Nov 22, 11:00 AM ET. **Lock the final build at 9:00 AM ET.**
+**Score:** mean of (16 − place) per match. Placement only; kills just yield cubes. The kit's example bot scores 1.15.
+**Architecture and evidence:** `research/FINAL_RECOMMENDATION.md` in the project files (summary below).
+
+## How we measure a change
+
+There is no local simulator, and building one would cost 22 to 30 hours, so we don't. Every change is judged two ways:
+
+1. **Offline gate (must pass before any submit):** `check/check.py` under the full sandbox flags, plus the scenario harness (clips of real observations from `check/stream.jsonl.gz` with pass/fail cases such as "face a rear attacker within 3 decisions").
+2. **Practice submission:** 48 matches per submission, 4 submissions per hour. One submission only detects a change of about 1.2 points, so **keep a change only if it gains about +1.2 or more, or is clearly right on mechanism and costs no more than −0.6.** Re-submit a winner before trusting it.
 
 ## Roles
 
-| Who | Plan | Owns |
-| --- | --- | --- |
-| **Diego** | Lighter Claude plan | Research and strategy, PR review, deciding what ships, submitting to practice (4 per hour). Uses Claude for short, high-value tasks: reading match logs, spotting failure modes, writing tight specs for Doug. |
-| **Doug** | 5x Claude plan | Owns `main` and runs the long sessions: building the bot, building the local 16-mech match runner, running tuning sweeps. |
+| Who | Owns |
+| --- | --- |
+| **Doug (5x Claude plan)** | `main` and the long build sessions: the bot's code, the scenario harness, latency hardening. |
+| **Diego (lighter Claude plan)** | What to try next and why, submitting to practice, and the `EXPERIMENTS.md` log. Uses Claude for short tasks: reading results, spotting failure modes, writing one-paragraph specs. |
 
-## Shared setup
-
-- **One repo, small PRs.** One feature branch per change. `main` must always pass `check/check.py` from the kit.
-- **This file is the shared plan.** Update the "What's been tried" log in the same PR as the change it describes.
-- **Local runner.** Plays N seeded matches against the starter bot, earlier versions of our bot, and variants, and reports average placement (and score as 16 − place).
+**Merge rule:** a PR that passes the offline gate merges without waiting for review. Diego can veto. A PR that changes behavior is submitted right after merging, one change per submission.
 
 ## Timeline (ET)
 
-| When | What |
-| --- | --- |
-| **Fri night** | Research finishes (Diego). Doug builds the baseline bot: zone safety, turning to face whoever is shooting, supply drops, avoiding early fights. Submit right away to lock in qualifying. |
-| **Sat morning** | Doug's Claude finishes the runner and the opponent pool. Diego picks the top 3 behaviors to improve, using the research and practice replays. |
-| **Sat afternoon and evening** | Main loop. Doug runs parallel variant branches and sweeps the utility weights. Diego reviews results and merges the winners. Submit each improvement. |
-| **Sun 12 to 8 AM** | Doug's Claude runs long tuning sweeps overnight. |
-| **Sun 8 to 11 AM** | Feature freeze, then final checks: decision time under 50 ms, the 512 MB limit, stderr-only logs, MIT license and README credits. Submit the final build by 10:30. |
+| When | Build (Doug) | Submit (Diego) |
+| --- | --- | --- |
+| **Fri 8 PM–midnight** | Survival-min bot: crash and timeout safety, zone-safe travel, face attacker, always pick an offer, take laser/lightning | **S1 by ~11 PM** to lock qualifying (earlier submissions win ties) |
+| **Fri midnight–1 AM** | — | **S2:** S1 with a time-seeded RNG, to test whether practice is deterministic |
+| **Sat 9 AM–1 PM** | Pathfinding (A* + stuck recovery), enemy tracking, retreat / break LOS, engagement gating | One feature per submission. Target ≥ 3.0 |
+| **Sat 1–6 PM** | Position query (cover, exposure), weapon fire logic, dodge reflexes, scenario harness | Target ≥ 4.0 |
+| **Sat 6–11 PM** | Supply drops, third-partying, loot and upgrades, endgame hold | 3-point sweeps on aggression and retreat threshold. Trust trends, not the single best |
+| **Sun 7–9 AM** | Fix the worst observed failure only | Submit the final candidate 3 times, pick by mean. **Lock at 9:00 AM** |
+| **Sun 9–11 AM** | Buffer. Final checks: decision time, 512 MB, stderr-only logs, MIT license, README credits | Deadline 11:00 AM |
 
 ## Rules
 
-1. **Keep a change only if it beats the current best over at least 100 seeded matches**, not one lucky game.
-2. **Tune for the free-for-all final**, not just the house-bot practice ladder. Practice is 15 house bots acting as one squad that hunts the weakest; the final is 16 real bots in FFA.
-3. **No reinforcement learning.** No time for it. Heuristics and tuned weights only.
-4. **Read all numbers from `hello.config`.** Balance can change; never hard-code ranges, damage or radii.
-5. **Sandbox limits are hard:** 1 CPU, 512 MB, no network, read-only FS, `/tmp` 64 MB, `ready` within 20 s, 50 ms per decision (>2% late fails), stdout for protocol lines only.
+1. **Tune for the free-for-all final**, not the practice ladder. In practice the 15 house bots act as one squad and never fight each other; in the final the other bots kill each other for us. Survival limits (no early even fights, reach the final circle at full HP) are hard limits. Only the aggression knob is tuned on practice.
+2. **No reinforcement learning, no simulator, no large refactor on Sunday.**
+3. **Read all numbers from `hello.config`.** Balance can change.
+4. **Runtime limits:** hard deadline guard at 30 ms per decision (limit is 50 ms), target p99 ≤ 15 ms, `ready` within 20 s, 1 CPU, 512 MB, stdout for protocol lines only. Wrap map prep in a try with a no-map fallback, since a constructor throw idles the bot all match.
 
 ## Architecture findings
 
-_Placeholder. A separate research thread is producing architecture findings (bot structure, decision model, utility weights to expose for tuning). Paste the summary and decisions here when it lands._
+From `research/FINAL_RECOMMENDATION.md`:
 
-- Decision model: _TBD_
-- Module layout: _TBD_
-- Tunable weights: _TBD_
+- **Decision model:** deterministic layered utility bot in TypeScript on bun. A strategic planner (about 1 Hz) picks a goal; a tactical selector (every decision) picks engage, kite, flee, third-party, loot or travel; execution channels drive legs, torso and triggers; reflexes override one channel for one tick (dodge, face a rear hit, unstick).
+- **Module layout:** `bot.ts`, `mechfight.ts` (unchanged), `src/{brain,params,debug}.ts`, `src/map/`, `src/world/`, `src/strategy/`, `src/tactics/`, `src/exec/`, `vendor/` (flatqueue, flatbush and their licenses), `params/*.json`, `tools/`.
+- **Tunable knobs (4 to 6 at most):** aggression, retreat thresholds, rotation buffer, supply-drop HP margin, gun accuracy priors, edge offset. All live in `params/*.json`.
+- **Credit in the README:** flatqueue and flatbush (ISC), and the Diamond min-risk idea (zlib).
 
 ## What's been tried
 
-Log every experiment, including the ones that lost. Newest first.
-
-| Date / time (ET) | Branch or commit | Change | Matches | Avg place / score | Result |
-| --- | --- | --- | --- | --- | --- |
-| Fri Nov 20 | `7a22fee` | Kit TypeScript starter bot (`bot.ts`) | — | baseline 1.15 (kit example) | Starting point |
+Log one row per submission in `EXPERIMENTS.md` at the repo root: time, commit, params, practice score, hypothesis, and result. Diego owns it and adds the row when each score comes back.
 
 ## First task list for Doug
 
-In order. Each item is its own branch and PR unless noted.
-
-1. **Baseline bot, submit tonight** (`feat/baseline`). Replace the example logic in `bot.ts` with:
-   - **Zone safety:** move toward `zone.next_center` early, boost only when out of zone or under fire, never end a tick predicted outside the next zone.
-   - **Face the attacker:** when taking damage, turn toward the source (rear hits do 1.5x), and keep facing it while retreating.
-   - **Avoid early fights:** do not fire at or approach mechs in the opening phase unless they are already shooting us or are low on HP.
-   - **Supply drops:** go for a drop (full heal) when it is reachable before contested, or when our HP is low.
-   - **Loot:** keep picking weapons and take useful pickups within `hello.config.loot.pickup_radius`.
-   - Logs to stderr only. Pass `check/check.py`, then tell Diego so it can be submitted.
-2. **Local match runner** (`feat/runner`). A script that runs N seeded 16-mech matches with the kit's engine, mixing our bot, the starter bot, saved earlier versions, and variants. Output: per-bot mean placement and mean score (16 − place), with seeds recorded so runs are reproducible. Must handle 100+ matches in a reasonable time.
-3. **Opponent pool** (`feat/pool`). Save each submitted version under a versioned name so the runner can play against it. Include at least: kit starter bot, current best, previous best.
-4. **Expose tunable weights** (`feat/weights`). Pull every heuristic threshold and utility weight into one config object (with defaults) that the runner can override per variant, so sweeps need no code edits.
-5. **Timing and memory guard.** Measure the slowest decision per match in the runner and fail loudly over 40 ms, leaving headroom under the 50 ms limit. Check memory stays well under 512 MB.
-6. **Update this file** with each result in "What's been tried".
+1. **Survival-min bot (`feat/survival-min`), tonight.** Crash and timeout safety (top-level try/catch, deadline guard, map prep in a try), zone-safe travel, turn to face whoever is shooting, always answer an upgrade offer, take a laser or lightning gun in range. All knobs in `params/default.json`. Pass `check.py` and hand over for S1.
+2. **Map and pathfinding (`feat/nav`).** Map prep grids, line of sight, A* on a 2 m grid with jump and jet edges, stuck detection.
+3. **Scenario harness (`feat/harness`).** Cases cut from `check/stream.jsonl.gz`, plus a latency stress case (16 mechs, 60 projectiles, p99 < 30 ms). This becomes part of the offline gate.
+4. **Combat layer.** Enemy tracking, engagement gating, retreat and break LOS, then the features in the timeline above, one PR each.

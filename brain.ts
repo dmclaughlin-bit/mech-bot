@@ -17,6 +17,8 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 78 (lightning trip, no mortar): in the first 45 s, walk to a laser or lightning, ranked by value then
+ * distance; never start a lightning trip if a laser can arrive by 30 s (see LIGHTTRIP_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -120,6 +122,13 @@ const LASER_LEAD_S = 0.075
  * multi-threat fights when the race looked winning, and changed hit rates). Against real house bots that share
  * vision and hit harder than the sim, a 2-on-1 stand-and-shoot is a fight we cannot finish. */
 const CROSSFIRE_ON = true
+/** Build 78 (B76 variant, no mortar): the champion walks to a laser first, and to lightning only while we hold
+ * nothing but the gun, always preferring any known laser over a closer lightning. When this is on, a remembered
+ * lightning is also an early trip target, ranked so a special we can reach by 30 s beats one we cannot, then by
+ * value (laser > lightning), then by distance — but a lightning trip never starts if a laser is reachable by 30 s.
+ * Mortar is never a target (B76 mortar-only games scored 1.94 in the sim and cost later lasers). Take, swap, and
+ * drop are unchanged (B66 and B68 lost on the site). false = champion. */
+const LIGHTTRIP_ON = true
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -636,11 +645,29 @@ function buildBot(hello: Hello): Bot {
         // `len` m of walking to the weapon at p: a bounded trip, and back in the next circle in time.
         const fits = (p: Vec3, len: number) => len <= LASER_TRIP_M && (len + onward(p)) / pace + ZONE_BUFFER < timeLeft
         // A laser always counts; a lightning only while we hold nothing but the gun. Lasers first, then the nearest.
+        // Build 78: lightning is a target only if no laser can arrive by 30 s; no mortar; then value then distance.
+        const eta = (p: Vec3) => obs.t + flat(me.pos, p) / pace
+        const eligible = (id: number, a: { kind: string; pos: Vec3 }) =>
+          !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
+          !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4) && fits(a.pos, flat(me.pos, a.pos))
+        const laserBy30 = LIGHTTRIP_ON && [...arms].some(([id, a]) => a.kind === "laser" && eligible(id, a) && eta(a.pos) <= 30)
+        const freeSlot = me.weapons.includes(null)
         const options = [...arms]
           .filter(([id, a]) =>
-            (a.kind === "laser" || gunOnly) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
-            !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4) && fits(a.pos, flat(me.pos, a.pos)))
-          .sort((a, b) => Number(a[1].kind !== "laser") - Number(b[1].kind !== "laser") || flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos))
+            (LIGHTTRIP_ON
+              ? (a.kind === "laser" || (a.kind === "lightning" && freeSlot && !laserBy30)) &&
+                !me.weapons.some((w) => w?.kind === a.kind)
+              : (a.kind === "laser" || gunOnly)) &&
+            eligible(id, a))
+          .sort((a, b) => {
+            if (!LIGHTTRIP_ON)
+              return Number(a[1].kind !== "laser") - Number(b[1].kind !== "laser") || flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos)
+            const a30 = eta(a[1].pos) <= 30, b30 = eta(b[1].pos) <= 30
+            if (a30 !== b30) return a30 ? -1 : 1
+            const dv = Number(b[1].kind === "laser") - Number(a[1].kind === "laser")
+            if (dv) return dv
+            return flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos)
+          })
         const kept = rush ? options.find(([id]) => id === rush!.id) : undefined
         const pick = kept && kept[1].kind === options[0][1].kind && flat(kept[1].pos, me.pos) - flat(options[0][1].pos, me.pos) < LASER_SWITCH_M ? kept : options[0]
         if (pick && (obs.t < LASER_RUSH_S || pick === kept)) {

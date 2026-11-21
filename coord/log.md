@@ -361,3 +361,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 6:37 AM ET: Build 80 late gun-only walk to lightning/laser (28c3acc, PR #74) scored 3.79, receipt BB-78A44AAF. NEW CHAMPION (beats B60 3.67). Merged as cb93980. Site auto-set it as final entry. Rank 120/229; #32 Kuki 5.23. B82 merged with new main -> e7df41f (gate PASS).
 
 - 6:49 AM ET: Build 82 wider crossfire cover search on B80 (e7df41f, PR #76) scored 3.46, receipt BB-4023B260. Below B80 3.79, closed. Rank 121/229; #32 Kuki 5.23.
+
+- 2026-11-21 7:20 AM ET: B86 latelong b93ae6d (PR #78, late walk 400 m after 60 s) site 3.79 (BB-7A43732D), tie with champion B80 3.79; earlier tie keeps final. Closed. Sim was +0.016 (3/192 changed). Rank 121/231, #1 5.96, #32 5.23. Next: B88 2c52220 at 7:26.

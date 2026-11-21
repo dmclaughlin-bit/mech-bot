@@ -58,3 +58,8 @@ Rebuild the supply-drop run (`DROP_RUN_M=150`, same logic as PR #95) on current 
 Finish burst: the finish rule should compare target HP to the SUM of magazines in reach, not the best single weapon (brain.ts finish check; see coord/audit/grokbot-1000-rec-handoff-2026-11-21.md section 3). Flag `FINISH_BURST_ON`, shipped ON, flag 0 = main byte-identical.
 
 ## Queued: P-D-005 (Grok, 1:12 PM ET; PR #98 H08) stay on wounded target - build only if its count (Sim Tester measuring) clears the bar in the audit section 3.
+
+## Queued: P-D-006 (Grok, 1:22 PM ET; PR #98 H09, Wild Sim counts) - TAKEN: Build 109 on Grok's computer
+Cook-off target bonus: some enemy holds a mortar in 98.7% of sim matches; mortar holders are 18.9% of our kills and mortars cause 11.5% of our deaths (coord/data/audit_h07_h09.csv; sim house model is invented, weak evidence). Flag `COOKOFF_BONUS_ON`, shipped ON, flag 0 = main byte-identical.
+
+H07 sound-guided late hunt: PARKED. Wild Sim: a usable sound while idle late shows up only 2.2% of the time.

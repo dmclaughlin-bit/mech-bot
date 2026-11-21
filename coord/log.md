@@ -365,3 +365,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 2026-11-21 7:20 AM ET: B86 latelong b93ae6d (PR #78, late walk 400 m after 60 s) site 3.79 (BB-7A43732D), tie with champion B80 3.79; earlier tie keeps final. Closed. Sim was +0.016 (3/192 changed). Rank 121/231, #1 5.96, #32 5.23. Next: B88 2c52220 at 7:26.
 
 - 2026-11-21 7:27 AM ET: B88 noxfirecharge 2c52220 (PR #79, no laser charge under 2+ LOS + hit in last 2 s unless target <50% HP) site 3.52 (BB-485F96CC). Below champion B80 3.79. Closed. Sim was -0.109. Rank 121/232, #1 5.96, #32 5.23. Next slot 7:37 (B43 after merge with main).
+
+- 2026-11-21 7:37 AM ET: B43 laserscout 1c8f8df (PR #64, idle aim toward likely laser/threat, merged on B80) site 3.69 (BB-69DCBAF9). Below champion B80 3.79. Closed. Sim was -0.016. Rank 122/235, #1 5.96, #32 5.23. Next slot 7:49: B90 dd716d3.

@@ -117,7 +117,8 @@ At 4 submissions an hour, plan on about 50 in total. Never submit two changes at
 | `EXPERIMENTS.md` | One row per submission | Diego |
 | `coord/log.md` | Append-only status from both workers | Both workers |
 | `coord/next-doug.md`, `coord/next-diego.md` | The next prompt for each person | Grok writes, Diego's Claude commits |
-| `coord/GROK_BRIEF.md` | Grok's role and how it reads state | PR only |
+| `coord/GROK_BRIEF.md` | Grok's role and its test-to-test improvement loop | PR only |
+| `coord/learnings.md` | Grok's memory: what each score, repeat and top-team read taught us | Grok writes, Diego's Claude commits |
 | `research/FINAL_RECOMMENDATION.md` | Research synthesis (evidence) | Frozen |
 | `research/GAME_CONTEXT.md`, `research/protocol.md` | Fact sheet and rules | Frozen |
 | `research/agents/`, `research/SOURCE_REGISTRY.md`, `research/bench/` | Detail behind the synthesis | Frozen |

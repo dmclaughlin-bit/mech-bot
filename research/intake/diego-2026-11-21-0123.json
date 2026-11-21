@@ -1,0 +1,33 @@
+{
+  "author": "Diego",
+  "submitted_at": "2026-11-21T01:23:00-05:00",
+  "findings": [
+    {
+      "claim": "Supply drops are the only instant full heal in the game (full HP, full energy and 3 cubes after 4 s alone in an 8 m ring), and every mech sees each one from the moment it is called, 25 s before it lands inside the circle the zone is closing to. Our bot only goes for a drop after it has landed, within 80 m (FARM_PICKUP_M), and only while no enemy is known within 160 m. So it takes a drop only when one happens to land nearby on a quiet stretch.",
+      "topic": "resource_upgrade",
+      "sources": [
+        {"ref": "mechfight-kit/protocol.md §7 Supply drops", "kind": "protocol", "quote": "stand inside its ring (`radius` 8 m) **alone** for `capture_s` (4 s) to gain `cubes` (3) power cubes, full HP, and full energy"},
+        {"ref": "mechfight-kit/check/stream.jsonl.gz hello.config.drops", "kind": "protocol", "quote": "\"times\": [70, 140, 210], \"fall_s\": 25, \"radius\": 8, \"capture_s\": 4, \"cubes\": 3, \"repair\": 1"},
+        {"ref": "brain.ts:456-476 (main @ 5eb3915)", "kind": "repo", "quote": ".filter((d) => d.lands_in <= 0 && (d.holder === null || d.holder === hello.slot) && ... near(d.pos) && zoneSafe(...))"},
+        {"ref": "params.ts:32-34 (main @ 5eb3915)", "kind": "repo", "quote": "export const FARM_ENEMY_M = 160 ... export const FARM_PICKUP_M = 80"},
+        {"ref": "coord/learnings.md:14 (watcher, 2 showdown wins)", "kind": "watch_stream", "quote": "Mustikas 34 cubes, 7 upgrades ..., all 3 supply drops"}
+      ],
+      "confidence": 0.6,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "Next build (Lane A, one mechanism, flag DROP_RUN_ON): when a drop is called (lands_in > 0), it is zone-safe, and the nav ETA to it is at most lands_in + 10 s, walk to it at once along a nav path, outside the farm gate, so we arrive as it lands. Then hold the ring for capture_s, keeping the Build 14 fight logic and normal fire. Skip it if another mech already holds it or two or more enemies are in view near the ring. Rollback with the flag. Expected +0.1 to +0.3.",
+      "mechanism": "Practice points are squad deaths before ours, and late matches end with several hunters on us (track rules). A drop at 95, 165 and 235 s resets us to full HP without the 5 s no-damage regen wait that our fire-while-healing loop never gets (RCA Q8). It also adds 3 cubes (+12% HP and damage, one upgrade threshold), so we win more of the late fights. The drop lands inside the next circle, so the walk doubles as the zone move Z1 would make anyway.",
+      "expected_gain": 0.2,
+      "effort": 2,
+      "regression_risk": 0.3,
+      "failure_classes": [
+        {"class": "REGEN_RESET", "confidence": 0.4, "basis": "the drop heal is the one heal not reset by our own hits; RCA Q8"},
+        {"class": "RESOURCE_TRAP", "confidence": 0.3, "basis": "drops are taken only within 80 m and with no enemy within 160 m (brain.ts:456-476)"},
+        {"class": "MULTI_ENEMY_TRAP", "confidence": 0.2, "basis": "contested ring freezes the clock; house squad shares vision and may converge on the drop (unknown)"}
+      ],
+      "related_rule_ids": ["L5", "Z1", "F4"],
+      "related_experiments": ["EXP-0006"],
+      "keywords": ["supply drop", "heal", "cubes", "zone", "next build", "lane A"]
+    }
+  ]
+}

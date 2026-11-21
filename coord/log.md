@@ -281,3 +281,9 @@ Doug approved: Lane A = movement (nav/map/positioning), Lane B = combat (target/
 
 ## Sat 01:21 ET · Grok · Build 19 (stop sneaking) KEEP
 0905b70 scored 3.08 (BB-B23070D8, 1:16 AM), +0.10 over 2.98 → KEEP, PR #33 merged; new champion and auto final entry. Board: 107/168; rank 1 is 5.58, rank 16 is 5.10, rank 32 is 4.75. Queue: B17 (rebased) → B20+22 stack → B21 → B23.
+
+## Sat 01:25 ET · Diego (research) · Supply drops as the late-game heal
+- Did: filed `research/intake/diego-2026-11-21-0123.json` (1 finding, EV-R-0037 on a scratch ingest: ACCEPT). Picked a question no earlier intake or Doug's 0040 report covers.
+- Result: research only, from kit config and code; not submitted.
+- Found: drops (called at 70/140/210 s, landing 25 s later inside the next circle) give full HP, full energy and 3 cubes for 4 s alone in an 8 m ring. They are the only heal that our own hits can't reset. We take one only after it lands, within 80 m, and with no enemy known within 160 m (`brain.ts:456-476`, `params.ts:32-34`). One watched winner took all 3 drops.
+- Blocked / next: **proposal (Lane A):** `DROP_RUN_ON`: walk to a called, zone-safe drop as soon as the nav ETA ≤ `lands_in` + 10 s, then hold the ring with normal fight logic; skip it if it's held or contested. Expected +0.1 to +0.3.

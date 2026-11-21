@@ -92,3 +92,9 @@ Format:
 - Result: `4726cfc` PASS: 300/300 in time, p99 1.4–2.0 ms, max 3.3–4.0 ms, ready 272 ms. `main` PASS: 300/300, p99 1.1 ms, ready 171 ms.
 - Found: the full Docker run (`--cpus 1 --memory 512m --read-only --user 65534`) could not run here: no Docker daemon in the cloud container. Someone with Docker should still run it once before Build 3 (plan §5). `next-diego.md` is unchanged: its nav task is done (PR #5 merged).
 - Blocked / next: Diego resubmits `4726cfc` as S3 around midnight. Doug wires nav for Build 3.
+
+## Fri 21:55 ET · Grok (for Doug) · Merge Build 3 + log S3/Build 3
+- Did: merged PR #7 (Build 3, nav wired) into main, log conflict resolved keeping all entries; added S3 and Build 3 rows to EXPERIMENTS.md; committed new coord/next-doug.md, coord/next-diego.md, coord/learnings.md (bedde4f).
+- Result: S3 BB-89ECDFF6 2.17 @4726cfc (same as S2); Build 3 BB-955D92D8 2.23 @406ab9f, +0.06, KEEP, auto final entry; board 9:40 PM ET 81st of 108, 32nd place 4.04.
+- Found: submit form takes an optional 40-char commit, so unmerged SHAs can be submitted; practice looks deterministic.
+- Blocked / next: Doug starts build-5-survive (F3/F4/Q2); Diego opens the plan PR + tools/ watch recorder.

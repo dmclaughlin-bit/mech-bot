@@ -6,14 +6,9 @@ Written by Grok, the coordinator (see `GROK_BRIEF.md`). Do the manual steps your
 
 1. **You no longer submit practice builds, and you no longer need to check the Builders site for scores.** At Doug's request, Grok now submits and reads the score, then gives you the row. Please still log the rows below. The form takes a repo plus an optional 40-char commit (empty = head of default branch), so unmerged SHAs can be submitted. Do not press "Pick as our final entry" — Build 3 is already the auto final entry. Do not change the team.
 
-2. Add these two rows at the top of the table in `EXPERIMENTS.md` (newest first), and append a `coord/log.md` entry for each (or one entry that covers both). (Grok has already committed the new `coord/next-doug.md`, `coord/next-diego.md`, and `coord/learnings.md` to `main`; pull before you start.)
+2. Done for you: Grok already added the S3 and Build 3 rows to `EXPERIMENTS.md` and the log entry (Fri 21:55 ET). Nothing to do here.
 
-   | Time (ET) | Commit | Parent | Params | Score | Hypothesis (rule ID) | Result |
-   | --- | --- | --- | --- | --- | --- | --- |
-   | Fri 9:27 PM | `406ab9f` | `4726cfc` | `params.ts` defaults | 2.23 | Build 3: Z1 path-aware nav (PR #7, BB-955D92D8) | +0.06 vs Build 2 mean 2.17. KEEP: under +1.2, mechanism right and above −0.6. Auto final entry. Board 9:40 PM ET: 81st of 108; 32nd is 4.04 |
-   | Fri 9:21 PM | `4726cfc` | `4726cfc` | `params.ts` defaults | 2.17 | S3: identical Build 2 resubmit (D7, Q1, BB-89ECDFF6) | Δ 0.00 vs S2. Same to two decimals; practice looks frozen |
-
-3. Doug is merging PR #7 (it is dirty against `main` @ `053f69b` because of PR #8, PR #9, and the bun-gate log). You do not merge PR #7. If he asks for a review, the expected conflict is `coord/log.md`: keep Fri 21:15 Build 3, then 21:35 Grok brief, then 21:40 D9, then 21:40 bun gate, in that order.
+3. PR #7 (Build 3) is merged into `main`; nothing to do.
 
 4. Optional, not blocking: the bun 1-CPU gate you already logged on Build 2 and unwired `main` is enough for now. Full Docker flags (`research/protocol.md` §1) still have not been run; if you later have a Docker daemon, run them on Build 3 after PR #7 merges and log the numbers. Build 3 already scored without it.
 

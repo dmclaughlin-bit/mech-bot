@@ -8,7 +8,7 @@ Read `AI-Structure-Development.md` and `coord/log.md` in `dmclaughlin-bit/mech-b
 
 Two steps, in order. Do not start a new behavior change until PR #7 is on `main`.
 
-**Step A — merge PR #7 (Build 3).** `main` is now `053f69b` (PR #8, PR #9, and Diego's bun-gate log). PR #7 (`build-3` @ `406ab9f6cb16c3f401646cd22930bceae7e93b3e`) is open and dirty against `main`. The likely conflict is `coord/log.md` only; `brain.ts` does not overlap those docs commits. Merge `main` into `build-3` (or rebase). Keep every log entry and leave them in time order: Fri 21:15 ET Build 3, then Fri 21:35 ET Grok brief, then Fri 21:40 ET D9, then Fri 21:40 ET bun offline gate. Do not drop any. Then merge PR #7 yourself (plan §4). That makes `main` match our best practice score (2.23, BB-955D92D8). The coordinator already submitted this commit by SHA, so the merge is for a clean parent, not for the score we already have.
+**Step A — done.** PR #7 (Build 3) is already merged into `main` by the coordinator; pull `main` before branching.
 
 **Step B — Build 5 survival half, not Build 4.** After PR #7 is merged, branch `build-5-survive` off that `main`. Parent commit: `406ab9f` (score 2.23). Change only files you own in plan §4: `brain.ts`, and `bot.ts` / `params.ts` / `map.ts` / `Dockerfile` only if this build requires it. Do not edit `nav.ts`, `tools/`, `EXPERIMENTS.md`, or the plan.
 

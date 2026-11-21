@@ -176,3 +176,9 @@ Format:
 - Result: 2.10 vs champion 5b 2.38 (−0.28), a loss. Board 11:36 PM ET: 110th of 142; 1st 5.58, 16th 4.75, 32nd 4.25.
 - Found: wider wall padding hurts (offline: more cut-off goals 210→230, more null paths); narrower routes/gaps matter. Nav changes (B10 −0.03, B11b −0.28) are not where the ceiling is. Five straight losses vs 5b: stop blind variants; next build comes from the root-cause audit + Diego/watcher evidence.
 - Blocked / next: RCA report (branch rca-report); public-match entry research.
+
+## Fri 23:45 ET · Grok · Diego back in the loop
+- Did: rewrote `coord/next-diego.md` as a catch-up + autonomous research loop (git pull, read state, one question per run, JSON intake PR every ~45 min).
+- Result: docs only.
+- Found: Diego's research lands via `research/intake/` PRs, which Grok merges and ingests each tick.
+- Blocked / next: Diego starts the loop on his machine (needs `gh` auth + push access).

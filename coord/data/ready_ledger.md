@@ -100,3 +100,7 @@ These were listed in the stub as “not eligible / do not submit.” They stay H
 | #130 P24 HEAL_COVER=2 | `184bc1c2ed` | Already site-tested 3.79, BB-BE220066, CLOSE. | Do not resubmit. Family parked (see HEAL_COVER=1). |
 | #134 P23b | `cf96cf514b` | Already site-tested 4.00, BB-AEFC0FA8, CLOSE. | Do not resubmit. Next farm path is P25. |
 | #135 B125 | `ec50d23285` | Already site-tested 3.50, BB-C6A19503, CLOSE. Held-out drop rings 6→1. | Do not resubmit the package. |
+
+## HOLD — new PRs (loop, 6:06 PM ET)
+- P26 healthy boost with reserve, PR #138, c566fbadf65372c0de70d2ccd02e8f4c91a29ef0: no paired screen vs 6182d29 yet. Owner: Mech Sim Tester. Next: full screen on both sets; novelty check against the loadout/upgrade-timing losses.
+- P27 mode 36 skip break-crossfire during drop runs, PR #137, 7df3a4a6: one-flag site SHA; no paired screen vs 6182d29 yet. Owner: Mech Sim Tester. Next: full screen on both sets.

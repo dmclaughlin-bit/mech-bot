@@ -61,3 +61,12 @@ Opening / first-30 s tweaks (seven 3.79 ties), upgrades, later aim tweaks, hold-
 
 - Sat Nov 21 10:47 PM ET: Codex reviewer UNAVAILABLE (codex-cli 0.171.0 installed, not logged in). REV-0002 on PR #129 11826ae vs champion 6182d29 recorded as status unavailable, verdict none (script exit 0 because codex_required=false; this is NOT a pass). Owner: Doug, who runs `codex login --device-auth` on the project computer. Closes when `codex login status` shows logged in and a completed review record exists.
 - Sat Nov 21 10:50 PM ET: Doug decided we will NOT use Codex. Codex review is retired from the workflow; REV-0002 stays as an unavailable record. Device sign-in was cancelled.
+
+
+## Hourly report, 5:00-6:00 PM ET (loop, 6:06 PM ET tick)
+1. Champion: B113 drop reach 200 m, 6182d29, 4.17 (BB-09AE8A68). Official gain since 12:00 PM ET: +0.38 (3.79 -> 4.17). Wins: 4 of 19 scored tests since noon (B103, P-B-001, P-D-003/B107, B113).
+2. Verified winners implemented: 4/4 (100%), all in champion history on main.
+3. Submissions with all required evidence before the click: 0/3 this hour (P24 5:15, P23b 5:24, B125 5:33, all before the 5:41 PM rules; P23b and P24 screen rows were recorded after their clicks, B125 has none). 0/0 submissions under the new rules so far.
+4. Slots: 3 of 6 used. Lost: 5:45 and 5:55 PM ET ticks had no READY build (zero fully screened builds); a third slot went unused. Ready next: none. P25 #136 (b34271c) finished its full screen but is HOLD on a 21 s pin caused by the change (seed 3043); the Builder is fixing it and an exception needs Doug's yes. P26 #138 (c566fba) and P27 mode 36 #137 (7df3a4a) are new, not screened yet.
+5. Decision that changed: the B125 package loss (3.50) retired bundled tactic packages; one change per build only.
+Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 against the current champion (3 ties at 4.17). Planning prior for the next test: about 15%.

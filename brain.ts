@@ -138,6 +138,12 @@ const LATE_LIGHT_ON = true
  * normal target code then fires the lightning. Not a walk-in (H1's walk-in screened -0.109). Engage, the hurt retreat,
  * zone travel, the laser walks and the crossfire break all rank first. false = champion. */
 const LIGHT_AMBUSH_ON = true
+/** Build 106 (P-B-003): the Build 103 ambush also runs for a holder of lightning AND a laser while that laser cannot
+ * fire or charge (cooling down, shorted by a lightning hit, or just equipped: cooldown > 0 and no charge in
+ * progress). In PR #94, 37% of the 45 to 90 m standoff decisions were skipped only because we also held a laser. A
+ * laser that can charge, or is charging, still fights at range as before. Every other Build 103 condition is kept.
+ * false = Build 103 (main). */
+const AMBUSH_WITH_LASER_ON = true
 /** Build 103: the far edge (m) of the standoff band the ambush answers. */
 const AMBUSH_MAX_M = 90
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
@@ -684,7 +690,8 @@ function buildBot(hello: Hello): Bot {
       else farmChase = null
       // Build 103: the ambush is for a lightning holder without a laser (a laser fights at range anyway).
       const arcHeld = LIGHT_AMBUSH_ON ? me.weapons.find((w) => w?.kind === "lightning") : undefined
-      const ambushArc = !!arcHeld && !me.weapons.some((w) => w?.kind === "laser")
+      // Build 106: or with a laser that is not ready (cooling down and not charging).
+      const ambushArc = !!arcHeld && !me.weapons.some((w) => w?.kind === "laser" && !(AMBUSH_WITH_LASER_ON && w.cooldown > 0 && (w.charge ?? 0) <= 0))
       const arcReach = Number(arcHeld?.stats.range ?? baseReach.lightning)
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]

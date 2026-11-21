@@ -140,3 +140,26 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P26 (healthy boost with reserve): on a long healthy leg to the next circle ("to next circle") or to a called supply
+ * drop ("drop, run"), run at boost speed instead of walking, but only while energy stays above a reserve so a fight
+ * that follows still has energy for lightning, a jet or a retreat boost. It fires only when all of these hold:
+ *   - healthy: HP at or above HEALTHY_BOOST_HP of max and not hurt in the Build 19 sense (HP at or above retreatHp
+ *     and no damage of any kind for NO_SNEAK_QUIET_S), so the silent-step cap is already off and boost never overrides it;
+ *   - not engaged: the leg is one of those two modes (engage, retreat, crossfire, ambush and standoff are other modes)
+ *     and no enemy mech we know of has line of sight to us;
+ *   - long leg: the remaining nav path to the leg's goal is longer than HEALTHY_BOOST_M (m);
+ *   - on the ground (boost in the air is a jet, which this does not want), and energy above HEALTHY_BOOST_RESERVE of max.
+ * When and where the bot travels is unchanged: leave-now, drop timing and the paths are the champion's. Existing boosts
+ * (zone escape, late for the shrink, retreats, crossfire, stuck jet) are unchanged. Evidence: Watcher Top-16 teams boost
+ * on 8.1% of healthy, not-engaged ticks vs 1.8% for the bottom four (coord/data/watcher/SKILLS.md idea 3).
+ * false = champion behavior exactly.
+ */
+export const HEALTHY_BOOST_ON = true
+/** Healthy = HP at or above this fraction of max. */
+export const HEALTHY_BOOST_HP = 0.6
+/** Boost only while energy is above this fraction of max (the escape reserve). */
+export const HEALTHY_BOOST_RESERVE = 0.5
+/** Long leg = remaining nav path to the goal longer than this (m). */
+export const HEALTHY_BOOST_M = 60

@@ -26,6 +26,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  FINISH_BURST_LASER_S, FINISH_BURST_ON, FINISH_BURST_RELOAD_S,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -341,6 +342,26 @@ function buildBot(hello: Hello): Bot {
     }
     return best * cubeDamage(me.cubes)
   }
+  /** P-D-004 (finish burst): the damage every held weapon that reaches `d` m can put out in one burst, summed. Gun: the
+   * rounds loaded (a full magazine when a reload ends within FINISH_BURST_RELOAD_S); laser: one full shot when it can
+   * start charging within FINISH_BURST_LASER_S; lightning: what our energy pays for; any other weapon one shot, as in
+   * ourMagazine. The cube bonus is applied once. */
+  function ourBurst(me: Observation["self"], d: number): number {
+    let sum = 0
+    for (const w of me.weapons) {
+      if (!w) continue
+      const stats = { ...cfg.weapons[w.kind], ...w.stats }
+      if (weaponReach(w.kind, stats) < d) continue
+      let shots = 1
+      if (w.kind === "gun") {
+        const reload = w.reload ?? 0
+        shots = reload > 0 && reload <= FINISH_BURST_RELOAD_S ? (stats.mag ?? 1) : (w.ammo ?? stats.mag ?? 1)
+      } else if (w.kind === "laser") shots = w.cooldown <= FINISH_BURST_LASER_S ? 1 : 0
+      else if (w.kind === "lightning") shots = Math.floor(me.energy / (stats.energy || 1))
+      sum += finite(stats.damage * shots)
+    }
+    return sum * cubeDamage(me.cubes)
+  }
   /** Build 14: what an enemy `d` m away deals per second: each weapon it is seen holding that reaches us, × the same hit-rate guess as ours, × its cube bonus. */
   function enemyDps(e: { weapons?: WeaponKind[]; cubes?: number }, d: number): number {
     let sum = 0
@@ -624,7 +645,7 @@ function buildBot(hello: Hello): Bot {
         // House bots hunt the weakest first as one squad with shared vision, so a low-HP commit draws the rest.
         if (me.hp >= ENGAGE_FINISH_HP * me.max_hp)
           pick = threats
-            .filter((e) => e.hp !== undefined && rested(e.id) && alone(e.id) && e.hp <= ourMagazine(me, flat(e.pos, me.pos)) && outlive(e))
+            .filter((e) => e.hp !== undefined && rested(e.id) && alone(e.id) && e.hp <= (FINISH_BURST_ON ? ourBurst : ourMagazine)(me, flat(e.pos, me.pos)) && outlive(e))
             .sort((a, b) => a.hp! - b.hp!)[0]
         // TTK rule: where the HP retreat would trigger, with exactly one threat and it in sight, fight on if we kill it first.
         if (!pick && hurt && los.length === 1 && los[0].hp !== undefined && alone(los[0].id) && rested(los[0].id)) {

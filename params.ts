@@ -61,6 +61,22 @@ export const ENGAGE_ON = true
 export const ENGAGE_FINISH_HP = 0.35
 
 /**
+ * P-D-004 (finish burst): the finish rule compares the target's HP with the combined burst of every held weapon that
+ * reaches it, not with the best single weapon's magazine. Burst = sum over weapons in reach of: gun, the rounds loaded
+ * × damage (a full magazine when a reload ends within FINISH_BURST_RELOAD_S); laser, one full shot when its cooldown
+ * is at most FINISH_BURST_LASER_S; lightning, what our energy pays for (as before); the cube bonus applied once. A
+ * gun + laser holder then commits on a lone target up to 540 + 315 = 855 HP instead of 540. A gun low on rounds counts
+ * only what is loaded, so it commits on less than before. The other finish guards are unchanged: our HP at least
+ * ENGAGE_FINISH_HP, no second enemy seeing or hitting us, ttk < ttd, and the give-up rest. 0 = champion behavior
+ * exactly (best single weapon's full magazine).
+ */
+export const FINISH_BURST_ON: number = 1
+/** Finish burst: a gun reload ending within this long (s) counts as a full magazine. */
+export const FINISH_BURST_RELOAD_S = 1
+/** Finish burst: the laser counts when its cooldown is at most this long (s). */
+export const FINISH_BURST_LASER_S = 0.5
+
+/**
  * Build 17 (early arm-up): in the first LASER_RUSH_S seconds, while we hold no laser, walk at full speed along a nav
  * path to a laser pickup we see or remember (pickups are listed only while in view), and while we hold only the gun
  * to a lightning too (a laser comes first), when all of these hold:

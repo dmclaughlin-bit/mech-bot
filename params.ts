@@ -122,7 +122,7 @@ export const NO_SNEAK_QUIET_S = 3
  * retreat uses) and a hideSpot within 3 s inside the circle we keep to exists, so walk there first, firing as usual,
  * and stand once unseen. No spot = stand and shoot as today. Zone, engage, retreat, drops, farm and healthy hold are unchanged.
  */
-export const HEAL_COVER = 2
+export const HEAL_COVER = 1
 
 /**
  * P-B-001 (standoff break): after STANDOFF_BREAK_S seconds of match time, stop sitting in a heal or hold standoff

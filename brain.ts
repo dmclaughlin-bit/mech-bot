@@ -17,12 +17,14 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 27 (strafe): where we would stand still with a line to an enemy, walk side to side across the main threat (STRAFE_HOLD_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STRAFE_HOLD_ON, STRAFE_LEDGE_M,
+  STRAFE_MAX_S, STRAFE_MIN_S, STRAFE_PROBE_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -249,6 +251,14 @@ function buildBot(hello: Hello): Bot {
   let lastDamaged = -Infinity
   let farmChase: { id: number; since: number } | null = null
   const farmGiveUp = new Set<number>()
+  /** Build 27 (strafe): which side we walk (+1 left of the threat, -1 right), when we next reverse, and the LCG state (seeded from hello). */
+  let strafeSide = 1
+  let strafeFlip = -Infinity
+  let strafeRng = (Number(hello.seed) * 2654435761 + hello.slot * 40503 + 1) >>> 0
+  const strafeDraw = () => {
+    strafeRng = (Math.imul(strafeRng, 1664525) + 1013904223) >>> 0
+    return STRAFE_MIN_S + (STRAFE_MAX_S - STRAFE_MIN_S) * (strafeRng / 4294967296)
+  }
   /** Build 14 (engage): each weapon's DPS and reach from hello.config, read once here. */
   const baseDps = {} as Record<WeaponKind, number>
   const baseReach = {} as Record<WeaponKind, number>
@@ -732,6 +742,43 @@ function buildBot(hello: Hello): Bot {
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
       if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      // Strafe (Build 27, STRAFE_HOLD_ON): standing still in hold, heal or a clear-line engage, walk at full walk speed
+      // across the main threat's line, reversing at random 1-3 s intervals, inside the kept circle and clear of walls and
+      // ledges. Unlike Wild Sim's 'strafe' (hold only, against our target inside 150 m, a fixed 1.5 s clock, zone check only,
+      // blind to laser charge and walls), this keys on who is shooting us, covers heal and engage too, reverses at
+      // unpredictable times, and checks walls, ledges and our laser charge.
+      const charging = me.weapons.some((w) => w?.kind === "laser" && (w.charge ?? 0) > 0)
+      const still = mode === "hold" || mode === "heal" || (!!engage?.clear && mode === `engage, ${engage.why}`)
+      if (STRAFE_HOLD_ON && still && move[0] === 0 && move[1] === 0 && !boost && me.in_zone && !leaveNow && !charging) {
+        let hitter: { pos: Vec3 } | undefined, hitT = -Infinity
+        for (const [id, t] of mechHitBy) {
+          const at = enemies.find((e) => e.id === id) ?? known.get(id)
+          if (obs.t - t < THREAT_HIT_S && t > hitT && at) [hitter, hitT] = [at, t]
+        }
+        const threat = hitter ?? threats.find((e) => seenAt(me.pos, myHeight, [e], false))
+        if (threat) {
+          const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + myHeight / 2]
+          const across = yawTo(me.pos, threat.pos) + Math.PI / 2
+          const open = (side: number) => {
+            const x = me.pos[0] + side * Math.cos(across) * walkSpeed * STRAFE_PROBE_S
+            const y = me.pos[1] + side * Math.sin(across) * walkSpeed * STRAFE_PROBE_S
+            if (Math.hypot(x - zoneKeep[0][0], y - zoneKeep[0][1]) > zoneKeep[1]) return false
+            const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+            if (g === -Infinity || Math.abs(g - me.pos[2]) >= STRAFE_LEDGE_M) return false
+            return clearLine(solids, from, [x, y, g + myHeight / 2], 0, 0)
+          }
+          // Reverse on the random clock, and again (or instead) when the side we would walk is blocked.
+          for (const due of [obs.t >= strafeFlip, false])
+            if (due || !open(strafeSide)) {
+              strafeSide = -strafeSide
+              strafeFlip = obs.t + strafeDraw()
+            }
+          if (open(strafeSide)) {
+            move = [strafeSide * Math.cos(across), strafeSide * Math.sin(across)]
+            mode = `${mode}, strafe`
+          }
+        }
+      }
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

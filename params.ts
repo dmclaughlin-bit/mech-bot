@@ -113,3 +113,21 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 27 (strafe while holding a clear line): where we would otherwise stand still in hold, heal or engage with a
+ * clear line, walk at full walk speed perpendicular to the main threat (the enemy mech that damaged us in the last
+ * 2 s if we know where it is, else the nearest visible enemy mech with a line to us), reversing every STRAFE_MIN_S to
+ * STRAFE_MAX_S at random (an LCG seeded from hello.seed, so runs are reproducible). House bots lead linearly, so an
+ * unpredictable change of lateral direction makes their shots miss. A step that would leave the circle we keep to,
+ * hit a wall or drop off a ledge reverses instead; both sides blocked stands still. Never while leaving for the next
+ * circle, retreating, boosting or charging our laser. Set STRAFE_HOLD_ON to false to roll back to Build 17 (main) behavior exactly.
+ */
+export const STRAFE_HOLD_ON = true
+/** Reverse after a random time (s) between these two, drawn again at each reversal. */
+export const STRAFE_MIN_S = 1
+export const STRAFE_MAX_S = 3
+/** Look this far ahead (s of walking) for the circle edge, walls and ledges. */
+export const STRAFE_PROBE_S = 1
+/** A ground step this tall (m) or more along the probe counts as a ledge (the arm-up rush uses 4 m for "on a roof"). */
+export const STRAFE_LEDGE_M = 4

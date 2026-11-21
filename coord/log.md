@@ -269,3 +269,6 @@ Commit 8887d80c4815d67c91ebe49b5e0c888c0ec089c3, receipt BB-340B47F3, submitted 
 
 ## Sat 00:50 ET · Grok · Lanes split by part of the bot
 Doug approved: Lane A = movement (nav/map/positioning), Lane B = combat (target/aim/weapons/upgrades). New lane builds start from latest main; after a keep the other lane rebases (no file overlap). Sim PR #29 merged as a pre-screen only (Build 14: 2.42 sim vs 2.88 site; Build 16: 2.63 vs 2.98; right order, ~0.4 low, SE 0.3).
+
+## Sat 00:52 ET · Grok · Build 15 (aim lead) result
+3359e29 scored 2.65 (BB-E5918214, 12:47 AM), below the champion's 2.98 → not kept, PR #27 closed. Board: we're 111/164; rank 1 is 5.58, rank 16 is 5.04, rank 32 is 4.54. Next slot is ~1:12 AM for B17.

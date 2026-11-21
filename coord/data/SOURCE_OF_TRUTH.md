@@ -6,6 +6,7 @@ Related data: `screens.csv` (sim screens), `hazard_screens.csv` (Wild Sim), `pos
 
 | Submitted (ET) | Build | Change | Family | Champion then | Site | Delta | Verdict | Receipt |
 |---|---|---|---|---|---|---|---|---|
+| 2026-11-21 15:07 ET | P20 | P20 drop run when hurt and unseen, on 4.17 main | drops | 4.17 | 4.17 | +0.00 | CLOSE | BB-36A427E0 |
 | 2026-11-21 14:57 ET | B118 | B118 drop reach DROP_RUN_M 200 -> 260, on 4.17 main | drops | 4.17 | 4.17 | +0.00 | CLOSE | BB-BAC9670C |
 | 2026-11-21 14:54 ET | B115 | B115 drop-run arrival lead 5 -> 10 s, on 4.17 main | drops | 4.17 | 4.13 | -0.04 | CLOSE | BB-D76FEDCF |
 | 2026-11-21 14:40 ET | B113 | B113 drop reach DROP_RUN_M 150 -> 200, on 4.10 drop-run main | drops | 4.10 | 4.17 | +0.07 | KEEP | BB-09AE8A68 |
@@ -81,7 +82,7 @@ Related data: `screens.csv` (sim screens), `hazard_screens.csv` (Wild Sim), `pos
 | opening | 6 | 0 |
 | aim | 4 | 1 |
 | crossfire | 3 | 1 |
-| drops | 5 | 2 |
+| drops | 6 | 2 |
 | farm | 2 | 2 |
 | standoff | 2 | 1 |
 | upgrades | 1 | 0 |

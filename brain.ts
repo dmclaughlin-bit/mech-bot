@@ -160,7 +160,7 @@ const EV_STRAFE = EVADE_MODE === 1 || EVADE_MODE === 2 || EVADE_MODE === 3 || EV
 const EV_JITTER = EVADE_MODE === 2 || EVADE_MODE === 6
 const EV_ORBIT = EVADE_MODE === 3 || EVADE_MODE === 6
 const EV_DODGE = EVADE_MODE === 4 || EVADE_MODE === 6
-const EV_SLIDE = EVADE_MODE === 5 || EVADE_MODE === 6
+const EV_SLIDE = EVADE_MODE === 5 || EVADE_MODE === 6 || [30, 31, 32, 34, 35, 40, 41].includes(EVADE_MODE)
 /** P-B-008: a standing gunfight is against an enemy with a clear line within this distance (m), or one that hit us in the last THREAT_HIT_S, or one charging a laser. */
 const EVADE_RANGE_M = 160
 /** P-B-008: every evasion step is checked this far ahead (s of walking, at least EVADE_LOOK_MIN_M) against walls, the zone and the shot. */
@@ -184,6 +184,60 @@ const SLIDE_TURNS = [0.5, 1.0, 1.5]
 const SLIDE_MODES = new Set(["retreat to cover", "retreat", "break crossfire", "lightning ambush", "heal, hiding", "loot", "hide"])
 /** P-B-008: aim from where our muzzle will be when the action lands: our velocity x this (s). The same 1 to 2 tick guess as LASER_LEAD_S. */
 const AIM_LAG_S = 0.075
+
+/** P-B-008 iteration 3 (EVADE_MODE 30–39, see params.ts). Each flag says which piece a mode turns on. All false below 30. */
+const EV3 = EVADE_MODE >= 30
+/** 30, and every mode built on it: slide around cover (mode 5's code) with a commitment timer and an oscillation breaker,
+ * jump + jet over what the nav would get stuck on (energy reserve kept), sprint to the next circle when energy allows. */
+const EV3_PATH = [30, 31, 32, 34, 35, 40, 41].includes(EVADE_MODE)
+/** 31, 32, 34: calibrated strafe, only in danger, only where the champion would stand. */
+const EV3_STRAFE = [31, 32, 34, 41].includes(EVADE_MODE)
+/** 32, 34: boost (sprint) during the danger strafe when energy is above SPRINT_RESERVE. */
+const EV3_SPRINT = [32, 34, 41].includes(EVADE_MODE)
+/** 34: a short jump at a strafe reversal in danger. */
+const EV3_HOP = EVADE_MODE === 34 || EVADE_MODE === 41
+/** 35: outnumbered escape (on 30): 2+ attackers and no drop run/hold → cover or away, sprinting and jetting. */
+const EV3_ESCAPE = EVADE_MODE === 35
+/** 36 (and 40 = 30 + 36, 41 = 34 + 36): an active drop run or ring hold is not dropped for "break crossfire" unless a mech hit us in the last XFIRE_HIT_S. */
+const EV3_XFIRE_COMMIT = [36, 40, 41].includes(EVADE_MODE)
+/** 37: literal torso sway in danger (champion movement). 38: front-arc discipline (champion movement). */
+const EV3_SWAY = EVADE_MODE === 37
+const EV3_ARC = EVADE_MODE === 38
+/** 39 (Grok addendum): champion, with the 5 m/s silent cap lifted while hurt with an enemy seen within KITE_M in the last memory window. */
+const EV3_KITE = EVADE_MODE === 39
+/** Danger (rule 6): an enemy with a line on us inside its weapon's reach whose aim is within this angle (rad) of us. */
+const DANGER_AIM_RAD = 0.35
+/** Calibrated strafe timer: T = (d / gun speed + 0.1) × Uniform(0.8, 1.4), clamped to [0.20, 0.40] s. */
+const STRAFE_T_MIN = 0.2
+const STRAFE_T_MAX = 0.4
+/** Energy reserves (fraction of max): sprint in danger, a hop in danger, the zone sprint, the outnumbered escape's boost. */
+const SPRINT_RESERVE = 0.5
+const HOP_RESERVE = 0.6
+const HOP_GAP_S = 1.5
+const ZONE_SPRINT_RESERVE = 0.5
+const ESCAPE_BOOST_RESERVE = 0.2
+/** Jet over an obstacle: start only with this much energy (absolute), jet while airborne for at most JET_HOLD_S, stop at JET_MIN. */
+const JET_RESERVE = 40
+const JET_MIN = 15
+const JET_HOLD_S = 1.2
+/** Slide commitment: keep a slid heading this long (s) unless its own next step is blocked. */
+const SLIDE_COMMIT_S = 0.6
+/** Oscillation breaker: over the last OSC_WIN_S, more than OSC_PATH_M of walking but under OSC_NET_M net → new movement off for OSC_OFF_S. */
+const OSC_WIN_S = 20
+const OSC_PATH_M = 120
+const OSC_NET_M = 15
+const OSC_OFF_S = 10
+/** Outnumbered escape: extra hiding distances (s of walking) tried when the champion's 1–3 s find nothing. */
+const ESCAPE_STEPS_S = [4, 6]
+/** Mode 36: "actually taking mech damage" = a mech damaged us within this many seconds. */
+const XFIRE_HIT_S = 2
+/** Mode 37: torso sway amplitude (rad) and period (s). 0.6 rad at 1.2 s peaks at 3.1 rad/s, inside turn_rate 4. */
+const SWAY_AMP = 0.6
+const SWAY_P = 1.2
+/** Mode 38: keep attackers within this half-angle (rad) of the torso yaw: the 90° half front arc minus a 15° margin. */
+const ARC_HALF = (75 * Math.PI) / 180
+/** Mode 39: an enemy seen within this distance (m). */
+const KITE_M = 120
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -346,6 +400,12 @@ function buildBot(hello: Hello): Bot {
   let evRing: { id: number; r: number } | null = null
   let slideSide = 1
   let evRand = (Number(hello.seed ?? 1) ^ 0x9e3779b9) | 0
+  /** P-B-008 iter 3: slide commitment, jet window, last hop, oscillation breaker (decision positions, cumulative path). */
+  let slideHold: { move: [number, number]; until: number } | null = null
+  let jetUntil = -Infinity
+  let lastHop = -Infinity
+  let ev3OffUntil = -Infinity
+  const oscLog: { t: number; x: number; y: number; path: number }[] = []
   const evRnd = () => {
     evRand = (evRand + 0x6d2b79f5) | 0
     let t = Math.imul(evRand ^ (evRand >>> 15), 1 | evRand)
@@ -464,10 +524,10 @@ function buildBot(hello: Hello): Bot {
    */
   function hideSpot(
     me: Observation["self"], height: number, walk: number, threats: { pos: Vec3; aim: [number, number]; cubes?: number }[],
-    cone: boolean, keepIn: [number[], number], timeOk: () => boolean,
+    cone: boolean, keepIn: [number[], number], timeOk: () => boolean, steps: number[] = HIDE_STEPS_S,
   ): Vec3 | null {
     const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
-    for (const s of HIDE_STEPS_S) {
+    for (const s of steps) {
       for (let b = 0; b < HIDE_BEARINGS; b++) {
         if (!timeOk()) return null
         const yaw = (2 * Math.PI * b) / HIDE_BEARINGS
@@ -796,7 +856,7 @@ function buildBot(hello: Hello): Bot {
       } else if (leaveNow) {
         const go = trip ?? travel(me.pos, entry, obs.t, canPlan())
         move = go.move
-        boost = go.dist / walkSpeed > timeLeft
+        boost = go.dist / walkSpeed > timeLeft || (EV3_PATH && obs.t >= ev3OffUntil && me.energy >= ZONE_SPRINT_RESERVE * me.max_energy)
         mode = "to next circle"
       } else if (engage) {
         // Engage (F1, Build 14): fight on instead of the HP retreat. Hold the line of fire, and close in along a path
@@ -839,12 +899,14 @@ function buildBot(hello: Hello): Bot {
         // Early arm-up (Build 17): full walk speed (steps carry only 40 m), no boost. Walking does not stop regen.
         move = rushMove
         mode = "laser rush"
-      } else if (CROSSFIRE_ON && (spot = (() => {
+      } else if (CROSSFIRE_ON && !(EV3_XFIRE_COMMIT && (dropMove || dropHold) && ![...mechHitBy.values()].some((t) => obs.t - t < XFIRE_HIT_S)) && (spot = (() => {
+        // P-B-008 mode 36: an active drop run / ring hold keeps going while 2+ enemies only see us (no mech hit for
+        // XFIRE_HIT_S); the drop itself already requires HP above the retreat line and a zone-safe, reachable ring.
         const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
         return los.length >= 2 ? hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan) : null
       })())) {
         move = heading(spot)
-        boost = me.energy > 0.3 * me.max_energy
+        boost = me.energy > (EV3_ESCAPE ? ESCAPE_BOOST_RESERVE : 0.3) * me.max_energy
         mode = "break crossfire"
       } else if (LIGHT_AMBUSH_ON && ambushArc && (spot = (() => {
         // Build 103 (H1): one enemy sees us from beyond lightning range but inside the standoff band: step out of its
@@ -912,6 +974,42 @@ function buildBot(hello: Hello): Bot {
       }
       // P-B-008 (EVADE_MODE, params.ts): movement only. Everything above has already chosen what to do; this replaces a
       // standing gunfight's [0, 0], bends a close already under way, or steers a straight-line move around a wall.
+      // P-B-008 iteration 3: the drop modes no new movement may touch, danger (rule 6), and the oscillation breaker.
+      const dropMode = mode === "drop, run" || mode === "drop, hold"
+      type Seen = (typeof threats)[number]
+      let dangerMemo: { on: boolean; foe: Vec3 | null; los: Seen[]; hitters: number[]; charger: Seen | undefined } | null = null
+      const danger = () => {
+        if (dangerMemo) return dangerMemo
+        const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        const hitters: number[] = []
+        for (const [id, t] of mechHitBy) if (obs.t - t < THREAT_HIT_S) hitters.push(id)
+        const reachOf = (e: Seen) => Math.max(...(e.weapons?.length ? e.weapons : (["gun"] as WeaponKind[])).map((k) => baseReach[k] || 0))
+        const aimed = (e: Seen) => Math.abs(wrap(yawTo(e.pos, me.pos) - e.aim[0])) < DANGER_AIM_RAD
+        const shooting = los.filter((e) => flat(e.pos, me.pos) <= reachOf(e) && (aimed(e) || hitters.includes(e.id) || !!e.charging))
+        const beamReach = Number(cfg.weapons.laser?.range ?? 280)
+        const charger = los.find((e) => !!e.charging && flat(e.pos, me.pos) <= beamReach && Math.abs(wrap(yawTo(e.pos, me.pos) - e.aim[0])) < DODGE_AIM_RAD)
+        const recentHit = !!lastHit && obs.t - lastHit.t < THREAT_HIT_S && hitters.length > 0
+        const on = shooting.length > 0 || los.length >= 2 || (me.hp < RETREAT_HP * me.max_hp && los.length > 0) || recentHit
+        let foe: Vec3 | null = null
+        if (on) {
+          const e = charger ?? shooting[0] ?? los[0]
+          if (e) foe = e.pos
+          else if (lastHit) foe = [me.pos[0] + 60 * Math.cos(lastHit.bearing), me.pos[1] + 60 * Math.sin(lastHit.bearing), me.pos[2]]
+        }
+        dangerMemo = { on, foe, los, hitters, charger }
+        return dangerMemo
+      }
+      if (EV3_PATH) {
+        const last = oscLog[oscLog.length - 1]
+        oscLog.push({ t: obs.t, x: me.pos[0], y: me.pos[1], path: last ? last.path + Math.hypot(me.pos[0] - last.x, me.pos[1] - last.y) : 0 })
+        while (oscLog.length && obs.t - oscLog[0].t > OSC_WIN_S) oscLog.shift()
+        const a = oscLog[0], b = oscLog[oscLog.length - 1]
+        if (b.t - a.t >= OSC_WIN_S - 0.5 && b.path - a.path > OSC_PATH_M && Math.hypot(b.x - a.x, b.y - a.y) < OSC_NET_M) {
+          ev3OffUntil = obs.t + OSC_OFF_S
+          oscLog.length = 0
+        }
+      }
+      const ev3On = EV3 && obs.t >= ev3OffUntil
       let evading = false
       let evFoe: Vec3 | null = null
       if (EVADE_MODE > 0) {
@@ -929,6 +1027,46 @@ function buildBot(hello: Hello): Bot {
           evDir = -evDir
           evFlipAt = obs.t + EVADE_JITTER_MIN_S + evRnd() * (EVADE_JITTER_MAX_S - EVADE_JITTER_MIN_S)
         }
+        // Outnumbered escape (mode 35, on 30): 2+ attackers (line on us or a hit in the last 2 s), no drop run or hold, and
+        // the champion would hold, heal, hide, ambush or close a standoff (its crossfire break found no cover in 1–3 s of
+        // walking): cover 4–6 s away, else away from the attackers (DPS-weighted) leaning to the circle, boosting.
+        if (EV3_ESCAPE && ev3On && !dropMode && me.in_zone && !leaveNow &&
+          (mode === "hold" || mode === "heal" || mode === "heal, hiding" || mode === "hide" || mode === "engage, standoff" || mode === "lightning ambush")) {
+          const dg = danger()
+          const ids = new Set([...dg.los.map((e) => e.id), ...dg.hitters])
+          if (ids.size >= 2) {
+            const atk = threats.filter((e) => ids.has(e.id))
+            const far = atk.length ? hideSpot(me, myHeight, walkSpeed, atk, false, zoneKeep, canPlan, ESCAPE_STEPS_S) : null
+            let go: [number, number] | null = null
+            if (far) go = heading(far)
+            else if (atk.length) {
+              let ax = 0, ay = 0
+              for (const e of atk) {
+                const d = flat(e.pos, me.pos) || 1, w = enemyDps(e, d) || 1
+                ax += ((me.pos[0] - e.pos[0]) / d) * w
+                ay += ((me.pos[1] - e.pos[1]) / d) * w
+              }
+              const n = Math.hypot(ax, ay) || 1
+              ax /= n
+              ay /= n
+              const kx = zoneKeep[0][0] - me.pos[0], ky = zoneKeep[0][1] - me.pos[1], kn = Math.hypot(kx, ky) || 1
+              const edge = clamp((kn - (zoneKeep[1] - 40)) / 40, 0, 1)
+              ax += 1.5 * edge * (kx / kn)
+              ay += 1.5 * edge * (ky / kn)
+              const m = Math.hypot(ax, ay) || 1
+              for (const a of [0, 0.5, -0.5, 1.0, -1.0, 1.5, -1.5]) {
+                const [ux, uy] = turn(ax / m, ay / m, a)
+                if (stepOk(ux, uy)) { go = [ux, uy]; break }
+              }
+            }
+            if (go) {
+              move = go
+              spot = far
+              boost = me.energy > ESCAPE_BOOST_RESERVE * me.max_energy
+              mode = "escape, outnumbered, ev"
+            }
+          }
+        }
         const still = move[0] === 0 && move[1] === 0
         const standing = still && (mode === "engage, ttk" || mode === "engage, finish" || mode === "heal" || mode === "hold")
         // The foe of a standing gunfight: the engaged enemy, else the nearest enemy mech we have a clear line to that is close, hitting us, or charging.
@@ -938,6 +1076,62 @@ function buildBot(hello: Hello): Bot {
           foe = threats.find((e) =>
             (flat(e.pos, me.pos) <= EVADE_RANGE_M || obs.t - (mechHitBy.get(e.id) ?? -Infinity) < THREAT_HIT_S || !!e.charging) && clearLine(solids, muzzle, centerOf(e)))
         if (!foe) evRing = null
+        // Calibrated danger strafe (modes 31, 32, 34): only where the champion would stand (an engage, heal or hold), only
+        // in danger, never in a drop run or hold. A laser charging at us: step to cover or off the beam, not the gun timer.
+        if (EV3_STRAFE && ev3On && standing && !dropMode) {
+          const dg = danger()
+          if (dg.on && dg.foe) {
+            if (dg.charger) {
+              const cover = hideSpot(me, myHeight, walkSpeed, [dg.charger], false, zoneKeep, canPlan)
+              if (cover && nav.open(me.pos, cover)) {
+                move = heading(cover)
+                evading = true
+              } else {
+                const a = yawTo(dg.charger.pos, me.pos)
+                for (const side of [evDir, -evDir]) {
+                  const [ux, uy] = turn(Math.cos(a), Math.sin(a), (side * Math.PI) / 2)
+                  if (!stepOk(ux, uy)) continue
+                  evDir = side
+                  move = [ux, uy]
+                  evading = true
+                  break
+                }
+              }
+            } else {
+              const d = flat(dg.foe, me.pos) || 1
+              const ux = (dg.foe[0] - me.pos[0]) / d, uy = (dg.foe[1] - me.pos[1]) / d
+              let flipped = false
+              if (obs.t >= evFlipAt) {
+                evDir = -evDir
+                flipped = true
+                const speed = Number(cfg.weapons.gun?.speed ?? 252)
+                evFlipAt = obs.t + clamp((d / speed + 0.1) * (0.8 + 0.6 * evRnd()), STRAFE_T_MIN, STRAFE_T_MAX)
+                // Toward room: keep the new side only if it has twice the look distance clear, or the other side has not.
+                if (!stepOk(-uy * evDir, ux * evDir, 2 * lookM) && stepOk(uy * evDir, -ux * evDir, 2 * lookM)) evDir = -evDir
+              }
+              const aim0 = engage?.clear ? centerOf(engage.m) : null
+              for (const side of [evDir, -evDir]) {
+                const sx = -uy * side, sy = ux * side
+                if (!stepOk(sx, sy)) continue
+                // In an engage, the step keeps the shot we have now.
+                if (aim0 && !clearLine(solids, [muzzle[0] + sx * lookM, muzzle[1] + sy * lookM, muzzle[2]], aim0)) continue
+                evDir = side
+                move = [sx, sy]
+                evading = true
+                break
+              }
+              if (evading && flipped && EV3_HOP && me.grounded && me.energy >= HOP_RESERVE * me.max_energy && obs.t - lastHop > HOP_GAP_S) {
+                act.jump = true
+                lastHop = obs.t
+              }
+            }
+            if (evading) {
+              evFoe = dg.foe
+              mode = `${mode}, ev`
+              if (EV3_SPRINT && me.energy > SPRINT_RESERVE * me.max_energy) boost = true
+            }
+          }
+        }
         // Dodge (variant 4): a mortar shell about to land on us, or a laser charging along our bearing.
         if (EV_DODGE && standing) {
           const mortar = cfg.weapons.mortar ?? {}
@@ -1036,11 +1230,15 @@ function buildBot(hello: Hello): Bot {
         // Slide around cover (variant 5): a straight-line move whose next step is blocked follows the nav path to its
         // goal, else turns to the first open heading. Moves along a found nav path are left alone.
         const len = Math.hypot(move[0], move[1])
-        if (EV_SLIDE && !evading && len > 0.05 && (SLIDE_MODES.has(mode) || (!!route && !route.found)) && nav.standable(me.pos)) {
+        const slideMode = SLIDE_MODES.has(mode) || mode.startsWith("escape")
+        if (EV_SLIDE && (!EV3 || ev3On) && !evading && len > 0.05 && (slideMode || (!!route && !route.found)) && nav.standable(me.pos)) {
           const ux = move[0] / len, uy = move[1] / len
           const ahead = (x: number, y: number) => nav.open(me.pos, [me.pos[0] + x * SLIDE_LOOK_M, me.pos[1] + y * SLIDE_LOOK_M, me.pos[2]])
-          if (!ahead(ux, uy)) {
-            const goal = SLIDE_MODES.has(mode) ? (spot ?? (mode === "loot" ? lootTarget : null)) : null
+          // Mode 30+: a slid heading is kept SLIDE_COMMIT_S (hysteresis) while its own next step stays open and it still goes our way.
+          const held = EV3_PATH && slideHold && obs.t < slideHold.until && slideHold.move[0] * ux + slideHold.move[1] * uy > 0 && ahead(slideHold.move[0], slideHold.move[1])
+          if (held) move = [slideHold!.move[0] * len, slideHold!.move[1] * len]
+          else if (!ahead(ux, uy)) {
+            const goal = slideMode ? (spot ?? (mode === "loot" ? lootTarget : null)) : null
             let done = false
             if (goal) {
               const go = travel(me.pos, goal, obs.t, canPlan())
@@ -1055,10 +1253,16 @@ function buildBot(hello: Hello): Bot {
                 if (!ahead(sx, sy)) continue
                 slideSide = side
                 move = [sx * len, sy * len]
+                if (EV3_PATH) slideHold = { move: [sx, sy], until: obs.t + SLIDE_COMMIT_S }
                 done = true
                 break
               }
               if (done) break
+            }
+            // Mode 30+: nothing open within 86°: jump and jet over it, if the energy reserve allows.
+            if (!done && EV3_PATH && me.grounded && me.energy >= JET_RESERVE) {
+              act.jump = true
+              jetUntil = obs.t + JET_HOLD_S
             }
           }
         }
@@ -1067,7 +1271,9 @@ function buildBot(hello: Hello): Bot {
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if (!evading && !noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      // P-B-008 mode 39: no cap while hurt with an enemy seen within KITE_M in the memory window (kite instead of creep).
+      const kite = EV3_KITE && [...known.values()].some((k) => obs.t - k.lastSeen <= (cfg.vision.memory_s ?? 5) && flat(k.pos, me.pos) <= KITE_M)
+      if (!evading && !noSneak && !kite && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && !mode.startsWith("escape") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {
@@ -1076,13 +1282,16 @@ function buildBot(hello: Hello): Bot {
         route = null
         // P-B-008: a strafe that ran into something turns around.
         if (evading) evDir = -evDir
+        // Mode 30+: keep jetting while airborne (up to JET_HOLD_S), not only on the next stuck call.
+        if (EV3_PATH && me.energy >= JET_RESERVE) jetUntil = obs.t + JET_HOLD_S
       }
+      if (EV3_PATH && !me.grounded && obs.t < jetUntil && me.energy > JET_MIN && Math.hypot(move[0], move[1]) > 0.05) boost = true
       let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
       // P-B-008: while evading, the torso stays on the foe (or where it points now), never on the move heading.
       if (evading || evFoe) aim = evFoe ? [yawTo(me.pos, evFoe), 0] : [me.aim[0], 0]
       // P-B-008: aim from where the muzzle will be when this action lands (our own motion). At 0 these are the champion's points.
-      const shotFrom: Vec3 = EVADE_MODE > 0 ? [muzzle[0] + me.vel[0] * AIM_LAG_S, muzzle[1] + me.vel[1] * AIM_LAG_S, muzzle[2]] : muzzle
-      const tubeFrom: Vec3 = EVADE_MODE > 0 ? [tube[0] + me.vel[0] * AIM_LAG_S, tube[1] + me.vel[1] * AIM_LAG_S, tube[2]] : tube
+      const shotFrom: Vec3 = EVADE_MODE > 0 && !EV3 ? [muzzle[0] + me.vel[0] * AIM_LAG_S, muzzle[1] + me.vel[1] * AIM_LAG_S, muzzle[2]] : muzzle
+      const tubeFrom: Vec3 = EVADE_MODE > 0 && !EV3 ? [tube[0] + me.vel[0] * AIM_LAG_S, tube[1] + me.vel[1] * AIM_LAG_S, tube[2]] : tube
 
       // Target: the nearest enemy mech with a clear shot, else the nearest one we know is there (Build 16 re-picks below).
       const slotOf = (kind: WeaponKind) => me.weapons.findIndex((w) => w?.kind === kind)
@@ -1275,6 +1484,40 @@ function buildBot(hello: Hello): Bot {
         if (g && (g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0) act.reload = true
       }
 
+      // P-B-008 mode 37 (Doug 3:11 PM, literal): in danger, sway the torso side to side around the aim; legs unchanged.
+      // Never in a drop run or hold. The hitbox is a vertical cylinder, so facing does not change it (see the writeup).
+      if (EV3_SWAY && !dropMode && danger().on) {
+        aim = [wrap(aim[0] + SWAY_AMP * Math.sin((2 * Math.PI * obs.t) / SWAY_P)), aim[1]]
+        mode = `${mode}, sway`
+      }
+      // P-B-008 mode 38: front-arc discipline. Keep every attacker (line on us, or hit us in the last 2 s) within ARC_HALF
+      // of the torso yaw, turning as little as possible from the aim the champion chose; when no single yaw covers them
+      // all, keep the highest-DPS one inside. Never in a drop run or hold.
+      if (EV3_ARC && !dropMode) {
+        const dg = danger()
+        const atk: { b: number; w: number }[] = []
+        for (const e of threats) {
+          if (!dg.los.includes(e) && !dg.hitters.includes(e.id)) continue
+          const d = flat(e.pos, me.pos)
+          atk.push({ b: yawTo(me.pos, e.pos), w: enemyDps(e, d) || 1e-3 })
+        }
+        // A hitter we cannot see: its remembered position, else the bearing of the last hit.
+        for (const id of dg.hitters) {
+          if (threats.some((e) => e.id === id)) continue
+          const k = known.get(id)
+          if (k && obs.t - k.lastSeen <= (cfg.vision.memory_s ?? 5)) atk.push({ b: yawTo(me.pos, k.pos), w: enemyDps(k, flat(k.pos, me.pos)) || 1e-3 })
+          else if (lastHit && obs.t - lastHit.t < 1) atk.push({ b: lastHit.bearing, w: 1e-3 })
+        }
+        if (atk.length && atk.some((x) => Math.abs(wrap(x.b - aim[0])) > ARC_HALF)) {
+          atk.sort((p, q) => q.w - p.w)
+          const top = atk[0].b
+          const off = atk.map((x) => wrap(x.b - top))
+          let lo = Math.max(...off) - ARC_HALF, hi = Math.min(...off) + ARC_HALF
+          if (lo > hi) { lo = -ARC_HALF; hi = ARC_HALF }
+          aim = [wrap(top + clamp(wrap(aim[0] - top), lo, hi)), aim[1]]
+          mode = `${mode}, arc`
+        }
+      }
       act.move = move
       act.boost = boost
       act.aim = [aim[0], clamp(aim[1], minPitch, maxPitch)]

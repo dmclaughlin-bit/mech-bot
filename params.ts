@@ -165,5 +165,23 @@ export const DROP_RUN_M = 200
  * to), keeps calling nav.stuck once per decision, aims from where the muzzle will be when the action lands (our own
  * velocity x AIM_LAG_S; the kit's projectiles fly straight at `speed` from the muzzle and the protocol gives them no
  * shooter velocity), and keeps the torso on the foe instead of the move heading. Never ship above 0 as a site default.
+ *
+ * Iteration 3 (sim-only, constants in brain.ts after AIM_LAG_S; no muzzle-aim correction in any of these). No new
+ * movement ever replaces "drop, run" or "drop, hold"; the strafe only replaces a stand-still in an engage, heal or hold.
+ *   30 = pathing: mode 5's slide with a 0.6 s commitment, an oscillation breaker (20 s with >120 m walked and <15 m net
+ *        turns the new movement off for 10 s), jump + jet over what the slide finds no way round (energy >= 40), keep
+ *        jetting after the unstick jump, and boost to the next circle while energy >= 50%.
+ *   31 = 30 + calibrated strafe in danger only: T = (d/252 + 0.1) x U(0.8, 1.4) clamped to 0.20-0.40 s; danger = an
+ *        enemy with a line on us inside its reach aiming at us / hitting us / charging, 2+ lines on us, a mech hit in
+ *        2 s, or low HP with a line on us. A laser charging at us: cover, else step off the beam.
+ *   32 = 31 + boost during that strafe while energy > 50%.
+ *   34 = 32 + a jump at a strafe reversal (energy >= 60%, at most every 1.5 s), plus 30's pathing jets.
+ *   35 = 30 + outnumbered escape: 2+ attackers and the champion would hold/heal/hide/ambush/standoff: cover 4-6 s away,
+ *        else away from the attackers (DPS-weighted) leaning to the circle; boost above 20% energy (crossfire too).
+ *   36 = champion + drop commitment: an active drop run or ring hold is not dropped for "break crossfire" unless a mech
+ *        damaged us in the last 2 s (HP above the retreat line and a reachable, zone-safe ring are already required).
+ *   37 = champion + literal torso sway in danger (+-0.6 rad, 1.2 s period). 38 = champion + front-arc discipline.
+ *   39 = champion with the silent cap lifted while hurt and an enemy seen within 120 m (Grok addendum).
+ *   40 = 30 + 36. 41 = 34 + 36.
  */
 export const EVADE_MODE: number = 0

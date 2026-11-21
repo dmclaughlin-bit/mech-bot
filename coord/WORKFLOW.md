@@ -1,10 +1,10 @@
 # Workflow (source of truth from Fri 22:45 ET, Nov 20)
 
-**The one goal:** every practice submission must beat our current best score. Target: above 32nd place (4.17 at 22:39 ET) by Sunday. Anything that does not raise damage dealt or survival time is deprioritized.
+**The one goal (updated Fri 23:47 ET by Doug):** each build is the system change with the LARGEST expected impact on total score, not a small tweak. Rank candidates by expected score gain (winner-vs-loser gap size × how many matches it affects × evidence confidence ÷ cost and risk), and build the top one. Prefer changes that close a big structural gap (e.g. a whole missing system such as cube economy or engagement decisions) over parameter nudges. Promotion rule unchanged: keep only if it beats the current best. Targets: above 32nd place (about 4.25) by Sun 11:00 AM ET; long-run 6.00.
 
 ```mermaid
 flowchart TD
-    GOAL["Every submission beats our best · target > 32nd place by Sunday"]
+    GOAL["Each build = the change with the largest expected score impact · keep only if it beats our best · target > 32nd place"]
     W["Live watcher (Grok's computer, nonstop)<br/>records top-team matches → /workspace/watch/findings.md"]
     D["Diego's Claude (light use, every few hours)<br/>outside research only → coord/research-ideas.md"]
     G["Grok (coordinator, every 15 min)<br/>picks ONE change from evidence"]

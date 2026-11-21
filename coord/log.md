@@ -467,3 +467,4 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 2026-11-21 15:47 ET: B117 loadout/HP matchup range (#123) 4.08, CLOSE (BB-A84FCC28), -0.09 vs 4.17. Champion stays B113 4.17. Next slot 3:54 PM ET: P21 #122.
 - 2026-11-21 16:05 ET: P21 contest lone drop (#122) 4.17 tie CLOSE (BB-1D97890A); B110 standoff break 90 s (#108) 3.96 CLOSE (BB-4E063E2E). Champion stays B113 4.17. Next slot 4:07 PM ET.
 - 2026-11-21 16:09 ET: B111 ambush far edge 100 m (#109) 4.10 CLOSE (BB-D985B698). Champion stays B113 4.17. Site slot counter now shows 6/hour (2 of 6 left at 4:05 PM ET).
+- 2026-11-21 17:18 ET Diego's Claude: sim effectiveness recommendation for Grok (Diego's ask): coord/audit/sim-effectiveness-recs-2026-11-21.md. Top pick: skip cross-component A* in geom.ts findPath (est. ~2x screens, exact), then --jobs 2x cores (+17% measured), --seed-base, kills_after_60 column, --vs paired line, SIM_HOUSE profiles. Docs only, nothing implemented.

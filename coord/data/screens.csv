@@ -50,3 +50,5 @@ B103,ed2cbbd06051c92a23c40a2ef2317576175e9ea2,4000+5000,14,6,3,+0.021,0.030,673,
 B104,60df7c079a1d9c14f82d22879d36c0b353e7aa57,2000+3000,3,0,3,-0.042,0.026,646,641,56,56,58,58,"PR #93 screen table (DROP_RUN_M=150), cited by PR #95 as the screen for this flag-on commit"
 B104,60df7c079a1d9c14f82d22879d36c0b353e7aa57,4000+5000,8,5,3,+0.026,0.023,677,685,56,56,76,76,"PR #93 screen table (DROP_RUN_M=150, held-out), cited by PR #95"
 B19,0905b70846c9a8ac1e7c984ce65a0a4788688d42,48-seed local model,,,,+0.46,0.36,,,,,,,"EXPERIMENTS.md B19 row: local 48-seed model, not the later paired method; 2.63 off, 3.08 on. Do not treat as a standard 192-game screen."
+B105,be767bb753572c0d7ff8d0d21ef1e2b0e38abf56,2000+3000,106,28,32,-0.182,0.127,643,609,56,57,,,"PR body (paired vs main B103 5b054c1, n=192, SEED_BASE 2000+3000, bun sim)"
+B105,be767bb753572c0d7ff8d0d21ef1e2b0e38abf56,4000+5000,102,22,32,-0.198,0.124,679,640,54,53,,,"PR body (paired vs main B103 5b054c1, n=192, held-out SEED_BASE 4000+5000, bun sim)"

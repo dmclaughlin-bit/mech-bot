@@ -16,7 +16,7 @@
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
-import { ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, TARGET_PICK_ON, params } from "./params.ts"
+import { ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, TARGET_PICK_ON, UPGRADE_ORDER_ON, params } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
@@ -99,12 +99,25 @@ const CLAIM_S = 12
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
 const MOBILITY = ["servos", "jets", "capacitor", "reactor"]
-function upgradeRank(id: string): number {
+const isWeaponUpgrade = (id: string) => /^(gun|laser|lightning|mortar)_/.test(id) || id === "gyros"
+function upgradeRankOld(id: string): number {
   const i = UPGRADE_FIRST.indexOf(id)
   if (i >= 0) return i
-  if (/^(gun|laser|lightning|mortar)_/.test(id) || id === "gyros") return 4
+  if (isWeaponUpgrade(id)) return 4
   if (MOBILITY.includes(id)) return 5
   return 6
+}
+/** Build 21: the first three, then weapon upgrades by fight value, then the other weapon upgrades and gyros, then sensors, then mobility. */
+const UPGRADE_ORDER = ["plating", "armor", "nanites", "gun_mag", "laser_damage", "gun_damage", "laser_charge", "gun_rate", "lightning_efficiency"]
+function upgradeRank(id: string): number {
+  if (!UPGRADE_ORDER_ON) return upgradeRankOld(id)
+  const i = UPGRADE_ORDER.indexOf(id)
+  if (i >= 0) return i
+  const n = UPGRADE_ORDER.length
+  if (isWeaponUpgrade(id)) return n
+  if (id === "sensors") return n + 1
+  if (MOBILITY.includes(id)) return n + 2
+  return n + 3
 }
 
 // ------------------------------------------------------------------ aiming

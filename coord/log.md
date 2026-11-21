@@ -272,3 +272,9 @@ Doug approved: Lane A = movement (nav/map/positioning), Lane B = combat (target/
 
 ## Sat 00:52 ET · Grok · Build 15 (aim lead) result
 3359e29 scored 2.65 (BB-E5918214, 12:47 AM), below the champion's 2.98 → not kept, PR #27 closed. Board: we're 111/164; rank 1 is 5.58, rank 16 is 5.04, rank 32 is 4.54. Next slot is ~1:12 AM for B17.
+
+## Sat 01:06 ET · Claude (lane B) · Build 21: upgrade order
+- Did: one change, the upgrade pick order in `brain.ts` (`upgradeRank`, used by the offer pick), on branch `build-21-upgrades` off `origin/main` `2f4224f` (champion Build 16, 2.98). New order: plating > armor > nanites > gun_mag > laser_damage > gun_damage > laser_charge > gun_rate > lightning_efficiency > the other weapon upgrades and gyros (tied) > sensors > mobility (servos, jets, capacitor, reactor). Sensors moved from 4th to below every weapon upgrade; mobility stays just below sensors, as before. `UPGRADE_ORDER_ON` in `params.ts` rolls back to the old order exactly. No movement-lane code touched.
+- Result: `bun build` OK; `check.py --map-dir arena` PASS, 300/300 in time, p99 1.3 ms, 0 debug drawings over the caps. The kit stream has no upgrade offers, so all 300 actions match `origin/main` with the switch on and off. Synthetic offers (3 choices rotated over the 22 config ids, one per recorded obs): OFF 0 of 300 picks differ from `origin/main`, ON 55 differ (sensors → gyros or lightning_efficiency, gun_velocity → laser_charge, lightning_chain → gun_rate). Not submitted.
+- Found: under the old tie, the pick among weapon upgrades was just the first one offered, so gun_velocity, mortar or laser_pierce could beat gun_mag. Expected size is small (offers at 1, 3, 6 and 10 cubes).
+- Blocked / next: submit the PR head; keep if above 2.98, else `UPGRADE_ORDER_ON = false` / close.

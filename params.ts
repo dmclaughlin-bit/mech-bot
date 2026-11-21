@@ -76,3 +76,11 @@ export const TARGET_ALONE_M = 40
 export const TARGET_TTK_REF_S = 5
 /** Kill-value weights. `shot` is above the sum of hp, weak and alone, so an enemy we can shoot always outranks one we can't. */
 export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
+
+/**
+ * Build 21 (upgrade order): plating > armor > nanites > gun_mag > laser_damage > gun_damage > laser_charge > gun_rate >
+ * lightning_efficiency > other weapon upgrades and gyros > sensors > mobility (research-doug-0040 §3: sensors adds
+ * nothing to a fight, gun_mag is +31% sustained gun DPS). Set UPGRADE_ORDER_ON to false to roll back to the old order
+ * (plating > armor > nanites > sensors > any weapon upgrade or gyros, tied > mobility) exactly.
+ */
+export const UPGRADE_ORDER_ON = true

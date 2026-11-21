@@ -1,0 +1,36 @@
+main vs flag 0
+sets 2000+3000: sim 3.531 -> 3.531, delta +0.000 ± 0.000; changed 0 (better 0 / worse 0)
+sets 4000+5000: sim 3.849 -> 3.849, delta +0.000 ± 0.000; changed 0 (better 0 / worse 0)
+main vs ZONE_EARLY_S=10
+sets 2000+3000: sim 3.531 -> 3.500, delta -0.031 ± 0.048; changed 24 (better 14 / worse 10)
+| Kills (total) | 639 | 642 |
+| Kills per minute after 60 s | 1.43 | 1.51 |
+| Laser by 30 s | 57 | 57 |
+| Died before 40 s | 56 | 56 |
+| Gun-only at end | 77 | 77 |
+| Lightning at end | 57 | 57 |
+| 2+ attackers at death | 110 | 109 |
+| Stuck >= 1 s (games) | 85 | 84 |
+| Decision p99 ms | 1.52 | 1.46 |
+| Decision max ms | 22.55 | 21.16 |
+| Drops claimed | 5 | 5 |
+| Games reaching 95 s | 53 | 47 |
+| Decision ticks in drop modes | 2566 | 2065 |
+sets 4000+5000: sim 3.849 -> 3.776, delta -0.073 ± 0.070; changed 32 (better 11 / worse 21)
+| Kills (total) | 691 | 681 |
+| Kills per minute after 60 s | 1.53 | 1.59 |
+| Laser by 30 s | 76 | 76 |
+| Died before 40 s | 54 | 54 |
+| Gun-only at end | 70 | 73 |
+| Lightning at end | 53 | 48 |
+| 2+ attackers at death | 111 | 114 |
+| Stuck >= 1 s (games) | 89 | 84 |
+| Decision p99 ms | 1.63 | 1.40 |
+| Decision max ms | 39.20 | 12.98 |
+| Drops claimed | 5 | 4 |
+| Games reaching 95 s | 58 | 50 |
+| Decision ticks in drop modes | 3437 | 2871 |
+m417 2000 3000: G5 died after 60 s with "to next circle" in the last 5 s: 28 games
+m417 4000 5000: G5 died after 60 s with "to next circle" in the last 5 s: 37 games
+ze10 2000 3000: G5 died after 60 s with "to next circle" in the last 5 s: 30 games
+ze10 4000 5000: G5 died after 60 s with "to next circle" in the last 5 s: 45 games

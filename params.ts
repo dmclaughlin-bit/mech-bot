@@ -113,3 +113,20 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 47 (spawn spacing): early closeness is the house hunter walking in (Build 47 Step 1, 48 sim seeds: they closed
+ * the distance in 46 of 48 first drops under 120 m), and the only mode in which our own walking closes on the nearest
+ * enemy is the Build 17 laser trip (27 of 48 first drops happen during it). So, during a laser trip, path around every
+ * enemy seen in the last 10 s: steps within SPAWN_SPACE_M of one cost extra (nav.ts `avoid`), and the bent path is
+ * taken only when it is at most SPAWN_SPACE_DETOUR_M longer than the plain one and passes farther from them. Same
+ * laser, same trip gates, same priorities (laser trip still below engage, retreat, collect, zone travel). Sim, 2 × 48
+ * seeds: fires in 29 of 96 games but leaves the 0-30 s mean nearest-enemy distance flat (89.7 vs 89.7 m, 92.0 vs 93.2
+ * m) and mean(16-place) flat (+0.00, −0.02); in the sim the hunter, not our route, sets the distance. Set
+ * SPAWN_SPACE_ON to false to roll back to Build 60 behavior exactly.
+ */
+export const SPAWN_SPACE_ON = true
+/** Steps within this distance (m) of a known enemy cost extra on a laser trip's path. */
+export const SPAWN_SPACE_M = 120
+/** Take the bent path only when it is at most this much longer (m) than the plain path. */
+export const SPAWN_SPACE_DETOUR_M = 40

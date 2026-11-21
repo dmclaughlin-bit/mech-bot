@@ -5,6 +5,7 @@
  *
  *   const nav = createNav(hello)            // at hello; never throws
  *   nav.path(me.pos, goal, 30000)           // waypoints after `from`, ending at `to`; null if none within budget
+ *   nav.path(me.pos, goal, 30000, avoid)    // Build 47: same, paying extra to pass inside the `avoid` rings
  *   nav.eta(me.pos, goal)                   // seconds at walk speed (path length, straight-line fallback)
  *   nav.stuck(me, commandedMove)            // call once per decision; true after ~0.5 s of commanded move with ~no speed
  *
@@ -24,9 +25,18 @@ import { readFileSync } from "node:fs"
 import { join, resolve } from "node:path"
 import type { Hello, SelfObs, Vec3 } from "./mechfight.ts"
 
+/**
+ * Build 47 (spawn spacing): a ring the path pays extra to pass through. Each step into a cell at distance d < r from
+ * `at` costs AVOID_COST × (1 − d/r) more (a straight step costs 10), so the path bends away from `at` where that is cheap.
+ */
+export type Avoid = { at: number[]; r: number }
+
 export interface Nav {
-  /** Waypoints after `from`, ending at `to` (or the nearest reachable cell to it); null if no path within `budget` node expansions. */
-  path(from: Vec3, to: Vec3, budget: number): Vec3[] | null
+  /**
+   * Waypoints after `from`, ending at `to` (or the nearest reachable cell to it); null if no path within `budget` node expansions.
+   * With `avoid` (Build 47), steps inside the rings cost extra and the smoothing never cuts deeper into a ring than the cells it replaces.
+   */
+  path(from: Vec3, to: Vec3, budget: number, avoid?: Avoid[]): Vec3[] | null
   /** Seconds at walk speed along the path; straight-line distance when no path is found cheaply. */
   eta(from: Vec3, to: Vec3): number
   /** Stateful: call once per decision. True once the move command has been held for STUCK_S with almost no speed. */
@@ -43,6 +53,7 @@ const COST_STRAIGHT = 10
 const COST_DIAG = 14
 const COST_PER_M_UP = 4
 const H_WEIGHT_X10 = 11 // heuristic × 1.1: paths at most 10% longer than optimal, far fewer expansions
+const AVOID_COST = 20 // Build 47: extra cost of a step at the centre of an avoid ring, falling to 0 at its edge
 
 /** The planning grid. Exported for tools/ (bench, scenario harness); brain.ts should only need `createNav`. */
 export type NavGrid = {
@@ -335,7 +346,27 @@ function gridNav(g: NavGrid, walk: number, stuck: Nav["stuck"]): Nav {
     return true
   }
 
-  const astar = (s: number, t: number, budget: number): number[] | null => {
+  /** Build 47: avoid rings in cell units (centre x, y, radius), and the extra cost of a step into cell (x, y). */
+  type CellRing = { x: number; y: number; r: number }
+  const toCells = (avoid: Avoid[]): CellRing[] =>
+    avoid.map((a) => ({ x: (a.at[0] - minX + 0.5) / CELL - 0.5, y: (a.at[1] - minY + 0.5) / CELL - 0.5, r: a.r / CELL }))
+  const penalty = (rings: CellRing[], x: number, y: number) => {
+    let p = 0
+    for (const q of rings) {
+      const d = Math.hypot(x - q.x, y - q.y)
+      if (d < q.r) p += AVOID_COST * (1 - d / q.r)
+    }
+    return Math.round(p)
+  }
+  /** Build 47: distance (cells) from ring q's centre to the segment between cells a and b. */
+  const segToRing = (q: CellRing, a: number, b: number) => {
+    const ax = a % nx, ay = (a / nx) | 0, bx = b % nx, by = (b / nx) | 0
+    const vx = bx - ax, vy = by - ay, l2 = vx * vx + vy * vy
+    const f = l2 > 0 ? Math.min(1, Math.max(0, ((q.x - ax) * vx + (q.y - ay) * vy) / l2)) : 0
+    return Math.hypot(q.x - ax - f * vx, q.y - ay - f * vy)
+  }
+
+  const astar = (s: number, t: number, budget: number, rings?: CellRing[]): number[] | null => {
     if (++gen === 0xffffffff) { seen.fill(0); closed.fill(0); gen = 1 }
     hn = 0
     const tx = t % nx, ty = (t / nx) | 0
@@ -364,7 +395,8 @@ function gridNav(g: NavGrid, walk: number, stuck: Nav["stuck"]): Nav {
         if (closed[m] === gen) continue
         const x = cx + DX[k], y = cy + DY[k]
         const up = h[m] - hc
-        const nd = gc + (k < 4 ? COST_STRAIGHT : COST_DIAG) + (up > 0 ? Math.round(up * COST_PER_M_UP) : 0)
+        let nd = gc + (k < 4 ? COST_STRAIGHT : COST_DIAG) + (up > 0 ? Math.round(up * COST_PER_M_UP) : 0)
+        if (rings) nd += penalty(rings, x, y)
         if (seen[m] !== gen || nd < gcost[m]) {
           seen[m] = gen; gcost[m] = nd; came[m] = c
           const hh = (heur(x, y) * H_WEIGHT_X10) / 10 | 0
@@ -375,7 +407,7 @@ function gridNav(g: NavGrid, walk: number, stuck: Nav["stuck"]): Nav {
     return null
   }
 
-  const path = (from: Vec3, to: Vec3, budget: number): Vec3[] | null => {
+  const path = (from: Vec3, to: Vec3, budget: number, avoid?: Avoid[]): Vec3[] | null => {
     const s = snap(cellOf(from[0], from[1]), -1)
     if (s < 0) return null
     const t0 = cellOf(to[0], to[1])
@@ -384,11 +416,36 @@ function gridNav(g: NavGrid, walk: number, stuck: Nav["stuck"]): Nav {
     const exact = t === t0 || (free[t0] && comp[t0] === comp[s])
     const end: Vec3 = exact ? [to[0], to[1], surfaceZ(to[0], to[1])] : cellPos(g, t)
     if (s === t) return [end]
-    const cells = astar(s, t, budget)
+    const rings = avoid?.length ? toCells(avoid) : undefined
+    const cells = astar(s, t, budget, rings)
     if (!cells) return null
     // String-pull: keep a cell only when the straight line from the last kept cell can't reach the next one.
     const out: Vec3[] = []
     let anchor = 0
+    if (rings) {
+      // Build 47: a shortcut must also stay as far from every ring centre as the cells it replaces (one cell of slack).
+      const nearest = rings.map((q) => Math.hypot((cells[0] % nx) - q.x, ((cells[0] / nx) | 0) - q.y))
+      const reach = (i: number) => {
+        for (let r = 0; r < rings.length; r++) {
+          const q = rings[r]
+          nearest[r] = Math.min(nearest[r], Math.hypot((cells[i] % nx) - q.x, ((cells[i] / nx) | 0) - q.y))
+        }
+      }
+      reach(1)
+      for (let i = 2; i < cells.length; i++) {
+        reach(i)
+        if (!clear(cells[anchor], cells[i]) || rings.some((q, r) => nearest[r] < q.r && segToRing(q, cells[anchor], cells[i]) < nearest[r] - 1)) {
+          anchor = i - 1
+          out.push(cellPos(g, cells[anchor]))
+          for (let r = 0; r < rings.length; r++) {
+            const q = rings[r]
+            nearest[r] = Math.min(Math.hypot((cells[anchor] % nx) - q.x, ((cells[anchor] / nx) | 0) - q.y), Math.hypot((cells[i] % nx) - q.x, ((cells[i] / nx) | 0) - q.y))
+          }
+        }
+      }
+      out.push(end)
+      return out
+    }
     for (let i = 2; i < cells.length; i++) {
       if (!clear(cells[anchor], cells[i])) {
         anchor = i - 1

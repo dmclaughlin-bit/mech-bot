@@ -19,10 +19,11 @@
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
-import { createNav } from "./nav.ts"
+import { type Avoid, createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, SPAWN_SPACE_DETOUR_M, SPAWN_SPACE_M,
+  SPAWN_SPACE_ON, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -240,8 +241,8 @@ function buildBot(hello: Hello): Bot {
   /** attacker id → last time it damaged us */
   const hitBy = new Map<number, number>()
   const nav = createNav(hello)
-  /** The current route: waypoints from nav.path toward `goal`, planned at time `at`. */
-  let route: { goal: Vec3; at: number; points: Vec3[]; next: number; found: boolean } | null = null
+  /** The current route: waypoints from nav.path toward `goal`, planned at time `at`. `spaced`: Build 47 bent it around enemies. */
+  let route: { goal: Vec3; at: number; points: Vec3[]; next: number; found: boolean; spaced?: boolean } | null = null
   /** Build 17 (early arm-up): laser and lightning pickups seen so far (they are listed only while in view), the ones we gave up on, and the one we are walking to. */
   const arms = new Map<number, { kind: "laser" | "lightning"; pos: Vec3 }>()
   /** Build 17 fix: when the laser's charge was first seen full (it fires on its own hold_s later), and where the beam last led. */
@@ -303,12 +304,55 @@ function buildBot(hello: Hello): Bot {
     return sum * cubeDamage(e.cubes)
   }
 
-  /** Follow a path to `goal`, re-planning at most once a second (Z1, Build 3). Returns the move and the distance left. */
-  function travel(from: Vec3, goal: Vec3, t: number, canPlan: boolean): { move: [number, number]; dist: number; points: Vec3[] } {
+  /** Length (m) of a walk from `from` through `points`. */
+  const pathLength = (from: number[], points: number[][]) => {
+    let d = 0
+    let prev = from
+    for (const w of points) {
+      d += flat(prev, w)
+      prev = w
+    }
+    return d
+  }
+  /** Closest approach (m) of the walk from `from` through `points` to any of `enemies`. */
+  const pathClearance = (from: number[], points: number[][], enemies: number[][]) => {
+    let best = Infinity
+    for (const e of enemies) {
+      let prev = from
+      for (const w of points) {
+        best = Math.min(best, segmentDistance(e, prev, w))
+        prev = w
+      }
+    }
+    return best
+  }
+
+  /**
+   * Follow a path to `goal`, re-planning at most once a second (Z1, Build 3). Returns the move and the distance left.
+   * Build 47: with `space` (a laser trip), a plain path that passes within SPAWN_SPACE_M of an enemy in `space.enemies`
+   * is swapped for one planned around them, if that one is found, keeps farther from them, and is at most
+   * SPAWN_SPACE_DETOUR_M longer. The second search starts only while `space.canPlan()` says it still fits.
+   */
+  function travel(
+    from: Vec3, goal: Vec3, t: number, canPlan: boolean, space?: { enemies: Vec3[]; canPlan: () => boolean },
+  ): { move: [number, number]; dist: number; points: Vec3[] } {
     const stale = !route || t - route.at >= ROUTE_REPLAN_S || flat(route.goal, goal) > ROUTE_GOAL_SHIFT
     if (stale && canPlan) {
-      const found = nav.path(from, goal, PATH_BUDGET)
+      let found = nav.path(from, goal, PATH_BUDGET)
+      let spaced = false
+      if (SPAWN_SPACE_ON && space && found && space.enemies.length) {
+        const plain = pathClearance(from, found, space.enemies)
+        if (plain < SPAWN_SPACE_M && space.canPlan()) {
+          const rings: Avoid[] = space.enemies.map((e) => ({ at: e, r: SPAWN_SPACE_M }))
+          const bent = nav.path(from, goal, PATH_BUDGET, rings)
+          if (bent && pathClearance(from, bent, space.enemies) > plain && pathLength(from, bent) <= pathLength(from, found) + SPAWN_SPACE_DETOUR_M) {
+            found = bent
+            spaced = true
+          }
+        }
+      }
       route = { goal, at: t, points: found ?? [goal], next: 0, found: !!found }
+      if (spaced) route.spaced = true
     }
     const r = route ?? { goal, at: t, points: [goal], next: 0, found: false }
     while (r.next < r.points.length - 1 && flat(from, r.points[r.next]) < WAYPOINT_REACHED) r.next++
@@ -646,7 +690,11 @@ function buildBot(hello: Hello): Bot {
         if (pick && (obs.t < LASER_RUSH_S || pick === kept)) {
           const [id, { pos }] = pick
           if (rush?.id !== id) rush = { id, since: obs.t }
-          const go = travel(me.pos, pos, obs.t, canPlan())
+          // Build 47: path the trip around enemies seen in the last FARM_MEMORY_S (see SPAWN_SPACE_ON).
+          const space = SPAWN_SPACE_ON
+            ? { enemies: [...known.values()].filter((k) => obs.t - k.lastSeen < FARM_MEMORY_S).map((k) => k.pos).sort((a, b) => flat(a, me.pos) - flat(b, me.pos)).slice(0, LOS_TARGETS), canPlan }
+            : undefined
+          const go = travel(me.pos, pos, obs.t, canPlan(), space)
           const planned = !!route && flat(route.goal, pos) <= ROUTE_GOAL_SHIFT
           // No path (a ledge, a walled yard) or a walk that has taken too long: leave this one for good.
           if ((planned && !route!.found) || obs.t - rush.since > LASER_CHASE_S) laserSkip.add(id)
@@ -709,7 +757,7 @@ function buildBot(hello: Hello): Bot {
       } else if (rushMove) {
         // Early arm-up (Build 17): full walk speed (steps carry only 40 m), no boost. Walking does not stop regen.
         move = rushMove
-        mode = "laser rush"
+        mode = SPAWN_SPACE_ON && route?.spaced ? "laser rush, spaced" : "laser rush"
       } else if (CROSSFIRE_ON && (spot = (() => {
         const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
         return los.length >= 2 ? hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan) : null
@@ -744,7 +792,7 @@ function buildBot(hello: Hello): Bot {
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && !mode.startsWith("laser rush")) move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

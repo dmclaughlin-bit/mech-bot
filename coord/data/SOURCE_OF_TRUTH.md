@@ -6,6 +6,7 @@ Related data: `screens.csv` (sim screens), `hazard_screens.csv` (Wild Sim), `pos
 
 | Submitted (ET) | Build | Change | Family | Champion then | Site | Delta | Verdict | Receipt |
 |---|---|---|---|---|---|---|---|---|
+| 2026-11-21 14:40 ET | B113 | B113 drop reach DROP_RUN_M 150 -> 200, on 4.10 drop-run main | drops | 4.10 | 4.17 | +0.07 | KEEP | BB-09AE8A68 |
 | 2026-11-21 14:04 ET | P-B-006 | P-B-006 STANDOFF_BREAK_S 60->45, on 4.10 drop-run main | standoff | 4.10 | 4.02 | -0.08 | CLOSE | BB-A1312E8D |
 | 2026-11-21 13:55 ET | B107 | P-D-003 supply-drop run on 4.06 main (DROP_RUN_M=150), rebuilt from B104 | drops | 4.06 | 4.10 | +0.04 | KEEP | BB-DA9AC664 |
 | 2026-11-21 13:48 ET | P-D-002 | P-D-002 second-hunter threat forecast (FORECAST2_S=60), built on 4.06 | threat-forecast | 4.06 | 3.79 | -0.27 | CLOSE | BB-8DA0CF9D |
@@ -78,8 +79,8 @@ Related data: `screens.csv` (sim screens), `hazard_screens.csv` (Wild Sim), `pos
 | opening | 6 | 0 |
 | aim | 4 | 1 |
 | crossfire | 3 | 1 |
+| drops | 3 | 2 |
 | farm | 2 | 2 |
-| drops | 2 | 1 |
 | standoff | 2 | 1 |
 | upgrades | 1 | 0 |
 | threat-forecast | 1 | 0 |

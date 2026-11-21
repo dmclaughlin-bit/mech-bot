@@ -1,0 +1,10 @@
+# Dependencies and local files
+node_modules/
+.DS_Store
+*.log
+.env
+.env.*
+
+# Private notes never belong in this public repo
+STRATEGY.md
+LOG.md

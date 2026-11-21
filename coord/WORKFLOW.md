@@ -19,7 +19,7 @@ flowchart TD
     GOAL["Each build = the change with the largest expected score impact · keep only if it beats our best · target > 32nd place"]
     W["Live watcher (Grok's computer, nonstop)<br/>records top-team matches → /workspace/watch/findings.md"]
     D["Diego's Claude<br/>code audits + research → coord/audit/, research/intake/"]
-    G["Grok (coordinator, every 15 min)<br/>picks ONE change from evidence"]
+    G["Grok (coordinator, every 10 min, Doug 5:14 PM ET)<br/>picks ONE change from evidence"]
     C["Assigned builder (Grok's Claude or Diego's Claude)<br/>codes it on a branch, kit check, flag-off identity, 192-game table in PR"]
     S["Grok submits the commit SHA (6 slots/hour, Doug 4:10 PM ET)"]
     R{"Score vs current best"}

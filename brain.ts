@@ -17,12 +17,14 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 39 (laser dash): boost on the ground during the laser rush and the loot walk to a laser, out of fights and
+ * with energy to spare, until 15 m short of it (see LASER_DASH_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_DASH_ENEMY_M, LASER_DASH_ON, LASER_DASH_RESERVE, LASER_DASH_STOP_M, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -436,6 +438,8 @@ function buildBot(hello: Hello): Bot {
       // Loot (D3, L1, L2): laser and lightning only, never a mortar, and only with no enemy within 160 m.
       // Keep the gun until the second of the two shows up, then swap the gun out, never with an enemy in view.
       let lootTarget: Vec3 | null = null
+      /** Build 39: the loot walk goes to a laser. */
+      let lootLaser = false
       if (!enemies.some((m) => flat(m.pos, me.pos) < LOOT_CLEAR)) {
         const held = me.weapons.map((x) => x?.kind ?? null)
         const free = held.indexOf(null)
@@ -447,7 +451,10 @@ function buildBot(hello: Hello): Bot {
           if (flat(want.pos, me.pos) < cfg.loot.pickup_radius && Math.abs(want.pos[2] - me.pos[2]) < 4) {
             act.take = want.id
             if (free < 0) act.drop = swapSlot
-          } else if (flat(want.pos, me.pos) < LOOT_DETOUR) lootTarget = want.pos
+          } else if (flat(want.pos, me.pos) < LOOT_DETOUR) {
+            lootTarget = want.pos
+            lootLaser = want.kind === "laser"
+          }
         }
       }
       // Early arm-up (Build 17): remember every laser and lightning seen, forget one that is gone, and take a laser in
@@ -619,6 +626,8 @@ function buildBot(hello: Hello): Bot {
       // slack before leaving, not engaging or collecting a kill, not hurt, and no mech damage for FARM_QUIET_S.
       // Fix round: no enemy test (an enemy nearer to the pickup or watching the route no longer stops the trip).
       let rushMove: [number, number] | null = null
+      /** Build 39: path length (m) left to the laser we rush to; null when not rushing or rushing to a lightning. */
+      let rushLaserLeft: number | null = null
       const rushSlot = me.weapons.includes(null) || (enemies.length === 0 && me.weapons.some((x) => x?.kind === "gun"))
       const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
       if (
@@ -644,11 +653,18 @@ function buildBot(hello: Hello): Bot {
           const planned = !!route && flat(route.goal, pos) <= ROUTE_GOAL_SHIFT
           // No path (a ledge, a walled yard) or a walk that has taken too long: leave this one for good.
           if ((planned && !route!.found) || obs.t - rush.since > LASER_CHASE_S) laserSkip.add(id)
-          else if (planned && fits(pos, go.dist)) rushMove = go.move
+          else if (planned && fits(pos, go.dist)) {
+            rushMove = go.move
+            if (pick[1].kind === "laser") rushLaserLeft = go.dist
+          }
         }
       }
       if (!rushMove) rush = null
       else farmChase = null
+      // Laser dash (Build 39): see LASER_DASH_ON in params.ts. `left` is the distance to the laser, null for no laser.
+      const laserDash = (left: number | null) =>
+        LASER_DASH_ON && left !== null && left > LASER_DASH_STOP_M && me.grounded && me.energy > LASER_DASH_RESERVE * me.max_energy &&
+        !enemies.some((m) => flat(m.pos, me.pos) < LASER_DASH_ENEMY_M) && !me.weapons.some((w) => w?.kind === "laser" && (w.charge ?? 0) > 0)
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -701,8 +717,10 @@ function buildBot(hello: Hello): Bot {
         move = travel(me.pos, claimGoal, obs.t, canPlan()).move
         mode = "engage, collect"
       } else if (rushMove) {
-        // Early arm-up (Build 17): full walk speed (steps carry only 40 m), no boost. Walking does not stop regen.
+        // Early arm-up (Build 17): full walk speed (steps carry only 40 m). Walking does not stop regen.
+        // Build 39: boost toward a laser out of fights while energy is to spare (laserDash).
         move = rushMove
+        boost = laserDash(rushLaserLeft)
         mode = "laser rush"
       } else if (me.hp < HEAL_HP * me.max_hp) {
         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
@@ -712,6 +730,7 @@ function buildBot(hello: Hello): Bot {
         mode = spot ? "heal, hiding" : "heal"
       } else if (lootTarget) {
         move = heading(lootTarget)
+        boost = laserDash(lootLaser ? flat(lootTarget, me.pos) : null)
         mode = "loot"
       } else if (farmHold) {
         // Build 12: inside a landed drop's ring, stand still for capture_s to take its cubes, full HP and energy.

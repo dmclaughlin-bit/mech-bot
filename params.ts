@@ -85,6 +85,23 @@ export const LASER_TRIP_M = 250
 /** Give up on a weapon we have walked toward this long (s) without reaching it. */
 export const LASER_CHASE_S = 20
 /**
+ * Build 39 (laser dash): during the "laser rush" to a laser (not to a lightning) and the "loot" walk to a laser, boost
+ * on the ground (boost_speed 19.5 m/s instead of walk_speed 11.7) while all of these hold:
+ *   - energy above LASER_DASH_RESERVE of max (the retreat boosts only above 30%, so a retreat boost stays in the tank);
+ *   - more than LASER_DASH_STOP_M left to the laser (path length in the rush), so we do not overshoot the 4 m pickup;
+ *   - no enemy mech in view within LASER_DASH_ENEMY_M (the Watcher's "less boost in fights" finding stays intact);
+ *   - no laser charge in progress.
+ * Route and target are unchanged; zone travel and zone escape rank first and set their own boost. Watcher: laser in
+ * hand by 30 s, winners 69% vs 26%. Set LASER_DASH_ON to false to roll back to Build 30 behavior exactly.
+ */
+export const LASER_DASH_ON = true
+/** Boost only while energy is above this fraction of max (boost_drain 17/s, energy_regen 18/s after 0.6 s). */
+export const LASER_DASH_RESERVE = 0.5
+/** Stop boosting within this distance (m) of the laser. */
+export const LASER_DASH_STOP_M = 15
+/** No boost while an enemy mech in view is within this distance (m). */
+export const LASER_DASH_ENEMY_M = 120
+/**
  * Build 16 (target pick): instead of the nearest enemy with a clear line, lock the enemy mech with the best kill
  * value (target.ts: a shot from here, short time-to-kill from our DPS, low hp, weak weapons, alone) and keep it until
  * it dies or has had no shot for TARGET_LOST_S. An enemy outside the circle is picked only while we can shoot it from

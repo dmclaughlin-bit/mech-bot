@@ -64,10 +64,16 @@ const HEAL_HP = 0.9
 const HIDE_BEARINGS = 12
 const HIDE_STEPS_S = [1, 2, 3]
 
-/** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
+/**
+ * L4 (Build 9): laser_damage for its first two stacks, then plating > armor > nanites > sensors > weapon upgrade >
+ * mobility, matched on the ids in hello.config.upgrades. Recorded showdown winners took laser_damage x2 plus plating,
+ * armor and nanites. laser_damage is only offered while we hold a laser (protocol §10).
+ */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
 const MOBILITY = ["servos", "jets", "capacitor", "reactor"]
-function upgradeRank(id: string): number {
+const LASER_DAMAGE_FIRST = 2
+function upgradeRank(id: string, taken: string[]): number {
+  if (id === "laser_damage" && taken.filter((u) => u === id).length < LASER_DAMAGE_FIRST) return -1
   const i = UPGRADE_FIRST.indexOf(id)
   if (i >= 0) return i
   if (/^(gun|laser|lightning|mortar)_/.test(id) || id === "gyros") return 4
@@ -289,9 +295,9 @@ function buildBot(hello: Hello): Bot {
       const act: BotAction = {}
       const fire: [boolean, boolean] = [false, false]
 
-      // Upgrades (L4): always answer, in the plan's order.
+      // Upgrades (L4): always answer; laser_damage x2 first, then the plan's order.
       if (obs.offer?.choices?.length) {
-        const ranks = obs.offer.choices.map((c) => upgradeRank(c.id))
+        const ranks = obs.offer.choices.map((c) => upgradeRank(c.id, me.upgrades ?? []))
         act.pick = ranks.indexOf(Math.min(...ranks))
       }
       const enemies = obs.mechs.filter((m) => m.kind === "mech")

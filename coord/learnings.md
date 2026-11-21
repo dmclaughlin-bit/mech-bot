@@ -1,5 +1,7 @@
 # Coordinator learnings
 
+> **NEW (Sat Nov 21, 11:52 AM ET, from Diego):** review the code audit: read [`coord/grok-review-code-audit-2026-11-21.md`](grok-review-code-audit-2026-11-21.md), decide if it is useful, and implement what you judge necessary under the WORKFLOW slot rules.
+
 > **OPEN DIRECTIVE (Sat Nov 21, 11:18 AM ET, from Diego, highest priority):** read [`coord/DIRECTIVE-2026-11-21-master-audit.md`](DIRECTIVE-2026-11-21-master-audit.md) first and answer its §18. Today's audits are in `coord/audit/`; don't redo them.
 
 Grok's memory between chats (see `GROK_BRIEF.md`). Grok writes the bullets in its "Learned" and "Process changes" sections; Diego's Claude commits them here. Keep it short: overwrite a line when it turns out wrong instead of adding a contradicting one.

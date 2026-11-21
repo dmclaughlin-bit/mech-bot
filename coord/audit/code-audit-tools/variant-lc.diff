@@ -1,0 +1,25 @@
+--- /tmp/claude-0/-home-claude/ea968d87-0090-5ec2-8a45-fb15f3949e46/scratchpad/b80/brain.ts	2026-11-21 16:28:34.172142148 +0000
++++ /tmp/claude-0/-home-claude/ea968d87-0090-5ec2-8a45-fb15f3949e46/scratchpad/lc/brain.ts	2026-11-21 16:36:04.673582087 +0000
+@@ -738,6 +738,22 @@
+         move = heading(spot)
+         boost = me.energy > 0.3 * me.max_energy
+         mode = "break crossfire"
++      } else if (process.env.LC === "1" && (() => {
++        const arcW = me.weapons.find((w) => w?.kind === "lightning")
++        if (!arcW || me.hp < 0.5 * me.max_hp || obs.t - lastMechHit < 0) return false
++        const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
++        if (los.length !== 1) return false
++        const e = los[0]
++        const hitters: number[] = []
++        for (const [id, t] of mechHitBy) if (obs.t - t < THREAT_HIT_S && id !== e.id) hitters.push(id)
++        if (hitters.length) return false
++        const d = flat(e.pos, me.pos), r = arcW.stats.range ?? baseReach.lightning
++        if (d <= 0.8 * r || d > Number(process.env.LC_M ?? 100) || flat(e.pos, zoneKeep[0]) >= zoneKeep[1]) return false
++        move = travel(me.pos, e.pos, obs.t, canPlan()).move
++        mode = "lightning close"
++        return true
++      })()) {
++        // close in
+       } else if (me.hp < HEAL_HP * me.max_hp) {
+         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
+         // Build 19: the walk to a hiding spot only while hurt.

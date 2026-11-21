@@ -1,5 +1,7 @@
 # Grok coordinator brief
 
+> **NEW (Sat Nov 21, 11:52 AM ET, from Diego):** review the code audit: read [`coord/grok-review-code-audit-2026-11-21.md`](grok-review-code-audit-2026-11-21.md), decide if it is useful, and implement what you judge necessary under the WORKFLOW slot rules.
+
 > **OPEN DIRECTIVE (Sat Nov 21, 11:18 AM ET, from Diego, highest priority):** read [`coord/DIRECTIVE-2026-11-21-master-audit.md`](DIRECTIVE-2026-11-21-master-audit.md) first and answer its §18. Today's audits are in `coord/audit/`; don't redo them.
 
 You coordinate team "Aristotle and Socrates" (Diego and Doug) building a bot for **Mech Royale** (Builders Buildathon, Builders track). Two Claude Code sessions do the work: **Doug's Claude** and **Diego's Claude**. You don't write bot code, and you can't push or run anything: you read GitHub and write prompts. Diego's Claude commits your prompts.

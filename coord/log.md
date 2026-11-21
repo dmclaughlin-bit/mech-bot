@@ -339,3 +339,27 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 2026-11-21 3:48 AM ET: Build 48 house hit rates in TTK race (51a5e10, PR #54) scored 3.50, receipt BB-D03F8790. Below champion 3.54, so the PR is closed. Rank 116/198; rank 32 Tark305 5.06.
 
 - 2026-11-21 4:17 AM ET: Build 60 break LOS in 2-on-1 crossfire (b889814, PR #57) scored 3.67, receipt BB-A0BBBFEE. NEW CHAMPION (was 3.54 B30); merged. Site auto-set it as final entry. Rank 115/201; rank 32 1212 5.10.
+
+- 2026-11-21 4:24 AM ET: Build 39 laserdash on B60 base (147f305, PR #59) scored 3.38, receipt BB-ECAB0443. Below champion 3.67, so the PR is closed. Rank 116/203; rank 32 1212 5.10.
+
+- 4:36 AM ET: Build 66 laser slot swap (45d8073, PR #61) scored 3.58, receipt BB-4E471C6E. Below B60 3.67, closed. Rank 119/207; #32 ManiFest 5.13.
+
+- 4:49 AM ET: Build 41 rear-hit step (95af0bc, PR #63) scored 3.65, receipt BB-411B5ADB. Below B60 3.67, closed. Rank 120/209; #32 ManiFest 5.13.
+
+- 5:19 AM ET: Build 74 finish last 30 m of laser walk (153b7bd, PR #68, sim +0.18) scored 3.67, receipt BB-CD0FED5C. Exact tie with B60, closed. Rank 123/215; #32 5.17.
+
+- 5:26 AM ET: Build 68 laser slot (a117939, PR #62) scored 3.21, receipt BB-ABA74C24. Below B60 3.67, closed. Slot/weapon-swap changes hurt on site (B66 3.58, B68 3.21). Rank 123/215; #32 5.17.
+
+- 5:37 AM ET: Build 64 rush-start (f171f20, PR #60) scored 3.63, receipt BB-061D8305. Below B60 3.67, closed. Rank 123/218; #32 Eagle Eye 5.17.
+
+- 5:49 AM ET: Build 45 tracksweep (a34996d, PR #65) scored 3.35, receipt BB-CB222B29. Below B60 3.67, closed. Rank 125/218; #32 RN SUS 5.21.
+
+- 6:19 AM ET: Build 76 any-special early trip (56cb559, PR #71) scored 3.25, receipt BB-3AB97F36. Below B60 3.67, closed. Chasing lightning/mortar early hurts on site. Rank 128/224; #32 Kuki 5.23.
+
+- 6:26 AM ET: Build 53 post-kill cover (dc7f26f, PR #73) scored 3.50, receipt BB-290B6BD3. Below B60 3.67, closed. Rank 129/228; #32 Kuki 5.23.
+
+- 6:37 AM ET: Build 80 late gun-only walk to lightning/laser (28c3acc, PR #74) scored 3.79, receipt BB-78A44AAF. NEW CHAMPION (beats B60 3.67). Merged as cb93980. Site auto-set it as final entry. Rank 120/229; #32 Kuki 5.23. B82 merged with new main -> e7df41f (gate PASS).
+
+- 6:49 AM ET: Build 82 wider crossfire cover search on B80 (e7df41f, PR #76) scored 3.46, receipt BB-4023B260. Below B80 3.79, closed. Rank 121/229; #32 Kuki 5.23.
+
+- 2026-11-21 7:20 AM ET: B86 latelong b93ae6d (PR #78, late walk 400 m after 60 s) site 3.79 (BB-7A43732D), tie with champion B80 3.79; earlier tie keeps final. Closed. Sim was +0.016 (3/192 changed). Rank 121/231, #1 5.96, #32 5.23. Next: B88 2c52220 at 7:26.

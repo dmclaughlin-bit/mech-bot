@@ -15,13 +15,19 @@ Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, f
 
 **Read `coord/STATUS.md` first: current champion, in-flight builds, dead families.**
 
-**CHAMPION CHANGED (Sat 12:59 PM ET): P-B-001 standoff break `ba52103` (on top of B103), site 4.06 (BB-6EA7D518), merged to main `42a19d7`. Branch every new build from current main. Flag 0 must be byte-identical to main, and a build keeps only if its site score beats 4.06. If you started from an older main, rebase onto main before you push.**
+**CHAMPION CHANGED (Sat 2:00 PM ET): P-D-003 drop run `4d6e71b` (PR #99, on top of 4.06), site 4.10 (BB-DA9AC664), merged to main `9168d841c734ec6970340322600feb89f9c27ce6`. Bot code on main equals `4d6e71b`. Branch every new build from current main. Flag 0 must be byte-identical to this main, and a build keeps only if its site score beats 4.10. If you started from an older main (including 4.06 / `42a19d7`), rebase onto this main before you push.**
+
+**P-D-003 DONE KEEP 4.10** (BB-DA9AC664, `4d6e71b`, merged `9168d84`). **P-D-002 lost** at site 3.79 (BB-8DA0CF9D, PR #102 closed). The threat-forecast type now ranks lower after that loss.
 
 ---
 
-## Current prompt: P-D-002 (Grok, Sat Nov 21, 12:45 PM ET; active now)
+## Current prompt: none (Sat 2:00 PM ET)
 
-Ship the build commit with `FORECAST2_S = 60` (flag ON) and give its full SHA in the PR; flag 0 stays byte-identical to B80. The site score decides.
+P-D-002 is done (lost). P-D-003 is done (KEEP 4.10). Take a Queued item only after Grok posts a new Current prompt, and branch from current 4.10 main.
+
+## DONE (lost 3.79): P-D-002 (Grok, Sat Nov 21, 12:45 PM ET)
+
+Shipped `FORECAST2_S = 60` (flag ON). Site 3.79 (BB-8DA0CF9D, PR #102, `4c42170`, submitted 1:48 PM ET) CLOSE vs 4.06. Threat-forecast type now ranks lower after a loss.
 
 Source: `coord/research/strategy-report-2026-11-21.md` §4 S2 (threat forecasting), narrowed by real site data (score ≈ our kills; 86% of points from games ≥ 40 s; kill rate falls after 120 s).
 
@@ -51,8 +57,8 @@ Don't touch H1 (lightning; Doug's Claude has it as B103). No slot until Grok ver
 
 ---
 
-## Queued: P-D-003 (Grok, 12:59 PM ET; from Build 104 site 3.88 = +0.09 over its B80 parent)
-Rebuild the supply-drop run (`DROP_RUN_M=150`, same logic as PR #95) on current main (4.06). Flag shipped ON; flag 0 = main byte-identical. PR title `P-D-003: drop run on 4.06 main`.
+## DONE KEEP 4.10: P-D-003 (Grok, 12:59 PM ET; from Build 104 site 3.88 = +0.09 over its B80 parent)
+Rebuilt the supply-drop run (`DROP_RUN_M=150`, same logic as PR #95) on 4.06 main. Site **4.10** (BB-DA9AC664, `4d6e71b`, PR #99) KEEP, new champion, merged `9168d84` Sat 2:00 PM ET. Site auto-entered it as the final entry (no click).
 
 ## Queued: P-D-004 (Grok, 1:12 PM ET; from PR #98 audit H01) - TAKEN: Build 108 on Grok's computer
 Finish burst: the finish rule should compare target HP to the SUM of magazines in reach, not the best single weapon (brain.ts finish check; see coord/audit/grokbot-1000-rec-handoff-2026-11-21.md section 3). Flag `FINISH_BURST_ON`, shipped ON, flag 0 = main byte-identical.

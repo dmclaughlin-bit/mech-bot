@@ -21,11 +21,12 @@
  * (see LATE_LIGHT_ON).
  * P-B-001 (standoff break): after 60 s, instead of healing or holding while one lone enemy stands 45–90 m away,
  * close to our best weapon's effective range (see STANDOFF_BREAK_S).
+ * Build 109 (cook-off bonus): while we hold a laser, a mortar holder in view gets a kill-value bonus (see COOKOFF_BONUS_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  COOKOFF_BONUS_ON, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -898,6 +899,7 @@ function buildBot(hello: Hello): Bot {
         // Build 16: score every option by kill value and hold a lock on the best one (target.ts). Our DPS is Build 14's
         // ourDps, so the pick and the fight-or-flee test read one estimate, and the enemy Build 14 is engaged with takes
         // the lock. The pick runs every decision, also with nobody in view, so the lost timer keeps counting.
+        const cookLaser = COOKOFF_BONUS_ON ? slotOf("laser") >= 0 : false
         const scored = scoreTargets(
           options.map((o) => {
             const k = known.get(o.m.id)
@@ -906,6 +908,8 @@ function buildBot(hello: Hello): Bot {
               id: o.m.id, pos: o.m.pos, d: o.d, clear: o.clear,
               hp: o.m.hp ?? k?.hp ?? cfg.mech.hp, maxHp: o.m.max_hp ?? k?.maxHp ?? cfg.mech.hp,
               threat: held ? Math.min(1, held.reduce((a, kind) => a + (baseDps[kind] ?? 0), 0) / topPairDps) : 0.5,
+              // Build 109: a laser of ours cooks off the mortar it is seen holding (+60%).
+              ...(cookLaser && held?.includes("mortar") ? { cook: true } : {}),
             }
           }),
           [...known.values()].filter((k) => obs.t - k.lastSeen <= (cfg.vision.memory_s ?? 5)),

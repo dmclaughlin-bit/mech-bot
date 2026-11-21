@@ -98,8 +98,20 @@ export const TARGET_LOST_S = 3
 export const TARGET_ALONE_M = 40
 /** Time-to-kill (s) at which the ttk term is worth half. About one gun magazine plus its reload. */
 export const TARGET_TTK_REF_S = 5
-/** Kill-value weights. `shot` is above the sum of hp, weak and alone, so an enemy we can shoot always outranks one we can't. */
+/** Kill-value weights. `shot` is above the sum of hp, weak and alone, so an enemy we can shoot always outranks one we can't (Build 109's cook-off bonus aside, see COOKOFF_BONUS_ON). */
 export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
+/**
+ * Build 109 (cook-off target bonus, audit H09): the protocol gives a laser +60% damage (`cookoff`) on a mech that holds
+ * a mortar, and the kill value ignored it. While we hold a laser, an enemy in view that is seen holding a mortar gets
+ * a flat COOKOFF_W added to its kill value. One term, at most COOKOFF_W per enemy; the lock, the zone rule, aim and
+ * movement are unchanged. With the bonus, an enemy we can't shoot can reach 4.5 (hp + weak + alone + cook), so it can
+ * outrank a poor shot (kill value 4 to 4.5); without a laser or a mortar holder in view nothing changes.
+ * Evidence (coord/data/audit_h07_h09.csv, sim house model is invented, weak evidence): a mortar holder is in view in
+ * 16% of decisions, about half of them while we hold a laser. Set COOKOFF_BONUS_ON to 0 for main (4.06) behavior exactly.
+ */
+export const COOKOFF_BONUS_ON = 1
+/** Kill value added for a mortar holder while we hold a laser. */
+export const COOKOFF_W = 1
 
 /**
  * Build 19 (stop sneaking): while not hurt, drop the silent speed cap (H2, Q1: params.silentSpeed inside the next

@@ -154,4 +154,4 @@ export const ZONE_UNPIN_S = 6
  * above it; firing is unchanged. The standoff break never replaces it (that runs only from heal or hold).
  * 0 = off, identical to the champion.
  */
-export const DROP_RUN_M = 150
+export const DROP_RUN_M = 200

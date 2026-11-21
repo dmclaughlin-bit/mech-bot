@@ -12,12 +12,20 @@
  * Build 12 (farm): with no enemy mech near or in view, shoot drones and crates and walk to cubes and drops (see farmPlan).
  * Build 14 (engage): fight or flee by time-to-kill vs time-to-die (F1): against one enemy we would kill first, or one
  * within a magazine of dying, fight on instead of the HP retreat, then collect its cubes (see engageChoice, ENGAGE_ON).
+ * Build 17 (early arm-up): in the first 45 s, walk to a laser we see or remember (gun only: a lightning too) when the
+ * path is at most 175 m and the trip is zone-safe, whoever is around; let the beam go only inside the target's outline,
+ * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 80 (late lightning): after 45 s, a gun-only bot may walk to a reachable ground lightning or laser
+ * (see LATE_LIGHT_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
-import { ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params } from "./params.ts"
+import {
+  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+} from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
@@ -96,6 +104,33 @@ const ENGAGE_REST_S = 10
 /** Build 14: after a kill, walk to cubes within CLAIM_M (m) of where the target died, for at most CLAIM_S (s). */
 const CLAIM_M = 12
 const CLAIM_S = 12
+/** Build 17 (early laser): turn the torso once around for this long (s) at spawn, to see the pickups on every side (the view is a 120° wedge). */
+const LASER_SCAN_S = 1.8
+/** Build 17: a remembered laser we stand this close to (m) with a clear line and no longer see has been taken. */
+const LASER_GONE_M = 30
+/** Build 17: change to another laser only if it is this much nearer (m). */
+const LASER_SWITCH_M = 15
+/** Build 17: a cube this close (m) is picked up first (farm pickup) when farming would run. */
+const LASER_CUBE_M = 20
+/** Build 17: let the beam go when the torso points within this fraction of the target's radius and half height (it has no spread). */
+const LASER_RELEASE = 0.8
+/** Build 17: aim the beam this far ahead (s) of a moving target: about the delay between an observation and our action taking effect (a guess: 1 to 2 ticks). */
+const LASER_LEAD_S = 0.075
+/** Build 60 (break crossfire): when two or more enemies have line of sight to us, walk to cover that breaks those
+ * lines instead of standing still and trading. Zone travel, hurt retreat, and the Build 17 laser trip still rank
+ * first (and the finish/TTK rules already require alone()). false = champion. New vs B26 (that also committed into
+ * multi-threat fights when the race looked winning, and changed hit rates). Against real house bots that share
+ * vision and hit harder than the sim, a 2-on-1 stand-and-shoot is a fight we cannot finish. */
+const CROSSFIRE_ON = true
+/** Build 80 (late lightning for gun-only): the champion's Build 17 trip stops starting new walks at LASER_RUSH_S
+ * (45 s), so a bot still holding only the gun after the opening never goes for a known lightning. When this is on,
+ * past 45 s, while gun-only, lightning and laser stay trip targets under the existing "no mech hit for 3 s" and
+ * LASER_TRIP_M gates (not B49's four-part gate). B60's crossfire break and the hurt retreat stay ahead of the walk.
+ * Take, swap, and drop are unchanged (B66 and B68 lost on the site). Different from B76/B78 (first 45 s only).
+ * false = champion. */
+const LATE_LIGHT_ON = true
+/** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
+const LASER_REAIM_S = 0.8
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -215,7 +250,14 @@ function buildBot(hello: Hello): Bot {
   const hitBy = new Map<number, number>()
   const nav = createNav(hello)
   /** The current route: waypoints from nav.path toward `goal`, planned at time `at`. */
-  let route: { goal: Vec3; at: number; points: Vec3[]; next: number } | null = null
+  let route: { goal: Vec3; at: number; points: Vec3[]; next: number; found: boolean } | null = null
+  /** Build 17 (early arm-up): laser and lightning pickups seen so far (they are listed only while in view), the ones we gave up on, and the one we are walking to. */
+  const arms = new Map<number, { kind: "laser" | "lightning"; pos: Vec3 }>()
+  /** Build 17 fix: when the laser's charge was first seen full (it fires on its own hold_s later), and where the beam last led. */
+  let beamFull: number | null = null
+  let beamAt: Vec3 | null = null
+  const laserSkip = new Set<number>()
+  let rush: { id: number; since: number } | null = null
   /** Build 12: last time a mech (or the zone) damaged us, the item we are walking to, and items we gave up on. */
   let lastMechHit = -Infinity
   /** Build 19: the last time we took damage from anything (mech, drone or zone). */
@@ -273,8 +315,11 @@ function buildBot(hello: Hello): Bot {
   /** Follow a path to `goal`, re-planning at most once a second (Z1, Build 3). Returns the move and the distance left. */
   function travel(from: Vec3, goal: Vec3, t: number, canPlan: boolean): { move: [number, number]; dist: number; points: Vec3[] } {
     const stale = !route || t - route.at >= ROUTE_REPLAN_S || flat(route.goal, goal) > ROUTE_GOAL_SHIFT
-    if (stale && canPlan) route = { goal, at: t, points: nav.path(from, goal, PATH_BUDGET) ?? [goal], next: 0 }
-    const r = route ?? { goal, at: t, points: [goal], next: 0 }
+    if (stale && canPlan) {
+      const found = nav.path(from, goal, PATH_BUDGET)
+      route = { goal, at: t, points: found ?? [goal], next: 0, found: !!found }
+    }
+    const r = route ?? { goal, at: t, points: [goal], next: 0, found: false }
     while (r.next < r.points.length - 1 && flat(from, r.points[r.next]) < WAYPOINT_REACHED) r.next++
     const rest = r.points.slice(r.next)
     let dist = 0
@@ -418,6 +463,24 @@ function buildBot(hello: Hello): Bot {
             act.take = want.id
             if (free < 0) act.drop = swapSlot
           } else if (flat(want.pos, me.pos) < LOOT_DETOUR) lootTarget = want.pos
+        }
+      }
+      // Early arm-up (Build 17): remember every laser and lightning seen, forget one that is gone, and take a laser in
+      // reach (holding only the gun: a lightning too, the laser first) into a free slot whoever is in view (taking
+      // costs nothing; the 160 m rule above would leave us standing on it).
+      const holdsLaser = me.weapons.some((x) => x?.kind === "laser")
+      const gunOnly = me.weapons.every((x) => !x || x.kind === "gun") && me.weapons.some((x) => x?.kind === "gun")
+      if (LASER_RUSH_ON) {
+        const eye: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.eye_height ?? cfg.mech.eye_height ?? cfg.mech.height)]
+        for (const p of obs.pickups) if (p.kind === "laser" || p.kind === "lightning") arms.set(p.id, { kind: p.kind, pos: p.pos })
+        for (const e of obs.events) if (e.type === "take_failed" && e.reason === "gone") arms.delete(e.id)
+        for (const [id, a] of arms)
+          if (!obs.pickups.some((p) => p.id === id) && flat(a.pos, me.pos) < LASER_GONE_M && clearLine(solids, eye, a.pos, 0, 0)) arms.delete(id)
+        const reach = (kind: string) => obs.pickups.find((p) => p.kind === kind && flat(p.pos, me.pos) < cfg.loot.pickup_radius && Math.abs(p.pos[2] - me.pos[2]) < 4)
+        const here = holdsLaser || !me.weapons.includes(null) ? undefined : (reach("laser") ?? (gunOnly ? reach("lightning") : undefined))
+        if (here) {
+          act.take = here.id
+          lootTarget = null
         }
       }
       // Zone (Z1, Z2, H2, Q1): leave for the next circle just in time, walk there, then hold silently.
@@ -567,6 +630,47 @@ function buildBot(hello: Hello): Bot {
       // Stop sneaking (Build 19): not hurt (HP at or above the retreat line, no damage for NO_SNEAK_QUIET_S), so no
       // silent speed cap and no walk to a hiding spot. While hurt, the retreat, the heal and their hiding are unchanged.
       const noSneak = NO_SNEAK_ON && me.hp >= RETREAT_HP * me.max_hp && obs.t - lastDamaged > NO_SNEAK_QUIET_S
+      // Early arm-up (Build 17): see LASER_RUSH_ON in params.ts. Only while nothing above it is active: in the zone with
+      // slack before leaving, not engaging or collecting a kill, not hurt, and no mech damage for FARM_QUIET_S.
+      // Fix round: no enemy test (an enemy nearer to the pickup or watching the route no longer stops the trip).
+      let rushMove: [number, number] | null = null
+      const rushSlot = me.weapons.includes(null) || (enemies.length === 0 && me.weapons.some((x) => x?.kind === "gun"))
+      const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
+      // Build 80: after the opening, a gun-only bot may start a new lightning/laser walk (champion only continues one).
+      const lateLight = LATE_LIGHT_ON && gunOnly && obs.t >= LASER_RUSH_S
+      if (
+        LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush || lateLight) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
+        !claimGoal && !hurt && !(cubeFirst && !lateLight) && obs.t - lastMechHit > FARM_QUIET_S
+      ) {
+        const pace = ZONE_WALK * walkSpeed
+        const onward = (p: Vec3) => Math.max(0, flat(p, z.next_center) - inner)
+        // `len` m of walking to the weapon at p: a bounded trip, and back in the next circle in time.
+        const fits = (p: Vec3, len: number) => len <= LASER_TRIP_M && (len + onward(p)) / pace + ZONE_BUFFER < timeLeft
+        // A laser always counts; a lightning only while we hold nothing but the gun. Lasers first, then the nearest.
+        const options = [...arms]
+          .filter(([id, a]) =>
+            (a.kind === "laser" || gunOnly) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
+            !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4) && fits(a.pos, flat(me.pos, a.pos)))
+          .sort((a, b) => Number(a[1].kind !== "laser") - Number(b[1].kind !== "laser") || flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos))
+        const kept = rush ? options.find(([id]) => id === rush!.id) : undefined
+        const pick = kept && kept[1].kind === options[0][1].kind && flat(kept[1].pos, me.pos) - flat(options[0][1].pos, me.pos) < LASER_SWITCH_M ? kept : options[0]
+        if (pick && (obs.t < LASER_RUSH_S || pick === kept || lateLight)) {
+          const [id, { pos }] = pick
+          if (rush?.id !== id) rush = { id, since: obs.t }
+          const go = travel(me.pos, pos, obs.t, canPlan())
+          const planned = !!route && flat(route.goal, pos) <= ROUTE_GOAL_SHIFT
+          // No path (a ledge, a walled yard) or a walk that has taken too long: leave this one for good.
+          if ((planned && !route!.found) || obs.t - rush.since > LASER_CHASE_S) laserSkip.add(id)
+          else if (planned && fits(pos, go.dist)) rushMove = go.move
+        }
+      }
+      // Build 80: a late walk yields to B60's crossfire break when two or more enemies can see us.
+      if (lateLight && rushMove && CROSSFIRE_ON) {
+        const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        if (los.length >= 2 && hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan)) rushMove = null
+      }
+      if (!rushMove) rush = null
+      else farmChase = null
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -587,7 +691,11 @@ function buildBot(hello: Hello): Bot {
         const d = flat(engage.m.pos, me.pos)
         const arc = me.weapons.find((w) => w?.kind === "lightning")
         const close = arc ? 0.8 * (arc.stats.range ?? baseReach.lightning) : GUN_NEAR_M
-        if ((!engage.clear || (engage.why === "finish" && d > close)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1])
+        // Build 17: with a laser in hand and a clear line inside its range, the finish rule holds its ground: the beam
+        // hits as well at range, and walking in while charging is at half speed.
+        const beam = LASER_RUSH_ON ? me.weapons.find((w) => w?.kind === "laser") : undefined
+        const standOff = !!beam && engage.clear && d <= (beam.stats.range ?? baseReach.laser)
+        if ((!engage.clear || (engage.why === "finish" && d > close && !standOff)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1])
           move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
         mode = `engage, ${engage.why}`
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && seenAt(me.pos, myHeight, threats, false) && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
@@ -614,6 +722,17 @@ function buildBot(hello: Hello): Bot {
       } else if (claimGoal) {
         move = travel(me.pos, claimGoal, obs.t, canPlan()).move
         mode = "engage, collect"
+      } else if (rushMove) {
+        // Early arm-up (Build 17): full walk speed (steps carry only 40 m), no boost. Walking does not stop regen.
+        move = rushMove
+        mode = "laser rush"
+      } else if (CROSSFIRE_ON && (spot = (() => {
+        const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        return los.length >= 2 ? hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan) : null
+      })())) {
+        move = heading(spot)
+        boost = me.energy > 0.3 * me.max_energy
+        mode = "break crossfire"
       } else if (me.hp < HEAL_HP * me.max_hp) {
         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
         // Build 19: the walk to a hiding spot only while hurt.
@@ -641,7 +760,7 @@ function buildBot(hello: Hello): Bot {
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage")) move = [move[0] * silent, move[1] * silent]
+      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {
@@ -665,6 +784,36 @@ function buildBot(hello: Hello): Bot {
       // Build 14: among equally clear targets, the one we are engaged with comes first.
       const engagedId = engage?.m.id
       options.sort((a, b) => Number(b.clear) - Number(a.clear) || Number(b.m.id === engagedId) - Number(a.m.id === engagedId) || a.d - b.d)
+      // Build 17 fix (Diego's intake 0035): a charge in progress whose target can no longer be hit. Letting go always
+      // fires (the protocol has no cancel) and a full charge fires on its own hold_s later, so `rescue` finds something
+      // else for it: the nearest other enemy mech with a clear line in laser range, or, in the last LASER_REAIM_S before
+      // it goes off, a drone or crate. It returns where to aim and whether the torso is inside that outline yet.
+      const beamSlot = LASER_RUSH_ON ? slotOf("laser") : -1
+      const beam = beamSlot >= 0 ? (me.weapons[beamSlot] as WeaponObs) : null
+      const beamCharge = beam?.charge ?? 0
+      if (beamCharge <= 0) beamFull = null
+      else if (beamFull === null && beamCharge >= beam!.stats.charge - 0.03) beamFull = obs.t
+      const beamLeft = beamFull === null ? Infinity : Number(beam!.stats.hold_s ?? cfg.weapons.laser.hold_s ?? 2) - (obs.t - beamFull)
+      const rescue = (not?: number): { id: number; aim: [number, number]; on: boolean } | null => {
+        const at = (id: number, c: Vec3, vel: number[], r: number, h: number) => {
+          const p: Vec3 = [c[0] + vel[0] * LASER_LEAD_S, c[1] + vel[1] * LASER_LEAD_S, c[2]]
+          const a: [number, number] = [yawTo(muzzle, p), pitchTo(muzzle, p)]
+          const d = span(muzzle, c)
+          return { id, aim: a, on: Math.abs(wrap(me.aim[0] - a[0])) < Math.atan2(r * LASER_RELEASE, d) && Math.abs(me.aim[1] - a[1]) < Math.atan2(h * LASER_RELEASE, d) }
+        }
+        const foe = options.filter((o) => o.m.id !== not && o.clear && o.d <= beam!.stats.range).sort((a, b) => a.d - b.d)[0]
+        if (foe) return at(foe.m.id, foe.c, foe.m.vel, cfg.mech.radius * scale(foe.m.cubes), (cfg.mech.height / 2) * scale(foe.m.cubes))
+        if (beamLeft > LASER_REAIM_S) return null
+        const mark = [
+          ...obs.mechs.filter((m) => m.kind === "npc").map((m) => ({ id: m.id, vel: m.vel as number[], r: cfg.npc.radius ?? 1.8, h: cfg.npc.height / 2, c: [m.pos[0], m.pos[1], m.pos[2] + cfg.npc.height / 2] as Vec3 })),
+          ...obs.crates.map((k) => ({ id: k.id, vel: [0, 0, 0], r: cfg.crates.radius ?? 1.4, h: cfg.crates.height / 2, c: [k.pos[0], k.pos[1], k.pos[2] + cfg.crates.height / 2] as Vec3 })),
+        ]
+          .filter((x) => x.id !== not && span(muzzle, x.c) <= beam!.stats.range)
+          .sort((a, b) => span(muzzle, a.c) - span(muzzle, b.c))
+          .slice(0, LOS_TARGETS)
+          .find((x) => clearLine(solids, muzzle, x.c))
+        return mark ? at(mark.id, mark.c, mark.vel, mark.r, mark.h) : null
+      }
       // Farm targets (Build 12): with no enemy mech to shoot, the nearest drone or crate in view with a clear line,
       // within the gun gate, unless we are hurt to retreat level. They go through the same aim and fire code.
       let farmShot = false
@@ -723,13 +872,21 @@ function buildBot(hello: Hello): Bot {
         const led = lead(muzzle, c, vel, gun >= 0 ? w(gun).stats.speed : cfg.weapons.gun.speed)
         const gunAim: [number, number] = [yawTo(muzzle, led), pitchTo(muzzle, led)]
         const direct: [number, number] = [yawTo(muzzle, c), pitchTo(muzzle, c)]
+        // Build 17: the beam is instant and has no spread, so aim it where the target will be when our action lands,
+        // and let go only when the torso is inside the target's outline (its own radius and height, not the gun's wider cone).
+        const ahead: Vec3 = LASER_RUSH_ON ? [c[0] + vel[0] * LASER_LEAD_S, c[1] + vel[1] * LASER_LEAD_S, c[2]] : c
+        const beamAim: [number, number] = [yawTo(muzzle, ahead), pitchTo(muzzle, ahead)]
+        const body = farmShot ? [Math.min(cfg.crates.radius ?? 1.4, cfg.npc.radius ?? 1.8), Math.min(cfg.crates.height, cfg.npc.height) / 2] : [cfg.mech.radius * size, (cfg.mech.height / 2) * size]
+        const beamOn = LASER_RUSH_ON
+          ? Math.abs(wrap(me.aim[0] - beamAim[0])) < Math.atan2(body[0] * LASER_RELEASE, d) && Math.abs(me.aim[1] - beamAim[1]) < Math.atan2(body[1] * LASER_RELEASE, d)
+          : onTarget(direct[0], direct[1])
 
         // Pick the weapon that steers the aim this decision.
         let leading = "track"
         aim = gunAim
         if (clear && laser >= 0 && w(laser).cooldown <= 0 && d <= w(laser).stats.range) {
           leading = "laser"
-          aim = direct
+          aim = beamAim
         } else if (clear && arc >= 0 && d <= w(arc).stats.range) {
           leading = "lightning"
           aim = direct
@@ -769,8 +926,17 @@ function buildBot(hello: Hello): Bot {
           if (charge > 0) {
             // Charging: let go to fire once it is full and lined up.
             const full = charge >= l.stats.charge - 0.03
-            fire[laser] = !(full && leading === "laser" && onTarget(direct[0], direct[1]))
+            let lined = leading === "laser" && beamOn
+            // Build 17 fix: this target is behind cover or out of laser range now, so turn the charge onto something we can hit.
+            const other = LASER_RUSH_ON && leading !== "laser" ? rescue(m.id) : null
+            if (other) {
+              leading = "re-aim"
+              aim = other.aim
+              lined = other.on
+            }
+            fire[laser] = !(full && lined)
           } else if (leading === "laser") fire[laser] = true
+          if (LASER_RUSH_ON && leading === "laser") beamAt = c
         }
         if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true
         if (gun >= 0 && (w(gun).ammo ?? 1) === 0 && (w(gun).reload ?? 0) <= 0) act.reload = true
@@ -779,6 +945,17 @@ function buildBot(hello: Hello): Bot {
         label += ` · ${farmShot ? "farm " : ""}${leading} at ${m.id} ${d.toFixed(0)}m${clear ? "" : " (behind cover)"}${pickNote}`
       } else {
         // Nobody known nearby: face whoever hit us last (hits from behind do 1.5x), and top up the gun.
+        // Build 17: at spawn, with no laser yet, turn the torso once around to see the pickups on every side.
+        if (LASER_RUSH_ON && obs.t < LASER_SCAN_S && !holdsLaser) aim = [wrap(me.aim[0] + 1.5), 0]
+        // Build 17 fix: a charge in progress and nobody left to aim at. Letting go here would fire it at nothing, so keep
+        // it (unless we have to travel: charging halves the walk), on something else we can hit or facing where the
+        // beam last led, and let go only inside an outline. It still fires on its own hold_s after it is full.
+        if (beam && beamCharge > 0 && me.in_zone && !leaveNow) {
+          const other = rescue()
+          if (other) aim = other.aim
+          else if (beamAt) aim = [yawTo(muzzle, beamAt), pitchTo(muzzle, beamAt)]
+          fire[beamSlot] = !(other?.on && beamFull !== null)
+        }
         if (lastHit && obs.t - lastHit.t < 2) aim = [lastHit.bearing, 0]
         const g = me.weapons.find((x) => x?.kind === "gun")
         if (g && (g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0) act.reload = true

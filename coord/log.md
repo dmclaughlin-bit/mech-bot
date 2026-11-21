@@ -256,6 +256,19 @@ Commit 0ed6ffcab023247e862c4293de1a3bb7436d4a3b, receipt BB-2897E011, submitted 
 
 ## Sat 00:38 ET: Build 16 (kill-value target lock) scored 2.98, KEEP (Grok)
 Commit 8887d80c4815d67c91ebe49b5e0c888c0ec089c3, receipt BB-340B47F3, submitted 00:34 ET. Parent Build 14 (d58cdf9) scored 2.88, so +0.10; new champion (auto final entry; Pick-as-final never clicked). Board: 107th of 162, rank 1 5.58, rank 16 4.96, rank 32 4.50. Third straight gain from kill-focused systems. Next free slot 00:45 ET. Queue: Build 17 (laser) > Build 15 (aim, no offline gain) ; Build 18 (spacing) in progress.
+
+## Sat 00:41 ET · Doug's Claude (lane B) · Build 17: early laser (bounded, safe)
+- Did: one mechanism on champion Build 14 (`d58cdf9`, 2.88) on branch `build-17-laser`, code commit `32482e6`; Build 16 (PR #26) not included. In the first 45 s (`LASER_RUSH_S`), with no laser held, walk at full speed along a nav path to a laser we see or remember (pickups are listed only while in view, so they are now remembered) when: the path there plus the leg on to the next circle is at most 120 m longer than going straight to the next circle (`LASER_DETOUR_M`); it is inside the current circle and the trip fits before the shrink ends; it is on the ground with a path (given up after 20 s, `LASER_CHASE_S`); no enemy in view or seen in the last 10 s is nearer to it than our path, and none within 160 m of the route has line of sight to it. Zone travel, engage, retreat and kill collection rank first, any mech damage in the last 3 s stops it, and a cube within 20 m is picked up first. Also: one torso turn in the first 1.8 s to see pickups on every side; a laser in reach is taken into a free slot whoever is in view; the beam is aimed 0.075 s ahead of a moving target and let go only within 0.8 of the target's own radius and half height (Build 14: 1.2 of a mech's radius, also for 1.4 m crates); with a clear laser line the finish rule holds at range instead of walking in. `LASER_RUSH_ON` in `params.ts` rolls all of it back.
+- Result: `bun build` OK; `check.py --map-dir arena` PASS, 300/300 in time, p99 0.9 ms, max 2.1 ms. Offline `tools/laser_check.ts` on the kit stream (non-reactive, not a score): recording as it is, 11 rush ticks (t 3.8 to 4.8 s, until the enemy appears); enemy-free what-if, 176 of 300 ticks in rush mode, all at full walk speed; gate table 12 of 12 rows as expected (window, detour, roof, enemy nearer, enemy watching the route, recent hit, laser already held, zone time, take underfoot); a full charge is let go at 0, 0.5 and 0.7 of the radius off center and held at 0.9, 1.1 and 1.3. With `LASER_RUSH_ON` false, 1,200 decisions (recording plus three what-ifs) are identical to `d58cdf9`. Not submitted.
+- Found: why Build 8 (`08f1f45`, 2.27 vs 2.38) lost, from its code and an offline replay; we have no match replays of our own, so which cause cost most is not measured. (1) No bound: it chased a laser at any time in the match and at any distance the zone clock allowed (134 m on the kit stream). (2) Inside the next circle it walked there at the silent 4.5 m/s instead of 11.7 (the Q1 clamp applied to the loot walk), so 134 m took about 30 s. (3) No memory: the target existed only while the pickup was in the 120° view; on the enemy-free what-if it walked on 52 ticks in 7 stop-start runs with a laser in view on 81 of 300 ticks. (4) No path check and no give-up, so an unreachable laser held it against a wall. (5) The enemy test counted only mechs in view within 160 m, not who was nearer to the laser or remembered. (6) It never took a laser underfoot while an enemy was in view within 160 m. (7) Its use-side change kept the trigger held (half walk speed) behind cover and with nobody in view. Still open in the champion and not changed here: the old 80 m loot walk (lightning, and lasers after 45 s) goes straight at roof pickups with no give-up.
+- Blocked / next: Coordinator scores the PR head; keep if above 2.88, else `LASER_RUSH_ON = false` or close.
+
+## Sat 00:48 ET · Doug · Build 17 moved onto Build 16 main
+- Did: merged `origin/main` @ `dc7f579` (Build 16 target lock, 2.98) into `build-17-laser`. Conflicts in the `brain.ts` header/import (union, plus `target.ts` import), `params.ts` (both blocks kept), and `EXPERIMENTS.md`/`coord/log.md` (both sides). Parent now `dc7f579`, champion 2.98. The laser trip is movement (before target selection); the laser release-on-outline runs after `targetLock.pick`, so it fires at the locked target.
+- Result: `check.py` PASS, 300/300 in time, p99 1.0 ms. With `LASER_RUSH_ON = false`, all 302 kit-stream responses are identical to `dc7f579`; with it on, 29 differ. `tools/laser_check.ts` runs. Not submitted.
+- Found: nothing new beyond the Build 17 entry (no live match, so whether it actually takes the laser is untested).
+- Blocked / next: next slot (00:45 ET) per the Coordinator.
+
 ## Sat 00:38 ET · Diego (research) · Target choice and laser aim
 - Did: filed `research/intake/diego-2026-11-21-0035.json` (3 findings, EV-R-0025..0027 on a scratch ingest: 3 ACCEPT). Question: how do we turn more damage into kills on the house squad (next-diego §2.2/2.3), after Build 14 (2.88).
 - Result: research only, from code and kit config; not submitted.
@@ -281,6 +294,89 @@ Doug approved: Lane A = movement (nav/map/positioning), Lane B = combat (target/
 
 ## Sat 01:21 ET · Grok · Build 19 (stop sneaking) KEEP
 0905b70 scored 3.08 (BB-B23070D8, 1:16 AM), +0.10 over 2.98 → KEEP, PR #33 merged; new champion and auto final entry. Board: 107/168; rank 1 is 5.58, rank 16 is 5.10, rank 32 is 4.75. Queue: B17 (rebased) → B20+22 stack → B21 → B23.
+
+## Sat 00:55 ET · Doug's Claude (lane B) · Build 17 fix round: early arm-up
+- Did: on `build-17-laser` (PR #32), merged `origin/main` @ `e754914` (research PRs; one conflict in this file, both sides kept), then four changes to the Build 17 trip, code commit `4f658e8`, all behind `LASER_RUSH_ON`. (1) No enemy test: an enemy nearer to the pickup or watching the route no longer stops the trip. Mech damage in the last 3 s still stops it, and engage, retreat, zone travel and kill collection still rank first. (2) Holding only the gun, a lightning is a target too; a laser comes first, and a lightning in reach is taken whoever is in view. (3) The bound is now the path to the weapon, `LASER_TRIP_M` = 175 m in `params.ts`, in place of 120 m of detour over the route to the next circle (`LASER_DETOUR_M`, removed). The zone-time test is unchanged. (4) Diego's intake 0035, finding 3: a charge whose target is behind cover or out of range turns onto the nearest other enemy with a clear line in laser range and is let go inside that outline; with no enemy listed the charge is kept facing where the beam last led (it used to be let go at once) unless we are out of the zone or leaving for the next circle; in the last 0.8 s before a held full charge fires on its own, it turns onto a drone or crate if one is clear in range.
+- Result: `bun build` OK; `check.py --map-dir arena` PASS, 300/300 in time, p99 1.0 ms, max 2.7 ms. With `LASER_RUSH_ON` false, 301 of 301 kit-stream responses (ready line plus 300 actions) are identical to `dc7f579`; with it on, 154 differ. Offline `tools/laser_check.ts` (non-reactive, not a score): recording as it is, 136 rush ticks (t 3.8 to 29.5 s, first round 11); enemy-free what-if, 205 of 300 (first round 176), all at full walk speed; gate table 18 of 18 rows; release table unchanged (let go at 0 to 0.7 of the radius, held at 0.9 and beyond); lost-target table 7 of 7. Not submitted.
+- Found: the protocol has no cancel for a laser charge (`protocol.md` §7: letting go always fires, and a full charge fires on its own 2 s later), so when nothing we can hit shows up before that, the shot is still lost. Where two pickups fit, "laser first" is my reading of the research note ("prefer the laser"): a lightning 20 m away is passed over for a laser 170 m away. The path bound allows trips away from the next circle that the detour bound refused (a 120 m trip straight away was 240 m of detour); the zone-time test still applies. On the recording the bot now walks for 26 s with the enemy in view, which is the intent of (1) and its main risk. A row in the old gate table used a spot off the arena; fixed.
+- Blocked / next: Coordinator scores the PR head; keep if above 2.98, else `LASER_RUSH_ON = false` or close.
+
+## Sat 01:24 ET · Doug · Build 17 moved onto Build 19 main
+- Did: merged `origin/main` @ `5eb3915` (Build 19 no-sneak, 3.08 keep) into `build-17-laser`. `brain.ts`: import union; Build 19's `noSneak` flag placed before the Build 17 arm-up block; the silent-cap line now carries both conditions (`!noSneak` and `mode !== "laser rush"`). Docs: both sides kept; parent `5eb3915`, champion 3.08.
+- Result: `check.py` PASS, p99 0.9 ms. `LASER_RUSH_ON = false`: all 302 kit-stream responses identical to `5eb3915`; on: 154 differ (same as before the merge). `tools/laser_check.ts`: 136 rush ticks, 0 below full walk speed; gate table 18/18, lost-target table 7/7. Interaction: the rush needs not-hurt, which is when no-sneak is active too, so both walk at full speed; hide walks are skipped while not hurt, so they never preempt the rush.
+- Blocked / next: Coordinator scores; keep if above 3.08.
+
+## Sat 01:27 ET · Grok · Build 17 (ARM-UP early laser) KEEP
+38ce57b scored 3.50 (BB-FE8FEA0F, 1:23 AM), +0.42 over 3.08 → KEEP, PR #32 merged; new champion. Biggest single gain so far. Queue: B20+22 stack → B21 → B23 (fix round), all to be re-merged onto new main.
+
+## Sat 01:38 ET · Grok · Build 21 (upgrade order) result
+e0710b6 scored 3.46 (BB-1AFE6423, 1:35 AM), below champion 3.50 → not kept, PR #34 closed. Sim pre-check had it at −0.08 ± 0.17 (tie), consistent. Stack #37 sim −0.29 ± 0.24 → held; B23 sim −0.06 → next slot 1:47.
+
+## Sat 01:55 ET · Grok · Build 23 (laser-safe early spacing) result
+5b36504 scored 3.46 (BB-D6AC95A2, Sat 1:47 AM ET), below champion 3.50 → not kept, PR #38 closed.
+Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate factory screens builds on fresh sim seeds (SEED_BASE 2000+) before they take a site slot.
+
+### Builds 20+22 stack (PR #37, 1c05189) — Sat 2:16 AM ET
+- Did: standoff + calibrated race (audit top pick; fresh-seed sim -0.09 ± 0.12).
+- Score: 3.35 (BB-F9B0A975), below 3.50. Closed.
+- Next: B24 rear-glance at 2:23 slot; lane B multi-threat engage (B26), lane A strafe (B27).
+
+### Build 24 rear-glance (PR #40, 9965c0c) — Sat 2:23 AM ET
+- Did: torso turns toward unseen rear attacker (fresh sim +0.06 ± 0.07).
+- Score: 3.40 (BB-F54B5674), below 3.50. Closed.
+- Next: B27 strafe-while-holding at 2:35 slot.
+
+- 2026-11-21 2:35 AM ET: Build 27 strafe-while-holding (d5fb49d, PR #43) scored 3.38, receipt BB-0D0F93D6. Below champion 3.50, so the PR is closed. Rank 106/183; rank 32 is at 4.92.
+
+- 2026-11-21 2:48 AM ET: Build 30 settings comboA (7b71e43, PR #46: aggression 1.5, retreatHp 0.30, LASER_TRIP_M 250) scored 3.54, receipt BB-5E7DE301. NEW CHAMPION (was 3.50 B17); merged. Site auto-set it as final entry. Rank 108/184; rank 32 Hachimi 4.96.
+
+- 2026-11-21 3:17 AM ET: Build 36 rush-first (9a9cf10, PR #50) scored 3.54, receipt BB-285D47C5. Ties champion B30 3.54 and does not beat it, so the PR is closed. Rank 114/188; rank 32 who dey 5.02.
+
+- 2026-11-21 3:23 AM ET: Build 40 stack (34eefff, PR #51: rush-first + pre-charge + backstab) scored 3.23, receipt BB-2F1AD6E9. Below champion 3.54 despite the best sim tonight (+0.29 ± 0.13), so the PR is closed. Rank 114/190; rank 32 ManiFest 5.02.
+
+- 2026-11-21 3:36 AM ET: Build 32 laser pre-charge (f478895, PR #47) scored 3.48, receipt BB-C5622A3A. Below champion 3.54, so the PR is closed. Rank 114/192; rank 32 ImagineLosing 5.04.
+
+- 2026-11-21 3:48 AM ET: Build 48 house hit rates in TTK race (51a5e10, PR #54) scored 3.50, receipt BB-D03F8790. Below champion 3.54, so the PR is closed. Rank 116/198; rank 32 Tark305 5.06.
+
+- 2026-11-21 4:17 AM ET: Build 60 break LOS in 2-on-1 crossfire (b889814, PR #57) scored 3.67, receipt BB-A0BBBFEE. NEW CHAMPION (was 3.54 B30); merged. Site auto-set it as final entry. Rank 115/201; rank 32 1212 5.10.
+
+- 2026-11-21 4:24 AM ET: Build 39 laserdash on B60 base (147f305, PR #59) scored 3.38, receipt BB-ECAB0443. Below champion 3.67, so the PR is closed. Rank 116/203; rank 32 1212 5.10.
+
+- 4:36 AM ET: Build 66 laser slot swap (45d8073, PR #61) scored 3.58, receipt BB-4E471C6E. Below B60 3.67, closed. Rank 119/207; #32 ManiFest 5.13.
+
+- 4:49 AM ET: Build 41 rear-hit step (95af0bc, PR #63) scored 3.65, receipt BB-411B5ADB. Below B60 3.67, closed. Rank 120/209; #32 ManiFest 5.13.
+
+- 5:19 AM ET: Build 74 finish last 30 m of laser walk (153b7bd, PR #68, sim +0.18) scored 3.67, receipt BB-CD0FED5C. Exact tie with B60, closed. Rank 123/215; #32 5.17.
+
+- 5:26 AM ET: Build 68 laser slot (a117939, PR #62) scored 3.21, receipt BB-ABA74C24. Below B60 3.67, closed. Slot/weapon-swap changes hurt on site (B66 3.58, B68 3.21). Rank 123/215; #32 5.17.
+
+- 5:37 AM ET: Build 64 rush-start (f171f20, PR #60) scored 3.63, receipt BB-061D8305. Below B60 3.67, closed. Rank 123/218; #32 Eagle Eye 5.17.
+
+- 5:49 AM ET: Build 45 tracksweep (a34996d, PR #65) scored 3.35, receipt BB-CB222B29. Below B60 3.67, closed. Rank 125/218; #32 RN SUS 5.21.
+
+- 6:19 AM ET: Build 76 any-special early trip (56cb559, PR #71) scored 3.25, receipt BB-3AB97F36. Below B60 3.67, closed. Chasing lightning/mortar early hurts on site. Rank 128/224; #32 Kuki 5.23.
+
+- 6:26 AM ET: Build 53 post-kill cover (dc7f26f, PR #73) scored 3.50, receipt BB-290B6BD3. Below B60 3.67, closed. Rank 129/228; #32 Kuki 5.23.
+
+- 6:37 AM ET: Build 80 late gun-only walk to lightning/laser (28c3acc, PR #74) scored 3.79, receipt BB-78A44AAF. NEW CHAMPION (beats B60 3.67). Merged as cb93980. Site auto-set it as final entry. Rank 120/229; #32 Kuki 5.23. B82 merged with new main -> e7df41f (gate PASS).
+
+- 6:49 AM ET: Build 82 wider crossfire cover search on B80 (e7df41f, PR #76) scored 3.46, receipt BB-4023B260. Below B80 3.79, closed. Rank 121/229; #32 Kuki 5.23.
+
+- 2026-11-21 7:20 AM ET: B86 latelong b93ae6d (PR #78, late walk 400 m after 60 s) site 3.79 (BB-7A43732D), tie with champion B80 3.79; earlier tie keeps final. Closed. Sim was +0.016 (3/192 changed). Rank 121/231, #1 5.96, #32 5.23. Next: B88 2c52220 at 7:26.
+
+- 2026-11-21 7:27 AM ET: B88 noxfirecharge 2c52220 (PR #79, no laser charge under 2+ LOS + hit in last 2 s unless target <50% HP) site 3.52 (BB-485F96CC). Below champion B80 3.79. Closed. Sim was -0.109. Rank 121/232, #1 5.96, #32 5.23. Next slot 7:37 (B43 after merge with main).
+
+- 2026-11-21 7:37 AM ET: B43 laserscout 1c8f8df (PR #64, idle aim toward likely laser/threat, merged on B80) site 3.69 (BB-69DCBAF9). Below champion B80 3.79. Closed. Sim was -0.016. Rank 122/235, #1 5.96, #32 5.23. Next slot 7:49: B90 dd716d3.
+
+- 2026-11-21 7:50 AM ET: B90 keeplight dd716d3 (PR #80, keep lightning, drop gun for laser) site 3.73 (BB-D3165A39). Below champion B80 3.79. Closed. Sim was -0.021. Rank 123/237, #1 5.96, #32 5.23. Next slot 8:20: B92 a941607.
+
+- 2026-11-21 8:22 AM ET: B92 late35 a941607 (PR #81, late walk from 35 s) site 3.79 (BB-ECD38FB6), tie with champion B80; earlier tie keeps final. Closed. Sim was +0.000. Rank 126/238, #1 5.96, #32 5.23. Next slot 8:27: B98 39b2fe9.
+
+- 2026-11-21 8:28 AM ET: B98 nofinish40 39b2fe9 (PR #84, P12 no finish-engage before 40 s without laser) site 3.63 (BB-970E5B69). Below champion B80 3.79. Closed. Sim was -0.042 (62/192 changed). Rank 127/238, #1 5.96, #32 5.23. Note: sim-inert builds (B86, B92) scored exactly 3.79, so the site looks deterministic per behavior.
+
+- 2026-11-21 8:44 AM ET: B100 latecover 8ec3946 (PR #85, B60 cover at 1+ LOS after 45 s when just hit) site 3.50 (BB-813FFACF). Below champion B80 3.79. Closed. Sim was -0.052 (21/192 changed). Rank 129/239, #1 kyoto-max 6.00, #32 5.25.
+
+- 2026-11-21 8:50 AM ET: B94 lateclaim 1657334 (PR #82, P9+P10, submitted by routine tick) site 3.73 (BB-EA74B72B). Below champion B80 3.79. Closed. Sim was +0.000 with only 6/192 changed, yet it scored 0.06 lower, so near-inert builds do not always reproduce the champion score exactly. Rank 129/239, #1 kyoto-max 6.00, #32 5.25. Overnight push ended; final entry stays B80 3.79.
 
 ## Sat 01:25 ET · Diego (research) · Supply drops as the late-game heal
 - Did: filed `research/intake/diego-2026-11-21-0123.json` (1 finding, EV-R-0037 on a scratch ingest: ACCEPT). Picked a question no earlier intake or Doug's 0040 report covers.

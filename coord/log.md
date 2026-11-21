@@ -128,3 +128,9 @@ Format:
 - Result: 5b scored 2.38 (BB-54EDF93F) vs Build 3 2.23 (+0.15) and Build 5 2.04. KEEP. Board 10:24 PM ET: 88th of 121; 1st 5.48, 16th 4.52, 32nd 4.15.
 - Found: fire gates cost practice points (F4 gate was −0.34), which supports the handoff's point 3.
 - Blocked / next: Build 6 "hold behind cover" rebuilt off the new main; after it, drop D4's 100 m gun gate in practice.
+
+## Fri 22:33 ET · Grok's Claude · Build 7: drop 100 m gun gate (practice)
+- Did: one code commit `406422d` on `build-7-gun-range` (off `main` @ `5a11cc3`, parent build 5b `516f3b3`): removed D4/A2's gun fire gate (inside 100 m, or hitting us, < 50% HP, or not moving sideways). The gun now fires at any clear visible target within `stats.range` (230 m in the kit's hello.config), still only when `onTarget` on the lead point. Removed `params.gunRange` and the now-unused `hitBy` map. No movement, laser, lightning, mortar, upgrade, cover or H1-H3 changes.
+- Result: `check.py --map-dir arena` PASS with bun 1.4.4: 300/300 in time, p99 1.0 ms, max 1.7 ms, ready 252 ms; with node 24: 300/300, p99 1.4 ms, max 2.0 ms, ready 269 ms. `bun build` OK. Not submitted.
+- Found: watch findings (d): 46% of winners' gun hits on mechs (55/110) landed beyond 100 m, so the hard gate dropped shots top bots take. Practice-only per D9 until we are safely top 32; gunshots are heard 320 m away, so watch whether it draws more hunters.
+- Blocked / next: Grok submits head SHA vs parent 5b (2.38); keep only on a raw gain.

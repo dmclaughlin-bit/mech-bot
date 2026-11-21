@@ -128,3 +128,9 @@ Format:
 - Result: 5b scored 2.38 (BB-54EDF93F) vs Build 3 2.23 (+0.15) and Build 5 2.04. KEEP. Board 10:24 PM ET: 88th of 121; 1st 5.48, 16th 4.52, 32nd 4.15.
 - Found: fire gates cost practice points (F4 gate was −0.34), which supports the handoff's point 3.
 - Blocked / next: Build 6 "hold behind cover" rebuilt off the new main; after it, drop D4's 100 m gun gate in practice.
+
+## Fri 22:40 ET · Grok · Build 6 reverted
+- Did: submitted PR #12 head `1386dd1` (BB-BC5A52AB); closed it without merging.
+- Result: 2.23 vs parent 5b 2.38 (−0.15), a loss. Board 10:36 PM ET: 93rd of 127; 1st 5.48, 16th 4.54, 32nd 4.17.
+- Found: moving to cover while holding cost points as implemented. Winners hold behind buildings, but repositioning likely cost shots or exposure. Don't retry without a different mechanism (e.g. only reposition when no enemy is visible).
+- Blocked / next: Build 7 (drop the 100 m gun gate) off main at the 11:10 PM slot.

@@ -9,6 +9,9 @@
  * Build 5 (survival half): retreat to the nearest in-zone spot out of the attackers' line of sight (F3), then
  * heal there silently until HP is back over 90% (F4; Build 5b keeps normal fire while healing), and while holding, slip out of any
  * enemy's sight: its 45 m proximity ring and its 120° wedge around its aim (Q2). Q1 (silent hold) is unchanged.
+ * Build 6: hold behind cover. Instead of standing still wherever it is, the hold walks silently to the nearby spot
+ * (same 12-bearing × 1/2/3 s ring as F3/Q2) that the fewest likely enemy eyes can see: every remembered enemy first,
+ * then 8 compass eyes at vision.near_range. Re-scored every few seconds, never out of the zone, never farther from the next circle.
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -61,6 +64,10 @@ const HEAL_HP = 0.9
 /** F3, Q2 hiding spots: this many bearings around us, at the distances we walk in 1, 2 and 3 s, nearest first. */
 const HIDE_BEARINGS = 12
 const HIDE_STEPS_S = [1, 2, 3]
+/** Build 6 hold cover: likely-enemy eyes at vision.near_range on this many compass bearings around a spot. */
+const COVER_BEARINGS = 8
+/** Build 6: re-score the hold spot at most this often (s), sooner when the zone keep-in circle changes. */
+const HOLD_REPLAN_S = 3
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -250,6 +257,70 @@ function buildBot(hello: Hello): Bot {
     return null
   }
 
+  /**
+   * Build 6: how exposed a mech standing at `p` is to likely enemies, lower is better. Each remembered enemy (last
+   * seen position, any facing, within vision.range) that has a line to us counts more than all compass eyes together;
+   * then one point per compass eye (vision.near_range away, on the ground, at eye height) with a line to our center or top.
+   */
+  function exposure(p: Vec3, height: number, t: number): number {
+    const v = cfg.vision
+    const eyeH = cfg.mech.eye_height ?? cfg.mech.height
+    const center: Vec3 = [p[0], p[1], p[2] + height / 2]
+    const top: Vec3 = [p[0], p[1], p[2] + height]
+    const sees = (eye: Vec3) => clearLine(solids, eye, center, 0, 0) || clearLine(solids, eye, top, 0, 0)
+    let score = 0
+    for (const k of known.values()) {
+      if (t - k.lastSeen > 30 || flat(k.pos, p) > v.range) continue
+      if (sees([k.pos[0], k.pos[1], k.pos[2] + eyeH * scale(k.cubes)])) score += COVER_BEARINGS + 1
+    }
+    for (let b = 0; b < COVER_BEARINGS; b++) {
+      const yaw = (2 * Math.PI * b) / COVER_BEARINGS
+      const x = p[0] + Math.cos(yaw) * v.near_range, y = p[1] + Math.sin(yaw) * v.near_range
+      const g = solids?.ground ? groundAt(solids, x, y) : p[2]
+      if (g === -Infinity) continue
+      if (sees([x, y, g + eyeH])) score++
+    }
+    return score
+  }
+
+  /**
+   * Build 6: the hold spot. Scores where we stand and the F3/Q2 ring of spots (straight-line reachable, inside `keepIn`,
+   * no farther from the next circle's edge than now so Z1's timing never gets worse) and keeps the least exposed,
+   * nearest first; we move only for a strictly better spot. Null means stay put. Stops at the planning guard.
+   */
+  function holdSpot(
+    me: Observation["self"], height: number, walk: number, t: number, keepIn: [number[], number],
+    toNext: (q: number[]) => number, timeOk: () => boolean,
+  ): Vec3 | null {
+    let best: Vec3 | null = null
+    let bestScore = exposure(me.pos, height, t)
+    if (bestScore === 0) return null
+    const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
+    const limit = toNext(me.pos)
+    for (const s of HIDE_STEPS_S) {
+      for (let b = 0; b < HIDE_BEARINGS; b++) {
+        if (!timeOk()) return best
+        const yaw = (2 * Math.PI * b) / HIDE_BEARINGS
+        const x = me.pos[0] + Math.cos(yaw) * walk * s, y = me.pos[1] + Math.sin(yaw) * walk * s
+        if (Math.hypot(x - keepIn[0][0], y - keepIn[0][1]) > keepIn[1]) continue
+        const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+        if (g === -Infinity) continue
+        const p: Vec3 = [x, y, g]
+        if (toNext(p) > limit) continue
+        if (!clearLine(solids, from, [x, y, g + height / 2], 0, 0)) continue
+        const score = exposure(p, height, t)
+        if (score < bestScore) {
+          best = p
+          bestScore = score
+          if (score === 0) return best
+        }
+      }
+    }
+    return best
+  }
+  /** Build 6: the current hold spot (null = stay put), when it was picked, and the keep-in circle it was picked for. */
+  let hold: { spot: Vec3 | null; at: number; keep: [number[], number] } | null = null
+
   /** Keep track of every enemy mech seen, and of where the last hit came from. */
   function remember(obs: Observation) {
     for (const m of obs.mechs) {
@@ -392,9 +463,20 @@ function buildBot(hello: Hello): Bot {
           move = heading(spot)
           mode = "hide"
         }
+      } else {
+        // Hold behind cover (Build 6): walk silently to the nearby spot the fewest likely enemies can see, then stand there.
+        // Re-scored every HOLD_REPLAN_S, or when the keep-in circle changes; dropped once reached.
+        if (!hold || obs.t - hold.at >= HOLD_REPLAN_S || flat(hold.keep[0], zoneKeep[0]) > 1 || hold.keep[1] !== zoneKeep[1]) {
+          if (canPlan()) hold = { spot: holdSpot(me, myHeight, walkSpeed, obs.t, zoneKeep, (q) => Math.max(0, flat(q, z.next_center) - inner), canPlan), at: obs.t, keep: zoneKeep }
+        }
+        if (hold?.spot && flat(me.pos, hold.spot) <= cfg.mech.radius) hold.spot = null
+        if (hold?.spot) {
+          move = heading(hold.spot)
+          mode = "hold, to cover"
+        }
       }
-      // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
-      const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
+      // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing, hiding and walking to a hold spot are always silent (F4, Q2, Build 6).
+      const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide" || mode === "hold, to cover"
       if ((toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat")) move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
@@ -402,6 +484,8 @@ function buildBot(hello: Hello): Bot {
         if (me.grounded) act.jump = true
         else if (me.energy > 15) boost = true
         route = null
+        // Build 6: stuck on the way to a hold spot, so stand still until the next re-score.
+        if (mode === "hold, to cover" && hold) hold.spot = null
       }
       let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
 

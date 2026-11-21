@@ -31,7 +31,7 @@ Bot: champion 6182d29 (origin/main bot code) plus a shadow probe (`travel-probe.
 Delay by objective (2000+3000; 4000+5000): zone 159 s, 191 s; cubes 123 s, 236 s; laser/lightning 68 s, 48 s; drop run 48 s, 113 s; kill cubes 41 s, 44 s; cube hunt 26 s, 39 s; loot 23 s, 38 s.
 
 ## Reading
-- Most of the lost time is geometry. Half is the path bending around buildings (zone legs alone add about 7,500 m of path beyond straight-line on each set). Another third is acceleration and turning. Neither is one decision.
+- Most of the lost time is geometry. Half is the path bending around buildings (zone legs alone plan 7,100–7,600 m of path beyond straight-line per set). Another third is acceleration and turning. Neither is one decision.
 - Stuck time is about 0.5 s per game. Grok's Claude is already building mid-game unstuck pathing, so I left it alone.
 - We boost on 0.6% of healthy travel ticks; Watcher says top teams boost on 8.1%. But no delayed leg here maps to a missed drop, and only 6/2 games to zone time. Boosting would also spend the energy lightning needs. The arrival evidence doesn't support a boost-on-travel build.
 - The upper-bound "changed" counts (14 and 20) are co-occurrence only: legs with ≥ 1 s delay die *less* often within 20 s than legs without.

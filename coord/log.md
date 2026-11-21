@@ -320,3 +320,8 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - Did: standoff + calibrated race (audit top pick; fresh-seed sim -0.09 ± 0.12).
 - Score: 3.35 (BB-F9B0A975), below 3.50. Closed.
 - Next: B24 rear-glance at 2:23 slot; lane B multi-threat engage (B26), lane A strafe (B27).
+
+### Build 24 rear-glance (PR #40, 9965c0c) — Sat 2:23 AM ET
+- Did: torso turns toward unseen rear attacker (fresh sim +0.06 ± 0.07).
+- Score: 3.40 (BB-F54B5674), below 3.50. Closed.
+- Next: B27 strafe-while-holding at 2:35 slot.

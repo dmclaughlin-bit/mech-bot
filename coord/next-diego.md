@@ -15,15 +15,38 @@ Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, f
 
 **Read `coord/STATUS.md` first: current champion, in-flight builds, dead families.**
 
-**CHAMPION CHANGED (Sat 2:00 PM ET): P-D-003 drop run `4d6e71b` (PR #99, on top of 4.06), site 4.10 (BB-DA9AC664), merged to main `9168d841c734ec6970340322600feb89f9c27ce6`. Bot code on main equals `4d6e71b`. Branch every new build from current main. Flag 0 must be byte-identical to this main, and a build keeps only if its site score beats 4.10. If you started from an older main (including 4.06 / `42a19d7`), rebase onto this main before you push.**
+**CHAMPION (Sat 2:44 PM ET): B113 drop reach 200 m, bot code `6182d29c673d99f5186d742a5f019c0b007234f2`, site 4.17 (BB-09AE8A68), merged to main `8b6e7b2`.** Branch every new build from current origin/main. Flag 0 must be byte-identical to main, and a build keeps only if its site score is strictly above 4.17.
 
-**P-D-003 DONE KEEP 4.10** (BB-DA9AC664, `4d6e71b`, merged `9168d84`). **P-D-002 lost** at site 3.79 (BB-8DA0CF9D, PR #102 closed). The threat-forecast type now ranks lower after that loss.
+**While you were out (about 1:18 to 3:42 PM ET)** Grok's Claude built P-D-004 (Build 108 finish burst, PR #101, site 3.75 CLOSE) and P-D-006 (Build 109 cook-off bonus, PR #105, rebased as PR #114, reserve, not yet site-tested). Don't redo either. The drop family (P20 PR #121, P21 PR #122) and B117 matchup (PR #123) belong to Mech Builder: don't touch them.
 
 ---
 
-## Current prompt: none (Sat 2:00 PM ET)
+## Current prompt: P-D-007 late-game kill-source measurement on 4.17 (Grok, Sat Nov 21, 3:44 PM ET)
 
-P-D-002 is done (lost). P-D-003 is done (KEEP 4.10). Take a Queued item only after Grok posts a new Current prompt, and branch from current 4.10 main.
+Not ACKed. Add `ACK P-D-007 (Diego's Claude) <time ET>` to `coord/log.md` in your first PR.
+
+Why: score tracks our kills, kill rate falls after 120 s, and the sim is mostly blind late (few sim games are still alive at 95 s). Queue rule: a research idea gets a site slot only after a sim trigger count of about 10 of 192 games or more. This prompt finds the biggest late gap and counts it before anything is built (audit H20 + H18; research before building).
+
+**Step A (docs/tools PR, no bot-code change):** on current main (4.17), seeds 2000+3000 and held-out 4000+5000, n=192 each, add a mid/late event log (wrapper or tools/ script, the bot itself unchanged) and report, for games alive after 60 s and after 120 s separately:
+1. Ticks per mode (hold/heal/walk/engage/drop run) with no target, and how often a known enemy was within 150 m during those ticks.
+2. Our kills and deaths after 60 s / 120 s by cause (which rule was active, LOS count, HP band), and the last 5 s before each death.
+3. Downside tail: worst-quartile placement games and score after a first-fight win.
+4. For the top 3 gaps you find: how many of 192 games each one touches (trigger count), on both seed sets.
+Title: `P-D-007 Step A: ...`. Report the numbers before building. Don't invent numbers; mark sim-only evidence as such.
+
+**Step B (only if a gap clears ~10/192 on both seed sets):** build ONE flag on branch `diego/P-D-007-<name>` for the gap with the largest (games touched × kill gap). Flag 0 = main byte-identical, gate PASS, PR template table on both seed sets, kills and kills/min after 60 s as primary rows. Avoid dead families (STATUS.md): no opening/first-30 s, cover-search widening, finish burst, threat-forecast, blanket avoidance, lightning late-walk distance/time. No slot until Grok verifies.
+
+## Queued: P-D-008 laserSkip expiry (audit H12) (Grok, 3:44 PM ET)
+Once a laser target fails (no route, or chase longer than `LASER_CHASE_S`), it goes into `laserSkip` for the rest of the match (`brain.ts:280`, `:693`, `:704` on 4.17 main), so the late walk can never retry it. Step A: count games on both seed sets where a skipped id later becomes reachable and in-zone while we still lack the weapon. Step B only if ~10/192 or more: flag `LASER_SKIP_EXPIRE_S` (0 = main byte-identical), skip entries expire after that many seconds.
+
+## Queued: P-D-009 two-horizon race, shadow count only (audit H13) (Grok, 3:44 PM ET)
+Shadow-log only, no behavior change: in `race()` engagements after 60 s, count how often a burst-horizon estimate and the current sustained estimate disagree on engage vs not, and how those fights ended. B48 and B20+22 TTK recalibrations lost on the site, so this is a count, not a build. Report in a docs PR; Grok decides whether it earns a build.
+
+---
+
+## Past prompts
+
+## DONE (no Current prompt between 2:00 and 3:44 PM ET)
 
 ## DONE (lost 3.79): P-D-002 (Grok, Sat Nov 21, 12:45 PM ET)
 

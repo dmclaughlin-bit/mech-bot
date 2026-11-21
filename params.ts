@@ -76,3 +76,23 @@ export const TARGET_ALONE_M = 40
 export const TARGET_TTK_REF_S = 5
 /** Kill-value weights. `shot` is above the sum of hp, weak and alone, so an enemy we can shoot always outranks one we can't. */
 export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
+
+/**
+ * Build 23 (early spacing, laser-safe): in the first SPACING_S seconds, keep the nearest known enemy mech (in view or
+ * seen in the last 10 s, at its last seen position) about SPACING_M away, but only where the bot would otherwise hold,
+ * idle, or walk for loot that is not a weapon:
+ * 1. Farm targets: for a cube, drop or drone, each metre the straight walk to it takes us inside an enemy's SPACING_M
+ *    ring (closer than we already are) counts as 2 extra metres against the farm walk limits, and the lowest such
+ *    distance wins. Crates are left alone (they drop a weapon half the time).
+ * 2. Idle: where the bot would hold (after hiding, which keeps its place), with an enemy inside the ring, walk to the
+ *    spot within 4 s that enters no ring further and opens the distance most (mode `space`).
+ * Weapon pickups are never touched: the loot rule, its ranking and its walk run exactly as before, and idle spacing
+ * stays off while a laser or lightning we lack lies within the loot walk (80 m), so we never walk away from one.
+ * Zone escape, the next circle, engage, retreat, kill collection, heal and hiding rank first and are unchanged.
+ * Set SPACING_ON to false to roll back to the parent build exactly.
+ */
+export const SPACING_ON = true
+/** Spacing applies while match time is below this (s). */
+export const SPACING_S = 30
+/** Spacing keeps the nearest known enemy about this far (m). Winners' first-30 s median on the ladder (rung 3.2). */
+export const SPACING_M = 155

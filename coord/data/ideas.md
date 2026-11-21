@@ -19,8 +19,9 @@ Champion stack still on main (bot code of B80 `28c3acc1a0f58571163e90b562da1c250
 | opening | B23 (3.46 LOSS), B45 (3.35 LOSS), B76 (3.25 LOSS), B43 (3.69 LOSS), B51 (3.79 TIE), UF100 (3.79 TIE); B101 screened, no slot | 3.79 tie (B51, UF100) — did not beat B80 | dead for new first-30s / opening tweaks (per 11:57 AM ET receipt check: stop building first-30s fixes). B101 early dodge was screened at sim −0.151 ± 0.129 and was not submitted |
 | upgrades | B21 (3.46 LOSS) | 3.46 | dead |
 | crossfire | B60 (3.67 KEEP), B82 (3.46 LOSS), B88 (3.52 LOSS) | 3.67 (B60, in the stack) | alive (B60 2-on-1 LOS break); wider cover search and "don't start a laser charge under fire" dead |
-| lightning | B80 (3.79 KEEP), B66 (3.58 LOSS), B68 (3.21 LOSS), B86 (3.79 TIE), B90 (3.73 LOSS), B92 (3.79 TIE), B94 (3.73 LOSS), B103 (PENDING) | 3.79 (B80, current champion and final entry) | alive (B80 late walk). Distance/start-time/claim-priority variants tied or lost. B103 lightning ambush is in flight. Do not extend late-walk distance again (B86) or start it at 35 s (B92) |
-| drops | B104 (PENDING) | — | alive (in flight). P-D-001 Step A: B80 claims 0 supply drops. Flag-on drop run (`DROP_RUN_M=150`) is PR #95, not yet scored |
+| lightning | B80 (3.79 KEEP), B66 (3.58 LOSS), B68 (3.21 LOSS), B86 (3.79 TIE), B90 (3.73 LOSS), B92 (3.79 TIE), B94 (3.73 LOSS), B103 (3.92 KEEP), B106 (3.85 LOSS) | 3.92 (B103, in the stack) | alive (B80 late walk + B103 ambush). Distance/start-time/claim-priority variants tied or lost. Widening the ambush to uncharged-laser holders (B106) lost. Do not extend late-walk distance again (B86) or start it at 35 s (B92) |
+| drops | B104 (3.88 CLOSE, +0.09 over B80 parent) | 3.88 | alive: rebuilding on 4.06 as Build 107 (P-D-003) |
+| standoff | P-B-001 (4.06 KEEP) | 4.06 (current champion and final entry) | alive (in the stack) |
 
 Screened on the sim but **not** site-submitted (do not treat as a site result): B28, B34, B38, B42, B49, B54, B56, B78, B84, B96, B101, and earlier SHAs of B39/B43/B51/B64/B66/B82. See `screens.csv`. B56 (sidestep off a charging laser line) was screened vs B30 at sim −0.214 ± 0.119 and was not submitted; P-B-002 is a later, narrower engagement check and must explain why it is not the same mechanism.
 

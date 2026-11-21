@@ -4,6 +4,8 @@ Only Grok edits this file. Same protocol as `coord/next-diego.md`: pull main, fi
 
 Rules: the real site score is the only source of truth; the sim is a crash/timing/flag-0 screen. Check `coord/data/ideas.md` (once it lands) so you don't recycle dead ideas. One change per build, on its own branch. The submitted commit ships with the flag ON, and flag 0 must be byte-identical to B80 `28c3acc`. Gate with `check.py --map-dir arena` (max under 30 ms). Your PR carries the full 40-char SHA and the template table on both seed sets, and you append your rows to `coord/data/screens.csv`. Never merge, submit, or push to main.
 
+**Read `coord/STATUS.md` first: current champion, in-flight builds, dead families.**
+
 **CHAMPION CHANGED (Sat 12:59 PM ET): P-B-001 standoff break `ba52103` (on top of B103), site 4.06 (BB-6EA7D518), merged to main `42a19d7`. Branch every new build from current main. Flag 0 must be byte-identical to main, and a build keeps only if its site score beats 4.06. If you started from an older main, rebase onto main before you push.**
 
 ---

@@ -4,6 +4,7 @@ One row per practice submission, newest first. Keep a change only if it gains ab
 
 | Time (ET) | Commit | Parent | Params | Score | Hypothesis (rule ID) | Result |
 | --- | --- | --- | --- | --- | --- | --- |
+| Fri 11:12 PM | `beb9240` | `100941f` | `params.ts` defaults | 2.27 | Build 8: laser first (PR #14, BB-DB8A4479) | −0.11 vs champion 5b 2.38. LOSS; PR closed. Board 11:17 PM ET: 104th of 136; 1st 5.58, 16th 4.73, 32nd 4.23 |
 | Fri 10:37 PM | `209539f` | `100941f` | `params.ts` defaults | 2.04 | Build 7: drop D4 100 m gun gate (PR #13, BB-07153949) | −0.34 vs Build 5b (2.38). REVERT: PR closed. Board 10:39 PM ET: 95th of 130 on best 2.38; 32nd is 4.17 |
 | Fri 10:32 PM | `1386dd1` | `100941f` | `params.ts` defaults | 2.23 | Build 6: hold behind cover (PR #12, BB-BC5A52AB) | −0.15 vs Build 5b (2.38). REVERT: PR closed. Board 10:36 PM ET: 93rd of 127 on best 2.38; 32nd is 4.17 |
 | Fri 10:21 PM | `100941f` | `406ab9f` | `params.ts` defaults | 2.38 | Build 5b: F3/F4/Q2 without the F4 fire gate (PR #11, BB-54EDF93F) | +0.15 vs Build 3 (2.23), +0.34 vs Build 5. KEEP (deterministic practice: raw gain). Merged as `516f3b3`; now the auto final entry. Board 10:24 PM ET: 88th of 121; 32nd is 4.15 |

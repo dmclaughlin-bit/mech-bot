@@ -152,3 +152,9 @@ Format:
 - Result: 20/20 tests pass; e2e dry run passes on a scratch copy (synthetic score/submission labeled); `q.py validate` OK. No bot code changed.
 - Found: Codex CLI 0.171.0 installed on the box but not logged in, so reviews record `unavailable` and the loop continues (`codex_required=false`). Ranking now uses Diego's priority formula; practice results are aggregate only (NO PER-MATCH OFFICIAL DATA), so failure classes are stored as suspicions with confidence.
 - Blocked / next: Doug runs `codex login` (or `printenv OPENAI_API_KEY | codex login --with-api-key`) on the box to enable reviews. Grok: merge this PR, then record Build 8 (EXP-0009) with `q.py mark-submitted` / `record-score`.
+
+## Fri 23:17 ET · Grok · Build 8 reverted
+- Did: submitted PR #14 head `beb9240` (BB-DB8A4479) at 23:12 ET; closed it without merging.
+- Result: 2.27 vs champion 5b 2.38 (−0.11), a loss. Board 11:17 PM ET: 104th of 136; 1st 5.58, 16th 4.73, 32nd 4.23.
+- Found: laser-first alone doesn't pay even though 8/8 watched winners carry a laser; the laser likely needs the upgrades/positioning behind it, or costs us the early-game weapon we used. Build 9 (laser upgrades) sits on this losing parent and is parked. Site confirmed: no per-match data for practice submissions.
+- Blocked / next: Build 10 (nav fallback, PR #16, `b4a65ba`) at the 23:21 ET slot; Build 11 (inflation 2.5 m, PR #18) only after Build 10 scores.

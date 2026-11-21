@@ -23,12 +23,14 @@
  * close to our best weapon's effective range (see STANDOFF_BREAK_S).
  * P-D-003 (drop run): walk to a called supply drop within 150 m, timed to arrive as it lands, and hold its ring
  * (see DROP_RUN_M).
+ * B117 (matchup range): inside an engage with a clear line, walk to the distance where our loadout and HP do best
+ * against the target's (see MATCHUP_ON, matchupRange).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, MATCHUP_BAND_M, MATCHUP_GAIN, MATCHUP_MAX_M, MATCHUP_MIN_M, MATCHUP_ON, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -152,6 +154,12 @@ const STANDOFF_MIN_M = 45
 const STANDOFF_MAX_M = 90
 const STANDOFF_SECOND_S = 3
 const STANDOFF_HP_MARGIN = 0.2
+/** B117 (matchup range): the gun's lead-miss guess falls from HIT_GUN_NEAR at GUN_NEAR_M to HIT_GUN_FAR at this distance (m). */
+const MATCHUP_GUN_FAR_M = 100
+/** B117: grid step (m), the mortar's shortest useful shot (m), and the bearings (rad, off straight away from the target) tried for a step back. */
+const MATCHUP_STEP_M = 5
+const MATCHUP_MORTAR_MIN_M = 15
+const MATCHUP_BACK = [0, 0.6, -0.6, 1.2, -1.2]
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -351,6 +359,86 @@ function buildBot(hello: Hello): Bot {
     let sum = 0
     for (const kind of e.weapons ?? ["gun"]) if (baseReach[kind] >= d) sum += baseDps[kind] * hitRate(kind, d)
     return sum * cubeDamage(e.cubes)
+  }
+
+  /** B117: the chance one gun shot lands at `x` m on a target of radius `r`: the lead-miss guess (Build 14's 0.8 near
+   * and 0.5 far, joined by a straight line) × the share of the Gaussian spread that falls inside the target. */
+  function gunHitAt(x: number, spreadDeg: number, r: number): number {
+    const lead = x <= GUN_NEAR_M ? HIT_GUN_NEAR : x >= MATCHUP_GUN_FAR_M ? HIT_GUN_FAR
+      : HIT_GUN_NEAR + ((HIT_GUN_FAR - HIT_GUN_NEAR) * (x - GUN_NEAR_M)) / (MATCHUP_GUN_FAR_M - GUN_NEAR_M)
+    const sigma = (spreadDeg * Math.PI) / 180
+    return sigma > 0 ? lead * (1 - Math.exp(-0.5 * (Math.atan2(r, x) / sigma) ** 2)) : lead
+  }
+  /**
+   * B117 (matchup range, see MATCHUP_ON in params.ts): the distance to fight `e` at, or null to leave the champion's
+   * move alone. `d` is the distance now. Both sides' DPS at each candidate distance come from the weapon numbers;
+   * the score is ours × (our HP / its HP) − its (after our armor).
+   */
+  function matchupRange(me: Observation["self"], e: { id: number; hp?: number; cubes?: number; weapons?: WeaponKind[] }, d: number): number | null {
+    const mine = me.weapons.flatMap((w) => (w ? [{ kind: w.kind, s: { ...cfg.weapons[w.kind], ...w.stats } as Record<string, number> }] : []))
+    const k = known.get(e.id)
+    const theirs: WeaponKind[] = e.weapons?.length ? e.weapons : k?.weapons.length ? k.weapons : ["gun"]
+    const myArc = mine.find((w) => w.kind === "lightning")
+    const myArcReach = myArc ? 0.8 * weaponReach("lightning", myArc.s) : 0
+    const itsArcReach = theirs.includes("lightning") ? baseReach.lightning : 0
+    const cook = 1 + Number(cfg.weapons.laser?.cookoff ?? 0)
+    const myR = cfg.mech.radius * scale(me.cubes), itsR = cfg.mech.radius * scale(e.cubes)
+    const armor = 1 - clamp(me.stats.armor ?? 0, 0, 0.9)
+    const ours = (x: number) => {
+      let sum = 0
+      for (const w of mine) {
+        const reach = weaponReach(w.kind, w.s), dps = weaponDps(w.kind, w.s)
+        if (w.kind === "gun") sum += reach >= x ? dps * gunHitAt(x, w.s.spread_deg ?? 0, itsR) : 0
+        else if (w.kind === "lightning") sum += x <= myArcReach ? dps * HIT_BEAM : 0
+        else if (w.kind === "laser") sum += reach >= x && x > itsArcReach ? dps * HIT_BEAM * (theirs.includes("mortar") ? cook : 1) : 0
+        else sum += reach >= x && x >= MATCHUP_MORTAR_MIN_M ? dps * HIT_MORTAR : 0
+      }
+      return sum * cubeDamage(me.cubes)
+    }
+    const its = (x: number) => {
+      let sum = 0
+      for (const kind of theirs) {
+        if (kind === "gun") sum += baseReach.gun >= x ? baseDps.gun * gunHitAt(x, Number(cfg.weapons.gun?.spread_deg ?? 0), myR) : 0
+        else if (kind === "lightning") sum += x <= itsArcReach ? baseDps.lightning * HIT_BEAM : 0
+        else if (kind === "laser") sum += baseReach.laser >= x && x > myArcReach ? baseDps.laser * HIT_BEAM * (mine.some((w) => w.kind === "mortar") ? cook : 1) : 0
+        else sum += baseReach.mortar >= x && x >= MATCHUP_MORTAR_MIN_M ? baseDps.mortar * HIT_MORTAR : 0
+      }
+      return sum * cubeDamage(e.cubes) * armor
+    }
+    const itsHp = Math.max(1, e.hp ?? k?.hp ?? cfg.mech.hp)
+    const ratio = me.hp / itsHp
+    const score = (x: number) => ratio * ours(x) - its(x)
+    const out0 = ours(d), in0 = its(d), here = ratio * out0 - in0
+    // Winning the race where we stand (ttk < ttd ⇔ the score is positive): close or hold, never back off.
+    const far = here > 0 ? d : Math.min(MATCHUP_MAX_M, Math.max(0, ...mine.map((w) => weaponReach(w.kind, w.s))))
+    let best = here, want = d
+    for (let x = MATCHUP_MIN_M; x <= far; x += MATCHUP_STEP_M) {
+      const v = score(x)
+      // A tie goes to the distance nearest to where we stand.
+      if (v > best + 1e-9 || (v > best - 1e-9 && Math.abs(x - d) < Math.abs(want - d))) {
+        best = Math.max(best, v)
+        want = x
+      }
+    }
+    if (best - here < MATCHUP_GAIN * (ratio * out0 + in0) || best - here <= 0 || Math.abs(want - d) <= MATCHUP_BAND_M) return null
+    return want
+  }
+  /**
+   * B117: one walk-second back from `foe` (straight away first, then to either side), or null. The spot is inside
+   * `keepIn`, on ground, reached in a straight clear line, and keeps a line of fire from muzzle height to `aimAt`.
+   */
+  function backStep(me: Observation["self"], foe: Vec3, aimAt: Vec3, height: number, muzzleUp: number, walk: number, keepIn: [number[], number]): Vec3 | null {
+    const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
+    const away = yawTo(foe, me.pos)
+    for (const turn of MATCHUP_BACK) {
+      const x = me.pos[0] + Math.cos(away + turn) * walk, y = me.pos[1] + Math.sin(away + turn) * walk
+      if (Math.hypot(x - keepIn[0][0], y - keepIn[0][1]) > keepIn[1]) continue
+      const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+      if (g === -Infinity) continue
+      if (!clearLine(solids, from, [x, y, g + height / 2], 0, 0)) continue
+      if (clearLine(solids, [x, y, g + muzzleUp], aimAt)) return [x, y, g]
+    }
+    return null
   }
 
   /** Follow a path to `goal`, re-planning at most once a second (Z1, Build 3). Returns the move and the distance left. */
@@ -764,9 +852,23 @@ function buildBot(hello: Hello): Bot {
         // hits as well at range, and walking in while charging is at half speed.
         const beam = LASER_RUSH_ON ? me.weapons.find((w) => w?.kind === "laser") : undefined
         const standOff = !!beam && engage.clear && d <= (beam.stats.range ?? baseReach.laser)
-        if ((!engage.clear || (engage.why === "finish" && d > close && !standOff)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1])
+        const inKeep = flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1]
+        const closeIn = (!engage.clear || (engage.why === "finish" && d > close && !standOff)) && inKeep
+        // B117 (matchup range): with a clear line, the distance where our loadout and HP do best against the target's.
+        // Closer: the same nav path the champion closes on. Farther: one step back that keeps the zone and the shot.
+        // No preference, no step to take, or a target outside the circle we keep to: the champion's move. Build 17's
+        // laser stand-off (a clear laser line in range holds its ground) is kept: such a holder never walks in.
+        const want = MATCHUP_ON && engage.clear ? matchupRange(me, engage.m, d) : null
+        const back = want !== null && want > d ? backStep(me, engage.m.pos, centerOf(engage.m), myHeight, muzzle[2] - me.pos[2], walkSpeed, zoneKeep) : null
+        let note = ""
+        if (back) {
+          move = heading(back)
+          note = ", mu out"
+        } else if (want !== null && want < d && inKeep && !standOff) {
           move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
-        mode = `engage, ${engage.why}`
+          if (!closeIn) note = ", mu in"
+        } else if (closeIn) move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
+        mode = `engage, ${engage.why}${note}`
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && seenAt(me.pos, myHeight, threats, false) && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
         // Retreat (F2, F3, Build 5): hurt and under fire, so head for the nearest in-zone spot out of every visible
         // enemy's line of sight, torso still on the attacker (legs and torso are independent). Boost only above 30% energy.

@@ -140,3 +140,29 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 150
+
+/**
+ * B117 (loadout/HP matchup range): during an engage the champion already chose (Build 14's TTK or finish rule) and
+ * with a clear line to the target, pick the fighting distance from both loadouts and both HP totals instead of
+ * always standing still (or, on the finish rule, closing to one fixed range).
+ *   score(x) = ourDps(x) × (our HP / its HP) − itsDps(x)        (proportional to 1/ttk − 1/ttd at distance x)
+ * DPS by distance comes from the kit's weapon numbers (hello.config.weapons and our upgraded stats): each weapon's
+ * range, sustained DPS, the gun's spread against the target's radius and a lead-miss guess that falls from 0.8 at
+ * 60 m to 0.5 at 100 m, the lightning short (a laser inside the other side's arc range deals nothing) and the laser
+ * cook-off on a mortar holder. The best x on a 5 m grid from MATCHUP_MIN_M to MATCHUP_MAX_M (or our longest reach)
+ * is walked to only when it beats where we stand by MATCHUP_GAIN of the fight's DPS scale and lies more than
+ * MATCHUP_BAND_M away. While we win the race (ttk < ttd here) the bot only closes or holds; while it loses it may
+ * also back off to where the enemy is weakest, one walk-second at a time, to a spot inside the circle we keep to,
+ * with a straight walkable line and a line of fire. Closing uses the nav path, and never happens while Build 17's
+ * laser stand-off holds (a laser in hand with a clear line in range: the beam hits as well from there). Target
+ * choice, the engage and retreat tests, firing, the drop run, the standoff break and the lightning ambush are unchanged.
+ * false = the champion (site 4.10, drop run 4d6e71b) exactly.
+ */
+export const MATCHUP_ON = true
+/** Candidate fighting distances (m): from MIN to MAX (capped by our longest held reach), every 5 m. */
+export const MATCHUP_MIN_M = 15
+export const MATCHUP_MAX_M = 120
+/** Move only for a score gain of at least this fraction of (our weighted DPS + its DPS) where we stand. */
+export const MATCHUP_GAIN = 0.1
+/** Move only when the preferred distance is more than this far (m) from the current one. */
+export const MATCHUP_BAND_M = 5

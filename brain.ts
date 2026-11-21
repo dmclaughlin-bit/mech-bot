@@ -6,8 +6,7 @@
  * only, a fire gate on the gun, zone travel that leaves just in time and holds silently,
  * unsticking, retreat when hurt, and an upgrade order. The rules are §9 of the team plan.
  */
-import { readFileSync } from "node:fs"
-import { join } from "node:path"
+import { clearLine, loadMap } from "./map.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
 // ------------------------------------------------------------------ geometry helpers
@@ -17,90 +16,6 @@ const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
 const yawTo = (from: number[], to: number[]) => Math.atan2(to[1] - from[1], to[0] - from[0])
 const pitchTo = (from: number[], to: number[]) => Math.atan2(to[2] - from[2], flat(from, to))
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
-
-// ------------------------------------------------------------------ the map
-/** Buildings, stadium and bridges on a grid: per cell, the lowest base and the highest top. */
-type Solids = { minX: number; minY: number; step: number; nx: number; ny: number; base: Float32Array; top: Float32Array }
-
-function inside(ring: number[], x: number, y: number): boolean {
-  let hit = false
-  for (let i = 0, j = ring.length - 2; i < ring.length; j = i, i += 2) {
-    const xi = ring[i], yi = ring[i + 1], xj = ring[j], yj = ring[j + 1]
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) hit = !hit
-  }
-  return hit
-}
-
-function loadSolids(hello: Hello): Solids | null {
-  const dir = hello?.map?.dir
-  if (typeof dir !== "string" || !dir) {
-    log("no map folder in hello, firing without cover checks")
-    return null
-  }
-  const file = hello.map.files?.find((f) => f.endsWith("world.json")) ?? "v2/world.json"
-  for (const path of [join(dir, file), join(dir, "arena", file)]) {
-    let text: string
-    try {
-      text = readFileSync(path, "utf8")
-    } catch {
-      continue
-    }
-    try {
-      const world = JSON.parse(text)
-      const { minX, minY, nx, ny } = world.terrain
-      const step: number = world.terrain.step ?? 1
-      const base = new Float32Array(nx * ny).fill(Infinity)
-      const top = new Float32Array(nx * ny).fill(-Infinity)
-      for (const p of world.prisms) {
-        const ring: number[] = p.ring
-        const holes: number[][] = p.holes ?? []
-        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity
-        for (let i = 0; i < ring.length; i += 2) {
-          x0 = Math.min(x0, ring[i]); x1 = Math.max(x1, ring[i])
-          y0 = Math.min(y0, ring[i + 1]); y1 = Math.max(y1, ring[i + 1])
-        }
-        const i0 = Math.max(0, Math.floor((x0 - minX) / step)), i1 = Math.min(nx - 1, Math.floor((x1 - minX) / step))
-        const j0 = Math.max(0, Math.floor((y0 - minY) / step)), j1 = Math.min(ny - 1, Math.floor((y1 - minY) / step))
-        for (let j = j0; j <= j1; j++) {
-          const y = minY + (j + 0.5) * step
-          for (let i = i0; i <= i1; i++) {
-            const x = minX + (i + 0.5) * step
-            if (!inside(ring, x, y) || holes.some((h) => inside(h, x, y))) continue
-            const k = j * nx + i
-            if (p.base < base[k]) base[k] = p.base
-            if (p.top > top[k]) top[k] = p.top
-          }
-        }
-      }
-      return { minX, minY, step, nx, ny, base, top }
-    } catch (e) {
-      log("could not read the map, firing without cover checks:", e)
-      return null
-    }
-  }
-  log("map not found under", hello.map?.dir, "- firing without cover checks")
-  return null
-}
-
-/** True when no building, stadium or bridge sits on the straight line from a to b. Trees never stop shots. */
-function clearLine(s: Solids | null, a: Vec3, b: Vec3, skipStart = 3, skipEnd = 2.5): boolean {
-  if (!s) return true
-  const len = span(a, b)
-  const usable = len - skipStart - skipEnd
-  if (usable <= 0) return true
-  const steps = Math.ceil(usable / 0.75)
-  for (let n = 0; n <= steps; n++) {
-    const f = (skipStart + (usable * n) / steps) / len
-    const x = a[0] + (b[0] - a[0]) * f
-    const y = a[1] + (b[1] - a[1]) * f
-    const z = a[2] + (b[2] - a[2]) * f
-    const i = Math.floor((x - s.minX) / s.step), j = Math.floor((y - s.minY) / s.step)
-    if (i < 0 || j < 0 || i >= s.nx || j >= s.ny) continue
-    const k = j * s.nx + i
-    if (z >= s.base[k] && z <= s.top[k]) return false
-  }
-  return true
-}
 
 // ------------------------------------------------------------------ aiming
 /** Where to aim a straight-flying shot so it meets a target moving at a steady velocity. */
@@ -183,7 +98,7 @@ function fallbackBot(): Bot {
 
 function buildBot(hello: Hello): Bot {
   const cfg = hello.config
-  const solids = loadSolids(hello)
+  const solids = loadMap(hello)
   const growth = Number(cfg.cubes.size_per_cube ?? 0.05)
   const minPitch = cfg.mech.min_pitch ?? -0.7
   const maxPitch = cfg.mech.max_pitch ?? 1.3

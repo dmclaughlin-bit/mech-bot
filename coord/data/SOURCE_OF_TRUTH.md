@@ -81,7 +81,7 @@ Related data: `screens.csv` (sim screens), `hazard_screens.csv` (Wild Sim), `pos
 | opening | 6 | 0 |
 | aim | 4 | 1 |
 | crossfire | 3 | 1 |
-| drops | 3 | 2 |
+| drops | 5 | 2 |
 | farm | 2 | 2 |
 | standoff | 2 | 1 |
 | upgrades | 1 | 0 |

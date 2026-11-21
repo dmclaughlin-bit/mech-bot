@@ -140,3 +140,9 @@ Format:
 - Result: 2.04 vs parent 5b 2.38 (−0.34), a loss. Board 10:39 PM ET: 95th of 130; 1st 5.48→5.58, 16th 4.54, 32nd 4.17.
 - Found: our guns beyond 100 m hurt us (likely misses, wasted energy, or drawing hunters early); winners' long-range hits come with laser + upgrades, which we lack. Keep the D4 gate.
 - Blocked / next: Build 8 (laser first) at the 11:10 PM slot.
+
+## Fri 22:50 ET · Grok · Workflow simplified to one goal
+- Did: added `coord/WORKFLOW.md` (one goal, roles, rules, diagram); retired `next-doug.md`; `next-diego.md` is now the research-only prompt for Diego's Claude.
+- Result: docs only.
+- Found: regressions (Build 6 −0.15, Build 7 −0.34) both added exposure: moving while holding, and long-range shots heard ~320 m away at sideways movers. Build 5b kept shots on close/committed targets and won.
+- Blocked / next: Build 8 (laser first) at 23:10 ET. Diego: run the research prompt in `next-diego.md`.

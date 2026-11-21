@@ -114,6 +114,14 @@ const LASER_CUBE_M = 20
 const LASER_RELEASE = 0.8
 /** Build 17: aim the beam this far ahead (s) of a moving target: about the delay between an observation and our action taking effect (a guess: 1 to 2 ticks). */
 const LASER_LEAD_S = 0.075
+/** Build 42 (early pair): in the first EARLY_PAIR_S seconds, do not commit a finish/TTK engage or walk in if a second
+ * known enemy is within EARLY_PAIR_M of us or of the target (Watcher: winners have 2+ enemies inside 100 m in the first
+ * 30 s only 2% of the time vs 7% for the bottom half). Different from Build 23 (lane A idle/farm spacing vs the nearest
+ * enemy at 155 m) and from alone() (LOS or a recent hit, no range window). false = champion. */
+const EARLY_PAIR_ON = true
+const EARLY_PAIR_S = 30
+const EARLY_PAIR_M = 100
+const EARLY_PAIR_MEM_S = 10
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -595,6 +603,14 @@ function buildBot(hello: Hello): Bot {
             engaged = null
             pick = undefined
           }
+        }
+        // Build 42: early on, a second enemy within 100 m of us or of the target (in view or seen in the last 10 s)
+        // vetoes the commit, even with no line of sight. alone() only sees watchers with LOS or a recent hit.
+        if (EARLY_PAIR_ON && pick && obs.t < EARLY_PAIR_S) {
+          const near = (at: Vec3) =>
+            enemies.some((e) => e.id !== pick!.id && flat(e.pos, at) < EARLY_PAIR_M) ||
+            [...known.values()].some((k) => k.id !== pick!.id && obs.t - k.lastSeen < EARLY_PAIR_MEM_S && !enemies.some((e) => e.id === k.id) && flat(k.pos, at) < EARLY_PAIR_M)
+          if (near(me.pos) || near(pick.pos)) { engaged = null; pick = undefined }
         }
         if (pick) engage = { m: pick, why, clear: clearLine(solids, muzzle, centerOf(pick)) }
       } else engaged = null

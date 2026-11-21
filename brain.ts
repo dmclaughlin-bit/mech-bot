@@ -160,7 +160,7 @@ const EV_STRAFE = EVADE_MODE === 1 || EVADE_MODE === 2 || EVADE_MODE === 3 || EV
 const EV_JITTER = EVADE_MODE === 2 || EVADE_MODE === 6
 const EV_ORBIT = EVADE_MODE === 3 || EVADE_MODE === 6
 const EV_DODGE = EVADE_MODE === 4 || EVADE_MODE === 6
-const EV_SLIDE = EVADE_MODE === 5 || EVADE_MODE === 6 || [30, 31, 32, 34, 35, 40, 41].includes(EVADE_MODE)
+const EV_SLIDE = EVADE_MODE === 5 || EVADE_MODE === 6 || [30, 31, 32, 34, 35, 40, 41, 42].includes(EVADE_MODE)
 /** P-B-008: a standing gunfight is against an enemy with a clear line within this distance (m), or one that hit us in the last THREAT_HIT_S, or one charging a laser. */
 const EVADE_RANGE_M = 160
 /** P-B-008: every evasion step is checked this far ahead (s of walking, at least EVADE_LOOK_MIN_M) against walls, the zone and the shot. */
@@ -189,7 +189,7 @@ const AIM_LAG_S = 0.075
 const EV3 = EVADE_MODE >= 30
 /** 30, and every mode built on it: slide around cover (mode 5's code) with a commitment timer and an oscillation breaker,
  * jump + jet over what the nav would get stuck on (energy reserve kept), sprint to the next circle when energy allows. */
-const EV3_PATH = [30, 31, 32, 34, 35, 40, 41].includes(EVADE_MODE)
+const EV3_PATH = [30, 31, 32, 34, 35, 40, 41, 42].includes(EVADE_MODE)
 /** 31, 32, 34: calibrated strafe, only in danger, only where the champion would stand. */
 const EV3_STRAFE = [31, 32, 34, 41].includes(EVADE_MODE)
 /** 32, 34: boost (sprint) during the danger strafe when energy is above SPRINT_RESERVE. */
@@ -197,11 +197,13 @@ const EV3_SPRINT = [32, 34, 41].includes(EVADE_MODE)
 /** 34: a short jump at a strafe reversal in danger. */
 const EV3_HOP = EVADE_MODE === 34 || EVADE_MODE === 41
 /** 35: outnumbered escape (on 30): 2+ attackers and no drop run/hold → cover or away, sprinting and jetting. */
-const EV3_ESCAPE = EVADE_MODE === 35
+const EV3_ESCAPE = EVADE_MODE === 35 || EVADE_MODE === 42
 /** 36 (and 40 = 30 + 36, 41 = 34 + 36): an active drop run or ring hold is not dropped for "break crossfire" unless a mech hit us in the last XFIRE_HIT_S. */
-const EV3_XFIRE_COMMIT = [36, 40, 41].includes(EVADE_MODE)
+const EV3_XFIRE_COMMIT = [36, 40, 41, 42].includes(EVADE_MODE)
 /** 37: literal torso sway in danger (champion movement). 38: front-arc discipline (champion movement). */
-const EV3_SWAY = EVADE_MODE === 37
+const EV3_SWAY = EVADE_MODE === 37 || EVADE_MODE === 43
+/** 43: the sway of 37 only while no held weapon could fire at a clear target in its reach (so it never spoils a shot). */
+const EV3_SWAY_IDLE = EVADE_MODE === 43
 const EV3_ARC = EVADE_MODE === 38
 /** 39 (Grok addendum): champion, with the 5 m/s silent cap lifted while hurt with an enemy seen within KITE_M in the last memory window. */
 const EV3_KITE = EVADE_MODE === 39
@@ -240,6 +242,8 @@ const FLAP_PATH_M = 35
 const FLAP_NET_M = 6
 /** Outnumbered escape: extra hiding distances (s of walking) tried when the champion's 1–3 s find nothing. */
 const ESCAPE_STEPS_S = [4, 6]
+/** Outnumbered escape commitment: once started, keep the same heading this long (s) while its step stays open (hysteresis). */
+const ESCAPE_COMMIT_S = 1.5
 /** Mode 36: "actually taking mech damage" = a mech damaged us within this many seconds. */
 const XFIRE_HIT_S = 2
 /** Mode 37: torso sway amplitude (rad) and period (s). 0.6 rad at 1.2 s peaks at 3.1 rad/s, inside turn_rate 4. */
@@ -415,6 +419,7 @@ function buildBot(hello: Hello): Bot {
   let slideHold: { move: [number, number]; until: number } | null = null
   let jetUntil = -Infinity
   let recharge = false
+  let escHold: { move: [number, number]; until: number } | null = null
   let lastHop = -Infinity
   let ev3OffUntil = -Infinity
   const oscLog: { t: number; x: number; y: number; path: number; seen: number }[] = []
@@ -1055,7 +1060,11 @@ function buildBot(hello: Hello): Bot {
           (mode === "hold" || mode === "heal" || mode === "heal, hiding" || mode === "hide" || mode === "engage, standoff" || mode === "lightning ambush")) {
           const dg = danger()
           const ids = new Set([...dg.los.map((e) => e.id), ...dg.hitters])
-          if (ids.size >= 2) {
+          if (escHold && obs.t < escHold.until && stepOk(escHold.move[0], escHold.move[1])) {
+            move = escHold.move
+            boost = me.energy > ESCAPE_BOOST_RESERVE * me.max_energy
+            mode = "escape, outnumbered, ev"
+          } else if (ids.size >= 2) {
             const atk = threats.filter((e) => ids.has(e.id))
             const far = atk.length ? hideSpot(me, myHeight, walkSpeed, atk, false, zoneKeep, canPlan, ESCAPE_STEPS_S) : null
             let go: [number, number] | null = null
@@ -1082,6 +1091,7 @@ function buildBot(hello: Hello): Bot {
             }
             if (go) {
               move = go
+              escHold = { move: go, until: obs.t + ESCAPE_COMMIT_S }
               spot = far
               boost = me.energy > ESCAPE_BOOST_RESERVE * me.max_energy
               mode = "escape, outnumbered, ev"
@@ -1516,7 +1526,12 @@ function buildBot(hello: Hello): Bot {
 
       // P-B-008 mode 37 (Doug 3:11 PM, literal): in danger, sway the torso side to side around the aim; legs unchanged.
       // Never in a drop run or hold. The hitbox is a vertical cylinder, so facing does not change it (see the writeup).
-      if (EV3_SWAY && !dropMode && danger().on) {
+      const canShoot = !!target && target.clear && me.weapons.some((w) => {
+        if (!w) return false
+        const st = { ...cfg.weapons[w.kind], ...w.stats }
+        return target!.d <= weaponReach(w.kind, st) && (w.cooldown ?? 0) <= 0 && (w.reload ?? 0) <= 0 && (w.ammo ?? 1) > 0
+      })
+      if (EV3_SWAY && !dropMode && danger().on && !(EV3_SWAY_IDLE && canShoot)) {
         aim = [wrap(aim[0] + SWAY_AMP * Math.sin((2 * Math.PI * obs.t) / SWAY_P)), aim[1]]
         mode = `${mode}, sway`
       }

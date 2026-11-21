@@ -184,6 +184,7 @@ export const DROP_RUN_M = 200
  *        damaged us in the last 2 s (HP above the retreat line and a reachable, zone-safe ring are already required).
  *   37 = champion + literal torso sway in danger (+-0.6 rad, 1.2 s period). 38 = champion + front-arc discipline.
  *   39 = champion with the silent cap lifted while hurt and an enemy seen within 120 m (Grok addendum).
- *   40 = 30 + 36. 41 = 34 + 36.
+ *   40 = 30 + 36. 41 = 34 + 36. 42 = 30 + 35 + 36. 43 = 37's sway only while no held weapon could fire at a clear
+ *   target in its reach. The escape (35, 42) keeps its heading 1.5 s once started (commitment).
  */
 export const EVADE_MODE: number = 0

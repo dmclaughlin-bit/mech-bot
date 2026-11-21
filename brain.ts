@@ -18,6 +18,8 @@
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  * Build 82 (crossfire retune): B60's cover search uses CROSSFIRE_HIDE_S / CROSSFIRE_LOS in params.ts.
+ * Build 80 (late lightning): after 45 s, a gun-only bot may walk to a reachable ground lightning or laser
+ * (see LATE_LIGHT_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -121,6 +123,13 @@ const LASER_LEAD_S = 0.075
  * multi-threat fights when the race looked winning, and changed hit rates). Against real house bots that share
  * vision and hit harder than the sim, a 2-on-1 stand-and-shoot is a fight we cannot finish. */
 const CROSSFIRE_ON = true
+/** Build 80 (late lightning for gun-only): the champion's Build 17 trip stops starting new walks at LASER_RUSH_S
+ * (45 s), so a bot still holding only the gun after the opening never goes for a known lightning. When this is on,
+ * past 45 s, while gun-only, lightning and laser stay trip targets under the existing "no mech hit for 3 s" and
+ * LASER_TRIP_M gates (not B49's four-part gate). B60's crossfire break and the hurt retreat stay ahead of the walk.
+ * Take, swap, and drop are unchanged (B66 and B68 lost on the site). Different from B76/B78 (first 45 s only).
+ * false = champion. */
+const LATE_LIGHT_ON = true
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -629,9 +638,11 @@ function buildBot(hello: Hello): Bot {
       let rushMove: [number, number] | null = null
       const rushSlot = me.weapons.includes(null) || (enemies.length === 0 && me.weapons.some((x) => x?.kind === "gun"))
       const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
+      // Build 80: after the opening, a gun-only bot may start a new lightning/laser walk (champion only continues one).
+      const lateLight = LATE_LIGHT_ON && gunOnly && obs.t >= LASER_RUSH_S
       if (
-        LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
-        !claimGoal && !hurt && !cubeFirst && obs.t - lastMechHit > FARM_QUIET_S
+        LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush || lateLight) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
+        !claimGoal && !hurt && !(cubeFirst && !lateLight) && obs.t - lastMechHit > FARM_QUIET_S
       ) {
         const pace = ZONE_WALK * walkSpeed
         const onward = (p: Vec3) => Math.max(0, flat(p, z.next_center) - inner)
@@ -645,7 +656,7 @@ function buildBot(hello: Hello): Bot {
           .sort((a, b) => Number(a[1].kind !== "laser") - Number(b[1].kind !== "laser") || flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos))
         const kept = rush ? options.find(([id]) => id === rush!.id) : undefined
         const pick = kept && kept[1].kind === options[0][1].kind && flat(kept[1].pos, me.pos) - flat(options[0][1].pos, me.pos) < LASER_SWITCH_M ? kept : options[0]
-        if (pick && (obs.t < LASER_RUSH_S || pick === kept)) {
+        if (pick && (obs.t < LASER_RUSH_S || pick === kept || lateLight)) {
           const [id, { pos }] = pick
           if (rush?.id !== id) rush = { id, since: obs.t }
           const go = travel(me.pos, pos, obs.t, canPlan())
@@ -654,6 +665,11 @@ function buildBot(hello: Hello): Bot {
           if ((planned && !route!.found) || obs.t - rush.since > LASER_CHASE_S) laserSkip.add(id)
           else if (planned && fits(pos, go.dist)) rushMove = go.move
         }
+      }
+      // Build 80: a late walk yields to B60's crossfire break when two or more enemies can see us.
+      if (lateLight && rushMove && CROSSFIRE_ON) {
+        const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        if (los.length >= 2 && hideSpot(me, myHeight, walkSpeed, los, false, zoneKeep, canPlan)) rushMove = null
       }
       if (!rushMove) rush = null
       else farmChase = null

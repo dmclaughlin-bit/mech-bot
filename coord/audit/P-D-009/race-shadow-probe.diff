@@ -1,0 +1,120 @@
+diff --git a/brain.ts b/brain.ts
+index 8b8e5b7..0a70641 100644
+--- a/brain.ts
++++ b/brain.ts
+@@ -259,6 +259,12 @@ function fallbackBot(): Bot {
+   }
+ }
+ 
++import { appendFileSync } from "node:fs"
++const __I = process.env.INSTR_FILE
++const __buf: string[] = []
++const __race: any[] = []
++const __flush = () => { if (__I && __buf.length) { appendFileSync(__I, __buf.join("\n") + "\n"); __buf.length = 0 } }
++process.on("exit", __flush)
+ function buildBot(hello: Hello): Bot {
+   const cfg = hello.config
+   const solids = loadMap(hello)
+@@ -334,6 +340,35 @@ function buildBot(hello: Hello): Bot {
+     }
+     return sum * cubeDamage(me.cubes)
+   }
++  /** P-D-009 shadow: state-aware time to kill (s): simulate every held weapon that reaches from its current cooldown/ammo/reload/charge/energy. */
++  function __burstTtk(me: Observation["self"], d: number, hp: number, H = 30): [number, number] {
++    const ev: [number, number][] = []
++    const cb = cubeDamage(me.cubes)
++    for (const w of me.weapons) {
++      if (!w) continue
++      const st: Record<string, number> = { ...cfg.weapons[w.kind], ...w.stats }
++      if (weaponReach(w.kind, st) < d) continue
++      const dmg = st.damage * hitRate(w.kind, d) * cb
++      if (w.kind === "gun") {
++        let ammo = (w.reload ?? 0) > 0 ? st.mag : (w.ammo ?? st.mag), t = (w.reload ?? 0) > 0 ? w.reload! : w.cooldown
++        while (t <= H) { if (ammo <= 0) { t += st.reload; ammo = st.mag; continue } ev.push([t, dmg]); ammo--; t += st.cooldown }
++      } else if (w.kind === "laser") {
++        let t = Math.max(w.cooldown, 0) + Math.max(0, (st.charge ?? 0) - (w.charge ?? 0))
++        while (t <= H) { ev.push([t, dmg]); t += st.cooldown + (st.charge ?? 0) }
++      } else if (w.kind === "lightning") {
++        let n = Math.floor(me.energy / (st.energy || 1)), t = w.cooldown
++        while (t <= H && n-- > 0) { ev.push([t, dmg]); t += st.cooldown }
++      } else {
++        let t = w.cooldown
++        while (t <= H) { ev.push([t, dmg]); t += st.cooldown }
++      }
++    }
++    ev.sort((a, b) => a[0] - b[0])
++    let sum = 0, d3 = 0
++    for (const [t, x] of ev) { if (t <= 3) d3 += x }
++    for (const [t, x] of ev) { sum += x; if (sum >= hp) return [t, d3] }
++    return [Infinity, d3]
++  }
+   /** Build 14: the most damage one magazine of a held weapon that reaches `d` m can do (gun: a full mag; laser: one full shot; lightning: what our energy pays for). */
+   function ourMagazine(me: Observation["self"], d: number): number {
+     let best = 0
+@@ -618,8 +653,15 @@ function buildBot(hello: Hello): Bot {
+           const taken = enemyDps(e, d) * (1 - clamp(me.stats.armor ?? 0, 0, 0.9))
+           return { ttk: out > 0 ? e.hp! / out : Infinity, ttd: taken > 0 ? me.hp / taken : Infinity }
+         }
++        const __shadow = (e: (typeof enemies)[number], rule: string, thr: number) => {
++          if (!__I || obs.t < 60) return
++          const r = race(e), d = flat(e.pos, me.pos), [tb, d3] = __burstTtk(me, d, e.hp!)
++          const f = (x: number) => (Number.isFinite(x) ? +x.toFixed(2) : 99)
++          __race.push([e.id, rule, f(r.ttk), f(tb), f(r.ttd), +d.toFixed(1), r.ttk < thr * r.ttd ? 1 : 0, tb < thr * r.ttd ? 1 : 0, Math.round(d3), Math.round(e.hp!)])
++        }
+         const outlive = (e: (typeof enemies)[number]) => {
+           const r = race(e)
++          __shadow(e, "fin", 1)
+           return r.ttk < r.ttd
+         }
+         let pick: (typeof enemies)[number] | undefined
+@@ -635,6 +677,7 @@ function buildBot(hello: Hello): Bot {
+         if (!pick && hurt && los.length === 1 && los[0].hp !== undefined && alone(los[0].id) && rested(los[0].id)) {
+           const e = los[0]
+           const { ttk, ttd } = race(e)
++          __shadow(e, "ttk", params.aggression)
+           if (ttk < params.aggression * ttd) {
+             pick = e
+             why = "ttk"
+@@ -657,6 +700,7 @@ function buildBot(hello: Hello): Bot {
+       // Collect (Build 14): after our kill, walk to the cubes it dropped (all of its cubes plus two) if it is safe:
+       // nobody has line of sight to us, no mech hit us in the last 2 s, and the same zone test as farming.
+       let claimGoal: Vec3 | null = null
++      let __cb: string[] | null = null, __cd = -1, __cn = -1
+       if (claim && obs.t > claim.until) claim = null
+       if (claim && me.in_zone && !leaveNow && !engage) {
+         const at = claim.pos
+@@ -666,7 +710,19 @@ function buildBot(hello: Hello): Bot {
+           flat(goal, z.center) < Math.max(0, z.radius - margin) &&
+           (flat(me.pos, goal) + Math.max(0, flat(goal, z.next_center) - inner)) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER < timeLeft
+         if (!cube && flat(me.pos, at) < Number(cfg.cubes.pickup_radius ?? cfg.loot.pickup_radius)) claim = null
+-        else if (zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && !seenAt(me.pos, myHeight, threats, false)) claimGoal = goal
++        else {
++          __cb = []
++          if (!zoneSafe) __cb.push("zone")
++          if (obs.t - lastMechHit <= THREAT_HIT_S) __cb.push("hit<2s")
++          if (seenAt(me.pos, myHeight, threats, false)) __cb.push("seen")
++          __cd = Math.round(flat(me.pos, goal)); __cn = obs.cubes.filter((c) => flat(c.pos, at) < CLAIM_M).length
++          if (zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && !seenAt(me.pos, myHeight, threats, false)) claimGoal = goal
++        }
++      } else if (claim) {
++        __cb = []
++        if (!me.in_zone) __cb.push("out of zone")
++        if (leaveNow) __cb.push("leaving")
++        if (engage) __cb.push("engage")
+       }
+       // Stop sneaking (Build 19): not hurt (HP at or above the retreat line, no damage for NO_SNEAK_QUIET_S), so no
+       // silent speed cap and no walk to a hiding spot. While hurt, the retreat, the heal and their hiding are unchanged.
+@@ -1076,6 +1132,13 @@ function buildBot(hello: Hello): Bot {
+       act.aim = [aim[0], clamp(aim[1], minPitch, maxPitch)]
+       act.fire = fire
+       draw.label(`${label} · ${mode}`)
++      if (__I) {
++        const tg = target && target.m.kind === "mech" ? target.m : null
++        const kv = [...known.values()].filter((k) => obs.t - k.lastSeen <= 5); const wk = kv.map((k) => [k.id, +(k.hp / (k.maxHp || 1)).toFixed(2), +(obs.t - k.lastSeen).toFixed(1), Math.round(flat(k.pos, me.pos)), kv.some((o) => o !== k && flat(o.pos, k.pos) < 40) ? 0 : 1])
++        __buf.push(JSON.stringify({ t: +obs.t.toFixed(1), m: mode, hp: +(me.hp / me.max_hp).toFixed(2), cubes: me.cubes, claim: !!claim, cb: __cb, cd: __cd, cn: __cn, cg: !!claimGoal,
++          tg: tg ? tg.id : null, tgc: tg ? !!target.clear : null, eng: engage ? [engage.m.id, engage.why] : null, kills: obs.events.filter((e) => e.type === "kill").map((e: any) => e.target), known: wk, nen: enemies.length, los: threats.filter((e) => seenAt(me.pos, myHeight, [e], false)).length, w: me.weapons.map((x) => x?.kind ?? "-").join("+"), att: [...mechHitBy.values()].filter((t) => obs.t - t < 5).length, spd: +Math.hypot(me.vel[0], me.vel[1]).toFixed(1), mv: +Math.hypot(act.move?.[0] ?? 0, act.move?.[1] ?? 0).toFixed(2), ms: +(performance.now() - started).toFixed(2), race: __race.length ? __race.splice(0) : undefined }))
++        if (__buf.length > 200) __flush()
++      }
+       const took = performance.now() - started
+       if (took > DEADLINE_MS) log(`decision at tick ${obs.tick} took ${took.toFixed(1)} ms`)
+       return act

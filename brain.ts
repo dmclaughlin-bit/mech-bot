@@ -17,11 +17,13 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 31 (edge hold): instead of standing in the open, hold beside a wall that blocks the hunters' side (see EDGE_HOLD_ON).
  */
-import { clearLine, groundAt, loadMap } from "./map.ts"
+import { type GameMap, clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  EDGE_HOLD_MEMORY_S, EDGE_HOLD_ON, EDGE_HOLD_PATH_M, EDGE_HOLD_RADIUS_M, EDGE_HOLD_REPLAN_S, EDGE_HOLD_STOP_M, EDGE_HOLD_WALL_H,
+  EDGE_HOLD_WALL_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -116,6 +118,20 @@ const LASER_RELEASE = 0.8
 const LASER_LEAD_S = 0.075
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
+
+/** Build 31 (edge hold): candidate spots on rings this far (m) from us (up to EDGE_HOLD_RADIUS_M), this many bearings each. */
+const EDGE_RINGS_M = [4, 8, 12, 16, 20, 25, 30]
+const EDGE_BEARINGS = 16
+/** Build 31: with no known enemy, the hunters' side is the most open of this many bearings, sight lines tested at these lengths (m). */
+const EDGE_OPEN_BEARINGS = 12
+const EDGE_OPEN_M = [30, 60, 90]
+/** Build 31: the virtual hunter on the most open side stands this far (m) from us. Real ones stand where they were seen, at most vision range away. */
+const EDGE_OPEN_SRC_M = 60
+/** Build 31: side the spot must hide us from: the nearest few known enemies (the first must be blocked; more blocked is better). */
+const EDGE_SOURCES = 3
+/** Build 31: a path ending this far (m) from the spot did not reach it. Try this many paths per plan at most. */
+const EDGE_PATH_MISS_M = 3
+const EDGE_PATH_TRIES = 2
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -267,6 +283,8 @@ function buildBot(hello: Hello): Bot {
   /** Build 14: targets we gave up on (id → time), and where our last kill died, to collect its cubes. */
   const engageGiveUp = new Map<number, number>()
   let claim: { pos: Vec3; until: number } | null = null
+  /** Build 31: the chosen edge-hold spot (null: none qualified), when it was planned, and for which zone. */
+  let edgeHold: { spot: Vec3 | null; at: number; key: string } | null = null
 
   /** Build 14: what we deal per second to a target `d` m away: every held weapon that reaches, × its hit-rate guess × our cube bonus. */
   function ourDps(me: Observation["self"], d: number): number {
@@ -382,6 +400,67 @@ function buildBot(hello: Hello): Bot {
       }
     }
     return null
+  }
+
+  /**
+   * Build 31: is (x, y) open ground beside a wall? A wall is a building cell rising EDGE_HOLD_WALL_H above the spot's
+   * ground `g` (and not a bridge high overhead) or ground that much higher (a cliff), within EDGE_HOLD_WALL_M; none may
+   * be closer than the mech's radius, and no solid may stand on the spot itself.
+   */
+  function besideWall(m: GameMap, x: number, y: number, g: number, height: number): boolean {
+    const r = EDGE_HOLD_WALL_M
+    const i0 = Math.max(0, Math.floor((x - r - m.minX) / m.step)), i1 = Math.min(m.nx - 1, Math.floor((x + r - m.minX) / m.step))
+    const j0 = Math.max(0, Math.floor((y - r - m.minY) / m.step)), j1 = Math.min(m.ny - 1, Math.floor((y + r - m.minY) / m.step))
+    let near = Infinity
+    for (let j = j0; j <= j1; j++) {
+      for (let i = i0; i <= i1; i++) {
+        const cx = m.minX + (i + 0.5) * m.step, cy = m.minY + (j + 0.5) * m.step
+        const d = Math.hypot(cx - x, cy - y)
+        if (d > r) continue
+        const k = j * m.nx + i
+        const body = m.base[k] < g + height && m.top[k] > g + 0.5
+        if (body && d < m.step) return false
+        if ((body && m.top[k] - g >= EDGE_HOLD_WALL_H) || groundAt(m, cx, cy) - g >= EDGE_HOLD_WALL_H) near = Math.min(near, d)
+      }
+    }
+    return near >= cfg.mech.radius && near <= r
+  }
+
+  /**
+   * Build 31: where hunters most likely watch from: the nearest EDGE_SOURCES enemies seen in the last EDGE_HOLD_MEMORY_S
+   * (eye height, at most vision range away along their bearing), else a virtual one EDGE_OPEN_SRC_M away on the most
+   * open side around us (longest clear sight lines; the outward side of the circle we keep to breaks ties).
+   */
+  function hunterEyes(me: Observation["self"], t: number, keepCenter: number[]): Vec3[] {
+    const eyeH = cfg.mech.eye_height ?? cfg.mech.height
+    const range = cfg.vision.range
+    const foes = [...known.values()]
+      .filter((k) => t - k.lastSeen <= EDGE_HOLD_MEMORY_S && flat(k.pos, me.pos) > 1)
+      .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))
+      .slice(0, EDGE_SOURCES)
+    const along = (yaw: number, d: number): Vec3 => {
+      const x = me.pos[0] + Math.cos(yaw) * d, y = me.pos[1] + Math.sin(yaw) * d
+      const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+      return [x, y, (g === -Infinity ? me.pos[2] : g) + eyeH]
+    }
+    if (foes.length)
+      return foes.map((k) => {
+        const d = flat(k.pos, me.pos)
+        return d <= range ? [k.pos[0], k.pos[1], k.pos[2] + eyeH * scale(k.cubes)] : along(yawTo(me.pos, k.pos), range)
+      })
+    const eye: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + eyeH]
+    const out = flat(me.pos, keepCenter) > 1 ? yawTo(keepCenter, me.pos) : null
+    let best = 0, bestScore = -1
+    for (let b = 0; b < EDGE_OPEN_BEARINGS; b++) {
+      const yaw = (2 * Math.PI * b) / EDGE_OPEN_BEARINGS
+      let score = out !== null && Math.abs(wrap(yaw - out)) < Math.PI / 3 ? 0.5 : 0
+      for (const L of EDGE_OPEN_M) if (clearLine(solids, eye, along(yaw, L), 0, 0)) score++
+      if (score > bestScore) {
+        bestScore = score
+        best = yaw
+      }
+    }
+    return [along(best, EDGE_OPEN_SRC_M)]
   }
 
   /** Keep track of every enemy mech seen, and of where the last hit came from. */
@@ -725,6 +804,76 @@ function buildBot(hello: Hello): Bot {
         if (spot) {
           move = heading(spot)
           mode = "hide"
+        }
+      }
+      // Edge hold (Build 31): about to stand still with nobody in view able to see us, so stand beside a wall that
+      // blocks the hunters' side instead of wherever we are. Walks at the normal speed; never replaces another mode.
+      if (EDGE_HOLD_ON && mode === "hold" && solids?.ground && !seenAt(me.pos, myHeight, threats, false)) {
+        const m = solids
+        const pace = ZONE_WALK * walkSpeed
+        const key = `${z.next_center[0]},${z.next_center[1]}/${z.next_radius}/${toEnter === 0}`
+        const eyes = () => hunterEyes(me, obs.t, zoneKeep[0])
+        const center = (p: Vec3): Vec3 => [p[0], p[1], p[2] + myHeight / 2]
+        const top = (p: Vec3): Vec3 => [p[0], p[1], p[2] + myHeight]
+        const hidden = (p: Vec3, e: Vec3) => !clearLine(m, e, center(p), 0, 0) && !clearLine(m, e, top(p), 0, 0)
+        // In the circle the hide code keeps to, and from there still in the next circle in time (the farm test).
+        const zoneOk = (p: Vec3) =>
+          flat(p, zoneKeep[0]) < zoneKeep[1] &&
+          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER < timeLeft
+        if (!edgeHold || edgeHold.key !== key || obs.t - edgeHold.at >= EDGE_HOLD_REPLAN_S) {
+          if (canPlan()) {
+            const src = eyes()
+            const old = edgeHold?.key === key ? edgeHold.spot : null
+            if (old && flat(old, me.pos) <= EDGE_HOLD_RADIUS_M + EDGE_HOLD_STOP_M && zoneOk(old) && hidden(old, src[0])) {
+              // Keep the spot while it still qualifies, so we stand still instead of hopping between near-equal spots.
+              edgeHold = { spot: old, at: obs.t, key }
+            } else {
+              // Candidates: where we stand, then EDGE_BEARINGS spots on each ring. The first hunter must be blocked;
+              // more hunters blocked ranks higher, then the nearer spot.
+              const found: { p: Vec3; score: number }[] = []
+              const rings = [0, ...EDGE_RINGS_M.filter((r) => r <= EDGE_HOLD_RADIUS_M)]
+              for (const r of rings) {
+                for (let b = 0; b < (r === 0 ? 1 : EDGE_BEARINGS); b++) {
+                  if (!canPlan()) break
+                  const yaw = (2 * Math.PI * b) / EDGE_BEARINGS
+                  const x = me.pos[0] + Math.cos(yaw) * r, y = me.pos[1] + Math.sin(yaw) * r
+                  const g = groundAt(m, x, y)
+                  if (g === -Infinity) continue
+                  const p: Vec3 = [x, y, g]
+                  if (!zoneOk(p) || !besideWall(m, x, y, g, myHeight) || !hidden(p, src[0])) continue
+                  found.push({ p, score: 1000 * src.filter((e) => hidden(p, e)).length - r })
+                }
+              }
+              found.sort((a, b) => b.score - a.score)
+              let spot: Vec3 | null = null
+              for (const c of found.slice(0, EDGE_PATH_TRIES)) {
+                if (flat(c.p, me.pos) <= EDGE_HOLD_STOP_M) {
+                  spot = c.p
+                  break
+                }
+                if (!canPlan()) break
+                // Reachable on the ground within EDGE_HOLD_PATH_M; the path becomes the route we walk.
+                const path = nav.path(me.pos, c.p, PATH_BUDGET)
+                if (!path?.length || flat(path[path.length - 1], c.p) > EDGE_PATH_MISS_M) continue
+                let len = 0
+                let prev: number[] = me.pos
+                for (const w of path) {
+                  len += flat(prev, w)
+                  prev = w
+                }
+                if (len > EDGE_HOLD_PATH_M) continue
+                route = { goal: c.p, at: obs.t, points: path, next: 0, found: true }
+                spot = c.p
+                break
+              }
+              edgeHold = { spot, at: obs.t, key }
+            }
+          }
+        }
+        const spot = edgeHold?.key === key ? edgeHold.spot : null
+        if (spot && zoneOk(spot)) {
+          if (flat(spot, me.pos) > EDGE_HOLD_STOP_M) move = travel(me.pos, spot, obs.t, canPlan()).move
+          mode = "edge hold"
         }
       }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).

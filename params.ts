@@ -113,3 +113,30 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 31 (edge hold): when the bot would otherwise just stand where it is (mode "hold": no loot, farm, engage,
+ * collect, retreat, heal, hide, laser rush or zone move) and no enemy in view has a line of sight to us, walk at normal
+ * speed to a ground spot beside a wall (a building or cliff at least EDGE_HOLD_WALL_H m above the ground within
+ * EDGE_HOLD_WALL_M m) where that wall blocks the line from the side hunters most likely come from, then stand there.
+ * That side is the known enemies (seen in the last EDGE_HOLD_MEMORY_S), nearest first, else the most open direction
+ * around us, with the outward side of the circle breaking ties. The spot is within EDGE_HOLD_RADIUS_M (about 3 s of
+ * walking), reachable by a ground path of at most EDGE_HOLD_PATH_M, inside the circle the hide code keeps to, and
+ * zone-safe. Re-planned every EDGE_HOLD_REPLAN_S or when the zone changes, keeping the old spot while it still
+ * qualifies. With no spot, the old stand-in-place hold. Evidence: watch/findings.md (c), winners hold beside
+ * buildings with the line to the nearest enemy blocked. Set EDGE_HOLD_ON to false to roll back to Build 17 behavior exactly.
+ */
+export const EDGE_HOLD_ON = true
+/** Look for a spot this far (m) from where we stand, at most. */
+export const EDGE_HOLD_RADIUS_M = 30
+/** Longest ground path (m) to the spot (walk speed 11.7 m/s: about 3.5 s). */
+export const EDGE_HOLD_PATH_M = 40
+/** The spot's wall: at least this tall (m) above the spot's ground, and at most this far (m) from it. */
+export const EDGE_HOLD_WALL_H = 4
+export const EDGE_HOLD_WALL_M = 5
+/** Re-plan at most this often (s). */
+export const EDGE_HOLD_REPLAN_S = 2
+/** Stand still once within this distance (m) of the spot. */
+export const EDGE_HOLD_STOP_M = 2
+/** Known enemies seen this recently (s) set the side to hide from. */
+export const EDGE_HOLD_MEMORY_S = 15

@@ -114,6 +114,12 @@ const LASER_CUBE_M = 20
 const LASER_RELEASE = 0.8
 /** Build 17: aim the beam this far ahead (s) of a moving target: about the delay between an observation and our action taking effect (a guess: 1 to 2 ticks). */
 const LASER_LEAD_S = 0.075
+/** Build 54 (tough trip): a Build 17 laser walk already under way is not cancelled by a distant poke. A hit still
+ * aborts it if we are below retreat HP, or if the attacker has line of sight inside RUSHTOUGH_M. A new trip still
+ * needs FARM_QUIET_S with no mech damage. false = champion. Different from Build 36 (that blocked a finish engage
+ * from taking over the trip, not a damage cancel). */
+const RUSHTOUGH_ON = true
+const RUSHTOUGH_M = 100
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -623,7 +629,10 @@ function buildBot(hello: Hello): Bot {
       const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
       if (
         LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
-        !claimGoal && !hurt && !cubeFirst && obs.t - lastMechHit > FARM_QUIET_S
+        !claimGoal && !hurt && !cubeFirst &&
+        (obs.t - lastMechHit > FARM_QUIET_S ||
+          (RUSHTOUGH_ON && rush && me.hp >= RETREAT_HP * me.max_hp &&
+            !enemies.some((e) => flat(e.pos, me.pos) < RUSHTOUGH_M && seenAt(me.pos, myHeight, [e], false))))
       ) {
         const pace = ZONE_WALK * walkSpeed
         const onward = (p: Vec3) => Math.max(0, flat(p, z.next_center) - inner)

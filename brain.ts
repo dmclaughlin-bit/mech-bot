@@ -2,8 +2,9 @@
  * mech-bot brain.
  *
  * Build 1: keep track of every bot around, and aim each weapon so it actually hits.
- * Movement, the choice of whom to fight, and upgrade picks still follow the kit's starter bot.
- * Later builds replace them one rule at a time.
+ * Build 2 (survival-min): setup that cannot fail, terrain in the cover check, laser and lightning
+ * only, a fire gate on the gun, zone travel that leaves just in time and holds silently,
+ * unsticking, retreat when hurt, and an upgrade order. The rules are §9 of the team plan.
  */
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
@@ -31,8 +32,13 @@ function inside(ring: number[], x: number, y: number): boolean {
 }
 
 function loadSolids(hello: Hello): Solids | null {
-  const file = hello.map?.files?.find((f) => f.endsWith("world.json")) ?? "v2/world.json"
-  for (const path of [join(hello.map.dir, file), join(hello.map.dir, "arena", file)]) {
+  const dir = hello?.map?.dir
+  if (typeof dir !== "string" || !dir) {
+    log("no map folder in hello, firing without cover checks")
+    return null
+  }
+  const file = hello.map.files?.find((f) => f.endsWith("world.json")) ?? "v2/world.json"
+  for (const path of [join(dir, file), join(dir, "arena", file)]) {
     let text: string
     try {
       text = readFileSync(path, "utf8")
@@ -145,7 +151,37 @@ type Known = {
   hpLog: [number, number][]
 }
 
+/** Never throws: a failed setup gets the fallback bot instead of idling the whole match (plan D6). */
 export function createBot(hello: Hello): Bot {
+  try {
+    return buildBot(hello)
+  } catch (e) {
+    log("bot setup failed, using the fallback bot:", e)
+    return fallbackBot()
+  }
+}
+
+/** A bare bot with no setup to fail: walk to the next circle, shoot the gun at the nearest mech. */
+function fallbackBot(): Bot {
+  return {
+    name: "mech-bot",
+    act(obs: Observation): BotAction {
+      const me = obs.self
+      const goal = obs.zone?.next_center ?? [me.pos[0], me.pos[1]]
+      const walk = yawTo(me.pos, goal)
+      const act: BotAction = { move: [Math.cos(walk), Math.sin(walk)], aim: [walk, 0], boost: !me.in_zone }
+      const enemy = obs.mechs.filter((m) => m.kind === "mech").sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+      if (enemy) {
+        act.aim = [yawTo(me.pos, enemy.pos), 0]
+        act.fire = [true, false]
+      }
+      if (obs.offer) act.pick = 0
+      return act
+    },
+  }
+}
+
+function buildBot(hello: Hello): Bot {
   const cfg = hello.config
   const solids = loadSolids(hello)
   const growth = Number(cfg.cubes.size_per_cube ?? 0.05)

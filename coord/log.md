@@ -327,3 +327,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - Next: B27 strafe-while-holding at 2:35 slot.
 
 - 2026-11-21 2:35 AM ET: Build 27 strafe-while-holding (d5fb49d, PR #43) scored 3.38, receipt BB-0D0F93D6. Below champion 3.50, so the PR is closed. Rank 106/183; rank 32 is at 4.92.
+
+- 2026-11-21 2:48 AM ET: Build 30 settings comboA (7b71e43, PR #46: aggression 1.5, retreatHp 0.30, LASER_TRIP_M 250) scored 3.54, receipt BB-5E7DE301. NEW CHAMPION (was 3.50 B17); merged. Site auto-set it as final entry. Rank 108/184; rank 32 Hachimi 4.96.

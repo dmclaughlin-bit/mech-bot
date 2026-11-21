@@ -19,6 +19,8 @@
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  * Build 80 (late lightning): after 45 s, a gun-only bot may walk to a reachable ground lightning or laser
  * (see LATE_LIGHT_ON).
+ * Build 90 (keep lightning): when we hold gun + lightning and a laser is in reach, drop the gun and keep the
+ * lightning (see KEEP_LIGHT_ON). Opposite of B66 (dropped lightning) and B68 (refused lightning to keep a slot).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -129,6 +131,13 @@ const CROSSFIRE_ON = true
  * Take, swap, and drop are unchanged (B66 and B68 lost on the site). Different from B76/B78 (first 45 s only).
  * false = champion. */
 const LATE_LIGHT_ON = true
+/** Build 90 (keep lightning): when we already hold the gun and lightning and a laser is in reach (or we walk to one),
+ * drop the gun and keep the lightning. Champion already drops the gun on the 160 m loot path, but only with no
+ * enemy in view, and take-in-reach / rush walk never drop a slot when the loadout is full. This flag also allows the
+ * drop-gun-for-laser take when someone is in view, as long as no mech has hit us for FARM_QUIET_S (3 s), and lets
+ * rushSlot stay true so we can still walk to that laser. We still take lightning as the champion does (not B68), and
+ * we never drop lightning for a laser (not B66). false = champion. */
+const KEEP_LIGHT_ON = true
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -454,7 +463,13 @@ function buildBot(hello: Hello): Bot {
       if (!enemies.some((m) => flat(m.pos, me.pos) < LOOT_CLEAR)) {
         const held = me.weapons.map((x) => x?.kind ?? null)
         const free = held.indexOf(null)
-        const swapSlot = free < 0 && enemies.length === 0 && (held.includes("laser") || held.includes("lightning")) ? held.indexOf("gun") : -1
+        const swapSlot =
+          free < 0 &&
+          (held.includes("laser") || held.includes("lightning")) &&
+          (enemies.length === 0 ||
+            (KEEP_LIGHT_ON && held.includes("lightning") && !held.includes("laser")))
+            ? held.indexOf("gun")
+            : -1
         const want = obs.pickups
           .filter((p) => (p.kind === "laser" || p.kind === "lightning") && !held.includes(p.kind))
           .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
@@ -477,9 +492,20 @@ function buildBot(hello: Hello): Bot {
         for (const [id, a] of arms)
           if (!obs.pickups.some((p) => p.id === id) && flat(a.pos, me.pos) < LASER_GONE_M && clearLine(solids, eye, a.pos, 0, 0)) arms.delete(id)
         const reach = (kind: string) => obs.pickups.find((p) => p.kind === kind && flat(p.pos, me.pos) < cfg.loot.pickup_radius && Math.abs(p.pos[2] - me.pos[2]) < 4)
-        const here = holdsLaser || !me.weapons.includes(null) ? undefined : (reach("laser") ?? (gunOnly ? reach("lightning") : undefined))
+        const gunSlot = me.weapons.findIndex((x) => x?.kind === "gun")
+        const holdsLightning = me.weapons.some((x) => x?.kind === "lightning")
+        const keepLightTake =
+          KEEP_LIGHT_ON &&
+          !holdsLaser &&
+          holdsLightning &&
+          gunSlot >= 0 &&
+          !me.weapons.includes(null) &&
+          obs.t - lastMechHit > FARM_QUIET_S &&
+          !!reach("laser")
+        const here = holdsLaser || (!me.weapons.includes(null) && !keepLightTake) ? undefined : (reach("laser") ?? (gunOnly ? reach("lightning") : undefined))
         if (here) {
           act.take = here.id
+          if (keepLightTake && here.kind === "laser") act.drop = gunSlot
           lootTarget = null
         }
       }
@@ -634,7 +660,13 @@ function buildBot(hello: Hello): Bot {
       // slack before leaving, not engaging or collecting a kill, not hurt, and no mech damage for FARM_QUIET_S.
       // Fix round: no enemy test (an enemy nearer to the pickup or watching the route no longer stops the trip).
       let rushMove: [number, number] | null = null
-      const rushSlot = me.weapons.includes(null) || (enemies.length === 0 && me.weapons.some((x) => x?.kind === "gun"))
+      const rushSlot =
+        me.weapons.includes(null) ||
+        (enemies.length === 0 && me.weapons.some((x) => x?.kind === "gun")) ||
+        (KEEP_LIGHT_ON &&
+          !holdsLaser &&
+          me.weapons.some((x) => x?.kind === "lightning") &&
+          me.weapons.some((x) => x?.kind === "gun"))
       const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
       // Build 80: after the opening, a gun-only bot may start a new lightning/laser walk (champion only continues one).
       const lateLight = LATE_LIGHT_ON && gunOnly && obs.t >= LASER_RUSH_S

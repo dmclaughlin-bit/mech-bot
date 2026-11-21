@@ -104,3 +104,4 @@ These were listed in the stub as “not eligible / do not submit.” They stay H
 ## HOLD — new PRs (loop, 6:06 PM ET)
 - P26 healthy boost with reserve, PR #138, c566fbadf65372c0de70d2ccd02e8f4c91a29ef0: no paired screen vs 6182d29 yet. Owner: Mech Sim Tester. Next: full screen on both sets; novelty check against the loadout/upgrade-timing losses.
 - P27 mode 36 skip break-crossfire during drop runs, PR #137, 7df3a4a6: one-flag site SHA; no paired screen vs 6182d29 yet. Owner: Mech Sim Tester. Next: full screen on both sets.
+- 6:15 PM ET (loop): P25 #136 head moved to 47d0e6ce (the pin fix). The b34271c screen does not carry over. HOLD until Mech Sim Tester runs a fresh full screen of 47d0e6ce on both sets vs 6182d29.

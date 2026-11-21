@@ -158,3 +158,9 @@ Format:
 - Result: 2.27 vs champion 5b 2.38 (−0.11), a loss. Board 11:17 PM ET: 104th of 136; 1st 5.58, 16th 4.73, 32nd 4.23.
 - Found: laser-first alone doesn't pay even though 8/8 watched winners carry a laser; the laser likely needs the upgrades/positioning behind it, or costs us the early-game weapon we used. Build 9 (laser upgrades) sits on this losing parent and is parked. Site confirmed: no per-match data for practice submissions.
 - Blocked / next: Build 10 (nav fallback, PR #16, `b4a65ba`) at the 23:21 ET slot; Build 11 (inflation 2.5 m, PR #18) only after Build 10 scores.
+
+## Sat 2026-11-21 · Claude · Root-cause audit (read-only)
+- Did: audited `brain.ts`/`nav.ts`/`map.ts`/`params.ts` at `100941f` (identical to `main` bot code); added `tools/rca_replay.ts` (regen + house-squad + cubes over 14 replays) and `tools/rca_hide.ts` (offline hideSpot geometry on the kit arena); wrote `coord/rca-report.md`. No bot code changed.
+- Result: MEASURED regen = 45 HP/s after 5.0 s without dealing or taking damage; hide spots exist only 24% of the time vs an enemy at 60–120 m and are re-seen after 4–8 s of walking; places 1–2 average 17.3 cubes vs 0.7 for 9–16; in public matches 62/65 house deaths were house-on-house kills. CODE: bot never seeks cubes/drones/crates/drops, has no TTK logic, A* has no threat cost.
+- Found: the kit has no engine, so a faithful local sim is not possible (geometry/rule studies only). The "house bots never kill each other" premise is unverified for practice and false in public matches.
+- Blocked / next: recommended experiment `FARM` (drones/crates/cubes under the L2 160 m gate) off `100941f`; revert if < 2.38.

@@ -403,3 +403,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - Who does what: Diego's Claude now builds approved, assigned changes (UF100). The diagram adds a gate/veto step.
 - Added `.github/pull_request_template.md` with the required table.
 - Fix queue: UF100 (PR #88), then the early heal-under-fire walk to cover (re-measure first). `ourMagazine` is parked.
+
+- 11:52 AM ET: brought PR #86 research files (research/intake/diego-2026-11-21-1058.json, diego-1058-probe/) onto main. The PR conflicted only in coord/log.md. Diego audit §7.1: its numbers are superseded by the 11:15 audit on fresh seeds.

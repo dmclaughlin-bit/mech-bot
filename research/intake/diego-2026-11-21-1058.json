@@ -1,0 +1,30 @@
+{
+  "author": "Diego",
+  "submitted_at": "2026-11-21T10:58:00-05:00",
+  "findings": [
+    {
+      "claim": "In the local sim on champion B80 (28c3acc, seeds 1000-1191, 192 games), 76 games (39.6%) hold a laser by 30 s. Of the other 116: 51 never see or remember a laser by 30 s, 7 die before 30 s without ever seeing one, and 9 run the rush but do not arrive by 30 s. The remaining 49 know a laser within the 250 m trip limit but the rush is blocked. In 41 of those 49 games, the ONLY thing blocking it on some ticks is 'a mech hit us in the last 3 s' (the FARM_QUIET_S gate on the B17 rush). It is the sole blocker on 4,314 decision ticks, against 496 for claim-cubes, 393 for engage, 373 for no free slot and 109 for cube-first. On those ticks the laser's median distance is 75 m, and 63% are within 100 m. These 49 blocked games score 2.55 on average, and 26 of them die before 40 s.",
+      "topic": "our_weakness",
+      "sources": [
+        {"ref": "research/intake/diego-1058-probe/probe-and-whatif.diff (stderr probe before the rush gate, brain.ts @ 46d3eca ~ line 641)", "kind": "repo", "quote": null},
+        {"ref": "research/intake/diego-1058-probe/an.py (classification)", "kind": "repo", "quote": null},
+        {"ref": "brain.ts:641-643 (rush gate) at 46d3eca", "kind": "repo", "quote": "!claimGoal && !hurt && !(cubeFirst && !lateLight) && obs.t - lastMechHit > FARM_QUIET_S"},
+        {"ref": "coord/RESEARCH.md §10 Q1", "kind": "doc", "quote": "in the games where we do not have a laser by 30 s, what stopped B17's rush?"}
+      ],
+      "confidence": 0.6,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "Build (Lane B, one flag UNDER_FIRE_RUSH_M = 100): in the first 30 s, let the B17 rush start or continue while being hit, but only toward a LASER (never lightning or mortar) within UNDER_FIRE_RUSH_M. Every other gate stays: not hurt (HP at or above retreatHp), not engaging, no cube claim, free slot, zone-safe, LASER_TRIP_M and LASER_CHASE_S. In brain.ts at the rush gate, replace `obs.t - lastMechHit > FARM_QUIET_S` with `(quiet || ufLaser)`, where ufLaser = t < 30 and a known laser is within UNDER_FIRE_RUSH_M. In the options filter, when !quiet, keep only lasers within that distance. Same-seed what-if (192 games) at 120 m: laser by 30 s 76 -> 94, laser at end 95 -> 111, gun-only at end 71 -> 57, died<40 s 51 -> 47, sim score -0.016 +/- 0.119 (46/192 changed). At 80 m: laser by 30 s 76 -> 91, gun-only at end 71 -> 60, died<40 s 51 -> 50, sim +0.016 +/- 0.096 (34/192 changed).",
+      "mechanism": "Showdown winners walk to a laser with an enemy inside 160 m (research-doug-0040). Our rush cancels on any mech hit for 3 s, so a poke at 20-30 s leaves us gun-only next to the laser. On the site, laser share (r=0.46) and gun-only share (r=-0.39) track the score better than the sim's mean (r=0.22), per coord/research/site-corr-2026-11-21.txt. This change moves both of those the right way without raising died<40 s. It differs from B76 (laser only, no specials), B39 (no boost), B36/B40 (does not outrank engage or finish) and B98 (does not touch engage).",
+      "expected_gain": 0.15,
+      "effort": 1,
+      "regression_risk": 0.3,
+      "failure_classes": [
+        {"class": "AIM_WEAPON", "confidence": 0.5, "basis": "sim loadout shift at 30 s and at end; no site data yet"},
+        {"class": "UNDER_AGGRESSION", "confidence": 0.3, "basis": "rush cancels on any hit while the laser is ~75 m away"}
+      ],
+      "related_rule_ids": ["B17", "L1"],
+      "keywords": ["laser by 30 s", "B17 rush", "FARM_QUIET_S", "opening", "under fire", "RESEARCH.md Q1"]
+    }
+  ]
+}

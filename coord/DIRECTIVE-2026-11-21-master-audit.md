@@ -28,7 +28,7 @@ Update these instead of creating duplicates. Create a new file only where none e
 | Directive deliverable | Existing home |
 |---|---|
 | E. EXPERIMENT_LEDGER | `EXPERIMENTS.md` + `pipeline/data/experiments.jsonl` + `coord/log.md` |
-| F. CHAMPION_STATUS | `pipeline/data/champion.json` (plus the newest champion line in `coord/log.md`) |
+| F. CHAMPION_STATUS | `pipeline/data/champion.json`, which is stale (still says 2.44 from Fri 11:49 PM); the newest champion line in `coord/log.md` is current |
 | G. AGENT_COORDINATION | `coord/WORKFLOW.md` |
 | B. SCORE_PLATEAU_ANALYSIS, C. STRATEGY_GAP_ANALYSIS (in part) | `coord/RESEARCH.md`, `coord/rca-report.md`, `coord/audit/` |
 | D. OPTIMIZATION_BACKLOG | `pipeline/data/hypotheses.jsonl` (`python3 pipeline/q.py brief`) |

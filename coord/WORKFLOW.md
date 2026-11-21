@@ -64,7 +64,7 @@ flowchart TD
 10. **Lock.** Final build locked by Sun 9:00 AM ET on the best verified site score. After that, no merges to main.
 
 ## Cut (no longer used)
-- `next-doug.md` / per-person prompts for coding, the §4 file-ownership split, the −0.6/+1.2 noise band, repeating the log in PR descriptions.
+- `next-doug.md` (per-person coding prompts for Doug's Claude; `next-diego.md` is back as Grok's prompt inbox for Diego's Claude, Sat 12:12 PM ET), the §4 file-ownership split, the −0.6/+1.2 noise band, repeating the log in PR descriptions.
 - Kept: `coord/log.md`, `EXPERIMENTS.md`, `coord/learnings.md`, this file.
 
 ## Pipeline (from Fri 23:15 ET)

@@ -46,7 +46,7 @@ One row = one PR = one practice submission, except Build 2, which is the baselin
 | Build | Contents | Owner | Target time (ET) |
 | --- | --- | --- | --- |
 | **S1** | Submit `main` @ `76aabfa` (Build 1) as it is. Earlier submissions win ties, and it gives us the first real score. | Diego | **Now** |
-| **2: survival-min** | D3 to D6, plus: zone-ETA travel (leave when path ETA / (0.8 × walk) + 10 s ≥ time to `shrink_end`; boost only when that fails); walk under 5 m/s once inside the next circle; jump only when stuck (commanded move but speed near 0 for 0.5 s) instead of every 40 ticks; retreat walking backwards with the torso on the attacker when HP < 35% under fire; take laser or lightning only; upgrade order plating > armor > nanites > sensors > weapon > mobility. Knobs in `params.ts` (6 at most). | Doug | PR by **10:30 PM**, submit by 11 PM |
+| **2: survival-min** | D3 to D6, plus: zone-ETA travel (leave when path ETA / (0.8 × walk) + 10 s ≥ time to `shrink_end`; boost only when that fails); walk under 5 m/s once inside the next circle; jump only when stuck (commanded move but speed near 0 for 0.5 s) instead of every 40 ticks; retreat walking backwards with the torso on the attacker when HP < 35% under fire; take laser or lightning only; upgrade order plating > armor > nanites > sensors > weapon > mobility. Knobs in `params.ts` (6 at most). The §9 rules tagged Build 2 are the spec. | Doug | PR by **10:30 PM**, submit by 11 PM |
 | **S3** | Re-submit Build 2 unchanged (D7). | Diego | ~midnight |
 | 3 | `nav.ts`: A\* on a 2 m grid (flatqueue, integer costs, closed stamp), jump/jet edges, stuck recovery; add the 30 ms deadline guard. | Diego's Claude writes `nav.ts`; Doug wires it in | Sat 9 AM to 1 PM |
 | 4 | Enemy tracking past the game's 5 s memory, and engagement utility (`p_win`, U_fight) replacing D4's simple gate. | Doug | Sat AM |
@@ -113,7 +113,7 @@ At 4 submissions an hour, plan on about 50 in total. Never submit two changes at
 
 | File | What | Who writes it |
 | --- | --- | --- |
-| `AI-Structure-Development.md` | This plan | PR only |
+| `AI-Structure-Development.md` | This plan, including the behavior rulebook (§9) | PR only |
 | `EXPERIMENTS.md` | One row per submission | Diego |
 | `coord/log.md` | Append-only status from both workers | Both workers |
 | `coord/next-doug.md`, `coord/next-diego.md` | The next prompt for each person | Coordinator |
@@ -122,3 +122,93 @@ At 4 submissions an hour, plan on about 50 in total. Never submit two changes at
 | `research/agents/`, `research/SOURCE_REGISTRY.md`, `research/bench/` | Detail behind the synthesis | Frozen |
 
 This PR removed `research/README.md`, `FINDINGS_SUMMARY.md`, `RESEARCH_PLAN.md`, `ARCHITECTURE_COMPARISON.md` and `RESEARCH_GAPS.md`. They were the research process's own bookkeeping, and their content is in `FINAL_RECOMMENDATION.md` (§1, §6) or §6 above.
+
+## 9. Behavior rulebook
+
+The rules the bot follows, picked from `research/agents/tactical-strategy.md` (T) and `research/agents/game-bots.md` (G) and checked against `research/protocol.md`. Where the two reports disagree, the pick and the reason are given. **[H]** marks a starting value to tune. The Build column says when each rule goes in (§3). All numbers come from `hello.config` at runtime.
+
+### Priority order (when rules compete, the higher one wins)
+
+**Dodge > Zone escape > Disengage / regen > Supply drop > Third-party > Loot > Hold position** (G §5). Hard caps H1 to H3 below override everything except Dodge.
+
+### Hard caps (never tuned, FFA-safe)
+
+| # | Rule | Source | Build |
+| --- | --- | --- | --- |
+| H1 | No even fights before zone phase 3. Fight only under F1 below. | T §1, §8 | 2 (simple), 4 (full) |
+| H2 | Arrive at the next circle early and silent (ground speed ≤ 5 m/s, move vector length ≤ 0.42), and hold its centroid-facing edge with the torso aimed inward. | T §3, G §3.6 | 2 (silent), 5 (edge) |
+| H3 | Be inside the final circle at full HP. At r ≤ 70, take cover nearest the announced final center. Phase 5 and later: never cross zone. | T §1, §3 | 8 |
+
+### Fight or leave
+
+| # | Rule | Source and pick | Build |
+| --- | --- | --- | --- |
+| F1 | **Engage** only when all hold: my time-to-kill on them < 0.6 × theirs on me; no other enemy within 120 m has line of sight to me; my HP ≥ 50% or the target is one burst from death. A target below 50% HP, already fighting someone, or showing its back is what usually passes. | **G §3.3**, cross-checked with T §9. T's `U_fight` formula has a bug: its risk term `(16 − n)/8` is 0 at 16 alive, which contradicts T's own §1 (an even fight at 16 alive risks ~7.5 points). The real risk grows with the number still alive, so early fights need a near-certain win. G's three conditions are simpler and closer to right. Tighten the 0.6 to ~0.4 while more than 8 are alive **[H]**. | 4 |
+| F2 | **Disengage** when their time-to-kill on me < 1.2 × mine on them, **or a second shooter appears**, or HP < 35% under fire. | **G §3.3 + T §2.** G's 1.2 is more cautious than T's 0.8, and the second-shooter trigger is what saves you in a free-for-all, so take both. | 2 (HP < 35%), 4 (full) |
+| F3 | **Retreat walking backwards**, torso on the attacker (legs and torso are independent; a 180° torso turn costs 0.8 s). Head for the nearest in-zone point that breaks line of sight. Boost only if energy > 30%. | T §2, §9 and G agree | 2 (backwards), 5 (break LOS) |
+| F4 | **Then heal:** stay out of contact, move ≤ 5 m/s, until HP > 90%. Regen gives 50% in ~20 s and 100% in ~36 s. | T §2, §9, G §3.3 agree | 5 |
+| F5 | **Pursue** only if the target is below 30% HP, can be finished before it breaks line of sight, and nobody else is near. Abort after 8 s or at the zone edge. | T §9 only | 4 |
+| F6 | **Third-party** a fight heard within 160 m (two gun sounds on one bearing), arriving in the ~10 s window before the winner starts to regen. A `death` sound (600 m) marks a weak winner and dropped loot. | T §6 | 7 |
+| F7 | **Practice only:** house bots hunt the weakest. When hurt, prefer positions that break pursuit (buildings, height, boosting around corners). | G §3.3 | 5 |
+
+### Aim and fire
+
+| # | Rule | Source and pick | Build |
+| --- | --- | --- | --- |
+| A1 | **Face the threat.** Torso on the highest-threat track; snap to `damaged.bearing` when `rear` is true (rear hits do 1.5x and nearly halve survival time). | T §7, G §3.5 agree. Build 1 has this for 2 s after a hit. | 1 ✓ |
+| A2 | **Hold gun fire when the predicted miss is over 4 m** (the target's sideways speed × flight time). In practice that means shooting inside ~90 to 100 m, or at targets not moving sideways. | **G §3.5** (escape angle 2.7° walking, 4.4° boosting). T §6 adds: a gunshot is heard 320 m away, so fire only when you expect to finish or can break LOS right after. Use G's 4 m test; it is the precise form of the plan's 100 m rule (D4). | 2 (100 m), 4 (4 m test) |
+| A3 | Gun lead: iterate the intercept time 3 times. Mortar: ballistic formula, g from config. | T, G agree. Build 1 has both. | 1 ✓ |
+| A4 | Charge your own laser only next to cover (you move at half speed while charging). | T §7 | 5 |
+| A5 | Push while an enemy reloads (2.4 s; the reload sound carries 60 m). | T §2 | 4 |
+
+### Dodge (reflexes, one tick, highest priority)
+
+| # | Rule | Source | Build |
+| --- | --- | --- | --- |
+| R1 | **Gun bullets:** dodge only beyond ~75 m (90 m at 10 cubes). Closer in, trade or break LOS. Use random-interval reversals and stop-and-go, not steady strafing. | T §7, G §3.4 agree | 6 |
+| R2 | **Mortar shells:** solve the impact point and get more than 7 m away (about 1.4 s of flight at 100 m). | T §7, G §3.4 agree | 6 |
+| R3 | **Laser `charging` with its aim within 3° of me:** break LOS within 0.75 s (8.8 m walking, 14.6 m boosting), or short it with lightning if within 45 m. With no cover, at least face the shooter. | T §7, G §3.4 agree | 6 |
+| R4 | For each incoming projectile with closest approach < 2.5 m + splash + 1 m, try 8 directions × walk/boost and take the largest miss, tie-breaking toward the current destination. | G §3.4 | 6 |
+
+### Zone
+
+| # | Rule | Source and pick | Build |
+| --- | --- | --- | --- |
+| Z1 | **Leave for the next circle** when distance / (0.8 × walk speed) + 10 s ≥ time to `shrink_end`. Use path distance once `nav.ts` exists, and add 2 s per enemy track along the route. | T §3 for the formula, G §3.6 for the per-threat buffer | 2 (straight line), 3 (path) |
+| Z2 | **Crossing zone** costs dps × distance / speed, and every tick outside is pure loss (no regen, timer resets). Cross only if that's under 15% of HP and the in-zone route is at least 2× longer or passes an enemy. Phases 1 and 2 are fine, phase 4 only to escape a lost fight, phase 5 and later never. | T §3 | 2 |
+| Z3 | If the circle is still open late, avoid all damage after ~440 s (timeout at 480 s ranks survivors by HP). | T §3 | 8 |
+
+### Loot, cubes, upgrades
+
+| # | Rule | Source | Build |
+| --- | --- | --- | --- |
+| L1 | **Target loadout: laser + lightning.** Keep the gun until both are in hand (no energy cost, 230 m). Never take a mortar. Never swap with an enemy in view (1 to 1.65 s lockout). | T §5; FINAL §5 adds "keep the gun until both". Mortar rule = plan D3. | 2 |
+| L2 | **Loot only when no enemy is within 160 m.** Order: laser or lightning (whichever is closer), then cubes up to 10, then crates. A crate takes 7 gun shots and the noise carries 220 m. | T §5, §9 | 2 (weapons), 8 (cubes) |
+| L3 | **Cubes to 10, then stop** (above 10 they only make you bigger), except to reach the upgrade thresholds at 15 and 21 or to take a drop's heal. | T §5 | 8 |
+| L4 | **Upgrades:** plating > armor > nanites > sensors > primary-weapon upgrade > mobility. Always answer before `expires`. | T §5 | 2 |
+| L5 | NPC drones: route more than 50 m around them. Farm one (2 cubes) only if no mech is within 160 m. | T §7 | 8 |
+
+### Supply drops
+
+| # | Rule | Source | Build |
+| --- | --- | --- | --- |
+| S1 | **Contest** only when all hold: HP > worst case from visible shooters + 150; no rival within 80 m; at most one enemy known within 150 m; already in cover 30 to 60 m away before it lands. | T §4 | 7 |
+| S2 | **Otherwise third-party it** from 100 to 200 m behind cover, or step into the ring to freeze a rival's clock (it freezes, it doesn't reset: protocol §7). | T §4, FINAL §5 | 7 |
+| S3 | **Ignore it** when it is more than 250 m off the rotation path, HP < 40% with 2+ enemies near, phase ≥ 4 on open ground with 3+ converging, or you already have 10 cubes at full HP. | T §4 | 7 |
+
+### Stealth
+
+| # | Rule | Source | Build |
+| --- | --- | --- | --- |
+| Q1 | Stay silent by default (≤ 5 m/s on the ground). Steps carry 40 m, boost 90 m. | T §6 | 2 |
+| Q2 | Stay more than 45 m from enemies and outside their 120° vision wedge (their `aim` is observed). Trees hide you but don't stop shots. | T §6, protocol §8 | 5 |
+| Q3 | Fuse sound bearings (σ 7°) into tracks over 2 to 3 hearings; keep tracks after the game's 5 s memory, growing uncertainty at 19.5 m/s, and drop them at σ > 150 m or 30 s. | G §3.1, T §6 | 4 |
+
+### The tuning knobs (in tuning order)
+
+1. `aggression`: scales F1's ratio and the third-party cost. **The only knob tuned on practice.**
+2. Retreat thresholds (F2: 1.2, 35%).
+3. Rotation buffer (Z1: 10 s, 0.8).
+4. Drop HP margin (S1: 150).
+5. Gun miss limit (A2: 4 m).
+6. Edge offset (H2).

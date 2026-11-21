@@ -6,11 +6,11 @@ Written by the coordinator. Paste everything below the line into your Claude.
 
 Read `AI-Structure-Development.md` (the team's single source of truth, sections 2 to 5) and `coord/log.md` in `dmclaughlin-bit/mech-bot` before starting. Your task is **Build 2: survival-min**, on a branch `build-2` off `main`. PR by 10:30 PM ET so it can be submitted by 11 PM.
 
-Change only `brain.ts`, plus new `map.ts` and `params.ts` if you want them. Keep Build 1's aiming and tracking. Make these changes, one commit each:
+Change only `brain.ts`, plus new `map.ts` and `params.ts` if you want them. Keep Build 1's aiming and tracking. The rules marked Build 2 in section 9 (behavior rulebook) are the spec. Make these changes, one commit each:
 
 1. **Constructor safety:** `createBot` must never throw. Guard `hello.map` and fall back to a no-map mode.
 2. **Terrain in `clearLine`:** load `v2/terrain.i16` (int16 cm, bilinear, protocol §11) and treat a sample point below the ground as blocked.
-3. **Pickups:** take only laser or lightning. Never take a mortar. Don't swap weapons while an enemy is in view.
+3. **Pickups:** take only laser or lightning, and only when no enemy is within 160 m. Never take a mortar. Don't swap weapons while an enemy is in view.
 4. **Fire gate:** fire the gun only inside 100 m, or at a target that is damaging us, below 50% HP, or moving mostly toward or away from us. Laser and lightning keep Build 1's rules.
 5. **Zone travel:** leave for the next circle when ETA / (0.8 × walk_speed) + 10 s ≥ time left to `zone.shrink_end`. Boost only when walking can't make it. Once inside the next circle, move under 5 m/s (silent).
 6. **Unstick:** replace "jump every 40 ticks" with a jump (and jet if needed) only when we've commanded movement but moved under 1 m in 0.5 s.

@@ -19,3 +19,9 @@ Format:
 - Result: Build 1 (`main` @ `76aabfa`) re-checked: `check.py` PASS, 300/300 in time, p99 1.5 ms.
 - Found: Build 1 picks up mortars, shoots any visible enemy up to 230 m, and ignores terrain in its cover check. Decisions D3 to D5 in the plan fix these in Build 2.
 - Blocked / next: Diego submits S1 now. Doug starts Build 2 (`next-doug.md`).
+
+## Fri 20:15 ET · Diego · Behavior rulebook
+- Did: cross-referenced the tactics and game-bot research reports and added the ranked rulebook as §9 of the plan (PR #4).
+- Result: docs only.
+- Found: the tactics report's `U_fight` risk term `(16 − n)/8` is backwards (0 at 16 alive). Use the game-bots engagement gate (F1) instead, tighter while more than 8 are alive.
+- Blocked / next: Doug builds the rules tagged Build 2.

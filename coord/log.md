@@ -308,3 +308,6 @@ Doug approved: Lane A = movement (nav/map/positioning), Lane B = combat (target/
 
 ## Sat 01:27 ET · Grok · Build 17 (ARM-UP early laser) KEEP
 38ce57b scored 3.50 (BB-FE8FEA0F, 1:23 AM), +0.42 over 3.08 → KEEP, PR #32 merged; new champion. Biggest single gain so far. Queue: B20+22 stack → B21 → B23 (fix round), all to be re-merged onto new main.
+
+## Sat 01:38 ET · Grok · Build 21 (upgrade order) result
+e0710b6 scored 3.46 (BB-1AFE6423, 1:35 AM), below champion 3.50 → not kept, PR #34 closed. Sim pre-check had it at −0.08 ± 0.17 (tie), consistent. Stack #37 sim −0.29 ± 0.24 → held; B23 sim −0.06 → next slot 1:47.

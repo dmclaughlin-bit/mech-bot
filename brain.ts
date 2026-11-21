@@ -35,7 +35,6 @@ const LOOT_CLEAR = 160
 /** L2: walk at most this far (m) to a wanted weapon. */
 const LOOT_DETOUR = 80
 // The tunable thresholds live in params.ts (six knobs at most); its comments say what each one does.
-const GUN_GATE = params.gunRange
 const ZONE_WALK = params.zoneWalk
 const ZONE_BUFFER = params.zoneBuffer
 const SILENT_SPEED = params.silentSpeed
@@ -160,8 +159,6 @@ function buildBot(hello: Hello): Bot {
   const maxPitch = cfg.mech.max_pitch ?? 1.3
   const known = new Map<number, Known>()
   let lastHit: { bearing: number; t: number } | null = null
-  /** attacker id → last time it damaged us */
-  const hitBy = new Map<number, number>()
   const nav = createNav(hello)
   /** The current route: waypoints from nav.path toward `goal`, planned at time `at`. */
   let route: { goal: Vec3; at: number; points: Vec3[]; next: number } | null = null
@@ -269,7 +266,6 @@ function buildBot(hello: Hello): Bot {
     for (const e of obs.events) {
       if (e.type === "kill") known.delete(e.target)
       if (e.type === "damaged" && e.bearing !== null) lastHit = { bearing: e.bearing, t: obs.t }
-      if (e.type === "damaged" && e.by !== null) hitBy.set(e.by, obs.t)
     }
     for (const [id, k] of known) if (obs.t - k.lastSeen > 30) known.delete(id)
   }
@@ -454,16 +450,10 @@ function buildBot(hello: Hello): Bot {
           }
         }
 
-        // Fire gate on the gun (D4, A2): inside 100 m, or at a target that is hitting us, is below half HP, or is
-        // moving mostly toward or away from us. Past that a sideways mover dodges, and a shot is heard 320 m away.
-        const dx = c[0] - muzzle[0], dy = c[1] - muzzle[1], dl = Math.hypot(dx, dy) || 1
-        const radial = Math.abs((m.vel[0] * dx + m.vel[1] * dy) / dl)
-        const sideways = Math.abs((m.vel[0] * dy - m.vel[1] * dx) / dl)
-        const hittingUs = obs.t - (hitBy.get(m.id) ?? -Infinity) < 2
-        const weak = (m.hp ?? 1) / (m.max_hp ?? 1) < 0.5
-        const gunOpen = d <= GUN_GATE || hittingUs || weak || sideways <= radial
+        // Build 7 (practice): no 100 m gun gate. The gun fires at any clear target within its configured range
+        // (stats.range from hello.config), still only when the torso is on the lead point.
         // Fire only what can hit from where the torso actually points.
-        if (clear && gun >= 0 && gunOpen) {
+        if (clear && gun >= 0) {
           const g = w(gun)
           if ((g.ammo ?? 1) > 0 && (g.reload ?? 0) <= 0 && d <= g.stats.range && onTarget(gunAim[0], gunAim[1])) fire[gun] = true
         }

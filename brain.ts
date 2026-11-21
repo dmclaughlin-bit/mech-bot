@@ -13,10 +13,11 @@
  * Build 14 (engage): fight or flee by time-to-kill vs time-to-die (F1): against one enemy we would kill first, or one
  * within a magazine of dying, fight on instead of the HP retreat, then collect its cubes (see engageChoice, ENGAGE_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
+ * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
-import { ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, TARGET_PICK_ON, params } from "./params.ts"
+import { ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
@@ -217,6 +218,8 @@ function buildBot(hello: Hello): Bot {
   let route: { goal: Vec3; at: number; points: Vec3[]; next: number } | null = null
   /** Build 12: last time a mech (or the zone) damaged us, the item we are walking to, and items we gave up on. */
   let lastMechHit = -Infinity
+  /** Build 19: the last time we took damage from anything (mech, drone or zone). */
+  let lastDamaged = -Infinity
   let farmChase: { id: number; since: number } | null = null
   const farmGiveUp = new Set<number>()
   /** Build 14 (engage): each weapon's DPS and reach from hello.config, read once here. */
@@ -375,6 +378,7 @@ function buildBot(hello: Hello): Bot {
       if (e.type === "damaged" && e.bearing !== null) lastHit = { bearing: e.bearing, t: obs.t }
       if (e.type === "damaged" && e.by !== null) hitBy.set(e.by, obs.t)
       if (e.type === "damaged" && e.weapon !== "npc") lastMechHit = obs.t
+      if (e.type === "damaged") lastDamaged = obs.t
     }
     for (const [id, k] of known) if (obs.t - k.lastSeen > 30) known.delete(id)
   }
@@ -560,6 +564,9 @@ function buildBot(hello: Hello): Bot {
         if (!cube && flat(me.pos, at) < Number(cfg.cubes.pickup_radius ?? cfg.loot.pickup_radius)) claim = null
         else if (zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && !seenAt(me.pos, myHeight, threats, false)) claimGoal = goal
       }
+      // Stop sneaking (Build 19): not hurt (HP at or above the retreat line, no damage for NO_SNEAK_QUIET_S), so no
+      // silent speed cap and no walk to a hiding spot. While hurt, the retreat, the heal and their hiding are unchanged.
+      const noSneak = NO_SNEAK_ON && me.hp >= RETREAT_HP * me.max_hp && obs.t - lastDamaged > NO_SNEAK_QUIET_S
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -609,7 +616,8 @@ function buildBot(hello: Hello): Bot {
         mode = "engage, collect"
       } else if (me.hp < HEAL_HP * me.max_hp) {
         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
-        spot = threats.length && seenAt(me.pos, myHeight, threats, true) ? hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan) : null
+        // Build 19: the walk to a hiding spot only while hurt.
+        spot = !noSneak && threats.length && seenAt(me.pos, myHeight, threats, true) ? hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan) : null
         if (spot) move = heading(spot)
         mode = spot ? "heal, hiding" : "heal"
       } else if (lootTarget) {
@@ -621,8 +629,8 @@ function buildBot(hello: Hello): Bot {
       } else if (farmGoal) {
         move = travel(me.pos, farmGoal.pos, obs.t, canPlan()).move
         mode = farmHunt ? "farm, hunt" : "farm, pickup"
-      } else if (threats.length && seenAt(me.pos, myHeight, threats, true)) {
-        // Hold out of sight (Q2, Build 5): outside every enemy's 45 m ring and 120° wedge, moving silently.
+      } else if (!noSneak && threats.length && seenAt(me.pos, myHeight, threats, true)) {
+        // Hold out of sight (Q2, Build 5): outside every enemy's 45 m ring and 120° wedge, moving silently. Build 19: only while hurt.
         spot = hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan)
         if (spot) {
           move = heading(spot)
@@ -631,8 +639,9 @@ function buildBot(hello: Hello): Bot {
       }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
+      // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if ((toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage")) move = [move[0] * silent, move[1] * silent]
+      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage")) move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

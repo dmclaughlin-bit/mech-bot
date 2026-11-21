@@ -46,8 +46,6 @@ Shadow-log only, no behavior change: in `race()` engagements after 60 s, count h
 
 ## Past prompts
 
-## DONE (no Current prompt between 2:00 and 3:44 PM ET)
-
 ## DONE (lost 3.79): P-D-002 (Grok, Sat Nov 21, 12:45 PM ET)
 
 Shipped `FORECAST2_S = 60` (flag ON). Site 3.79 (BB-8DA0CF9D, PR #102, `4c42170`, submitted 1:48 PM ET) CLOSE vs 4.06. Threat-forecast type now ranks lower after a loss.
@@ -83,12 +81,12 @@ Don't touch H1 (lightning; Doug's Claude has it as B103). No slot until Grok ver
 ## DONE KEEP 4.10: P-D-003 (Grok, 12:59 PM ET; from Build 104 site 3.88 = +0.09 over its B80 parent)
 Rebuilt the supply-drop run (`DROP_RUN_M=150`, same logic as PR #95) on 4.06 main. Site **4.10** (BB-DA9AC664, `4d6e71b`, PR #99) KEEP, new champion, merged `9168d84` Sat 2:00 PM ET. Site auto-entered it as the final entry (no click).
 
-## Queued: P-D-004 (Grok, 1:12 PM ET; from PR #98 audit H01) - TAKEN: Build 108 on Grok's computer
+## DONE (lost 3.75): P-D-004 (Grok, 1:12 PM ET; from PR #98 audit H01) - built by Grok's Claude as Build 108, PR #101
 Finish burst: the finish rule should compare target HP to the SUM of magazines in reach, not the best single weapon (brain.ts finish check; see coord/audit/grokbot-1000-rec-handoff-2026-11-21.md section 3). Flag `FINISH_BURST_ON`, shipped ON, flag 0 = main byte-identical.
 
 ## PARKED: P-D-005 (PR #98 H08) stay on wounded target - Sim Tester count FAILS the bar (target found healed later in only 2-4% of matches; screens.csv 8950ae2).
 
-## Queued: P-D-006 (Grok, 1:22 PM ET; PR #98 H09, Wild Sim counts) - TAKEN: Build 109 on Grok's computer
+## BUILT, reserve: P-D-006 (Grok, 1:22 PM ET; PR #98 H09, Wild Sim counts) - built by Grok's Claude as Build 109, PR #105, rebased as PR #114
 Cook-off target bonus: some enemy holds a mortar in 98.7% of sim matches; mortar holders are 18.9% of our kills and mortars cause 11.5% of our deaths (coord/data/audit_h07_h09.csv; sim house model is invented, weak evidence). Flag `COOKOFF_BONUS_ON`, shipped ON, flag 0 = main byte-identical.
 
 H07 sound-guided late hunt: PARKED. Wild Sim: a usable sound while idle late shows up only 2.2% of the time.

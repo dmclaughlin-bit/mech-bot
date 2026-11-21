@@ -114,6 +114,8 @@ const LASER_CUBE_M = 20
 const LASER_RELEASE = 0.8
 /** Build 17: aim the beam this far ahead (s) of a moving target: about the delay between an observation and our action taking effect (a guess: 1 to 2 ticks). */
 const LASER_LEAD_S = 0.075
+/** Build 36 (rush first): while a Build 17 laser trip is under way and no mech has hit us, a finish/TTK engage does not take over (it blocked the trip). false = Build 17. */
+const RUSHFIRST_ON = true
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -596,7 +598,7 @@ function buildBot(hello: Hello): Bot {
             pick = undefined
           }
         }
-        if (pick) engage = { m: pick, why, clear: clearLine(solids, muzzle, centerOf(pick)) }
+        if (pick && !(RUSHFIRST_ON && rush && !holdsLaser && obs.t - lastMechHit > FARM_QUIET_S)) engage = { m: pick, why, clear: clearLine(solids, muzzle, centerOf(pick)) }
       } else engaged = null
       // Collect (Build 14): after our kill, walk to the cubes it dropped (all of its cubes plus two) if it is safe:
       // nobody has line of sight to us, no mech hit us in the last 2 s, and the same zone test as farming.

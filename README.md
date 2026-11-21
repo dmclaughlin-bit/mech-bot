@@ -22,3 +22,13 @@ python3 check/check.py -- node ../mech-bot/bot.ts
 ```
 
 In a match, the Docker image built from this folder runs `bun /bot/bot.ts` with no network, 1 CPU and 512 MB.
+
+## Local practice sim
+
+`tools/sim` approximates a practice match so builds can be ranked before a submission is spent: it runs `bot.ts` as a subprocess speaking `mechfight/1` against 15 scripted house bots on the kit map.
+
+```sh
+bun tools/sim/run.ts --bot bot.ts --seeds 48 --out sim.csv
+```
+
+It prints the mean of `16 - place` over the fixed seeds and writes one CSV row per match. It needs the kit at `/workspace/mechfight-kit`, `$MECHFIGHT_KIT` or `--kit <dir>`. The house bots are our model, not the real ones: read `tools/sim/ASSUMPTIONS.md` before trusting a number.

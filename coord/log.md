@@ -244,3 +244,6 @@ Commit c2e7f6017341296cff7d0b5bb34c6397148bd967, receipt BB-5573AA45, submitted 
 - Result: `bun build` OK; `check.py` PASS, 300/300 in time. With `ENGAGE_ON = false`, all 302 responses on the kit stream are identical to `3a00ba2`. Not submitted.
 - Found: on the kit stream, `ENGAGE_ON = true` also matches `3a00ba2` exactly (the engage rules never trigger there).
 - Blocked / next: Coordinator scores it at the 00:21 ET slot.
+
+## Sat 00:26 ET: Build 14 (fight-or-flee, TTK vs TTD + finish) scored 2.88, KEEP (Grok)
+Commit 0ed6ffcab023247e862c4293de1a3bb7436d4a3b, receipt BB-2897E011, submitted 00:22 ET. Parent Build 13 (3a00ba2) scored 2.54, so +0.34, the biggest gain so far; new champion (auto final entry; Pick-as-final never clicked). Board: 112th of 159, rank 1 5.58, rank 16 4.92, rank 32 4.44. Confirms kills-first: deciding to fight beats fleeing on our own HP. Next free slot 00:33 ET.

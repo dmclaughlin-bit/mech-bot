@@ -74,3 +74,8 @@ Structured memory lives in `pipeline/` (see `pipeline/README.md`). Grok runs `py
 
 ## Sequence rule (Doug, Sat Nov 21 1:09 PM ET)
 Never submit a build while an earlier submission is still unscored. Wait for the score. If it is a new best, merge it, then rebase every queued build onto the new main and re-gate before it is submitted. Every submitted build's parent must be the current champion; a build tested on an old base is a wasted test.
+
+## Queue priority (Doug, Sat Nov 21 1:48 PM ET)
+1. Site-result-driven ideas first: tweaks and follow-ups of the current best, and rebuilds on current main of anything that beat its own parent on the site.
+2. Research/code-reading ideas (e.g. Diego's audits) fill leftover slots only, and only after a sim trigger count shows they fire in about 10 of 192 games or more.
+3. Ideas in the same family as a recent site loss go last (e.g. after B108 finish burst 3.75: other finish-rule changes).

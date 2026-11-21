@@ -453,3 +453,4 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - Sat Nov 21 6:21 PM ET Grok: Wild Sim audit batch committed (hazard_screens.csv +43 rows on main 42a19d7: 0 crashes, max tick 25.3 ms; audit_h07_h09.csv). H07 parked (rare trigger). H09 queued as P-D-006, Build 109 on Grok's computer.
 - Sat Nov 21 6:26 PM ET Grok: Sim Tester trigger counts (8950ae2): H01 in ~15% of matches, H02 22-26% (passes bar; P-B-005 with Builder), H08 2-4% (fails; P-D-005 parked). Five MR verdict spot-checks confirmed.
 - Sat Nov 21 6:43 PM ET Grok: B108 finish burst aeb6f85 site 3.75 (BB-26BA2735) CLOSE (-0.31 vs 4.06). Post-mortem requested. P-B-005 PR #106 reserve; P-B-006 STANDOFF_BREAK_S 45 assigned to Builder.
+- Sat Nov 21 6:48 PM ET Grok: Doug's queue-priority rule added to WORKFLOW.md (site-result-driven first; research ideas fill leftover slots after trigger counts; same-family-as-loss last).

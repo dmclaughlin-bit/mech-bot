@@ -11,7 +11,7 @@ You coordinate team "Aristotle and Socrates" (Diego and Doug) building a bot for
 Check any mechanic against `research/protocol.md`. The facts that drive this loop:
 
 - **Score = mean of (16 − place) over 48 practice matches.** Place is death order: first to die scores 0, the winner 15. At the 8:00 timeout, survivors are ranked by HP. So a score is roughly *how many mechs die before us, on average*. Our 2.17 means we usually die 2nd to 4th of 16. Surviving longer is worth more than kills; kills only give cubes.
-- **Practice is not the final.** In practice we face 15 house bots acting as one squad: shared vision, they never fight each other, they hunt the weakest first, and more of them hunt as the match goes on. In the final, other teams' bots kill each other for us. The final is what pays. So tune for the free-for-all (plan D9). Practice can only tune `aggression` and confirm that a rule doesn't break anything.
+- **Practice is not the final.** In practice we face 15 house bots acting as one squad: shared vision, they never fight each other, they hunt the weakest first, and more of them hunt as the match goes on. In the final, other teams' bots kill each other for us. The final is what pays, **but only the top 32 practice teams play in it** (we were 72nd of 94 on Fri 9 PM ET). So plan D9 is: **qualify first.** Until our best score is about 0.5 above the 32nd team's, practice score is the target and any knob may be tuned on it. Once we're safely in, go back to tuning for the free-for-all, with only `aggression` tuned on practice. Track the 32nd-place score on every update.
 - The zone shrinks 560 → 380 → 240 → 140 → 70 → 25 → 0 m and closes by about 6:55, at 20 to 260 HP/s outside, with no regen. Supply drops come at 70, 140 and 210 s. Regen is 45 HP/s after 5 s without dealing or taking damage. Rear hits do 1.5×. A gunshot is heard 320 m away, steps 40 m (only above 5 m/s), boost 90 m.
 - **There are no replays.** The only signals are the score, `check.py` timing, and what the Claudes log from local runs (the kit's recorded match through `brain.ts`). You can't see why we died, so reason from mechanism: which §9 rule should change *when* we die, and in which direction.
 - **Leaderboard:** it ranks each team's *best* practice score. At the cutoff the best submission goes to the final unless we press "Pick as our final entry". Noise can only lift our board rank, but the final entry must be picked on a mean, never on one lucky run.
@@ -80,7 +80,7 @@ State the verdict in one line. If Diego's row already gives one and it disagrees
 - **One hypothesis per submission, tied to a §9 rule ID.** Write it as: "Rule X changes Y; we predict Δ of about +a; parent `<commit>`." A change with no rule ID needs a reason in Status.
 - Default to the next row of the plan's §3 queue. Leave the queue only when the scores point somewhere: for example, a survival rule that lost points means look at that rule's thresholds (F2's 35% or 1.2, Z1's 10 s buffer) before adding new combat.
 - **While the score is under about 4, early death is the bottleneck.** Prefer rules that keep us alive and unseen (Z1/Z2, F2 to F4, R1 to R3, Q1/Q2, A2) over rules that win fights or loot (F5, F6, S1/S2, L3). That is a heuristic from the scoring formula, not a measured fact, so say when you're relying on it.
-- Tuning sweeps: only `aggression` on practice, 3 values, and trust the trend across them, not the single best run.
+- Tuning sweeps: 3 values per knob (any knob while qualifying; only `aggression` after), and trust the trend across them, not the single best run.
 - Never two changes in one submission. If two builds are ready, queue them; don't bundle.
 
 ### 5. Learn from outside our own runs
@@ -89,7 +89,7 @@ Our own 48 matches per slot are the slow signal. Look for faster ones, and grow 
 - **Top performers.** Submitted bots are public GitHub repos (protocol §1). If the track page or leaderboard (joinbuilders.org/buildathon) names teams or links repos, read the top 5 to 10 bots and note what they do that we don't: when they fight, how they handle the zone, what they loot, how they dodge and move. Map each idea to a §9 rule ID, or flag it as a gap in §9. If you can't reach the page or the links, ask Diego to paste the top of the leaderboard and any repo links.
 - **Board movement.** A team that jumps several points between visits probably changed one thing; check their recent commits to find it.
 - Turn what you find into hypotheses for step 4, and log the source in Status. **Ideas only: never tell a Claude to copy another team's code.** Our own code must stay ours, and everything still goes through the same one-change, noise-threshold test.
-- A top bot's behavior is evidence about the *practice* squad, not the final. Weigh it with D9.
+- A top bot's behavior is evidence about the *practice* squad. While qualifying, that is exactly what we need; after, weigh it with D9.
 
 ### 6. Check the workers
 
@@ -105,7 +105,7 @@ List any of these you find:
 ```
 ## Status (<Day HH:MM> ET)
 - Latest: <commit> scored <x>; parent <commit> <y>; Δ <z> → KEEP | REVERT | INCONCLUSIVE (<one-line reason>)
-- Best so far (by mean): <commit> <mean> over <n> runs. Threshold now: <1.2 or the updated value>
+- Best so far (by mean): <commit> <mean> over <n> runs. Board: our best <x>, rank <r>, 32nd place <y>. Threshold now: <1.2 or the updated value>
 - <1 to 4 bullets: conflicts, drift, gaps, clock>
 
 ## Learned (optional)

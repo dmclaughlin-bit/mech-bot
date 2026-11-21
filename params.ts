@@ -61,6 +61,30 @@ export const ENGAGE_ON = true
 export const ENGAGE_FINISH_HP = 0.35
 
 /**
+ * Build 17 (early arm-up): in the first LASER_RUSH_S seconds, while we hold no laser, walk at full speed along a nav
+ * path to a laser pickup we see or remember (pickups are listed only while in view), and while we hold only the gun
+ * to a lightning too (a laser comes first), when all of these hold:
+ *   - bounded trip: the path to it is at most LASER_TRIP_M long;
+ *   - zone-safe: it lies inside the current circle and the trip there and on to the next circle fits before the shrink ends;
+ *   - reachable on the ground (not on a roof, a path exists), given up after LASER_CHASE_S.
+ * Fix round (research 0040, ARM-UP): there is no enemy test. 9 of 10 showdown winners walked to their laser with an
+ * enemy inside 160 m, so an enemy nearer to the pickup or watching the route no longer stops the trip. Engage, retreat,
+ * zone travel and collecting a kill's cubes still rank first, and any mech damage in the last 3 s stops the trip, so
+ * Build 14's fight-or-flee choice is untouched while an enemy is engaging. Also: one torso turn at spawn to see the
+ * pickups around us, a wanted weapon in reach is taken into a free slot whoever is in view, and once held the laser is
+ * let go only when the torso is inside the target's outline (the beam has no spread), with a clear laser line holding
+ * the finish rule at range instead of walking in. A charge that has lost its target is turned onto another enemy we
+ * can hit, or held, instead of being let go at nothing (the protocol has no cancel: letting go always fires).
+ * Set LASER_RUSH_ON to false to roll back to Build 16 behavior exactly.
+ */
+export const LASER_RUSH_ON = true
+/** Start a trip only this early in the match (s). */
+export const LASER_RUSH_S = 45
+/** Longest path (m) to a weapon we walk for. Showdown winners' early laser trips: median 78 m of path, longest 176 m. */
+export const LASER_TRIP_M = 175
+/** Give up on a weapon we have walked toward this long (s) without reaching it. */
+export const LASER_CHASE_S = 20
+/**
  * Build 16 (target pick): instead of the nearest enemy with a clear line, lock the enemy mech with the best kill
  * value (target.ts: a shot from here, short time-to-kill from our DPS, low hp, weak weapons, alone) and keep it until
  * it dies or has had no shot for TARGET_LOST_S. An enemy outside the circle is picked only while we can shoot it from

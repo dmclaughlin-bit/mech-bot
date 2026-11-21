@@ -17,6 +17,8 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 72 (glance): in the first 45 s with no laser, if the target has not hit us in 2 s and no mech is hitting
+ * us now, look a few ticks toward the nearest unseen direction, then aim back (see GLANCE_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -120,6 +122,21 @@ const LASER_LEAD_S = 0.075
  * multi-threat fights when the race looked winning, and changed hit rates). Against real house bots that share
  * vision and hit harder than the sim, a 2-on-1 stand-and-shoot is a fight we cannot finish. */
 const CROSSFIRE_ON = true
+/** Build 72 (glance): in the first LASER_RUSH_S with no laser, if our target has not damaged us in GLANCE_QUIET_S
+ * and no mech is hitting us, take a brief look (GLANCE_DWELL_S once the torso gets there, at most GLANCE_MAX_S)
+ * toward the nearest of 12 bearings we have not looked along since we moved GLANCE_RESCAN_M, then aim back at the
+ * target, at any distance. Fire tests run first, so a glance cannot add a shot this tick; any mech hit ends it so
+ * firing stays on the target. Different from B45 (TRACK_SWEEP_ON): no 150 m gate, no retreat/heal/engage/rush
+ * lockout, and zone/drone damage does not block (only mech hits). Different from the rejected B70 spawn sweep:
+ * B70 only changed the no-target 1.8 s spin rate at spawn; this looks away from a tracked target mid-fight.
+ * false = champion. */
+const GLANCE_ON = true
+const GLANCE_QUIET_S = 2
+const GLANCE_DWELL_S = 0.3
+const GLANCE_MAX_S = 0.8
+const GLANCE_PERIOD_S = 4
+const GLANCE_BINS = 12
+const GLANCE_RESCAN_M = 40
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -273,6 +290,10 @@ function buildBot(hello: Hello): Bot {
   /** Build 14: targets we gave up on (id → time), and where our last kill died, to collect its cubes. */
   const engageGiveUp = new Map<number, number>()
   let claim: { pos: Vec3; until: number } | null = null
+  /** Build 72: last stand position when each bearing sector was wholly in view; the look under way; next start time. */
+  const glanceSeen: (Vec3 | null)[] = new Array(GLANCE_BINS).fill(null)
+  let glanceLook: { bin: number; since: number; at: number | null } | null = null
+  let glanceNext = -Infinity
 
   /** Build 14: what we deal per second to a target `d` m away: every held weapon that reaches, × its hit-rate guess × our cube bonus. */
   function ourDps(me: Observation["self"], d: number): number {
@@ -438,6 +459,10 @@ function buildBot(hello: Hello): Bot {
         act.pick = ranks.indexOf(Math.min(...ranks))
       }
       const enemies = obs.mechs.filter((m) => m.kind === "mech")
+      if (GLANCE_ON) {
+        const half = (cfg.vision.fov_deg * Math.PI) / 360 - Math.PI / GLANCE_BINS
+        for (let b = 0; b < GLANCE_BINS; b++) if (Math.abs(wrap((2 * Math.PI * b) / GLANCE_BINS - me.aim[0])) <= half) glanceSeen[b] = me.pos
+      }
 
       // Loot (D3, L1, L2): laser and lightning only, never a mortar, and only with no enemy within 160 m.
       // Keep the gun until the second of the two shows up, then swap the gun out, never with an enemy in view.
@@ -842,6 +867,7 @@ function buildBot(hello: Hello): Bot {
         farmShot = !!target
       }
       let label = `knows ${known.size}`
+      if (!target) glanceLook = null
 
       if (target) {
         const { m, c, d, clear } = target
@@ -924,6 +950,40 @@ function buildBot(hello: Hello): Bot {
         }
         if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true
         if (gun >= 0 && (w(gun).ammo ?? 1) === 0 && (w(gun).reload ?? 0) <= 0) act.reload = true
+
+        // Build 72: after the fire tests (they read the current torso, so this never adds a shot). A mech hit,
+        // a farm shot, or already holding/remembering a laser ends or blocks the look so aim stays on the target.
+        const knowLaser = holdsLaser || [...arms].some(([, a]) => a.kind === "laser")
+        const targetQuiet = obs.t - (mechHitBy.get(m.id) ?? -Infinity) > GLANCE_QUIET_S
+        const underFire = obs.t - lastMechHit < GLANCE_QUIET_S
+        const glanceOk =
+          GLANCE_ON && LASER_RUSH_ON && obs.t < LASER_RUSH_S && !knowLaser && !farmShot && targetQuiet && !underFire
+        if (!glanceOk) glanceLook = null
+        else {
+          const sector = (b: number) => (2 * Math.PI * b) / GLANCE_BINS
+          if (glanceLook) {
+            if (glanceLook.at === null && Math.abs(wrap(me.aim[0] - sector(glanceLook.bin))) < 0.15) glanceLook.at = obs.t
+            const done = glanceLook.at !== null ? obs.t - glanceLook.at >= GLANCE_DWELL_S : obs.t - glanceLook.since > GLANCE_MAX_S
+            if (done) {
+              glanceLook = null
+              glanceNext = obs.t + GLANCE_PERIOD_S
+            }
+          }
+          if (!glanceLook && obs.t >= glanceNext) {
+            const turn = (b: number) => Math.abs(wrap(sector(b) - me.aim[0]))
+            let best = -1
+            for (let b = 0; b < GLANCE_BINS; b++) {
+              const at = glanceSeen[b]
+              if (at && flat(at, me.pos) <= GLANCE_RESCAN_M) continue
+              if (best < 0 || turn(b) < turn(best)) best = b
+            }
+            if (best >= 0) glanceLook = { bin: best, since: obs.t, at: null }
+          }
+          if (glanceLook) {
+            aim = [wrap(sector(glanceLook.bin)), 0]
+            leading = `glance ${glanceLook.bin}`
+          }
+        }
 
         draw.line(muzzle, c, clear ? "#ff5040" : "#888888")
         label += ` · ${farmShot ? "farm " : ""}${leading} at ${m.id} ${d.toFixed(0)}m${clear ? "" : " (behind cover)"}${pickNote}`

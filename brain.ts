@@ -19,6 +19,8 @@
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  * Build 80 (late lightning): after 45 s, a gun-only bot may walk to a reachable ground lightning or laser
  * (see LATE_LIGHT_ON).
+ * Build 88 (no charge in crossfire): do not start a laser charge when 2+ enemies have LOS and a mech
+ * hit us in the last 2 s, unless the target is under half HP (see NOXFIRECHARGE_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -129,6 +131,10 @@ const CROSSFIRE_ON = true
  * Take, swap, and drop are unchanged (B66 and B68 lost on the site). Different from B76/B78 (first 45 s only).
  * false = champion. */
 const LATE_LIGHT_ON = true
+/** Build 88 (Tester P8): do not start a laser charge (charge == 0) when 2+ known enemies have line of
+ * sight to us and a mech hit us in the last 2 s, unless the target is under half HP. Lightning or the
+ * gun takes the shot instead. A charge already started is unchanged. false = champion B80. */
+const NOXFIRECHARGE_ON = true
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -884,7 +890,11 @@ function buildBot(hello: Hello): Bot {
         // Pick the weapon that steers the aim this decision.
         let leading = "track"
         aim = gunAim
-        if (clear && laser >= 0 && w(laser).cooldown <= 0 && d <= w(laser).stats.range) {
+        // Build 88: skip starting a laser charge under crossfire fire unless the target is already weak.
+        const targetWeak = (m.hp ?? 1) / (m.max_hp ?? 1) < 0.5
+        const xfireHot = threats.filter((e) => seenAt(me.pos, myHeight, [e], false)).length >= 2 && obs.t - lastMechHit < 2
+        const holdCharge = NOXFIRECHARGE_ON && laser >= 0 && (w(laser).charge ?? 0) <= 0 && xfireHot && !targetWeak
+        if (clear && laser >= 0 && w(laser).cooldown <= 0 && d <= w(laser).stats.range && !holdCharge) {
           leading = "laser"
           aim = beamAim
         } else if (clear && arc >= 0 && d <= w(arc).stats.range) {

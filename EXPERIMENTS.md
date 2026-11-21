@@ -4,6 +4,7 @@ One row per practice submission, newest first. Keep a change only if it gains ab
 
 | Time (ET) | Commit | Parent | Params | Score | Hypothesis (rule ID) | Result |
 | --- | --- | --- | --- | --- | --- | --- |
+| Fri 11:12 PM (not submitted) | Build 11 head (`build-11-inflate`) | `b4a65ba` | `params.ts` defaults | — | Build 11: nav inflation 2 → 2.5 m = mech radius. Bot clips walls because padding < body radius; predict fewer NAV_COLLISION/NAV_STUCK | Offline only. geom_audit 2000 paths: clip@2.5 m 225 → 127 (11.3% → 6.4%), null 12 → 18, main region still 93.6% of free cells (not split). Gate PASS, p99 0.9 ms. Awaiting submit |
 | Fri 10:37 PM | `209539f` | `100941f` | `params.ts` defaults | 2.04 | Build 7: drop D4 100 m gun gate (PR #13, BB-07153949) | −0.34 vs Build 5b (2.38). REVERT: PR closed. Board 10:39 PM ET: 95th of 130 on best 2.38; 32nd is 4.17 |
 | Fri 10:32 PM | `1386dd1` | `100941f` | `params.ts` defaults | 2.23 | Build 6: hold behind cover (PR #12, BB-BC5A52AB) | −0.15 vs Build 5b (2.38). REVERT: PR closed. Board 10:36 PM ET: 93rd of 127 on best 2.38; 32nd is 4.17 |
 | Fri 10:21 PM | `100941f` | `406ab9f` | `params.ts` defaults | 2.38 | Build 5b: F3/F4/Q2 without the F4 fire gate (PR #11, BB-54EDF93F) | +0.15 vs Build 3 (2.23), +0.34 vs Build 5. KEEP (deterministic practice: raw gain). Merged as `516f3b3`; now the auto final entry. Board 10:24 PM ET: 88th of 121; 32nd is 4.15 |

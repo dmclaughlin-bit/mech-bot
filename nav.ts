@@ -34,7 +34,7 @@ export interface Nav {
 }
 
 const CELL = 2 // m per planning cell
-const INFLATE_M = 2 // grow walls by this much (mech radius is 2.5; 2 keeps 5–6 m alleys open)
+const INFLATE_M = 2.5 // grow walls by this much: the mech radius, so planned paths keep the body off walls
 const SNAP_CELLS = 10 // search this far (cells) for a free cell when an endpoint sits in a blocked one
 const ETA_BUDGET = 20000
 const STUCK_S = 0.5
@@ -115,8 +115,8 @@ export function buildNavGrid(hello: Hello): NavGrid {
 
   // --- blocked vertices: walls grown by INFLATE_M, plus steep vertices
   const blocked = new Uint8Array(V)
-  const R = INFLATE_M, offs: number[] = []
-  for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) if (dx * dx + dy * dy <= R * R) offs.push(dx, dy)
+  const R = INFLATE_M, Ri = Math.ceil(R), offs: number[] = []
+  for (let dy = -Ri; dy <= Ri; dy++) for (let dx = -Ri; dx <= Ri; dx++) if (dx * dx + dy * dy <= R * R) offs.push(dx, dy)
   for (let j = 0; j < vny; j++) {
     for (let i = 0; i < vnx; i++) {
       const v = j * vnx + i

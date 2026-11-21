@@ -19,6 +19,7 @@
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  * Build 80 (late lightning): after 45 s, a gun-only bot may walk to a reachable ground lightning or laser
  * (see LATE_LIGHT_ON).
+ * Build 26 (multi-threat race): at any HP, fight or break line of sight from every watcher (RACE_MULTI_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -600,7 +601,8 @@ function buildBot(hello: Hello): Bot {
         let fin = false
         // Build 26 race: every watcher's DPS on us (hit rates by range) vs our DPS on one focus target, at any HP, no alone() veto.
         // Build 26 fix: not while the Build 17 early laser trip can still run (a race win set `engage` and blocked the trip).
-        if (RACE_MULTI_ON && (holdsLaser || obs.t >= LASER_RUSH_S)) {
+        // Rematch on B80: the same wait applies while the late gun-only lightning walk can still run (it uses the same rush path).
+        if (RACE_MULTI_ON && (holdsLaser || (obs.t >= LASER_RUSH_S && !(LATE_LIGHT_ON && gunOnly)))) {
           const armor = 1 - clamp(me.stats.armor ?? 0, 0, 0.9)
           const taken = threats.reduce((s, e) => (los.includes(e) || hitters.includes(e.id) ? s + enemyDps(e, flat(e.pos, me.pos), raceHitTheirs) * armor : s), 0)
           const ttd = taken > 0 ? me.hp / taken : Infinity

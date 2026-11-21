@@ -1,0 +1,320 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "experiment_result.json",
+ "title": "experiment_result",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "id",
+  "hypothesis_id",
+  "change",
+  "evidence_ids",
+  "related_experiments",
+  "baseline_commit",
+  "candidate_commit",
+  "agent",
+  "kit_check",
+  "codex_review",
+  "submission",
+  "score",
+  "outcome",
+  "lesson",
+  "next_action",
+  "created_at"
+ ],
+ "properties": {
+  "id": {
+   "type": "string",
+   "pattern": "^EXP-[0-9]{4}$"
+  },
+  "label": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "hypothesis_id": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "change": {
+   "type": "string"
+  },
+  "evidence_ids": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   }
+  },
+  "related_experiments": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   }
+  },
+  "repeat_reason": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "baseline_commit": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^[0-9a-f]{7,40}$"
+  },
+  "baseline_score": {
+   "type": [
+    "number",
+    "null"
+   ]
+  },
+  "candidate_commit": {
+   "type": "string",
+   "pattern": "^[0-9a-f]{7,40}$"
+  },
+  "branch": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "pr": {
+   "type": [
+    "integer",
+    "null"
+   ]
+  },
+  "agent": {
+   "type": "string"
+  },
+  "kit_check": {
+   "type": "object",
+   "required": [
+    "status"
+   ],
+   "properties": {
+    "status": {
+     "type": "string",
+     "enum": [
+      "pass",
+      "fail",
+      "pending",
+      "not_run",
+      "unknown"
+     ]
+    },
+    "p99_ms": {
+     "type": [
+      "number",
+      "null"
+     ]
+    },
+    "note": {
+     "type": [
+      "string",
+      "null"
+     ]
+    }
+   }
+  },
+  "codex_review": {
+   "type": "object",
+   "required": [
+    "status"
+   ],
+   "properties": {
+    "status": {
+     "type": "string",
+     "enum": [
+      "completed",
+      "unavailable",
+      "timeout",
+      "error",
+      "not_run"
+     ]
+    },
+    "verdict": {
+     "type": "string",
+     "enum": [
+      "pass",
+      "block",
+      "none"
+     ]
+    },
+    "review_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    }
+   }
+  },
+  "submission": {
+   "type": "object",
+   "required": [
+    "id",
+    "timestamp"
+   ],
+   "properties": {
+    "id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "timestamp": {
+     "type": [
+      "string",
+      "null"
+     ]
+    }
+   }
+  },
+  "score": {
+   "type": [
+    "number",
+    "null"
+   ]
+  },
+  "delta_vs_baseline": {
+   "type": [
+    "number",
+    "null"
+   ]
+  },
+  "metrics": {
+   "type": "object"
+  },
+  "evaluation": {
+   "type": "object",
+   "properties": {
+    "type": {
+     "type": "string"
+    },
+    "n_matches": {
+     "type": [
+      "integer",
+      "null"
+     ]
+    },
+    "deterministic": {
+     "type": [
+      "boolean",
+      "null"
+     ]
+    },
+    "comparable": {
+     "type": [
+      "boolean",
+      "null"
+     ]
+    },
+    "note": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "per_match_data": {
+     "type": "string",
+     "enum": [
+      "none",
+      "available"
+     ],
+     "description": "'none' = NO PER-MATCH OFFICIAL DATA (aggregate score only)"
+    }
+   }
+  },
+  "outcome": {
+   "type": "string",
+   "enum": [
+    "candidate",
+    "submitted",
+    "keep",
+    "adopted",
+    "loss",
+    "tie",
+    "inconclusive",
+    "baseline",
+    "blocked",
+    "abandoned"
+   ]
+  },
+  "lesson": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "next_action": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "failure_classes": {
+   "type": "array",
+   "description": "Diego's failure taxonomy (research/intake/diego-research-1105.md E2). Suspected, not proven, unless basis says otherwise.",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "class",
+     "confidence"
+    ],
+    "properties": {
+     "class": {
+      "type": "string",
+      "enum": [
+       "NAV_COLLISION",
+       "NAV_STUCK",
+       "NAV_BAD_ROUTE",
+       "ZONE_LATE",
+       "MULTI_ENEMY_TRAP",
+       "COVER_FAILURE",
+       "REGEN_RESET",
+       "OVER_AGGRESSION",
+       "UNDER_AGGRESSION",
+       "AIM_WEAPON",
+       "RESOURCE_TRAP",
+       "COMPUTE_FAILURE",
+       "UNKNOWN"
+      ]
+     },
+     "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+     },
+     "basis": {
+      "type": [
+       "string",
+       "null"
+      ]
+     }
+    }
+   }
+  },
+  "backfilled": {
+   "type": "boolean"
+  },
+  "synthetic": {
+   "type": "boolean"
+  },
+  "created_at": {
+   "type": "string",
+   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}"
+  },
+  "updated_at": {
+   "type": [
+    "string",
+    "null"
+   ]
+  }
+ }
+}

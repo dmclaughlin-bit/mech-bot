@@ -1,0 +1,28 @@
+{
+  "target_score": 6.0,
+  "max_submissions_per_hour": 4,
+  "slot_window_minutes": 60,
+  "promotion": {
+    "rule": "score > champion.score + min_gain (practice is deterministic: 48 fixed seeds)",
+    "min_gain": 0.0,
+    "require_comparable_evaluation": true
+  },
+  "codex_required": false,
+  "codex_timeout_s": 480,
+  "codex_model": null,
+  "eligibility": {
+    "require_kit_check_pass": true,
+    "block_on_codex_verdict_block": true,
+    "allow_codex_unavailable": true
+  },
+  "watcher_box_dir": "/workspace/watch/pipeline",
+  "constraints": [
+    "Edit brain.ts only unless the task says otherwise; one change per branch, branched off the champion commit.",
+    "Runtime: 50 ms per decision hard limit (target p99 <= 15 ms), ready within 20 s, 1 CPU, 512 MB; stdout is protocol lines only, logs to stderr.",
+    "Hard caps H1-H3 stay (plan section 9): no even fights before zone phase 3; arrive at the next circle early and silent; be in the final circle at full HP.",
+    "nav.eta runs full A*: never call it every decision. nav.stuck exactly once per decision.",
+    "Kit check must pass: python3 check/check.py --map-dir arena -- bun ../mech-bot/bot.ts (run from the mechfight kit).",
+    "No new magic numbers without a comment naming their source. Add a coord/log.md entry in the same push."
+  ],
+  "priority_formula": "priority = impact(expected_gain) x evidence_confidence(evidence_strength) x recurrence / (effort + test_burden + regression_risk)  [Diego E3; ordering only, factors reported separately]"
+}

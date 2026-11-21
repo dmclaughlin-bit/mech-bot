@@ -1,0 +1,36 @@
+{
+ "experiment_id": "EXP-0006",
+ "commit": "100941f",
+ "merge_commit": "516f3b3",
+ "branch": "main",
+ "score": 2.38,
+ "submission_id": "BB-54EDF93F",
+ "target_score": 6.0,
+ "updated_at": "2026-11-20T22:35:00-05:00",
+ "history": [
+  {
+   "experiment_id": "EXP-0000",
+   "commit": "7a22fee",
+   "score": 1.15,
+   "at": null
+  },
+  {
+   "experiment_id": "EXP-0001",
+   "commit": "76aabfa",
+   "score": 1.67,
+   "at": "2026-11-20T19:50:00-05:00"
+  },
+  {
+   "experiment_id": "EXP-0002",
+   "commit": "4726cfc",
+   "score": 2.17,
+   "at": "2026-11-20T20:55:00-05:00"
+  },
+  {
+   "experiment_id": "EXP-0004",
+   "commit": "406ab9f",
+   "score": 2.23,
+   "at": "2026-11-20T21:27:00-05:00"
+  }
+ ]
+}

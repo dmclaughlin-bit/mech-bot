@@ -1,0 +1,13 @@
+{
+  "author": "SYNTHETIC TEST FIXTURE (not Diego)",
+  "submitted_at": "2026-11-20T23:00:00-05:00",
+  "synthetic": true,
+  "findings": [
+    {"claim": "SYNTHETIC: top teams open crates only when no enemy is within 200 m.", "topic": "top_team_behavior",
+     "sources": [{"ref": "synthetic://fixture/1", "kind": "other", "quote": null}], "confidence": 0.5,
+     "is_guess": true, "verification": "unverified", "suggested_change": "SYNTHETIC: gate crate farming at 200 m", "keywords": ["crate"]},
+    {"claim": "SYNTHETIC: top teams open crates only when no enemy is within 200 m.", "topic": "top_team_behavior",
+     "sources": [{"ref": "SYNTHETIC://fixture/1 ", "kind": "other"}], "confidence": 0.5, "suggested_change": "duplicate (whitespace/case differs)"},
+    {"claim": "short", "topic": "nonsense", "sources": [], "confidence": 2, "suggested_change": "invalid on purpose"}
+  ]
+}

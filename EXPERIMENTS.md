@@ -4,5 +4,6 @@ One row per practice submission, newest first. Keep a change only if it gains ab
 
 | Time (ET) | Commit | Params | Score | Hypothesis | Result |
 | --- | --- | --- | --- | --- | --- |
+| Fri 8:55 PM | `4726cfc` | `params.ts` defaults | 2.17 | Build 2 survival-min | +0.50 vs S1. Keep: under +1.2, but the mechanism is right and it is well above −0.6 |
 | Fri 7:50 PM | `76aabfa` | — | 1.67 | Build 1 aiming + tracking | +0.52 vs kit baseline |
 | — | `7a22fee` | — | 1.15 (kit example bot, published baseline) | Starting point | — |

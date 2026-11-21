@@ -113,3 +113,14 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 35 (cap early boost): for the first EARLY_BOOST_S of the match, boost only when the zone needs it (outside
+ * the circle, or the leave timing says walking would arrive late), while retreating from a mech that hit us in the
+ * last 2 s, or for the unstick jet. Every other boost then (today: retreats set off by drone or other non-mech damage)
+ * is dropped; the move direction is unchanged. Watcher evidence: early winners boost on ~12% of frames, the bottom
+ * half on ~23%. Set EARLY_BOOST_CAP_ON to false to roll back to Build 30 behavior exactly.
+ */
+export const EARLY_BOOST_CAP_ON = true
+/** The early window (s of match time) the cap applies to. */
+export const EARLY_BOOST_S = 30

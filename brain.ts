@@ -21,7 +21,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  EARLY_BOOST_CAP_ON, EARLY_BOOST_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -732,6 +732,14 @@ function buildBot(hello: Hello): Bot {
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
       if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      // Cap early boost (Build 35): see EARLY_BOOST_CAP_ON in params.ts. Only the boost flag changes, never the move.
+      // Kept: zone escape and the to-next-circle boost (the zone timing asks for it), and a retreat while a mech hit us
+      // in the last THREAT_HIT_S. The unstick jet below runs after this, so it is kept too.
+      if (
+        EARLY_BOOST_CAP_ON && boost && obs.t < EARLY_BOOST_S && mode !== "zone escape" && mode !== "to next circle" &&
+        !(mode.startsWith("retreat") && obs.t - lastMechHit < THREAT_HIT_S)
+      )
+        boost = false
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

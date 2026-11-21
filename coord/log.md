@@ -73,3 +73,22 @@ Format:
 - Result: `check.py --map-dir arena` PASS: 300/300 in time, p99 2.3 ms, max 4.5 ms, ready 476 ms (node 24; bun still not installed). Replays on Doug's Mac (node): normal p99 0.5 ms; forced trip to a circle ~280 m away, all 300 decisions traveling, p99 1.2 ms, max 2.0 ms; 15 enemies in view while traveling, p99 3.2 ms, with one 28 ms spike that two reruns didn't reproduce (max 1.4 ms). Not submitted.
 - Found: `nav.eta` runs a full A* on every call, so Build 3 takes the ETA from the planned route's length instead (same number, half the searches). While twice the straight-line time plus buffers is still under the time left, the bot holds without planning at all.
 - Blocked / next: **PR not merged on purpose.** Merging moves `main` to Build 3, and if the track page builds `main`'s head, S3 (the identical Build 2 resubmit) would test Build 3 instead. Diego: merge this PR right after S3 is in, or say if the form can take a commit and Doug's Claude merges now. The Docker-flagged gate (protocol §1) isn't run (no Docker on Doug's Mac): Diego, please run it before Build 3 is submitted.
+
+## Fri 21:35 ET · Diego · Grok brief: test-to-test improvement loop
+- Did: rewrote `coord/GROK_BRIEF.md` around a loop run after every practice score: find the parent, compute Δ, keep/revert by the noise table, repeat checks (S3 decides determinism, then threshold = 2 × SD of repeats), one §9-rule hypothesis per submission, and reading top teams' public bots for ideas (no code copying). Fixed constraints are listed; the rest Grok may adapt and record in the new `coord/learnings.md`. `EXPERIMENTS.md` gains a Parent column; plan §8 lists `learnings.md`.
+- Result: docs only, not submitted.
+- Found: a score is roughly how many mechs die before us (protocol §4), so 2.17 means we usually die 2nd to 4th of 16; survival rules should come before fight or loot rules.
+- Blocked / next: merge this PR, then restart Grok with the new start prompt. Grok's output now has two more sections (Next submissions, optional Learned / Process changes) for Diego's Claude to commit.
+
+## Fri 21:40 ET · Diego · D9: qualify first
+- Did: changed plan D9 and `coord/GROK_BRIEF.md`: practice score is the target until we're about 0.5 above the 32nd team's best, then tune for the final again. Grok tracks the 32nd-place score each update.
+  Brief also gives Grok a qualifying order: Build 3 (nav), then break LOS + heal + sight cones (F3, F4, Q2) ahead of Build 4, then full F2, then dodge.
+- Result: docs only, not submitted.
+- Found: only the top 32 practice teams play the final (buildathon brief). The brief's "any valid entry qualifies" held at ~31 teams; there are now 94 and we were 72nd.
+- Blocked / next: Doug's Build 3 (nav) is the next submission after S3.
+
+## Fri 21:40 ET · Diego · Offline gate with bun
+- Did: ran `check/check.py` with bun 1.4.4 (the Dockerfile's version) on Build 2 `4726cfc` and on current `main` (Build 2 + `nav.ts`, not yet wired), pinned to one CPU with `taskset`.
+- Result: `4726cfc` PASS: 300/300 in time, p99 1.4–2.0 ms, max 3.3–4.0 ms, ready 272 ms. `main` PASS: 300/300, p99 1.1 ms, ready 171 ms.
+- Found: the full Docker run (`--cpus 1 --memory 512m --read-only --user 65534`) could not run here: no Docker daemon in the cloud container. Someone with Docker should still run it once before Build 3 (plan §5). `next-diego.md` is unchanged: its nav task is done (PR #5 merged).
+- Blocked / next: Diego resubmits `4726cfc` as S3 around midnight. Doug wires nav for Build 3.

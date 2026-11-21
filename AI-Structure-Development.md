@@ -31,7 +31,7 @@ Build **one deterministic, rule-based bot in TypeScript on bun**, grown one rule
 | D6 | Crash safety | The kit wrapper already catches `act()` throws and re-sends the last action. **Still needed:** guard `hello.map` in `createBot` (a constructor throw leaves a null bot all match) and add the 30 ms deadline guard **when A\* lands**, not before. | Build 1's p99 is 1.5 ms. The guard matters once search runs per tick. |
 | D7 | Determinism test | **Resubmit the identical commit** instead of building a time-seeded RNG variant. | The bot has no RNG, so a plain resubmission answers the same question with zero code. Same score twice means practice is frozen: weigh mechanism over score, and add seeded tie-breaks. |
 | D8 | Experiment log | One file, `EXPERIMENTS.md` at the root. | The research mentioned `research/EXPERIMENTS.md`; that copy is not created. |
-| D9 | Tuning target | Tune for the **free-for-all final**, not practice. Hard caps: no even fights before zone phase 3, hold the next circle's edge silently (under 5 m/s), reach the final circle at full HP. Only `aggression` is tuned on practice. | In practice the 15 house bots act as one squad and hunt us weakest-first. In the final, other bots kill each other for us, and the final is what pays. |
+| D9 | Tuning target | **Qualify first, then tune for the final.** Only the top 32 practice teams reach the final, and with 94 teams entered (we were 72nd on Fri 9 PM ET) the practice score decides whether we play at all. Until we are safely inside the top 32 (about 0.5 above the 32nd team's best), practice score is the target and any knob may be tuned on it. After that, tune for the **free-for-all final**: only `aggression` on practice. Hard caps stay: no even fights before zone phase 3, hold the next circle's edge silently (under 5 m/s), reach the final circle at full HP. | The brief's "any valid entry qualifies" held at ~31 teams, not 94. In practice the 15 house bots act as one squad and hunt us weakest-first; in the final, other bots kill each other for us. The final pays, but only if we are in it. |
 
 ### What both sides already agree on (no action)
 - TypeScript on bun, the kit wrapper unchanged, every number read from `hello.config`.
@@ -117,7 +117,8 @@ At 4 submissions an hour, plan on about 50 in total. Never submit two changes at
 | `EXPERIMENTS.md` | One row per submission | Diego |
 | `coord/log.md` | Append-only status from both workers | Both workers |
 | `coord/next-doug.md`, `coord/next-diego.md` | The next prompt for each person | Grok writes, Diego's Claude commits |
-| `coord/GROK_BRIEF.md` | Grok's role and how it reads state | PR only |
+| `coord/GROK_BRIEF.md` | Grok's role and its test-to-test improvement loop | PR only |
+| `coord/learnings.md` | Grok's memory: what each score, repeat and top-team read taught us | Grok writes, Diego's Claude commits |
 | `research/FINAL_RECOMMENDATION.md` | Research synthesis (evidence) | Frozen |
 | `research/GAME_CONTEXT.md`, `research/protocol.md` | Fact sheet and rules | Frozen |
 | `research/agents/`, `research/SOURCE_REGISTRY.md`, `research/bench/` | Detail behind the synthesis | Frozen |

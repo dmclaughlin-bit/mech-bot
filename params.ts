@@ -113,3 +113,26 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 45 (track sweep): weapon pickups are listed only while in view (a 120° wedge around the torso aim out to
+ * 200 m, 45 m all round), and the torso follows the target, so with an enemy in view a laser beside us can stay unseen
+ * and the Build 17 rush never starts (sim: the spawn spin runs only with no target). In the first LASER_RUSH_S seconds,
+ * holding no laser, with the target an enemy mech more than TRACK_SWEEP_M away, no damage of any kind for
+ * TRACK_SWEEP_QUIET_S, and not leaving for the circle, in retreat, healing, engaged, breaking a crossfire or on a laser
+ * rush, the torso looks away every TRACK_SWEEP_PERIOD_S to the nearest of 12 bearings not looked along since we last
+ * moved 40 m, holds there TRACK_SWEEP_DWELL_S once it points that way, then turns back to the target. Only the aim
+ * changes: the target pick and every fire test are untouched (they read where the torso actually points, so a look
+ * away only drops shots). Any failed condition ends the look on the spot. Sim (96 seeds, bases 2000 and 3000): neutral
+ * within noise, 3.656 vs 3.625; it fires in 25/96 games, as the target is nearly always within 150 m when a laser sits
+ * unseen in clear sight. Set TRACK_SWEEP_ON to false to roll back to Build 60 exactly.
+ */
+export const TRACK_SWEEP_ON = true
+/** Sweep only while the target is farther than this (m). */
+export const TRACK_SWEEP_M = 150
+/** ...and nothing has damaged us for this long (s). */
+export const TRACK_SWEEP_QUIET_S = 2
+/** Seconds on the target between two looks away (sim: 0 and 2 scored 3.615 and 3.625 over 96 seeds, 4 scored 3.656). */
+export const TRACK_SWEEP_PERIOD_S = 4
+/** Seconds a look holds once the torso points along the bearing. */
+export const TRACK_SWEEP_DWELL_S = 0.3

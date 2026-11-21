@@ -17,12 +17,15 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 45 (track sweep): in the opening, with no laser and a far, harmless target, glance away from it now and then
+ * along bearings not yet looked along, so a laser beside us comes into view (see TRACK_SWEEP_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON,
+  TRACK_SWEEP_DWELL_S, TRACK_SWEEP_M, TRACK_SWEEP_ON, TRACK_SWEEP_PERIOD_S, TRACK_SWEEP_QUIET_S, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -120,6 +123,12 @@ const LASER_LEAD_S = 0.075
  * multi-threat fights when the race looked winning, and changed hit rates). Against real house bots that share
  * vision and hit harder than the sim, a 2-on-1 stand-and-shoot is a fight we cannot finish. */
 const CROSSFIRE_ON = true
+/** Build 45 (track sweep): the bearings around us in this many equal sectors; a sector is looked along once it is wholly inside the view wedge. */
+const SWEEP_BINS = 12
+/** Build 45: a sector counts as looked along until we have moved this far (m) from where we looked. */
+const SWEEP_RESCAN_M = 40
+/** Build 45: give up a look that has not reached its bearing after this long (s); a half turn of the torso takes 0.8 s. */
+const SWEEP_LOOK_MAX_S = 1.2
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -273,6 +282,11 @@ function buildBot(hello: Hello): Bot {
   /** Build 14: targets we gave up on (id → time), and where our last kill died, to collect its cubes. */
   const engageGiveUp = new Map<number, number>()
   let claim: { pos: Vec3; until: number } | null = null
+  /** Build 45 (track sweep): for each bearing sector, where we stood when it was last wholly inside our view wedge; the
+   * look under way (sector, start, when the torso got there); and the earliest time the next look may start. */
+  const sweepSeen: (Vec3 | null)[] = new Array(SWEEP_BINS).fill(null)
+  let sweepLook: { bin: number; since: number; at: number | null } | null = null
+  let sweepNext = -Infinity
 
   /** Build 14: what we deal per second to a target `d` m away: every held weapon that reaches, × its hit-rate guess × our cube bonus. */
   function ourDps(me: Observation["self"], d: number): number {
@@ -438,6 +452,11 @@ function buildBot(hello: Hello): Bot {
         act.pick = ranks.indexOf(Math.min(...ranks))
       }
       const enemies = obs.mechs.filter((m) => m.kind === "mech")
+      // Track sweep (Build 45): mark the bearing sectors our actual torso aim's wedge covers from here.
+      if (TRACK_SWEEP_ON) {
+        const half = (cfg.vision.fov_deg * Math.PI) / 360 - Math.PI / SWEEP_BINS
+        for (let b = 0; b < SWEEP_BINS; b++) if (Math.abs(wrap((2 * Math.PI * b) / SWEEP_BINS - me.aim[0])) <= half) sweepSeen[b] = me.pos
+      }
 
       // Loot (D3, L1, L2): laser and lightning only, never a mortar, and only with no enemy within 160 m.
       // Keep the gun until the second of the two shows up, then swap the gun out, never with an enemy in view.
@@ -842,6 +861,7 @@ function buildBot(hello: Hello): Bot {
         farmShot = !!target
       }
       let label = `knows ${known.size}`
+      if (!target) sweepLook = null
 
       if (target) {
         const { m, c, d, clear } = target
@@ -924,6 +944,41 @@ function buildBot(hello: Hello): Bot {
         }
         if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true
         if (gun >= 0 && (w(gun).ammo ?? 1) === 0 && (w(gun).reload ?? 0) <= 0) act.reload = true
+
+        // Track sweep (Build 45): in the opening with no laser, a far target that nobody (it included) backs with damage,
+        // and nothing more urgent under way, look away every TRACK_SWEEP_PERIOD_S to the nearest sector not looked along
+        // since we moved SWEEP_RESCAN_M, hold TRACK_SWEEP_DWELL_S once there, then back to the target. Set after the fire
+        // tests, which read where the torso actually points, so it never adds a shot. Any failed condition ends the look.
+        const sweepOk =
+          TRACK_SWEEP_ON && LASER_RUSH_ON && obs.t < LASER_RUSH_S && !holdsLaser && !farmShot && d > TRACK_SWEEP_M &&
+          obs.t - lastDamaged > TRACK_SWEEP_QUIET_S && me.in_zone && !leaveNow &&
+          !/^(retreat|heal|engage|laser rush|break crossfire|zone escape|to next circle)/.test(mode)
+        if (!sweepOk) sweepLook = null
+        else {
+          const sector = (b: number) => (2 * Math.PI * b) / SWEEP_BINS
+          if (sweepLook) {
+            if (sweepLook.at === null && Math.abs(wrap(me.aim[0] - sector(sweepLook.bin))) < 0.15) sweepLook.at = obs.t
+            const done = sweepLook.at !== null ? obs.t - sweepLook.at >= TRACK_SWEEP_DWELL_S : obs.t - sweepLook.since > SWEEP_LOOK_MAX_S
+            if (done) {
+              sweepLook = null
+              sweepNext = obs.t + TRACK_SWEEP_PERIOD_S
+            }
+          }
+          if (!sweepLook && obs.t >= sweepNext) {
+            const turn = (b: number) => Math.abs(wrap(sector(b) - me.aim[0]))
+            let best = -1
+            for (let b = 0; b < SWEEP_BINS; b++) {
+              const at = sweepSeen[b]
+              if (at && flat(at, me.pos) <= SWEEP_RESCAN_M) continue
+              if (best < 0 || turn(b) < turn(best)) best = b
+            }
+            if (best >= 0) sweepLook = { bin: best, since: obs.t, at: null }
+          }
+          if (sweepLook) {
+            aim = [wrap(sector(sweepLook.bin)), 0]
+            leading = `sweep ${sweepLook.bin}`
+          }
+        }
 
         draw.line(muzzle, c, clear ? "#ff5040" : "#888888")
         label += ` · ${farmShot ? "farm " : ""}${leading} at ${m.id} ${d.toFixed(0)}m${clear ? "" : " (behind cover)"}${pickNote}`

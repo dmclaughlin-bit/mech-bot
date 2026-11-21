@@ -2,6 +2,8 @@
 
 Coordinator synthesis of 7 agent reports (`agents/*.md`), written Fri Nov 20, ~8 PM ET. Source IDs such as [TS-02] resolve in `SOURCE_REGISTRY.md`. **[H]** marks a heuristic prior that has not been tested. No number here is a measured win rate, because no bot exists yet.
 
+> **Status (Fri Nov 20, 8 PM ET):** this file is the evidence. The plan, roles, code layout, build order and timeline that the team follows now live in `AI-Structure-Development.md` at the repo root, which overrides §7's code layout and §10's roadmap where they differ. Open questions are tracked there too.
+
 ---
 
 ## 1. Executive summary
@@ -114,7 +116,7 @@ The evidence behind these verdicts:
 
 ## 6. Architecture comparison
 
-Full matrix in `ARCHITECTURE_COMPARISON.md`. Summary of the three candidates:
+Full matrix in `agents/architecture.md` §1. Summary of the three candidates:
 
 | | A: Deterministic tactical | B: Learning-based | C: Hierarchical hybrid with learned parts |
 |---|---|---|---|
@@ -198,7 +200,7 @@ obs ───► WorldModel: self/zone/drops, EnemyTracker (vision+5 s memory+so
 - **What pays:** in simulation, the best of 16 bots wins a 64-match series about 84% of the time.
   - Beating one rival with 95% confidence needs about a 1.4-point edge.
   - Win-or-die variance does not pay for a bot with the best mean. **Consistent top-5 placement beats high-variance play.**
-- **Observable data** is only `end.place/kills` and the score page, since stderr is never shown. Keep an experiment log (`research/EXPERIMENTS.md`, to be created at build time) with one row per submission: commit, params, score, hypothesis and mechanism.
+- **Observable data** is only `end.place/kills` and the score page, since stderr is never shown. Keep an experiment log (`EXPERIMENTS.md` at the repo root) with one row per submission: commit, params, score, hypothesis and mechanism.
 - **Latency measurements:**
   - `check.py` times from write to read and fails above 2% late over 300 observations (best of 3 passes).
   - Profile with `tools/replay.ts` inside `docker run --cpus 1`.

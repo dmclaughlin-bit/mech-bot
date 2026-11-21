@@ -103,14 +103,14 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 
 /**
  * Build 20 (lane A, standoff): while engaged (Build 14's engage branch), hold a range set by the best weapon we hold
- * instead of closing to GUN_NEAR_M: STANDOFF_LASER_M with a laser, else STANDOFF_ARC_M with lightning, else
- * STANDOFF_GUN_M (gun only). Inside the band (± STANDOFF_BAND_M) we stand; closer, we step back (away from the target,
+ * instead of closing to GUN_NEAR_M: STANDOFF_ARC_M with lightning, else STANDOFF_GUN_M (gun only). With a laser held
+ * (stack fix) we defer to Build 17's laser hold instead. Inside the band (± STANDOFF_BAND_M) we stand; closer, we step back (away from the target,
  * leaning to the kept circle's center near its edge, only to a spot inside that circle with no wall in the way and a
  * clear line to the target); farther, we walk in along a path. With no clear line we still walk in, as before.
  * The hit-rate guesses and the fight-or-flee race are unchanged. Set STANDOFF_ON to false to roll back to Build 16 exactly.
  */
 export const STANDOFF_ON = true
-/** Standoff with a laser held (m). Winners' first hits land at a median 111 m. */
+/** Unused since the stack fix (laser holders defer to Build 17's hold); kept for tools/standoff_check.ts. Was: standoff with a laser held (m). */
 export const STANDOFF_LASER_M = 110
 /** Standoff with only a gun (m). */
 export const STANDOFF_GUN_M = 80

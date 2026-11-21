@@ -336,3 +336,9 @@ Doug approved: Lane A = movement (nav/map/positioning), Lane B = combat (target/
 - Result: `check.py` PASS, p99 0.9 ms. Both switches off: all 302 kit-stream responses identical to `81fc5fc`; on: 0 differ. `tools/laser_check.ts`: 136 rush ticks, 0 below full walk speed, 18/18 and 7/7 rows (rush unaffected).
 - Found: Build 20's standoff and Build 17's laser hold disagree in engage. `tools/standoff_check.ts` pass 3 (what-if, laser in slot 2, 115 engage ticks): main holds 91 and walks in 24; this branch walks in 108, backs 4, holds 3 (laser standoff 110 m ± 10 vs Build 17 holding anywhere inside the 280 m beam range with a clear line). Pass 2 (gun only): 4 of 300 responses differ.
 - Blocked / next: Coordinator decides whether to submit as is or have the laser standoff defer to Build 17's hold.
+
+## Sat 01:30 ET · Doug · Stack fix: laser holders defer to Build 17 hold
+- Did: `brain.ts` engage movement: Build 20's standoff now runs only when `STANDOFF_ON` and we hold no laser (gun: `STANDOFF_GUN_M` 80 m, lightning: `STANDOFF_ARC_M` 28 m). With a laser held, main's code path runs exactly (Build 17's `beam`/`standOff` hold and the finish walk-in rule). `STANDOFF_LASER_M` is now unused (kept in `params.ts` with a comment); `tools/standoff_check.ts` header updated.
+- Result: build OK; `check.py` PASS, p99 3.6 ms. `tools/standoff_check.ts` vs `origin/main`: pass 3 (laser in slot 2) in 24 / back 0 / hold 91 on both, 0 of 300 responses differ (was in 108, back 4, hold 3); pass 2 (gun only) still 4 of 300 differ (4 back-offs instead of holds); pass 1 0 differ. `tools/laser_check.ts`: 136 rush ticks, 18/18 and 7/7.
+- Found: the stack now differs from main only on gun-only and lightning engage movement and in Build 22's race.
+- Blocked / next: Coordinator scores the stack as one build; keep if above 3.50 (Build 17, `81fc5fc`).

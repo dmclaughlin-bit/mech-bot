@@ -95,7 +95,7 @@ function summarize(label: string, ticks: Tick[]) {
 }
 
 console.log(`OFFLINE replay of ${file} (non-reactive recording; counts are not scores)`)
-console.log(`STANDOFF_ON ${params.STANDOFF_ON}  laser ${params.STANDOFF_LASER_M} m  gun ${params.STANDOFF_GUN_M} m  lightning ${params.STANDOFF_ARC_M} m  band ±${params.STANDOFF_BAND_M} m`)
+console.log(`STANDOFF_ON ${params.STANDOFF_ON}  laser: defers to Build 17 hold  gun ${params.STANDOFF_GUN_M} m  lightning ${params.STANDOFF_ARC_M} m  band ±${params.STANDOFF_BAND_M} m`)
 report("Pass 1, recording as it is")
 const finishWhatIf = (o: Observation) => {
   o.self.hp = Math.round(0.6 * o.self.max_hp)

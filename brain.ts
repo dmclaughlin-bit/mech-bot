@@ -23,7 +23,7 @@ import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, LASER_CHASE_S,
   LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, RACE_BANDS_M, RACE_CAL_ON, RACE_HIT_HOUSE,
-  RACE_HIT_OURS, STANDOFF_ARC_M, STANDOFF_BAND_M, STANDOFF_GUN_M, STANDOFF_LASER_M, STANDOFF_ON, TARGET_PICK_ON,
+  RACE_HIT_OURS, STANDOFF_ARC_M, STANDOFF_BAND_M, STANDOFF_GUN_M, STANDOFF_ON, TARGET_PICK_ON,
   params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -716,9 +716,10 @@ function buildBot(hello: Hello): Bot {
         const d = flat(engage.m.pos, me.pos)
         const arc = me.weapons.find((w) => w?.kind === "lightning")
         const inKeep = flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1]
-        if (STANDOFF_ON) {
+        // Stack fix: a laser holder defers to Build 17's hold (the else branch); standoff is for gun-only and lightning.
+        if (STANDOFF_ON && !me.weapons.some((w) => w?.kind === "laser")) {
           // Standoff (Build 20): hold the range our best held weapon wants instead of closing to GUN_NEAR_M.
-          const want = me.weapons.some((w) => w?.kind === "laser") ? STANDOFF_LASER_M : arc ? STANDOFF_ARC_M : STANDOFF_GUN_M
+          const want = arc ? STANDOFF_ARC_M : STANDOFF_GUN_M
           if ((!engage.clear || d > want + STANDOFF_BAND_M) && inKeep) move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
           else if (engage.clear && d < want - STANDOFF_BAND_M) move = standoffBack(me.pos, muzzle, engage.m, zoneKeep)
         } else {

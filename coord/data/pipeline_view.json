@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 18:02 ET",
- "origin_main": "b270ae19a3b2586484213cd9d074b254ece1f65d",
+ "generated_at_et": "2026-11-21 18:08 ET",
+ "origin_main": "1b5ad159dc5176d77d64716e2d1dfedf339ae2b9",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -38,7 +38,8 @@
    "PR #132 P-D-009 two-horizon race shadow (docs / measurement)",
    "PR #133 sim-effectiveness recs (docs only)",
    "HEAL_COVER=1 (`c3a5d11`)",
-   "other open bot PRs (stale screen, hold, or veto)"
+   "other open bot PRs (stale screen, hold, or veto)",
+   "new PRs (loop, 6:06 PM ET)"
   ],
   "reserve_target": "2 fully screened + 1 researched (WORKFLOW.md, Doug 5:41 PM ET)",
   "since": "2026-11-21 12:00 ET",
@@ -60,8 +61,8 @@
   "Idea": 0,
   "Researched": 24,
   "Assigned": 1,
-  "Built (PR)": 12,
-  "Screened": 0,
+  "Built (PR)": 11,
+  "Screened": 1,
   "READY": 0,
   "Submitted": 0,
   "Scored": 0,
@@ -669,7 +670,7 @@
     "outcome": "win",
     "receipt": "BB-09AE8A68",
     "verdict": "KEEP",
-    "result_logged_et": null,
+    "result_logged_et": "2026-11-21 14:43 ET",
     "result_url": null
    },
    "screen": {
@@ -2652,11 +2653,46 @@
    "multi": false,
    "site": null,
    "screen": {
-    "both": false,
-    "status": "none",
-    "sets": [],
-    "when_both": null,
-    "events": []
+    "both": true,
+    "status": "both",
+    "sets": [
+     "A",
+     "B"
+    ],
+    "when_both": "2026-11-21 18:03 ET",
+    "events": [
+     {
+      "src": "PR #136 comment",
+      "sets": [
+       "A",
+       "B"
+      ],
+      "at": "2026-11-21 18:03 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/136#issuecomment-7070616608",
+      "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "screens.csv P25",
+      "sets": [
+       "A"
+      ],
+      "at": "2026-11-21 18:03 ET",
+      "url": null,
+      "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "screens.csv P25",
+      "sets": [
+       "B"
+      ],
+      "at": "2026-11-21 18:03 ET",
+      "url": null,
+      "after_click": false,
+      "exact_sha": true
+     }
+    ]
    },
    "screened_before_click": false,
    "postmortems": [],
@@ -2689,10 +2725,10 @@
    "contains_champion": true,
    "queue_rank": "Medium (runner-up)",
    "queue_pos": 2,
-   "stage_idx": 3,
-   "stage": "Built (PR)",
+   "stage_idx": 4,
+   "stage": "Screened",
    "outcome": "open",
-   "blocker": "no complete screen on both seed sets for the current head"
+   "blocker": "both-set screen rows recorded; the READY/HOLD verdict (fire count, hazards, timing, veto) is decided by the routine in ready_ledger.md, not computed here"
   },
   {
    "id": "P-D-005",
@@ -3575,7 +3611,7 @@
    "pr_opened": null,
    "queue_rank": "High",
    "queue_pos": 1,
-   "blocker": "no complete screen on both seed sets for the current head",
+   "blocker": "needs a one-flag site SHA and a both-set screen of that exact SHA",
    "stage_idx": 1,
    "stage": "Researched",
    "outcome": "open"

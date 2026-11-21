@@ -382,6 +382,8 @@ def main():
         primary = t["pr"] if t["pr"] in prs else (nums[0] if nums else None)
         sc = screen_state([t["sha"]], nums, before=parse_site_time(t["submitted_et"]))
         logged, logged_url = result_logged(nums, t["receipt"])
+        if not logged and t["build"] == champ["experiment_id"] and champ.get("updated_at"):
+            logged, logged_url = fmt(to_et(champ["updated_at"])), None  # champion.json updated_at = site score time
         it = dict(id=t["build"], title=t["summary"][:160], kind="build", source=cur.get("source", "unknown"), owner=cur.get("owner", "unknown"),
                   decision=t["summary"], changes=t["changes"], changes_basis=t["changes_basis"], multi=t["multi"],
                   site=dict(submitted_et=t["submitted_et"], score=t["score"], champion_then=t["champion_then"], delta=t["delta"], outcome=t["outcome"], receipt=t["receipt"], verdict=t["verdict"], result_logged_et=logged, result_url=logged_url),
@@ -512,7 +514,9 @@ def main():
                 b.append("head does not contain the champion " + champ_sha[:7] + " (stale)")
             if not it["screen"]["both"]:
                 b.append("no complete screen on both seed sets for the current head")
-            it["blocker"] = "; ".join(b) or "none found"
+            if it["stage"] == "Screened":
+                b = ["both-set screen rows recorded; the READY/HOLD verdict (fire count, hazards, timing, veto) is decided by the routine in ready_ledger.md, not computed here"]
+            it["blocker"] = it.get("blocker") or "; ".join(b) or "none found"
         elif it.get("assigned_only"):
             it["blocker"] = "owner has not acknowledged"
         else:

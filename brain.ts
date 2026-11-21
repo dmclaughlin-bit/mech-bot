@@ -160,7 +160,7 @@ const EV_STRAFE = EVADE_MODE === 1 || EVADE_MODE === 2 || EVADE_MODE === 3 || EV
 const EV_JITTER = EVADE_MODE === 2 || EVADE_MODE === 6
 const EV_ORBIT = EVADE_MODE === 3 || EVADE_MODE === 6
 const EV_DODGE = EVADE_MODE === 4 || EVADE_MODE === 6
-const EV_SLIDE = EVADE_MODE === 5 || EVADE_MODE === 6 || [30, 31, 32, 34, 35, 40, 41, 42].includes(EVADE_MODE)
+const EV_SLIDE = EVADE_MODE === 5 || EVADE_MODE === 6 || [30, 31, 32, 34, 35, 40, 41, 42, 44].includes(EVADE_MODE)
 /** P-B-008: a standing gunfight is against an enemy with a clear line within this distance (m), or one that hit us in the last THREAT_HIT_S, or one charging a laser. */
 const EVADE_RANGE_M = 160
 /** P-B-008: every evasion step is checked this far ahead (s of walking, at least EVADE_LOOK_MIN_M) against walls, the zone and the shot. */
@@ -189,7 +189,9 @@ const AIM_LAG_S = 0.075
 const EV3 = EVADE_MODE >= 30
 /** 30, and every mode built on it: slide around cover (mode 5's code) with a commitment timer and an oscillation breaker,
  * jump + jet over what the nav would get stuck on (energy reserve kept), sprint to the next circle when energy allows. */
-const EV3_PATH = [30, 31, 32, 34, 35, 40, 41, 42].includes(EVADE_MODE)
+const EV3_PATH = [30, 31, 32, 34, 35, 40, 41, 42, 44].includes(EVADE_MODE)
+/** 44 = 40 without the boost to the next circle (ablation: is the zone sprint what costs late survival?). */
+const EV3_ZONE_SPRINT = EV3_PATH && EVADE_MODE !== 44
 /** 31, 32, 34: calibrated strafe, only in danger, only where the champion would stand. */
 const EV3_STRAFE = [31, 32, 34, 41].includes(EVADE_MODE)
 /** 32, 34: boost (sprint) during the danger strafe when energy is above SPRINT_RESERVE. */
@@ -199,7 +201,7 @@ const EV3_HOP = EVADE_MODE === 34 || EVADE_MODE === 41
 /** 35: outnumbered escape (on 30): 2+ attackers and no drop run/hold → cover or away, sprinting and jetting. */
 const EV3_ESCAPE = EVADE_MODE === 35 || EVADE_MODE === 42
 /** 36 (and 40 = 30 + 36, 41 = 34 + 36): an active drop run or ring hold is not dropped for "break crossfire" unless a mech hit us in the last XFIRE_HIT_S. */
-const EV3_XFIRE_COMMIT = [36, 40, 41, 42].includes(EVADE_MODE)
+const EV3_XFIRE_COMMIT = [36, 40, 41, 42, 44].includes(EVADE_MODE)
 /** 37: literal torso sway in danger (champion movement). 38: front-arc discipline (champion movement). */
 const EV3_SWAY = EVADE_MODE === 37 || EVADE_MODE === 43
 /** 43: the sway of 37 only while no held weapon could fire at a clear target in its reach (so it never spoils a shot). */
@@ -873,7 +875,7 @@ function buildBot(hello: Hello): Bot {
       } else if (leaveNow) {
         const go = trip ?? travel(me.pos, entry, obs.t, canPlan())
         move = go.move
-        boost = go.dist / walkSpeed > timeLeft || (EV3_PATH && obs.t >= ev3OffUntil && me.energy >= ZONE_SPRINT_RESERVE * me.max_energy)
+        boost = go.dist / walkSpeed > timeLeft || (EV3_ZONE_SPRINT && obs.t >= ev3OffUntil && me.energy >= ZONE_SPRINT_RESERVE * me.max_energy)
         mode = "to next circle"
       } else if (engage) {
         // Engage (F1, Build 14): fight on instead of the HP retreat. Hold the line of fire, and close in along a path

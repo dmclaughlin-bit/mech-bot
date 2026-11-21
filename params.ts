@@ -186,5 +186,6 @@ export const DROP_RUN_M = 200
  *   39 = champion with the silent cap lifted while hurt and an enemy seen within 120 m (Grok addendum).
  *   40 = 30 + 36. 41 = 34 + 36. 42 = 30 + 35 + 36. 43 = 37's sway only while no held weapon could fire at a clear
  *   target in its reach. The escape (35, 42) keeps its heading 1.5 s once started (commitment).
+ *   44 = 40 without the boost to the next circle (ablation).
  */
 export const EVADE_MODE: number = 0

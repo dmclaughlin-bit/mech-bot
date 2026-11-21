@@ -1,0 +1,30 @@
+diff --git a/brain.ts b/brain.ts
+index ea5002c..7e568c7 100644
+--- a/brain.ts
++++ b/brain.ts
+@@ -25,7 +25,7 @@
+ import { clearLine, groundAt, loadMap } from "./map.ts"
+ import { createNav } from "./nav.ts"
+ import {
+-  ENGAGE_FINISH_HP, FORECAST2_S, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
++  ENGAGE_FINISH_HP, FORECAST2_S as FORECAST2_S0, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+ } from "./params.ts"
+ import { createTargetLock, scoreTargets } from "./target.ts"
+@@ -266,6 +266,7 @@ const __I = process.env.INSTR_FILE
+ const __buf: string[] = []
+ const __flush = () => { if (__I && __buf.length) { appendFileSync(__I, __buf.join("\n") + "\n"); __buf.length = 0 } }
+ process.on("exit", __flush)
++const FORECAST2_S = Number(process.env.FORECAST2_S ?? FORECAST2_S0)
+ function buildBot(hello: Hello): Bot {
+   const cfg = hello.config
+   const solids = loadMap(hello)
+@@ -1080,7 +1081,7 @@ function buildBot(hello: Hello): Bot {
+         const tg = target && target.m.kind === "mech" ? target.m : null
+         const kv = [...known.values()].filter((k) => obs.t - k.lastSeen <= 5); const wk = kv.map((k) => [k.id, +(k.hp / (k.maxHp || 1)).toFixed(2), +(obs.t - k.lastSeen).toFixed(1), Math.round(flat(k.pos, me.pos)), kv.some((o) => o !== k && flat(o.pos, k.pos) < 40) ? 0 : 1])
+         __buf.push(JSON.stringify({ t: +obs.t.toFixed(1), m: mode, hp: +(me.hp / me.max_hp).toFixed(2), cubes: me.cubes, claim: !!claim, cb: __cb, cd: __cd, cn: __cn, cg: !!claimGoal,
+-          tg: tg ? tg.id : null, tgc: tg ? !!target.clear : null, eng: engage ? [engage.m.id, engage.why] : null, kills: obs.events.filter((e) => e.type === "kill").map((e: any) => e.target), known: wk, nen: enemies.length, los: threats.filter((e) => seenAt(me.pos, myHeight, [e], false)).length, w: me.weapons.map((x) => x?.kind ?? "-").join("+") }))
++          tg: tg ? tg.id : null, tgc: tg ? !!target.clear : null, eng: engage ? [engage.m.id, engage.why] : null, kills: obs.events.filter((e) => e.type === "kill").map((e: any) => e.target), known: wk, nen: enemies.length, los: threats.filter((e) => seenAt(me.pos, myHeight, [e], false)).length, w: me.weapons.map((x) => x?.kind ?? "-").join("+"), att: [...mechHitBy.values()].filter((t) => obs.t - t < 5).length, spd: +Math.hypot(me.vel[0], me.vel[1]).toFixed(1), mv: +Math.hypot(act.move?.[0] ?? 0, act.move?.[1] ?? 0).toFixed(2), ms: +(performance.now() - started).toFixed(2) }))
+         if (__buf.length > 200) __flush()
+       }
+       const took = performance.now() - started

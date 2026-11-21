@@ -1,0 +1,32 @@
+main vs flag 0:
+sets 2000+3000: sim 3.516 -> 3.516, delta +0.000 ± 0.000; changed 0 (better 0 / worse 0)
+sets 4000+5000: sim 3.823 -> 3.823, delta +0.000 ± 0.000; changed 0 (better 0 / worse 0)
+main vs FORECAST2_S=60:
+sets 2000+3000: sim 3.516 -> 3.484, delta -0.031 ± 0.018; changed 6 (better 1 / worse 5)
+| Kills (total) | 642 | 635 |
+| Kills per minute after 60 s | 1.50 | 1.45 |
+| Laser by 30 s | 57 | 57 |
+| Died before 40 s | 56 | 56 |
+| Gun-only at end | 77 | 77 |
+| Lightning at end | 57 | 58 |
+| 2+ attackers at death | 112 | 110 |
+| Stuck >= 1 s (games) | 83 | 83 |
+| Decision p99 ms | 1.50 | 1.51 |
+| Decision max ms | 33.72 | 55.59 |
+| Drops claimed | 0 | 0 |
+| Games reaching 95 s | 53 | 53 |
+| Decision ticks in drop modes | 0 | 0 |
+sets 4000+5000: sim 3.823 -> 3.745, delta -0.078 ± 0.054; changed 10 (better 4 / worse 6)
+| Kills (total) | 684 | 672 |
+| Kills per minute after 60 s | 1.40 | 1.39 |
+| Laser by 30 s | 76 | 76 |
+| Died before 40 s | 54 | 54 |
+| Gun-only at end | 70 | 70 |
+| Lightning at end | 54 | 52 |
+| 2+ attackers at death | 113 | 114 |
+| Stuck >= 1 s (games) | 88 | 86 |
+| Decision p99 ms | 1.73 | 1.74 |
+| Decision max ms | 13.06 | 16.33 |
+| Drops claimed | 0 | 0 |
+| Games reaching 95 s | 58 | 58 |
+| Decision ticks in drop modes | 0 | 0 |

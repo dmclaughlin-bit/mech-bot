@@ -15,6 +15,7 @@
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 23 (early spacing, laser-safe): in the first 30 s, farm targets that take us inside an enemy's 155 m ring cost
  * extra, and where we would hold we walk away from enemies inside it. Weapon pickups are never touched (see spacing, SPACING_ON).
+ * Off while we hold a laser or lightning and an enemy mech is in view: the engage logic decides.
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
@@ -475,7 +476,10 @@ function buildBot(hello: Hello, flags: Flags): Bot {
       // already are, and `reach` is the walk to `p` with each of those metres counted SPACE_WEIGHT times extra. Only
       // farm targets (cubes, drops, drones) and idle spacing read it; the loot rule above never does. With no such
       // enemy (always after the window, or with SPACING_ON false) `reach` is the plain distance.
-      const crowd = flags.spacing && obs.t < SPACING_S ? [...known.values()].filter((k) => obs.t - k.lastSeen < SPACE_MEMORY_S) : []
+      // Holding a laser or lightning with an enemy mech in view: no spacing at all (no `space`, no farm penalty); the
+      // engage logic decides. Gun-only spacing is unchanged.
+      const armed = me.weapons.some((w) => w?.kind === "laser" || w?.kind === "lightning")
+      const crowd = flags.spacing && obs.t < SPACING_S && !(armed && enemies.length) ? [...known.values()].filter((k) => obs.t - k.lastSeen < SPACE_MEMORY_S) : []
       const inside = (p: number[]) => {
         let sum = 0
         for (const k of crowd) sum += Math.max(0, Math.min(SPACING_M, flat(k.pos, me.pos)) - segmentDistance(k.pos, me.pos, p))

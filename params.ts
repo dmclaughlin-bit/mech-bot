@@ -89,6 +89,8 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
  * Weapon pickups are never touched: the loot rule, its ranking and its walk run exactly as before, and idle spacing
  * stays off while a laser or lightning we lack lies within the loot walk (80 m), so we never walk away from one.
  * Zone escape, the next circle, engage, retreat, kill collection, heal and hiding rank first and are unchanged.
+ * Laser/lightning exception: while we hold a laser or lightning and an enemy mech is in view this tick, spacing is off
+ * entirely (no `space`, no farm penalty) and the engage logic decides. Gun-only spacing is unchanged.
  * Set SPACING_ON to false to roll back to the parent build exactly.
  */
 export const SPACING_ON = true

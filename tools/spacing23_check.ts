@@ -2,20 +2,22 @@
  * Build 23 offline check (early spacing, laser-safe). OFFLINE ONLY: it says whether the rule fires and that the
  * weapon walk is untouched, never how a match would go. Nothing here is a score.
  *
- *   git archive origin/main | tar -x -C /tmp/b23-main
+ *   git worktree add --detach /tmp/b23-main origin/main
  *   bun tools/spacing23_check.ts /tmp/b23-main [stream.jsonl[.gz]] [arenaDir] < /dev/null
+ *   git worktree remove /tmp/b23-main
  *
  * `base` is a checkout of the parent build (origin/main); its brain.ts is loaded next to ours.
  * Part 1 feeds every kit-stream observation to three bots: base, ours with spacing off, ours with spacing on, and counts
  * the responses (action + debug drawing) that differ from base. With spacing off it must be 0.
  * Part 2 runs made-up scenes on a flat arena with no map (straight-line nav, no cover, enemies stand still), stepping
- * our position from each bot's own moves, and checks each rule against base. Exits 1 if any check fails.
+ * our position from each bot's own moves, and checks each rule against base. Slot 1 is the stream's gun; a taken pickup
+ * goes into slot 2 as in the game, so "holding a laser" is real after a take. Exits 1 if any check fails.
  * stdin must be closed: map.ts imports mechfight.ts.
  */
 import { existsSync, readFileSync } from "node:fs"
 import { gunzipSync } from "node:zlib"
 import { createBot, type Flags } from "../brain.ts"
-import { draw, type Bot, type BotAction, type Hello, type Observation, type Vec3 } from "../mechfight.ts"
+import { draw, type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponObs } from "../mechfight.ts"
 import { SPACING_M, SPACING_ON, SPACING_S } from "../params.ts"
 
 const arg = process.argv.slice(2)
@@ -79,37 +81,50 @@ function check(name: string, ok: boolean, detail: string) {
 console.log(`\nPart 2, synthetic scenes (made up; flat arena, no map, enemies stand still, our HP full).`)
 const flatHello = structuredClone(hello)
 flatHello.map = { ...flatHello.map, dir: "" }
-type Foe = { id: number; pos: Vec3; hp?: number; seenUntil?: number }
-type Scene = { t0: number; seconds: number; foes: Foe[]; cubes?: Vec3[]; pickups?: { kind: "laser" | "lightning"; pos: Vec3 }[]; zone?: Partial<Observation["zone"]> }
+/** `inView(t, took)`: whether the foe is in obs.mechs at time t (`took`: we have taken a pickup); default always. */
+type Foe = { id: number; pos: Vec3; hp?: number; inView?: (t: number, took: boolean) => boolean }
+type Arm = "laser" | "lightning"
+/** `held`: a weapon already in slot 2 at the start (slot 1 is the stream's gun). */
+type Scene = { t0: number; seconds: number; foes: Foe[]; cubes?: Vec3[]; pickups?: { kind: Arm; pos: Vec3 }[]; held?: Arm; zone?: Partial<Observation["zone"]> }
 type Run = { acts: string[]; modes: Map<string, number>; end: Vec3; took: number }
-/** Step our position from the bot's own moves (walk or boost speed, 0.1 s ticks); a taken pickup leaves the scene. */
+/** Step our position from the bot's own moves (walk or boost speed, 0.1 s ticks). A taken pickup leaves the scene and goes
+ * into our empty slot 2 with its config stats (protocol: `take` fills the empty slot), with a `took` event next tick. */
 function play(s: Scene, who: "base" | Flags): Run {
   const bot = mk(flatHello, who)
   const out: Run = { acts: [], modes: new Map(), end: [0, 0, 0], took: -1 }
   const walk = flatHello.config.mech.walk_speed, fast = flatHello.config.mech.boost_speed ?? walk
   let pos: Vec3 = [0, 0, 0]
   let pickups = (s.pickups ?? []).map((p, i) => ({ id: 8000 + i, kind: p.kind, pos: p.pos }))
+  const arm = (kind: Arm): WeaponObs => ({ kind, cooldown: 0, ...(kind === "laser" ? { charge: 0 } : {}), stats: { ...flatHello.config.weapons[kind] } })
+  let slot2: WeaponObs | null = s.held ? arm(s.held) : null
+  let events: Observation["events"] = []
   for (let n = 0; n <= s.seconds * 10; n++) {
     const t = s.t0 + n / 10
     const o = structuredClone(stream[0])
     o.t = t
     o.tick = Math.round(t * 20)
-    o.self = { ...o.self, pos: [...pos] as Vec3, vel: [0, 0, 0], hp: o.self.max_hp, weapons: [o.self.weapons[0], null] }
+    o.self = { ...o.self, pos: [...pos] as Vec3, vel: [0, 0, 0], hp: o.self.max_hp, weapons: [o.self.weapons[0], slot2] }
     o.zone = { ...o.zone, center: [0, 0], radius: 560, next_center: [0, 0], next_radius: 380, shrink_start: 60, shrink_end: 110, ...s.zone }
     o.self.in_zone = flat(pos, o.zone.center) < o.zone.radius
-    o.mechs = s.foes.filter((f) => t <= (f.seenUntil ?? Infinity)).map((f) => ({ id: f.id, kind: "mech" as const, pos: f.pos, vel: [0, 0, 0] as Vec3, aim: [Math.atan2(pos[1] - f.pos[1], pos[0] - f.pos[0]), 0] as [number, number], hp: f.hp ?? 1400, max_hp: 1400, cubes: 0, weapons: ["gun"], charging: false })) as Observation["mechs"]
+    o.mechs = s.foes.filter((f) => f.inView?.(t, out.took >= 0) ?? true).map((f) => ({ id: f.id, kind: "mech" as const, pos: f.pos, vel: [0, 0, 0] as Vec3, aim: [Math.atan2(pos[1] - f.pos[1], pos[0] - f.pos[0]), 0] as [number, number], hp: f.hp ?? 1400, max_hp: 1400, cubes: 0, weapons: ["gun"], charging: false })) as Observation["mechs"]
     o.cubes = (s.cubes ?? []).map((p, i) => ({ id: 5000 + i, pos: p })) as Observation["cubes"]
     o.pickups = pickups as Observation["pickups"]
     o.crates = []
     o.drops = []
-    o.events = []
+    o.events = events
+    events = []
     o.offer = null as unknown as Observation["offer"]
     const r = bot.act(o)
     out.acts.push(JSON.stringify(r.act))
     out.modes.set(r.mode, (out.modes.get(r.mode) ?? 0) + 1)
     if (r.act.take !== undefined && out.took < 0) {
-      out.took = n
-      pickups = pickups.filter((p) => p.id !== r.act.take)
+      const got = pickups.find((p) => p.id === r.act.take)
+      if (got && slot2 === null) {
+        out.took = n
+        slot2 = arm(got.kind)
+        events = [{ type: "took", id: got.id, kind: got.kind, slot: 1 }] as Observation["events"]
+        pickups = pickups.filter((p) => p !== got)
+      }
     }
     const mv = r.act.move ?? [0, 0]
     const speed = (r.act.boost ? fast : walk) * 0.1
@@ -126,14 +141,16 @@ const vsBase = (s: Scene) => {
   return { b, on, same: b.acts.join() === on.acts.join() }
 }
 
-// Laser next to an enemy: enemy seen 100 m east on the first tick, then out of view (still known, so inside spacing's
-// crowd); laser 60 m east, 40 m from the enemy, deep inside its 155 m ring. Base walks to it and takes it; ours must do
-// exactly the same, tick for tick.
+// Laser next to an enemy: laser 60 m east, enemy 100 m east (40 m from the laser, deep inside its 155 m ring). The enemy
+// is in view on the first tick, out of view during the walk (still known, so inside spacing's crowd; were it in view, the
+// 160 m loot gate would stop base and ours at the start, so there would be no walk or take to test), and back in view
+// from the take to the end: from then on we hold a laser with an enemy in view, so spacing is off and ours must match
+// base tick for tick, with no `space` tick.
 {
-  const s: Scene = { t0: 2, seconds: 14, foes: [{ id: 1, pos: [100, 0, 0], seenUntil: 2 }], pickups: [{ kind: "laser", pos: [60, 0, 0] }] }
+  const s: Scene = { t0: 2, seconds: 14, foes: [{ id: 1, pos: [100, 0, 0], inView: (t, took) => t <= 2 || took }], pickups: [{ kind: "laser", pos: [60, 0, 0] }] }
   const r = vsBase(s)
-  check("laser next to an enemy is walked to and taken as on main", r.same && r.on.took >= 0 && (r.on.modes.get("loot") ?? 0) > 0,
-    `identical actions on all ${r.on.acts.length} ticks: ${r.same}; take at tick ${r.on.took} (base ${r.b.took}); loot ticks ${r.on.modes.get("loot") ?? 0} (base ${r.b.modes.get("loot") ?? 0}); ends ${xy(r.on.end)}, ${gapAt(s, r.on.end).toFixed(0)} m from the enemy`)
+  check("laser next to an enemy is walked to and taken as on main", r.same && r.on.took >= 0 && (r.on.modes.get("loot") ?? 0) > 0 && !r.on.modes.has("space"),
+    `identical actions on all ${r.on.acts.length} ticks: ${r.same}; modes ${showModes(r.on.modes)} (base ${showModes(r.b.modes)}); take at tick ${r.on.took} (base ${r.b.took}); loot ticks ${r.on.modes.get("loot") ?? 0} (base ${r.b.modes.get("loot") ?? 0}); ends ${xy(r.on.end)}, ${gapAt(s, r.on.end).toFixed(0)} m from the enemy`)
 }
 // Enemy 170 m east in view (just outside the 160 m loot gate), laser 50 m east (120 m from it, inside the ring): base
 // walks toward it until the gate closes at 160 m; ours must match tick for tick.
@@ -162,6 +179,20 @@ const cluster: Foe[] = [{ id: 1, pos: [90, 15, 0] }, { id: 2, pos: [95, -15, 0] 
   const r = vsBase(s)
   check("idle spacing opens the distance", gapAt(s, r.on.end) > gapAt(s, r.b.end) + 20 && (r.on.modes.get("space") ?? 0) > 0,
     `base ends ${xy(r.b.end)}, ${gapAt(s, r.b.end).toFixed(0)} m (${showModes(r.b.modes)}); ours ends ${xy(r.on.end)}, ${gapAt(s, r.on.end).toFixed(0)} m (${showModes(r.on.modes)})`)
+}
+// Laser held (slot 2), one enemy in view 120 m east (inside the 155 m ring), nothing to pick up: spacing is off, the
+// engage logic decides, so no `space` tick and the same actions as base.
+const lone: Foe[] = [{ id: 1, pos: [120, 0, 0] }]
+{
+  const r = vsBase({ t0: 2, seconds: 8, foes: lone, held: "laser" })
+  check("laser held, enemy in view: no spacing", r.same && !r.on.modes.has("space"), `identical actions: ${r.same}; modes ${showModes(r.on.modes)} (base ${showModes(r.b.modes)})`)
+}
+// The same scene gun-only: spacing still walks us away.
+{
+  const s: Scene = { t0: 2, seconds: 8, foes: lone }
+  const r = vsBase(s)
+  check("gun only, enemy in view: still spaces", (r.on.modes.get("space") ?? 0) > 0 && gapAt(s, r.on.end) > gapAt(s, r.b.end) + 20,
+    `base ends ${gapAt(s, r.b.end).toFixed(0)} m (${showModes(r.b.modes)}); ours ends ${gapAt(s, r.on.end).toFixed(0)} m (${showModes(r.on.modes)})`)
 }
 // Farm: one enemy seen once 175 m east, then out of view (farm stays on: nobody in view or known within 160 m).
 // Cube A lies 70 m east (105 m from the enemy), cube B 75 m west. Base walks to the nearer cube A; ours to B.

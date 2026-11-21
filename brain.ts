@@ -44,6 +44,8 @@ const segmentDistance = (p: number[], a: number[], b: number[]) => {
 // ------------------------------------------------------------------ rule constants (plan §9)
 /** L2: loot only when no enemy mech is within this distance (m). */
 const LOOT_CLEAR = 160
+/** Build 28 (threat loot gate): loot and farm are blocked by an enemy with line of sight to us or a mech hit in 2 s, not by any enemy within 160 m. false = Build 17. */
+const LOOT_LOS_ON = true
 /** L2: walk at most this far (m) to a wanted weapon. */
 const LOOT_DETOUR = 80
 // The tunable thresholds live in params.ts (six knobs at most); its comments say what each one does.
@@ -436,10 +438,12 @@ function buildBot(hello: Hello): Bot {
       // Loot (D3, L1, L2): laser and lightning only, never a mortar, and only with no enemy within 160 m.
       // Keep the gun until the second of the two shows up, then swap the gun out, never with an enemy in view.
       let lootTarget: Vec3 | null = null
-      if (!enemies.some((m) => flat(m.pos, me.pos) < LOOT_CLEAR)) {
+      const myH0 = me.stats.height ?? cfg.mech.height * scale(me.cubes)
+      const watched = LOOT_LOS_ON && (obs.t - lastMechHit < THREAT_HIT_S || enemies.some((m) => flat(m.pos, me.pos) < LOOT_CLEAR && seenAt(me.pos, myH0, [m], false)))
+      if (LOOT_LOS_ON ? !watched : !enemies.some((m) => flat(m.pos, me.pos) < LOOT_CLEAR)) {
         const held = me.weapons.map((x) => x?.kind ?? null)
         const free = held.indexOf(null)
-        const swapSlot = free < 0 && enemies.length === 0 && (held.includes("laser") || held.includes("lightning")) ? held.indexOf("gun") : -1
+        const swapSlot = free < 0 && (LOOT_LOS_ON ? !watched : enemies.length === 0) && (held.includes("laser") || held.includes("lightning")) ? held.indexOf("gun") : -1
         const want = obs.pickups
           .filter((p) => (p.kind === "laser" || p.kind === "lightning") && !held.includes(p.kind))
           .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
@@ -502,8 +506,8 @@ function buildBot(hello: Hello): Bot {
       // Farm (Build 12): only in the zone, not leaving for the next circle, no enemy mech in view or known within
       // FARM_ENEMY_M, and no damage from a mech for FARM_QUIET_S. Drone fire does not stop farming.
       const farmOk =
-        FARM_ON && me.in_zone && !leaveNow && enemies.length === 0 && obs.t - lastMechHit > FARM_QUIET_S &&
-        ![...known.values()].some((k) => obs.t - k.lastSeen < FARM_MEMORY_S && flat(k.pos, me.pos) < FARM_ENEMY_M)
+        FARM_ON && me.in_zone && !leaveNow && obs.t - lastMechHit > FARM_QUIET_S &&
+        (LOOT_LOS_ON ? !watched : enemies.length === 0 && ![...known.values()].some((k) => obs.t - k.lastSeen < FARM_MEMORY_S && flat(k.pos, me.pos) < FARM_ENEMY_M))
       let farmGoal: { id: number; pos: Vec3 } | null = null
       let farmHold = false
       let farmHunt = false

@@ -18,7 +18,7 @@
  * Zone rule: an enemy outside the current circle can be picked only while we can shoot it from where we stand, so a
  * pick never asks us to leave the zone. This module only picks; it never moves the bot.
  */
-import { TARGET_ALONE_M, TARGET_LOST_S, TARGET_TTK_REF_S, TARGET_W } from "./params.ts"
+import { TARGET_ALONE_M, TARGET_LOST_S, TARGET_TTK_REF_S, TARGET_W, TARGET_W_LOADED } from "./params.ts"
 
 export type Candidate = {
   id: number
@@ -48,7 +48,9 @@ export type Zone = { center: number[]; radius: number }
  * Score every candidate. `others` are the enemy positions for the alone test (the candidates and remembered ones), and
  * `dps(d)` is what we deal per second to a target `d` m away with a clear line.
  */
-export function scoreTargets(cands: Candidate[], others: { id: number; pos: number[] }[], dps: (d: number) => number, zone: Zone): Scored[] {
+export function scoreTargets(
+  cands: Candidate[], others: { id: number; pos: number[] }[], dps: (d: number) => number, zone: Zone, loaded?: (d: number) => number,
+): Scored[] {
   return cands.map((c) => {
     const out = c.clear ? dps(c.d) : 0
     const shot = out > 0
@@ -61,7 +63,9 @@ export function scoreTargets(cands: Candidate[], others: { id: number; pos: numb
       TARGET_W.hp * (1 - Math.min(1, c.hp / (c.maxHp || 1))) +
       TARGET_W.weak * (1 - c.threat) +
       TARGET_W.alone * Number(alone)
-    return { ...c, shot, ttk, alone, eligible: inZone || shot, score }
+    // B125 TAC_FINISH_AMMO: `loaded(d)` is the damage our loaded shots deal at d; a target they kill ranks higher.
+    const kills = !!loaded && shot && c.hp <= loaded(c.d)
+    return { ...c, shot, ttk, alone, eligible: inZone || shot, score: kills ? score + TARGET_W_LOADED : score }
   })
 }
 

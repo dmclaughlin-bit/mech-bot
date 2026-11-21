@@ -29,6 +29,9 @@ import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  DODGE_COOLDOWN_S, DODGE_HOLD_S, DODGE_MAX_S, DODGE_MIN_S, FIRE_MOVE_LEGS_S, FIRE_MOVE_SPEED, HOP_ABORT_S, HOP_ENERGY_MIN, HOP_NEAR_M,
+  HOP_QUIET_S, RUSH_GRAZE_HITS, SPACE_BIAS, SPACE_EARLY_M, SPACE_EARLY_S, SPACE_HOLD_MOVE, TAC_DODGE, TAC_FINISH_AMMO, TAC_FIRE_MOVE,
+  TAC_JET_LOOT, TAC_LASER_REACH, TAC_SPACE_EARLY, TAC_STEP_CHECK_M,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -308,6 +311,26 @@ function buildBot(hello: Hello): Bot {
   let claim: { pos: Vec3; until: number } | null = null
   /** P-B-001: the enemy the standoff break walked at last decision (null when it did not run). */
   let standoffId: number | null = null
+  /** B125 tactic state (params.ts TAC_*): the held space-early side, the fire-move leg, the dodge in progress, the loot
+   * hop in progress, recent mech-hit times (laser reach graze test), and the last finish target (finish ammo). */
+  let spaceSide = 1
+  let fireMove: { side: number; leg: number; legEnd: number; at: number } | null = null
+  let dodge: { move: [number, number]; until: number } | null = null
+  let hop: { id: number; best: number; bestAt: number; at: number } | null = null
+  const mechHitTimes: number[] = []
+  let lastFinish: { id: number; t: number } | null = null
+  const stepUp = Number(cfg.mech.step_up ?? 1.2)
+  /** B125 TAC_JET_LOOT: the height (m) we would stand on at (x, y): the terrain, or a building roof that sits on it. */
+  const surfaceAt = (x: number, y: number): number => {
+    if (!solids?.ground) return -Infinity
+    const g = groundAt(solids, x, y)
+    const i = Math.floor((x - solids.minX) / solids.step), j = Math.floor((y - solids.minY) / solids.step)
+    if (i < 0 || j < 0 || i >= solids.nx || j >= solids.ny) return g
+    const k = j * solids.nx + i
+    return solids.top[k] > g && solids.base[k] <= g + cfg.mech.height ? solids.top[k] : g
+  }
+  /** B125 TAC_JET_LOOT / TAC_LASER_REACH: a pickup this far (m) above the terrain is on a roof or a crate. */
+  const elevated = (p: Vec3) => !!solids?.ground && Math.abs(p[2] - groundAt(solids, p[0], p[1])) >= 4
 
   /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
    * lightning 0.8 × its range, gun GUN_NEAR_M, laser and mortar their reach. */
@@ -342,6 +365,23 @@ function buildBot(hello: Hello): Bot {
       const stats = { ...cfg.weapons[w.kind], ...w.stats }
       if (weaponReach(w.kind, stats) < d) continue
       const shots = w.kind === "gun" ? (stats.mag ?? 1) : w.kind === "lightning" ? Math.floor(me.energy / (stats.energy || 1)) : 1
+      best = Math.max(best, finite(stats.damage * shots))
+    }
+    return best * cubeDamage(me.cubes)
+  }
+  /** B125 TAC_FINISH_AMMO: like ourMagazine, but only what is loaded now: gun ammo left (0 while reloading), a laser
+   * shot only when it is ready or already charging, lightning what our energy pays for. */
+  function loadedMagazine(me: Observation["self"], d: number): number {
+    let best = 0
+    for (const w of me.weapons) {
+      if (!w) continue
+      const stats = { ...cfg.weapons[w.kind], ...w.stats }
+      if (weaponReach(w.kind, stats) < d) continue
+      const shots =
+        w.kind === "gun" ? ((w.reload ?? 0) > 0 ? 0 : (w.ammo ?? stats.mag ?? 1))
+        : w.kind === "lightning" ? Math.floor(me.energy / (stats.energy || 1))
+        : w.kind === "laser" ? ((w.cooldown ?? 0) <= 0 || (w.charge ?? 0) > 0 ? 1 : 0)
+        : 1
       best = Math.max(best, finite(stats.damage * shots))
     }
     return best * cubeDamage(me.cubes)
@@ -464,9 +504,11 @@ function buildBot(hello: Hello): Bot {
       if (e.type === "damaged" && e.bearing !== null) lastHit = { bearing: e.bearing, t: obs.t }
       if (e.type === "damaged" && e.by !== null) hitBy.set(e.by, obs.t)
       if (e.type === "damaged" && e.weapon !== "npc") lastMechHit = obs.t
+      if (TAC_LASER_REACH && e.type === "damaged" && e.weapon !== "npc") mechHitTimes.push(obs.t)
       if (e.type === "damaged") lastDamaged = obs.t
     }
     for (const [id, k] of known) if (obs.t - k.lastSeen > 30) known.delete(id)
+    while (mechHitTimes.length && obs.t - mechHitTimes[0] > FARM_QUIET_S) mechHitTimes.shift()
   }
 
   return {
@@ -629,7 +671,7 @@ function buildBot(hello: Hello): Bot {
         // House bots hunt the weakest first as one squad with shared vision, so a low-HP commit draws the rest.
         if (me.hp >= ENGAGE_FINISH_HP * me.max_hp)
           pick = threats
-            .filter((e) => e.hp !== undefined && rested(e.id) && alone(e.id) && e.hp <= ourMagazine(me, flat(e.pos, me.pos)) && outlive(e))
+            .filter((e) => e.hp !== undefined && rested(e.id) && alone(e.id) && e.hp <= (TAC_FINISH_AMMO ? loadedMagazine(me, flat(e.pos, me.pos)) : ourMagazine(me, flat(e.pos, me.pos))) && outlive(e))
             .sort((a, b) => a.hp! - b.hp!)[0]
         // TTK rule: where the HP retreat would trigger, with exactly one threat and it in sight, fight on if we kill it first.
         if (!pick && hurt && los.length === 1 && los[0].hp !== undefined && alone(los[0].id) && rested(los[0].id)) {
@@ -653,6 +695,7 @@ function buildBot(hello: Hello): Bot {
           }
         }
         if (pick) engage = { m: pick, why, clear: clearLine(solids, muzzle, centerOf(pick)) }
+        if (TAC_FINISH_AMMO && pick && why === "finish") lastFinish = { id: pick.id, t: obs.t }
       } else engaged = null
       // Collect (Build 14): after our kill, walk to the cubes it dropped (all of its cubes plus two) if it is safe:
       // nobody has line of sight to us, no mech hit us in the last 2 s, and the same zone test as farming.
@@ -675,13 +718,15 @@ function buildBot(hello: Hello): Bot {
       // slack before leaving, not engaging or collecting a kill, not hurt, and no mech damage for FARM_QUIET_S.
       // Fix round: no enemy test (an enemy nearer to the pickup or watching the route no longer stops the trip).
       let rushMove: [number, number] | null = null
+      let rushHop: { id: number; pos: Vec3; found: boolean } | null = null
       const rushSlot = me.weapons.includes(null) || (enemies.length === 0 && me.weapons.some((x) => x?.kind === "gun"))
       const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
       // Build 80: after the opening, a gun-only bot may start a new lightning/laser walk (champion only continues one).
       const lateLight = LATE_LIGHT_ON && gunOnly && obs.t >= LASER_RUSH_S
       if (
         LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush || lateLight) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
-        !claimGoal && !hurt && !(cubeFirst && !lateLight) && obs.t - lastMechHit > FARM_QUIET_S
+        !claimGoal && !hurt && !(cubeFirst && !lateLight) &&
+        (obs.t - lastMechHit > FARM_QUIET_S || (TAC_LASER_REACH && !!rush && mechHitTimes.length <= RUSH_GRAZE_HITS))
       ) {
         const pace = ZONE_WALK * walkSpeed
         const onward = (p: Vec3) => Math.max(0, flat(p, z.next_center) - inner)
@@ -691,7 +736,7 @@ function buildBot(hello: Hello): Bot {
         const options = [...arms]
           .filter(([id, a]) =>
             (a.kind === "laser" || gunOnly) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
-            !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4) && fits(a.pos, flat(me.pos, a.pos)))
+            (TAC_LASER_REACH || !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4)) && fits(a.pos, flat(me.pos, a.pos)))
           .sort((a, b) => Number(a[1].kind !== "laser") - Number(b[1].kind !== "laser") || flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos))
         const kept = rush ? options.find(([id]) => id === rush!.id) : undefined
         const pick = kept && kept[1].kind === options[0][1].kind && flat(kept[1].pos, me.pos) - flat(options[0][1].pos, me.pos) < LASER_SWITCH_M ? kept : options[0]
@@ -700,9 +745,19 @@ function buildBot(hello: Hello): Bot {
           if (rush?.id !== id) rush = { id, since: obs.t }
           const go = travel(me.pos, pos, obs.t, canPlan())
           const planned = !!route && flat(route.goal, pos) <= ROUTE_GOAL_SHIFT
+          // B125 TAC_LASER_REACH / TAC_JET_LOOT: an elevated laser is reachable when the ground path ends within take
+          // reach, or (jets on) by a hop; a laser with no ground path is hopped to instead of skipped.
+          const high = TAC_LASER_REACH && elevated(pos)
+          const last = planned ? route!.points[route!.points.length - 1] : undefined
+          const atEnd = !!last && route!.found && flat(last, pos) < cfg.loot.pickup_radius && Math.abs(last[2] - pos[2]) < 4
+          const hopIt = TAC_JET_LOOT && planned && (!route!.found || (high && !atEnd))
           // No path (a ledge, a walled yard) or a walk that has taken too long: leave this one for good.
-          if ((planned && !route!.found) || obs.t - rush.since > LASER_CHASE_S) laserSkip.add(id)
-          else if (planned && fits(pos, go.dist)) rushMove = go.move
+          if ((planned && !route!.found && !hopIt) || obs.t - rush.since > LASER_CHASE_S) laserSkip.add(id)
+          else if (high && !TAC_JET_LOOT && planned && !atEnd) laserSkip.add(id)
+          else if (planned && fits(pos, go.dist)) {
+            rushMove = go.move
+            if (hopIt) rushHop = { id, pos, found: route!.found }
+          }
         }
       }
       // Build 80: a late walk yields to B60's crossfire break when two or more enemies can see us.
@@ -719,6 +774,7 @@ function buildBot(hello: Hello): Bot {
       // P-D-003 (DROP_RUN_M): walk to a called supply drop, timed to arrive as it lands, then hold the ring.
       let dropMove: [number, number] | null = null
       let dropHold = false
+      let dropRing: [number[], number] | null = null
       if (DROP_RUN_M > 0) {
         const pace = ZONE_WALK * walkSpeed
         const safe = (p: number[], stay: number) =>
@@ -734,7 +790,7 @@ function buildBot(hello: Hello): Bot {
         else {
           if (dropRun?.id !== d.id) dropRun = { id: d.id, since: obs.t }
           const dist = flat(d.pos, me.pos)
-          if (dist < d.radius - DROP_INSET) dropHold = true
+          if (dist < d.radius - DROP_INSET) (dropHold = true), (dropRing = [d.pos, d.radius - DROP_INSET])
           else if (obs.t - dropRun.since > d.lands_in + DROP_RUN_M / walkSpeed + 10) { dropSkip.add(d.id); dropRun = null }
           else if (dist / walkSpeed + 5 >= d.lands_in) dropMove = travel(me.pos, d.pos, obs.t, canPlan()).move
           else dropRun = null
@@ -866,19 +922,197 @@ function buildBot(hello: Hello): Bot {
         }
         standoffId = foe?.id ?? null
       }
+      // ---------------------------------------------------------------- B125 tactics (params.ts TAC_*), each behind its flag.
+      // A step `TAC_STEP_CHECK_M` along (dx, dy) stays inside `keep`, on ground we can walk onto, and clear of walls.
+      const stepOk = (dx: number, dy: number, keep: [number[], number]): boolean => {
+        const x = me.pos[0] + dx * TAC_STEP_CHECK_M, y = me.pos[1] + dy * TAC_STEP_CHECK_M
+        if (Math.hypot(x - keep[0][0], y - keep[0][1]) > keep[1]) return false
+        if (solids?.ground) {
+          const g = groundAt(solids, x, y)
+          if (g === -Infinity || g - me.pos[2] > stepUp) return false
+        }
+        return clearLine(solids, [me.pos[0], me.pos[1], me.pos[2] + 1.5], [x, y, me.pos[2] + 1.5], 0, 0)
+      }
+      let hopping = false
+      let fireMoving = false
+      let dodging = false
+      // TAC_JET_LOOT: a loot goal with no ground path or on a ledge/roof, out of combat: walk straight at it and hop the
+      // obstacle (jump at the edge, jet until our feet clear it). No progress for HOP_ABORT_S: skip that target.
+      if (TAC_JET_LOOT && !engage && !hurt && obs.t - lastMechHit > HOP_QUIET_S) {
+        let goal: { id: number; pos: Vec3; found: boolean; skip: () => void } | null = null
+        if (mode === "laser rush" && rushHop) {
+          const id = rushHop.id
+          goal = { ...rushHop, skip: () => laserSkip.add(id) }
+        } else if (mode === "farm, pickup" && farmGoal && route && flat(route.goal, farmGoal.pos) <= ROUTE_GOAL_SHIFT && (!route.found || elevated(farmGoal.pos))) {
+          const id = farmGoal.id
+          goal = { id, pos: farmGoal.pos, found: route.found, skip: () => farmGiveUp.add(id) }
+        }
+        if (goal) {
+          if (!hop || hop.id !== goal.id || obs.t - hop.at > 0.5) hop = { id: goal.id, best: Infinity, bestAt: obs.t, at: obs.t }
+          hop.at = obs.t
+          const dist = flat(me.pos, goal.pos)
+          const left = dist + Math.max(0, goal.pos[2] - me.pos[2])
+          if (left < hop.best - 1) (hop.best = left), (hop.bestAt = obs.t)
+          if (obs.t - hop.bestAt > HOP_ABORT_S) {
+            goal.skip()
+            hop = null
+            move = [0, 0]
+            route = null
+          } else if (!(goal.found && dist > HOP_NEAR_M)) {
+            // Close (or no ground path): straight at it. The edge is the highest surface just ahead, or near the
+            // pickup the height that puts our feet within take reach (4 m vertically).
+            const yaw = yawTo(me.pos, goal.pos), dx = Math.cos(yaw), dy = Math.sin(yaw)
+            let edge = -Infinity
+            for (const a of [1.5, 3, 4.5]) if (a < dist + 1) edge = Math.max(edge, surfaceAt(me.pos[0] + dx * a, me.pos[1] + dy * a))
+            if (dist < 4.5) edge = Math.max(edge, goal.pos[2] - 3)
+            const need = edge - me.pos[2]
+            move = [dx, dy]
+            boost = false
+            if (me.grounded) {
+              if (need > stepUp && me.energy >= Math.max(HOP_ENERGY_MIN, 1.5 * need + 10)) act.jump = true
+            } else if (need > -0.5 && me.energy > 5) boost = true
+            hopping = true
+          }
+        }
+      }
+      if (!hopping && hop && obs.t - hop.at > 0.5) hop = null
+      // TAC_SPACE_EARLY: first SPACE_EARLY_S only, on a loot/farm walk, laser rush, or idle hold: keep away from the
+      // nearest known enemy inside SPACE_EARLY_M. A sideways offset that keeps forward progress, or a step away.
+      if (TAC_SPACE_EARLY && !hopping && obs.t < SPACE_EARLY_S && (mode === "laser rush" || mode === "loot" || mode === "farm, pickup" || mode === "farm, hunt" || mode === "hold")) {
+        let foe: Known | null = null
+        for (const k of known.values())
+          if (obs.t - k.lastSeen <= (cfg.vision.memory_s ?? 5) && (!foe || flat(k.pos, me.pos) < flat(foe.pos, me.pos))) foe = k
+        const fd = foe ? flat(foe.pos, me.pos) : Infinity
+        if (foe && fd < SPACE_EARLY_M && fd > 1e-6) {
+          const ax = (me.pos[0] - foe.pos[0]) / fd, ay = (me.pos[1] - foe.pos[1]) / fd
+          const mag = Math.hypot(move[0], move[1])
+          let bx = ax, by = ay, scaleTo = SPACE_HOLD_MOVE
+          if (mag > 0.05) {
+            const gx = move[0] / mag, gy = move[1] / mag
+            const dot = ax * gx + ay * gy
+            let px = ax - dot * gx, py = ay - dot * gy
+            // The away direction is (nearly) along the goal line: keep the side we last chose, a small offset.
+            if (Math.hypot(px, py) < 0.2) (px = -gy * spaceSide * 0.2), (py = gx * spaceSide * 0.2)
+            else spaceSide = px * -gy + py * gx >= 0 ? 1 : -1
+            bx = gx + SPACE_BIAS * px
+            by = gy + SPACE_BIAS * py
+            scaleTo = mag
+          }
+          const bn = Math.hypot(bx, by) || 1
+          if (stepOk(bx / bn, by / bn, zoneKeep)) move = [(bx / bn) * scaleTo, (by / bn) * scaleTo]
+        }
+      }
+      const aimMove = move
+      // TAC_FIRE_MOVE: an engage that would stand still with a clear shot in range walks sideways at FIRE_MOVE_SPEED,
+      // the side held for a leg (FIRE_MOVE_LEGS_S) then reversed; the step must keep the circle and the line of fire.
+      if (TAC_FIRE_MOVE && engage && engage.clear && mode.startsWith("engage") && move[0] === 0 && move[1] === 0) {
+        const d = flat(engage.m.pos, me.pos)
+        const hitting = obs.t - (hitBy.get(engage.m.id) ?? -Infinity) < 2
+        const inRange = me.weapons.some((w) => !!w && d <= Number(w.stats.range ?? baseReach[w.kind]) && (w.kind !== "gun" || d <= GUN_GATE || hitting))
+        if (inRange) {
+          if (!fireMove || obs.t - fireMove.at > 0.5) {
+            // Start on the side with more room toward the middle of the circle we keep to.
+            const by = yawTo(me.pos, engage.m.pos), lx = -Math.sin(by), ly = Math.cos(by)
+            const side = (zoneKeep[0][0] - me.pos[0]) * lx + (zoneKeep[0][1] - me.pos[1]) * ly >= 0 ? 1 : -1
+            fireMove = { side, leg: 0, legEnd: obs.t + FIRE_MOVE_LEGS_S[0], at: obs.t }
+          }
+          if (obs.t >= fireMove.legEnd) {
+            fireMove.leg = (fireMove.leg + 1) % FIRE_MOVE_LEGS_S.length
+            fireMove.side = -fireMove.side
+            fireMove.legEnd = obs.t + FIRE_MOVE_LEGS_S[fireMove.leg]
+          }
+          fireMove.at = obs.t
+          const by = yawTo(me.pos, engage.m.pos), c = centerOf(engage.m)
+          const ok = (side: number) => {
+            const dx = -Math.sin(by) * side, dy = Math.cos(by) * side
+            return stepOk(dx, dy, zoneKeep) &&
+              clearLine(solids, [muzzle[0] + dx * TAC_STEP_CHECK_M, muzzle[1] + dy * TAC_STEP_CHECK_M, muzzle[2]], c)
+          }
+          let side = 0
+          if (ok(fireMove.side)) side = fireMove.side
+          else if (ok(-fireMove.side)) {
+            side = fireMove.side = -fireMove.side
+            fireMove.legEnd = obs.t + FIRE_MOVE_LEGS_S[fireMove.leg]
+          }
+          if (side) {
+            const f = Math.min(1, FIRE_MOVE_SPEED / walkSpeed)
+            move = [-Math.sin(by) * side * f, Math.cos(by) * side * f]
+            fireMoving = true
+          }
+        }
+      }
+      // TAC_DODGE: a visible enemy projectile predicted to hit our cylinder DODGE_MIN_S..DODGE_MAX_S from now: step
+      // sideways off its line for DODGE_HOLD_S, then wait DODGE_COOLDOWN_S. Never in zone travel or a farm capture;
+      // a drop-ring hold dodges only inside the ring.
+      if (TAC_DODGE && mode !== "zone escape" && mode !== "to next circle" && mode !== "farm, capture") {
+        const keep: [number[], number] = mode === "drop, hold" && dropRing ? dropRing : zoneKeep
+        if (dodge && obs.t < dodge.until) {
+          if (stepOk(dodge.move[0], dodge.move[1], keep)) (move = dodge.move), (dodging = true)
+        } else if (!dodge || obs.t >= dodge.until + DODGE_COOLDOWN_S) {
+          const R = cfg.mech.radius * scale(me.cubes) + Number(cfg.projectile?.gun_radius ?? 0.3)
+          const g = Number(cfg.weapons.mortar?.gravity ?? cfg.mech.gravity ?? 22)
+          let threat: { nx: number; ny: number; side: number } | null = null
+          for (const pr of obs.projectiles ?? []) {
+            const px = pr.pos[0] - me.pos[0], py = pr.pos[1] - me.pos[1], pz = pr.pos[2] - me.pos[2]
+            const vx = pr.vel[0] - me.vel[0], vy = pr.vel[1] - me.vel[1], vz = pr.vel[2] - me.vel[2]
+            const vh = Math.hypot(vx, vy)
+            if (vh < 1) continue
+            let hitAt = -1, ox = 0, oy = 0
+            if (pr.kind === "mortar") {
+              for (let t = DODGE_MIN_S; t <= DODGE_MAX_S + 1e-9; t += 0.05) {
+                const x = px + vx * t, y = py + vy * t, zz = pz + vz * t - 0.5 * g * t * t
+                if (Math.hypot(x, y) < R && zz >= 0 && zz <= myHeight) {
+                  hitAt = t
+                  const tc = -(px * vx + py * vy) / (vh * vh)
+                  ox = px + vx * tc
+                  oy = py + vy * tc
+                  break
+                }
+                if (zz < 0) break
+              }
+            } else {
+              const tc = -(px * vx + py * vy) / (vh * vh)
+              ox = px + vx * tc
+              oy = py + vy * tc
+              const miss = Math.hypot(ox, oy)
+              if (tc <= 0 || miss >= R) continue
+              const tin = tc - Math.sqrt(R * R - miss * miss) / vh
+              const zz = pz + vz * tin
+              if (tin >= DODGE_MIN_S && tin <= DODGE_MAX_S && zz >= -0.3 && zz <= myHeight + 0.3 &&
+                clearLine(solids, pr.pos, [me.pos[0] + ox, me.pos[1] + oy, me.pos[2] + clamp(zz, 0, myHeight)], 0, 0)) hitAt = tin
+            }
+            if (hitAt < 0) continue
+            const nx = -vy / vh, ny = vx / vh
+            threat = { nx, ny, side: ox * nx + oy * ny > 0 ? -1 : 1 }
+            break
+          }
+          if (threat) {
+            const { nx, ny } = threat
+            const side = stepOk(nx * threat.side, ny * threat.side, keep) ? threat.side : stepOk(-nx * threat.side, -ny * threat.side, keep) ? -threat.side : 0
+            if (side) {
+              dodge = { move: [nx * side, ny * side], until: obs.t + DODGE_HOLD_S }
+              move = dodge.move
+              dodging = true
+            }
+          }
+        }
+      }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      if (!dodging && !hopping && !noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {
-        if (me.grounded) act.jump = true
+        // B125: fire-move and dodge steps never jump or jet.
+        if (dodging || fireMoving) route = null
+        else if (me.grounded) act.jump = true
         else if (me.energy > 15) boost = true
         route = null
       }
-      let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
+      const facing = dodging || fireMoving ? aimMove : move
+      let aim: [number, number] = [Math.hypot(facing[0], facing[1]) > 0.05 ? Math.atan2(facing[1], facing[0]) : yawTo(me.pos, z.next_center), 0]
 
       // Target: the nearest enemy mech with a clear shot, else the nearest one we know is there (Build 16 re-picks below).
       const slotOf = (kind: WeaponKind) => me.weapons.findIndex((w) => w?.kind === kind)
@@ -944,7 +1178,7 @@ function buildBot(hello: Hello): Bot {
             }
           }),
           [...known.values()].filter((k) => obs.t - k.lastSeen <= (cfg.vision.memory_s ?? 5)),
-          (d) => ourDps(me, d), z,
+          (d) => ourDps(me, d), z, TAC_FINISH_AMMO ? (d) => loadedMagazine(me, d) : undefined,
         )
         const killed = obs.events.flatMap((e) => (e.type === "kill" ? [e.target] : []))
         const pick = targetLock.pick(scored, obs.t, killed, engagedId)
@@ -1068,7 +1302,10 @@ function buildBot(hello: Hello): Bot {
         }
         if (lastHit && obs.t - lastHit.t < 2) aim = [lastHit.bearing, 0]
         const g = me.weapons.find((x) => x?.kind === "gun")
-        if (g && (g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0) act.reload = true
+        // B125 TAC_FINISH_AMMO: no top-up reload while the finish target we just had dies to the shots still loaded.
+        const fk = TAC_FINISH_AMMO && lastFinish && obs.t - lastFinish.t < 2 ? known.get(lastFinish.id) : undefined
+        const loadedKill = !!g && !!fk && fk.hp <= (g.ammo ?? 0) * Number(g.stats.damage ?? cfg.weapons.gun.damage) * cubeDamage(me.cubes)
+        if (g && (g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0 && !loadedKill) act.reload = true
       }
 
       act.move = move

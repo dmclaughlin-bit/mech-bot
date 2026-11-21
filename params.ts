@@ -140,3 +140,65 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * B125 six-tactic package. Each flag gates one behavior; all six false = B113 (champion) behavior exactly.
+ *
+ * TAC_SPACE_EARLY: in the first SPACE_EARLY_S seconds, while walking to a laser/loot/farm item or holding idle, bias
+ * the move away from the nearest known enemy mech closer than SPACE_EARLY_M: a sideways offset (SPACE_BIAS) on the
+ * goal vector that keeps the forward progress, or with no goal a step away (SPACE_HOLD_MOVE). Wall- and zone-checked.
+ * No change to gunRange, standoff, ambush, engage distances, or anything after SPACE_EARLY_S.
+ */
+export const TAC_SPACE_EARLY = true
+export const SPACE_EARLY_S = 30
+export const SPACE_EARLY_M = 145
+export const SPACE_BIAS = 0.5
+export const SPACE_HOLD_MOVE = 0.6
+/**
+ * TAC_FIRE_MOVE: in an engage where we would stand still with a clear shot in range, walk sideways at FIRE_MOVE_SPEED
+ * (m/s) instead, the side held for a leg of FIRE_MOVE_LEGS_S (cycled, s) then reversed. Each step is checked for walls,
+ * the circle we keep to, and the line of fire from where it ends. No boost, no jump.
+ */
+export const TAC_FIRE_MOVE = true
+export const FIRE_MOVE_SPEED = 6
+export const FIRE_MOVE_LEGS_S = [0.3, 0.4, 0.25, 0.35]
+/** Fire-move and dodge steps are checked this far (m) ahead. */
+export const TAC_STEP_CHECK_M = 3
+/**
+ * TAC_DODGE: a visible enemy projectile (obs.projectiles) predicted to hit our cylinder between DODGE_MIN_S and
+ * DODGE_MAX_S from now: step sideways, perpendicular to its velocity, away from its line (the other side if blocked),
+ * for DODGE_HOLD_S, then no new dodge for DODGE_COOLDOWN_S. Never during zone escape or travel to the next circle; a
+ * drop-ring hold dodges only to a spot inside the ring. Beams are not dodged.
+ */
+export const TAC_DODGE = true
+export const DODGE_MIN_S = 0.25
+export const DODGE_MAX_S = 0.8
+export const DODGE_HOLD_S = 0.4
+export const DODGE_COOLDOWN_S = 0.6
+/**
+ * TAC_JET_LOOT: when a loot goal (laser/lightning rush target, farm cube or drop) has no ground path or sits on a
+ * ledge/roof, and we are out of combat (no engage, not hurt, no mech damage for HOP_QUIET_S), walk straight at it and
+ * hop the obstacle: jump at the edge, jet in the air until our feet clear it. Start only with HOP_ENERGY_MIN energy
+ * (and enough for the height). Abort after HOP_ABORT_S without progress and skip that target. Never a combat move.
+ */
+export const TAC_JET_LOOT = true
+export const HOP_QUIET_S = 2.5
+export const HOP_ENERGY_MIN = 35
+export const HOP_ABORT_S = 3
+/** Hop logic takes over from the ground path within this distance (m) of an elevated goal. */
+export const HOP_NEAR_M = 12
+/**
+ * TAC_LASER_REACH: on top of Build 17's laser rush (already: no enemy test, LASER_TRIP_M, spawn scan, take in reach):
+ * (a) a laser/lightning on a roof or crate (>= 4 m above the terrain) is no longer skipped when a TAC_JET_LOOT hop or
+ * a ground path that ends within reach can get it; (b) a rush in progress survives up to RUSH_GRAZE_HITS mech hits in
+ * the last 3 s (a new rush still needs 3 s without mech damage). Engage, retreat, zone travel and crossfire rank first.
+ */
+export const TAC_LASER_REACH = true
+export const RUSH_GRAZE_HITS = 2
+/**
+ * TAC_FINISH_AMMO: the finish rule's "one magazine" is what is loaded now (gun: ammo left, 0 while reloading; laser:
+ * one shot only if ready or charging; lightning: energy), target.ts adds TARGET_W_LOADED to a target the loaded shots
+ * kill, and the half-mag top-up reload is skipped while a finish target dies to the loaded shots.
+ */
+export const TAC_FINISH_AMMO = true
+export const TARGET_W_LOADED = 1

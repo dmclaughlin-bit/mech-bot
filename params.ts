@@ -131,6 +131,18 @@ export const NO_SNEAK_QUIET_S = 3
 export const STANDOFF_BREAK_S = 60
 
 /**
+ * P-B-005 (gun lead during charge, audit H02): the torso has one aim and the laser fires along it only when we let go,
+ * so while a laser charge is building (the trigger is held, not yet full) the aim does not matter to the laser. On the
+ * champion the laser still holds the torso on the beam aim (no bullet lead) for the whole charge, and the gun fires only
+ * when that aim is inside its own lead cone, so it goes quiet on sideways movers past ~65 m. When this is on, while the
+ * laser leads and its charge is more than GUN_LEAD_SWING_S short of full, the torso follows the gun's lead point if the
+ * gun can fire this decision (clear line, gun gate open, loaded, not reloading, in range). From GUN_LEAD_SWING_S before
+ * full it goes back to the beam aim, so the torso is on the beam when the charge is full and the release rule (let go only
+ * inside the target's outline) and its timing are unchanged. false = champion behavior exactly.
+ */
+export const GUN_LEAD_DURING_CHARGE_ON = true
+
+/**
  * P-D-003 (supply-drop run, first built as P-D-001 on B80): the bot never takes a supply drop once enemies are
  * around (0 claims in 106 sim games reaching 95 s), because farming needs no enemy known within 160 m. With this set above 0: a called drop
  * within DROP_RUN_M (m), not held by another mech, zone-safe for the capture, and not hurt (HP at or above retreatHp),

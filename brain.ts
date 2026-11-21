@@ -28,7 +28,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  GUN_LEAD_DURING_CHARGE_ON, LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -120,6 +120,9 @@ const LASER_CUBE_M = 20
 const LASER_RELEASE = 0.8
 /** Build 17: aim the beam this far ahead (s) of a moving target: about the delay between an observation and our action taking effect (a guess: 1 to 2 ticks). */
 const LASER_LEAD_S = 0.075
+/** P-B-005 (see GUN_LEAD_DURING_CHARGE_ON): the torso goes back to the beam aim this long (s) before the charge is full.
+ * One decision is 0.1 s and the gun-to-beam swing is a few hundredths of a radian at 4 rad/s, so it lands before full. */
+const GUN_LEAD_SWING_S = 0.15
 /** Build 60 (break crossfire): when two or more enemies have line of sight to us, walk to cover that breaks those
  * lines instead of standing still and trading. Zone travel, hurt retreat, and the Build 17 laser trip still rank
  * first (and the finish/TTK rules already require alone()). false = champion. New vs B26 (that also committed into
@@ -991,12 +994,25 @@ function buildBot(hello: Hello): Bot {
           ? Math.abs(wrap(me.aim[0] - beamAim[0])) < Math.atan2(body[0] * LASER_RELEASE, d) && Math.abs(me.aim[1] - beamAim[1]) < Math.atan2(body[1] * LASER_RELEASE, d)
           : onTarget(direct[0], direct[1])
 
+        // Fire gate on the gun (D4, A2): inside 100 m, or at a target that is hitting us, is below half HP, or is
+        // moving mostly toward or away from us. Past that a sideways mover dodges, and a shot is heard 320 m away.
+        const dx = c[0] - muzzle[0], dy = c[1] - muzzle[1], dl = Math.hypot(dx, dy) || 1
+        const radial = Math.abs((m.vel[0] * dx + m.vel[1] * dy) / dl)
+        const sideways = Math.abs((m.vel[0] * dy - m.vel[1] * dx) / dl)
+        const hittingUs = obs.t - (hitBy.get(m.id) ?? -Infinity) < 2
+        const weak = (m.hp ?? 1) / (m.max_hp ?? 1) < 0.5
+        const gunOpen = d <= GUN_GATE || hittingUs || weak || sideways <= radial
+        // The gun can fire this decision if the torso is on its lead point.
+        const gunReady = clear && gun >= 0 && gunOpen && (w(gun).ammo ?? 1) > 0 && (w(gun).reload ?? 0) <= 0 && d <= w(gun).stats.range
+
         // Pick the weapon that steers the aim this decision.
         let leading = "track"
         aim = gunAim
         if (clear && laser >= 0 && w(laser).cooldown <= 0 && d <= w(laser).stats.range) {
           leading = "laser"
           aim = beamAim
+          // P-B-005: the laser fires only on release, so until GUN_LEAD_SWING_S before full the gun steers the torso.
+          if (GUN_LEAD_DURING_CHARGE_ON && gunReady && (w(laser).charge ?? 0) < w(laser).stats.charge - 0.03 - GUN_LEAD_SWING_S) aim = gunAim
         } else if (clear && arc >= 0 && d <= w(arc).stats.range) {
           leading = "lightning"
           aim = direct
@@ -1012,19 +1028,8 @@ function buildBot(hello: Hello): Bot {
           }
         }
 
-        // Fire gate on the gun (D4, A2): inside 100 m, or at a target that is hitting us, is below half HP, or is
-        // moving mostly toward or away from us. Past that a sideways mover dodges, and a shot is heard 320 m away.
-        const dx = c[0] - muzzle[0], dy = c[1] - muzzle[1], dl = Math.hypot(dx, dy) || 1
-        const radial = Math.abs((m.vel[0] * dx + m.vel[1] * dy) / dl)
-        const sideways = Math.abs((m.vel[0] * dy - m.vel[1] * dx) / dl)
-        const hittingUs = obs.t - (hitBy.get(m.id) ?? -Infinity) < 2
-        const weak = (m.hp ?? 1) / (m.max_hp ?? 1) < 0.5
-        const gunOpen = d <= GUN_GATE || hittingUs || weak || sideways <= radial
         // Fire only what can hit from where the torso actually points.
-        if (clear && gun >= 0 && gunOpen) {
-          const g = w(gun)
-          if ((g.ammo ?? 1) > 0 && (g.reload ?? 0) <= 0 && d <= g.stats.range && onTarget(gunAim[0], gunAim[1])) fire[gun] = true
-        }
+        if (gunReady && onTarget(gunAim[0], gunAim[1])) fire[gun] = true
         if (clear && arc >= 0) {
           const l = w(arc)
           const halfCone = ((l.stats.cone_deg ?? 30) * Math.PI) / 360

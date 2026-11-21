@@ -15,11 +15,11 @@ State as of Fri 11:42 PM ET: the champion is Build 5b `100941f` at 2.38. Losses:
 Facts: practice is 48 fixed seeds and deterministic. The site shows only the mean score, with no per-match data. Our bot never appears on the stream (only the top 16 do in showdowns; public matches are humans plus house bots). Regen starts 5 s after the last hit dealt or taken, at 45 HP/s.
 
 ## 2. Research (pick ONE question per run, ~15 min)
-Prefer questions that decide the NEXT build, in this order:
-1. If B12 FARM is scored: why did it win or lose? What is the next cube or upgrade refinement (upgrade order once cubes are in hand, safe farm radius, drones vs crates)?
-2. Engagement: when should we fight instead of flee (enemy HP, 1v1 vs 2+ enemies, time to kill vs time to die)? Use only fields our bot can actually observe (kit `protocol.md`).
-3. Healing that works without holding fire (the fire gate lost twice): where and when do winners regain HP in the recordings?
-4. What top-10 teams' public repos do differently (ideas only, no code copying, cite file and line).
+Prefer questions that decide the NEXT build. KILLS ARE THE SCORE: in practice the house squad never kills itself, so we only gain places when house bots die to us or the zone (2.54 now ~ 2.5 bots before us; top teams ~5.5). Order:
+1. End every run with ONE concrete next-build proposal (a single mechanism, the file/function to change, the expected gain and why), in suggested_change. A proposal beats a summary.
+2. How do top bots get kills on house bots: aim/leading, weapon choice and range, which target first (weakest/lone/easy-tier), finishing? Use the recordings in /workspace/watch if shared, the stream, public repos (ideas only, cite file:line).
+3. Early laser: Watcher measures laser by 30 s in 77% of winners vs 26% of the bottom half (d=1.17), but our Build 8 'laser first' scored 2.27 vs 2.38. Why did ours fail and what would a correct version do?
+4. Engagement refinements after Build 14 (TTK vs TTD) is scored, and healing that works without holding fire.
 Sources: kit docs, the top teams' public repos, the leaderboard, and the CSV or recordings you already have. Never invent numbers.
 
 ## 3. Deliver (every run)
@@ -27,6 +27,6 @@ Write `research/intake/diego-YYYY-MM-DD-HHMM.json` in the format in `research/in
 
 ## Autonomous loop (Diego runs once, leaves it running)
 ```bash
-cd mech-bot && while true; do git checkout -q main && git pull -q && claude -p "$(cat coord/next-diego.md)" --dangerously-skip-permissions >> ~/diego-research.log 2>&1; sleep 2700; done
+cd mech-bot && while true; do git checkout -q main && git pull -q && claude -p "$(cat coord/next-diego.md)" --dangerously-skip-permissions >> ~/diego-research.log 2>&1; sleep 1200; done
 ```
 One run every ~45 min keeps usage low. Stop with Ctrl-C. Needs `gh` signed in (for the PR) and push access to the repo.

@@ -451,3 +451,4 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - Sat Nov 21 6:13 PM ET Grok: added coord/STATUS.md (champion 4.06, in-flight, queued, dead families) for Diego's research; ideas.md updated with B103/B104/P-B-001/B106.
 - Sat Nov 21 6:20 PM ET Grok: P-B-004 zone unpin PR #104 (9c0a1a0) gated by Builder; 2/192 changed, held as reserve candidate behind higher-change builds (site is truth; sim inertness not a veto). P-B-005 H02 assigned to Mech Builder now.
 - Sat Nov 21 6:21 PM ET Grok: Wild Sim audit batch committed (hazard_screens.csv +43 rows on main 42a19d7: 0 crashes, max tick 25.3 ms; audit_h07_h09.csv). H07 parked (rare trigger). H09 queued as P-D-006, Build 109 on Grok's computer.
+- Sat Nov 21 6:26 PM ET Grok: Sim Tester trigger counts (8950ae2): H01 in ~15% of matches, H02 22-26% (passes bar; P-B-005 with Builder), H08 2-4% (fails; P-D-005 parked). Five MR verdict spot-checks confirmed.

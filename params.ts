@@ -140,3 +140,12 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P21 (drop contest): the drop run above also takes a drop whose holder is one other mech, when no other known mech
+ * is in its ring (a lone enemy capturing it). A capture needs the mech alone in the ring, so standing in it freezes
+ * the holder's clock, and the holder stands still. Same not-hurt gates, reach, zone-safety check (budgeting our full
+ * capture), walk and ring hold as our own drop run; engage and targeting are unchanged and handle the fight.
+ * false = off, identical to the champion.
+ */
+export const DROP_CONTEST_ON = true

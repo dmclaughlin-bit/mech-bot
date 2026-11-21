@@ -23,11 +23,13 @@
  * close to our best weapon's effective range (see STANDOFF_BREAK_S).
  * P-D-003 (drop run): walk to a called supply drop within 150 m, timed to arrive as it lands, and hold its ring
  * (see DROP_RUN_M).
+ * P21 (drop contest): the drop run may also walk to a drop a lone enemy is capturing, to freeze its clock and take
+ * the ring (see DROP_CONTEST_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_CONTEST_ON, DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -726,8 +728,14 @@ function buildBot(hello: Hello): Bot {
           (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
         const d = me.in_zone && !leaveNow && !trip && !engage && !claimGoal && !hurt && me.hp >= RETREAT_HP * me.max_hp
           ? (obs.drops ?? [])
-            .filter((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M &&
-              safe(x.pos, x.lands_in + x.capture_s - x.progress))
+            .filter((x) => {
+              if (dropSkip.has(x.id) || flat(x.pos, me.pos) > DROP_RUN_M) return false
+              if (x.holder === null || x.holder === hello.slot) return safe(x.pos, x.lands_in + x.capture_s - x.progress)
+              // P21: a lone enemy holds it (it is the only mech we know of in the ring). Our presence freezes its clock,
+              // so walk in and hold the ring; the clock restarts from 0 once it is ours, so budget the full capture.
+              return DROP_CONTEST_ON && !enemies.some((m) => m.id !== x.holder && flat(m.pos, x.pos) <= x.radius) &&
+                safe(x.pos, x.lands_in + x.capture_s)
+            })
             .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
           : undefined
         if (!d) dropRun = null

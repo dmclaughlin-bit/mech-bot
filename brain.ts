@@ -114,6 +114,11 @@ const LASER_CUBE_M = 20
 const LASER_RELEASE = 0.8
 /** Build 17: aim the beam this far ahead (s) of a moving target: about the delay between an observation and our action taking effect (a guess: 1 to 2 ticks). */
 const LASER_LEAD_S = 0.075
+/** Build 56 (dodge beam): a visible enemy charging its laser with its torso on us → sidestep off that line (legs only; keep aiming and firing). Do not walk away to cover. Zone travel and a hurt retreat still
+ * rank first. A nearly full charge of our own is not abandoned. false = champion. New vs B27 (constant strafe while
+ * holding, 3.38 closed) and vs Wild laserdodge (sidestep only, fixed 2 s clock, no cover). Helps more on the site,
+ * where house bots actually aim the telegraphed beam. */
+const BEAMDODGE_ON = true
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -653,6 +658,25 @@ function buildBot(hello: Hello): Bot {
       let move: [number, number] = [0, 0]
       let boost = false
       let mode = "hold"
+      // Build 56: if a visible enemy is charging a laser at us, step out of the beam (cover, else a sidestep).
+      let dodge: [number, number] | null = null
+      if (BEAMDODGE_ON && me.in_zone && !leaveNow) {
+        const ours = me.weapons.find((w) => w?.kind === "laser")
+        const aboutToFire = !!ours && (ours.charge ?? 0) >= (ours.stats.charge ?? 0.75) - 0.03
+        const charger = !aboutToFire ? enemies.find((e) => {
+          if (!e.charging) return false
+          const d = flat(e.pos, me.pos)
+          return d <= 280 && Math.abs(wrap(e.aim[0] - yawTo(e.pos, me.pos))) < Math.atan2(8, Math.max(8, d))
+        }) : undefined
+        if (charger) {
+          // Sidestep off the beam only (do not walk to cover, which abandoned the fight in an earlier draft).
+          const toMe = yawTo(charger.pos, me.pos)
+          const side = (Math.floor(obs.t * 1.7 + charger.id) % 2 ? 1 : -1) * Math.PI / 2
+          let mx = Math.cos(toMe + side), my = Math.sin(toMe + side)
+          if (flat([me.pos[0] + mx * 10, me.pos[1] + my * 10], zoneKeep[0]) >= zoneKeep[1]) { mx = -mx; my = -my }
+          dodge = [mx, my]
+        }
+      }
       if (!me.in_zone) {
         // Outside the circle every tick costs HP and stops regen (Z2): head in along a path, boosting.
         move = travel(me.pos, [z.center[0], z.center[1], me.pos[2]], obs.t, canPlan()).move
@@ -663,7 +687,12 @@ function buildBot(hello: Hello): Bot {
         move = go.move
         boost = go.dist / walkSpeed > timeLeft
         mode = "to next circle"
+      } else if (dodge) {
+        move = dodge
+        boost = me.energy > 0.3 * me.max_energy
+        mode = "dodge beam"
       } else if (engage) {
+
         // Engage (F1, Build 14): fight on instead of the HP retreat. Hold the line of fire, and close in along a path
         // when the target is behind cover, or (finish rule) beyond our best range. Never walk outside the circle we keep to.
         const d = flat(engage.m.pos, me.pos)

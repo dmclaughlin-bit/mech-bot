@@ -140,3 +140,30 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P-B-008 (movement & evasion training track, sim-only): how the mech moves while the champion's rules are already in
+ * force. No trigger, threshold or rank changes: the variants only replace "stand still" (move [0, 0]) in a gunfight,
+ * bend a close the champion is already walking, or steer a straight-line move around a wall.
+ *   0 = champion exactly (the committed default; nothing below runs).
+ *   1 = strafe: in a standing gunfight (engage with a clear shot and not closing, or heal/hold with a clear line to an
+ *       enemy mech that is within EVADE_RANGE_M, hit us in the last 2 s, or is charging a laser), walk perpendicular to
+ *       the threat bearing. One direction, reversed only when the next step is blocked, leaves the circle we keep to,
+ *       loses the shot, or nav.stuck trips.
+ *   2 = jittered strafe: variant 1, and the direction also reverses on a random 0.5 to 1.4 s timer (seeded from hello.seed).
+ *   3 = orbit: variant 1 with a radial correction that holds a ring around the foe: our best weapon's effective range
+ *       when we are within 15 m of it, else the range the fight started at. A close the champion is already walking
+ *       with a clear walkable line (finish rule, standoff break) is bent into an arc (30 degrees off the straight line).
+ *   4 = dodge: only on a telegraph. A mortar shell in view whose landing point is within its splash of us: walk away
+ *       from the landing point. An enemy charging a laser along our bearing: step out of its sight (the nearest hiding
+ *       spot), else sidestep. Only from the same standing situations as variant 1. Not B101 (no gun-round dodge).
+ *   5 = slide around cover: a straight-line move (retreat, crossfire break, ambush, hiding, loot, or a path-less
+ *       travel fallback) whose next step is blocked follows a nav path to its goal instead, else turns up to 86 degrees
+ *       to the first open heading.
+ *   6 = all: jittered orbit + dodge + slide.
+ * Every variant above 0 also checks each evasion step against the nav grid and the zone (nav.open, the circle we keep
+ * to), keeps calling nav.stuck once per decision, aims from where the muzzle will be when the action lands (our own
+ * velocity x AIM_LAG_S; the kit's projectiles fly straight at `speed` from the muzzle and the protocol gives them no
+ * shooter velocity), and keeps the torso on the foe instead of the move heading. Never ship above 0 as a site default.
+ */
+export const EVADE_MODE: number = 0

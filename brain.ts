@@ -114,6 +114,10 @@ const LASER_CUBE_M = 20
 const LASER_RELEASE = 0.8
 /** Build 17: aim the beam this far ahead (s) of a moving target: about the delay between an observation and our action taking effect (a guess: 1 to 2 ticks). */
 const LASER_LEAD_S = 0.075
+/** Build 40 stack: B36+B32+B34 flags. Each false rolls that piece back to the champion. */
+const RUSHFIRST_ON = true
+const PRECHARGE_ON = true
+const BACKSTAB_ON = true
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -596,7 +600,7 @@ function buildBot(hello: Hello): Bot {
             pick = undefined
           }
         }
-        if (pick) engage = { m: pick, why, clear: clearLine(solids, muzzle, centerOf(pick)) }
+        if (pick && !(RUSHFIRST_ON && rush && !holdsLaser && obs.t - lastMechHit > FARM_QUIET_S)) engage = { m: pick, why, clear: clearLine(solids, muzzle, centerOf(pick)) }
       } else engaged = null
       // Collect (Build 14): after our kill, walk to the cubes it dropped (all of its cubes plus two) if it is safe:
       // nobody has line of sight to us, no mech hit us in the last 2 s, and the same zone test as farming.
@@ -800,7 +804,7 @@ function buildBot(hello: Hello): Bot {
             const held = o.m.weapons ?? (k?.weapons.length ? k.weapons : undefined)
             return {
               id: o.m.id, pos: o.m.pos, d: o.d, clear: o.clear,
-              hp: o.m.hp ?? k?.hp ?? cfg.mech.hp, maxHp: o.m.max_hp ?? k?.maxHp ?? cfg.mech.hp,
+              hp: (o.m.hp ?? k?.hp ?? cfg.mech.hp) / (BACKSTAB_ON && o.m.aim && Math.abs(wrap(o.m.aim[0] - yawTo(o.m.pos, me.pos))) > ((cfg.mech.front_arc_deg ?? 180) * Math.PI) / 360 ? (cfg.mech.rear_mult ?? 1.5) : 1), maxHp: o.m.max_hp ?? k?.maxHp ?? cfg.mech.hp,
               threat: held ? Math.min(1, held.reduce((a, kind) => a + (baseDps[kind] ?? 0), 0) / topPairDps) : 0.5,
             }
           }),
@@ -907,6 +911,8 @@ function buildBot(hello: Hello): Bot {
             }
             fire[laser] = !(full && lined)
           } else if (leading === "laser") fire[laser] = true
+          // Pre-charge (B32): the target is tracked but behind cover, inside laser range; start the charge so a full shot is ready when it shows.
+          else if (PRECHARGE_ON && !clear && !farmShot && m.kind === "mech" && d <= l.stats.range && l.cooldown <= 0 && me.hp >= RETREAT_HP * me.max_hp && !leaveNow && me.in_zone) fire[laser] = true
           if (LASER_RUSH_ON && leading === "laser") beamAt = c
         }
         if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true

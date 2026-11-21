@@ -22,7 +22,8 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, RETREAT_MEMORY_S,
+  SHARED_LOS_ON, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -499,6 +500,22 @@ function buildBot(hello: Hello): Bot {
       const myHeight = me.stats.height ?? cfg.mech.height * scale(me.cubes)
       const threats = enemies.slice().sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos)).slice(0, LOS_TARGETS)
       const zoneKeep: [number[], number] = toEnter === 0 ? [z.next_center, inner] : [z.center, Math.max(0, z.radius - margin)]
+      // Retreat cover (Build 5; Build 29 SHARED_LOS_ON): the house squad shares vision, so first try cover from every
+      // enemy seen within RETREAT_MEMORY_S (last known position, plus the ones in view, nearest LOS_TARGETS), then fall
+      // back to the Build 5 search against the enemies in view only. Retreating earlier when losing the race is
+      // deliberately not here: lane B owns the race math.
+      const retreatSpot = (): Vec3 | null => {
+        if (SHARED_LOS_ON) {
+          const ids = new Set(enemies.map((m) => m.id))
+          const all: { pos: Vec3; aim: [number, number]; cubes?: number }[] = [...enemies]
+          for (const k of known.values())
+            if (!ids.has(k.id) && obs.t - k.lastSeen <= RETREAT_MEMORY_S) all.push({ pos: k.pos, aim: [0, 0], cubes: k.cubes })
+          const wide = all.sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos)).slice(0, LOS_TARGETS)
+          const p = seenAt(me.pos, myHeight, wide, false) ? hideSpot(me, myHeight, walkSpeed, wide, false, zoneKeep, canPlan) : null
+          if (p) return p
+        }
+        return seenAt(me.pos, myHeight, threats, false) ? hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan) : null
+      }
       // Farm (Build 12): only in the zone, not leaving for the next circle, no enemy mech in view or known within
       // FARM_ENEMY_M, and no damage from a mech for FARM_QUIET_S. Drone fire does not stop farming.
       const farmOk =
@@ -676,7 +693,7 @@ function buildBot(hello: Hello): Bot {
         if ((!engage.clear || (engage.why === "finish" && d > close && !standOff)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1])
           move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
         mode = `engage, ${engage.why}`
-      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && seenAt(me.pos, myHeight, threats, false) && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
+      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && (spot = retreatSpot())) {
         // Retreat (F2, F3, Build 5): hurt and under fire, so head for the nearest in-zone spot out of every visible
         // enemy's line of sight, torso still on the attacker (legs and torso are independent). Boost only above 30% energy.
         move = heading(spot)

@@ -113,3 +113,16 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 29 (retreat with shared vision): the house hunters are one squad sharing vision, so any hunter that sees us
+ * tells the rest where we are. For the hurt retreat-to-cover only (not hold, heal hiding, farm or engage), the
+ * "are we seen" test and the cover search count every enemy mech seen within RETREAT_MEMORY_S at its last known
+ * position, plus the ones in view (nearest 8), so the cover breaks line of sight from all known hunters. When no spot
+ * hides from that list, the Build 5 retreat against the enemies in view runs unchanged. Zone keep, timing and the time
+ * budget are unchanged. "Retreat earlier when losing the race" is deliberately left out: lane B owns the race math.
+ * Set SHARED_LOS_ON to false to roll back to Build 17 behavior exactly.
+ */
+export const SHARED_LOS_ON = true
+/** Known enemies seen this recently (s) count as threats for the retreat to cover. */
+export const RETREAT_MEMORY_S = 15

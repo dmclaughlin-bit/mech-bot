@@ -15,15 +15,33 @@ Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, f
 
 **Read `coord/STATUS.md` first: current champion, in-flight builds, dead families.**
 
-**CHAMPION CHANGED (Sat 2:00 PM ET): P-D-003 drop run `4d6e71b` (PR #99, on top of 4.06), site 4.10 (BB-DA9AC664), merged to main `9168d841c734ec6970340322600feb89f9c27ce6`. Bot code on main equals `4d6e71b`. Branch every new build from current main. Flag 0 must be byte-identical to this main, and a build keeps only if its site score beats 4.10. If you started from an older main (including 4.06 / `42a19d7`), rebase onto this main before you push.**
+**CHAMPION (Sat 2:44 PM ET): B113 drop reach 200 m, bot code `6182d29c673d99f5186d742a5f019c0b007234f2`, site 4.17 (BB-09AE8A68), merged to main `8b6e7b2`.** Branch every new build from current origin/main. Flag 0 must be byte-identical to main, and a build keeps only if its site score is strictly above 4.17.
 
-**P-D-003 DONE KEEP 4.10** (BB-DA9AC664, `4d6e71b`, merged `9168d84`). **P-D-002 lost** at site 3.79 (BB-8DA0CF9D, PR #102 closed). The threat-forecast type now ranks lower after that loss.
+**While you were out (about 1:18 to 3:42 PM ET)** Grok's Claude built P-D-004 (Build 108 finish burst, PR #101, site 3.75 CLOSE) and P-D-006 (Build 109 cook-off bonus, PR #105, rebased as PR #114, reserve, not yet site-tested). Don't redo either. The drop family (P20 PR #121, P21 PR #122) and B117 matchup (PR #123) belong to Mech Builder: don't touch them.
 
 ---
 
-## Current prompt: none (Sat 2:00 PM ET)
+## Current prompt: P-D-008 laserSkip expiry (audit H12) (Grok, Sat Nov 21, 4:16 PM ET)
 
-P-D-002 is done (lost). P-D-003 is done (KEEP 4.10). Take a Queued item only after Grok posts a new Current prompt, and branch from current 4.10 main.
+Not ACKed. Add `ACK P-D-008 (Diego's Claude) <time ET>` to `coord/log.md` in your first PR. Doug (4:14 PM ET) wants every lane working for the next half hour: when this is done, go straight on to P-D-009 below without waiting.
+
+Once a laser target fails (no route, or chase longer than `LASER_CHASE_S`), it goes into `laserSkip` for the rest of the match (`brain.ts:280`, `:693`, `:704` on 4.17 main), so the late walk can never retry it. Lasers matter: in the sim, laser by 30 s scores 6.28 vs 2.01 without (coord/RESEARCH.md).
+**Step A:** count games on both seed sets (2000+3000 and 4000+5000, n=192 each) where a skipped id later becomes reachable and in-zone while we still lack the weapon. **Step B, only if ~10/192 or more on both sets:** branch `diego/P-D-008-laserskip`, flag `LASER_SKIP_EXPIRE_S` (0 = main byte-identical), skip entries expire after that many seconds; gate PASS, PR template table on both seed sets, kills first. No slot until Grok verifies. Branch from current origin/main (champion bot code still 6182d29).
+
+Site context since P-D-007: P21 4.17 tie, standoff 90 s 3.96, ambush 100 m 4.10, B117 matchup 4.08, all closed. Your P-D-007 finding (zone timing makes zone-travel deaths worse) is logged, no slot. Grok's Claude is building mid-game unstuck pathing and late-game hurt kiting (Watcher Top-16 evidence, coord/data/watcher/RANKED.md); don't duplicate those.
+
+## DONE (no slot): P-D-007 late-game kill-source measurement (Grok, 3:44 PM ET)
+Step A PR #124 (late deaths are multi-LOS; zone travel in last 5 s touches 28/37 games). Step B PR #125 `ZONE_EARLY_S` failed in sim (zone-travel deaths 28→30 and 37→45), no slot.
+
+## (moved to Current above) P-D-008
+Once a laser target fails (no route, or chase longer than `LASER_CHASE_S`), it goes into `laserSkip` for the rest of the match (`brain.ts:280`, `:693`, `:704` on 4.17 main), so the late walk can never retry it. Step A: count games on both seed sets where a skipped id later becomes reachable and in-zone while we still lack the weapon. Step B only if ~10/192 or more: flag `LASER_SKIP_EXPIRE_S` (0 = main byte-identical), skip entries expire after that many seconds.
+
+## Queued: P-D-009 two-horizon race, shadow count only (audit H13) (Grok, 3:44 PM ET)
+Shadow-log only, no behavior change: in `race()` engagements after 60 s, count how often a burst-horizon estimate and the current sustained estimate disagree on engage vs not, and how those fights ended. B48 and B20+22 TTK recalibrations lost on the site, so this is a count, not a build. Report in a docs PR; Grok decides whether it earns a build.
+
+---
+
+## Past prompts
 
 ## DONE (lost 3.79): P-D-002 (Grok, Sat Nov 21, 12:45 PM ET)
 
@@ -60,12 +78,12 @@ Don't touch H1 (lightning; Doug's Claude has it as B103). No slot until Grok ver
 ## DONE KEEP 4.10: P-D-003 (Grok, 12:59 PM ET; from Build 104 site 3.88 = +0.09 over its B80 parent)
 Rebuilt the supply-drop run (`DROP_RUN_M=150`, same logic as PR #95) on 4.06 main. Site **4.10** (BB-DA9AC664, `4d6e71b`, PR #99) KEEP, new champion, merged `9168d84` Sat 2:00 PM ET. Site auto-entered it as the final entry (no click).
 
-## Queued: P-D-004 (Grok, 1:12 PM ET; from PR #98 audit H01) - TAKEN: Build 108 on Grok's computer
+## DONE (lost 3.75): P-D-004 (Grok, 1:12 PM ET; from PR #98 audit H01) - built by Grok's Claude as Build 108, PR #101
 Finish burst: the finish rule should compare target HP to the SUM of magazines in reach, not the best single weapon (brain.ts finish check; see coord/audit/grokbot-1000-rec-handoff-2026-11-21.md section 3). Flag `FINISH_BURST_ON`, shipped ON, flag 0 = main byte-identical.
 
 ## PARKED: P-D-005 (PR #98 H08) stay on wounded target - Sim Tester count FAILS the bar (target found healed later in only 2-4% of matches; screens.csv 8950ae2).
 
-## Queued: P-D-006 (Grok, 1:22 PM ET; PR #98 H09, Wild Sim counts) - TAKEN: Build 109 on Grok's computer
+## BUILT, reserve: P-D-006 (Grok, 1:22 PM ET; PR #98 H09, Wild Sim counts) - built by Grok's Claude as Build 109, PR #105, rebased as PR #114
 Cook-off target bonus: some enemy holds a mortar in 98.7% of sim matches; mortar holders are 18.9% of our kills and mortars cause 11.5% of our deaths (coord/data/audit_h07_h09.csv; sim house model is invented, weak evidence). Flag `COOKOFF_BONUS_ON`, shipped ON, flag 0 = main byte-identical.
 
 H07 sound-guided late hunt: PARKED. Wild Sim: a usable sound while idle late shows up only 2.2% of the time.

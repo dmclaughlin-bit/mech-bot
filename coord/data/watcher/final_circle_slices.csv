@@ -1,0 +1,19 @@
+metric,bucket,high,low,diff,d,n_high,n_low,m_high,m_low,ok
+HP frac in the final circle,b_edge=center,0.49643333333333334,0.386,0.11043333333333333,,3,1,2,1,0
+HP frac in the final circle,b_edge=midring,0.6863833333333333,0.5436,0.14278333333333337,0.43443222728680386,6,14,2,2,0
+HP frac in the final circle,b_edge=edge,0.42935999999999996,0.9389315789473685,-0.5095715789473685,-3.91953606243271,5,19,1,1,0
+HP frac in the final circle,b_edge=outside,0.25453333333333333,0.48065,-0.2261166666666667,-0.8677432074868363,3,10,2,2,0
+HP frac in the final circle,b_eng=eng_0,0.58725,0.7314633333333334,-0.1442133333333333,,2,30,2,3,0
+HP frac in the final circle,b_eng=eng_1,0.48956666666666665,0.6213357142857143,-0.13176904761904767,-0.44863465687633197,15,14,4,2,0
+HP frac in the final circle,b_load=laser,0.3638,0.743325806451613,-0.37952580645161293,-1.2824558431945647,8,31,2,2,0
+HP frac in the final circle,b_load=lightning,0.6230666666666667,0.5845769230769231,0.03848974358974355,0.12317478913650835,9,13,2,1,0
+cover in the final circle,b_eng=eng_0,1.0,1.0,0.0,,2,30,2,3,0
+cover in the final circle,b_eng=eng_1,0.6666666666666666,1.0,-0.33333333333333337,-0.981980506061966,15,14,4,2,0
+cover in the final circle,b_hp=hp_ge_90,0.5,1.0,-0.5,,2,20,1,2,0
+cover in the final circle,b_hp=hp_50_90,0.5,1.0,-0.5,-1.4638501094227998,8,9,3,2,0
+cover in the final circle,b_hp=hp_30_50,1.0,1.0,0.0,,1,5,1,2,0
+cover in the final circle,b_hp=hp_lt_30,1.0,1.0,0.0,0.0,6,10,3,3,0
+outside in the final circle,b_hp=hp_ge_90,0.0,0.0,0.0,,2,20,1,2,0
+outside in the final circle,b_hp=hp_50_90,0.125,0.5555555555555556,-0.4305555555555556,-1.0072228420132017,8,9,3,2,0
+outside in the final circle,b_hp=hp_30_50,0.0,0.4,-0.4,,1,5,1,2,0
+outside in the final circle,b_hp=hp_lt_30,0.3333333333333333,0.3,0.033333333333333326,0.07199489882788959,6,10,3,3,0

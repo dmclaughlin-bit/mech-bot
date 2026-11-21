@@ -6,6 +6,11 @@ Related data: `screens.csv` (sim screens), `hazard_screens.csv` (Wild Sim), `pos
 
 | Submitted (ET) | Build | Change | Family | Champion then | Site | Delta | Verdict | Receipt |
 |---|---|---|---|---|---|---|---|---|
+| 2026-11-21 16:05 ET | B111 | B111 ambush far edge 100 m, on 4.17 main | ambush | 4.17 | 4.10 | -0.07 | CLOSE | BB-D985B698 |
+| 2026-11-21 16:00 ET | B110 | B110 standoff break at 90 s, on 4.17 main | standoff | 4.17 | 3.96 | -0.21 | CLOSE | BB-4E063E2E |
+| 2026-11-21 15:55 ET | P21 | P21 contest a lone enemy drop, on 4.17 main | drops | 4.17 | 4.17 | +0.00 | CLOSE | BB-1D97890A |
+| 2026-11-21 15:44 ET | B117 | B117 loadout/HP matchup range, on 4.17 main | loadout | 4.17 | 4.08 | -0.09 | CLOSE | BB-A84FCC28 |
+| 2026-11-21 15:07 ET | P20 | P20 drop run when hurt and unseen, on 4.17 main | drops | 4.17 | 4.17 | +0.00 | CLOSE | BB-36A427E0 |
 | 2026-11-21 14:57 ET | B118 | B118 drop reach DROP_RUN_M 200 -> 260, on 4.17 main | drops | 4.17 | 4.17 | +0.00 | CLOSE | BB-BAC9670C |
 | 2026-11-21 14:54 ET | B115 | B115 drop-run arrival lead 5 -> 10 s, on 4.17 main | drops | 4.17 | 4.13 | -0.04 | CLOSE | BB-D76FEDCF |
 | 2026-11-21 14:40 ET | B113 | B113 drop reach DROP_RUN_M 150 -> 200, on 4.10 drop-run main | drops | 4.10 | 4.17 | +0.07 | KEEP | BB-09AE8A68 |
@@ -81,9 +86,9 @@ Related data: `screens.csv` (sim screens), `hazard_screens.csv` (Wild Sim), `pos
 | opening | 6 | 0 |
 | aim | 4 | 1 |
 | crossfire | 3 | 1 |
-| drops | 5 | 2 |
+| drops | 7 | 2 |
 | farm | 2 | 2 |
-| standoff | 2 | 1 |
+| standoff | 3 | 1 |
 | upgrades | 1 | 0 |
 | threat-forecast | 1 | 0 |
 

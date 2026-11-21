@@ -104,6 +104,12 @@ const CLAIM_M = 12
 const CLAIM_S = 12
 /** Build 17 (early laser): turn the torso once around for this long (s) at spawn, to see the pickups on every side (the view is a 120° wedge). */
 const LASER_SCAN_S = 1.8
+/** Build 64 (start the laser trip through a distant poke): FARM_QUIET_S no longer blocks starting a Build 17 laser
+ * walk when we are at or above retreat HP and no enemy has line of sight inside RUSHSTART_M. Build 54 only kept a
+ * walk already under way; a new trip still waited 3 s after any mech hit, which was the main reason we saw a laser
+ * in the first 30 s and still did not pick it up. false = champion. */
+const RUSHSTART_ON = true
+const RUSHSTART_M = 100
 /** Build 17: a remembered laser we stand this close to (m) with a clear line and no longer see has been taken. */
 const LASER_GONE_M = 30
 /** Build 17: change to another laser only if it is this much nearer (m). */
@@ -623,7 +629,10 @@ function buildBot(hello: Hello): Bot {
       const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
       if (
         LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
-        !claimGoal && !hurt && !cubeFirst && obs.t - lastMechHit > FARM_QUIET_S
+        !claimGoal && !hurt && !cubeFirst &&
+        (obs.t - lastMechHit > FARM_QUIET_S ||
+          (RUSHSTART_ON && me.hp >= RETREAT_HP * me.max_hp &&
+            !enemies.some((e) => flat(e.pos, me.pos) < RUSHSTART_M && seenAt(me.pos, myHeight, [e], false))))
       ) {
         const pace = ZONE_WALK * walkSpeed
         const onward = (p: Vec3) => Math.max(0, flat(p, z.next_center) - inner)

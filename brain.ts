@@ -149,7 +149,7 @@ const LASER_REAIM_S = 0.8
 /** P-B-001 (standoff break, see STANDOFF_BREAK_S): the lone enemy's distance window (m), no other enemy seen for this
  * long (s), and our HP at least this far above params.retreatHp (fraction of max). */
 const STANDOFF_MIN_M = 45
-const STANDOFF_MAX_M = 90
+const STANDOFF_MAX_M = 100
 const STANDOFF_SECOND_S = 3
 const STANDOFF_HP_MARGIN = 0.2
 

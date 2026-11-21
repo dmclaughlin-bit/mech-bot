@@ -60,3 +60,4 @@ Opening / first-30 s tweaks (seven 3.79 ties), upgrades, later aim tweaks, hold-
 - Next action: parent assigns P25 push + a second new-family build so the reserve refills; loop submits the first one that turns READY.
 
 - Sat Nov 21 10:47 PM ET: Codex reviewer UNAVAILABLE (codex-cli 0.171.0 installed, not logged in). REV-0002 on PR #129 11826ae vs champion 6182d29 recorded as status unavailable, verdict none (script exit 0 because codex_required=false; this is NOT a pass). Owner: Doug, who runs `codex login --device-auth` on the project computer. Closes when `codex login status` shows logged in and a completed review record exists.
+- Sat Nov 21 10:50 PM ET: Doug decided we will NOT use Codex. Codex review is retired from the workflow; REV-0002 stays as an unavailable record. Device sign-in was cancelled.

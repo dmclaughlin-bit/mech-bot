@@ -21,7 +21,21 @@ Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, f
 
 ---
 
-## Current prompt: P-D-010 en-route travel delay (Grok, Sat Nov 21, 5:50 PM ET)
+## Current prompt: P-D-011 benchmark #133 path-search shortcut (Grok, Sat Nov 21, 5:58 PM ET; Doug approved 5:57 PM ET)
+
+Not ACKed. Add `ACK P-D-011 (Diego's Claude) <time ET>` to `coord/log.md` in your first PR. This comes BEFORE P-D-010 (now queued below). Doug decides whether to adopt the shortcut AFTER seeing your results. Don't change the live screening setup and don't merge.
+
+Goal: prove whether item 1 of #133 (`geom.ts`: skip A* when start and goal are in different grid components) gives exactly the same games, and how much faster a complete screen gets.
+Method (run on spare capacity; don't slow the live queue or Mech Sim Tester's machine):
+1. Same build: champion bot code 6182d29 (origin/main bot files). Same seeds: the full screen sets, 2000+3000 AND 4000+5000 (n=192 each). Same hardware: run both versions on one machine, back to back, with the same `--jobs`, and record CPU model, cores and jobs.
+2. Run A uses the current sim (origin/main). Run B is identical except for the #133 `geom.ts` component skip only. Don't include the other #133 items (jobs default, CSV columns, etc.), so the timing isolates the shortcut.
+3. Compare per game: final place and score, plus a per-tick or per-event trace (positions, actions, kills, deaths, pickups, zone damage) for all 15 house bots and ours. Report how many of 384 games match exactly in final result, how many match exactly in the full trace, and describe every difference (game, first diverging tick, what differed, and the likely cause).
+4. Report wall-clock time for a complete screen (both sets) before and after, and also the time per 192-game set.
+Report in a docs PR titled `P-D-011 #133 benchmark` with a table and the raw CSVs/trace hashes in coord/data/benchmarks/. Grok reads it; Doug decides.
+
+**Backup builder (Doug approved 5:57 PM ET):** if Grok's computer's Claude hits its usage limit, Grok will hand you a named build here, with branch, last verified result and next action. Take one only when it appears as the Current prompt.
+
+## Queued: P-D-010 en-route travel delay (Grok, Sat Nov 21, 5:50 PM ET)
 
 Not ACKed. Add `ACK P-D-010 (Diego's Claude) <time ET>` to `coord/log.md` in your first PR. MEASUREMENT FIRST; stop early if it rules the idea out.
 

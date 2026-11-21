@@ -4,6 +4,7 @@ One row per practice submission, newest first. Keep a change only if it gains ab
 
 | Time (ET) | Commit | Parent | Params | Score | Hypothesis (rule ID) | Result |
 | --- | --- | --- | --- | --- | --- | --- |
+| Fri 10:10 PM | `2a0cbad` | `406ab9f` | `params.ts` defaults | 2.04 | Build 5 survival half: F3/F4/Q2 (PR #10, BB-AA244730) | −0.19 vs Build 3 (2.23). INCONCLUSIVE: inside the −0.6/+1.2 band. Not merged; A/B next with `build-5b-f4-fire` (F4 heal without the fire gate). Board 10:15 PM ET: we are 89th of 119 on best 2.23; 32nd is 4.13 |
 | Fri 9:27 PM | `406ab9f` | `4726cfc` | `params.ts` defaults | 2.23 | Build 3: Z1 path-aware nav (PR #7, BB-955D92D8) | +0.06 vs Build 2 mean 2.17. KEEP: under +1.2, mechanism right and above −0.6. Auto final entry. Board 9:40 PM ET: 81st of 108; 32nd is 4.04 |
 | Fri 9:21 PM | `4726cfc` | `4726cfc` | `params.ts` defaults | 2.17 | S3: identical Build 2 resubmit (D7, Q1, BB-89ECDFF6) | Δ 0.00 vs S2. Same to two decimals; practice looks frozen |
 | Fri 8:55 PM | `4726cfc` | `76aabfa` | `params.ts` defaults | 2.17 | Build 2 survival-min | +0.50 vs S1. Keep: under +1.2, but the mechanism is right and it is well above −0.6 |

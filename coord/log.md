@@ -98,3 +98,9 @@ Format:
 - Result: S3 BB-89ECDFF6 2.17 @4726cfc (same as S2); Build 3 BB-955D92D8 2.23 @406ab9f, +0.06, KEEP, auto final entry; board 9:40 PM ET 81st of 108, 32nd place 4.04.
 - Found: submit form takes an optional 40-char commit, so unmerged SHAs can be submitted; practice looks deterministic.
 - Blocked / next: Doug starts build-5-survive (F3/F4/Q2); Diego opens the plan PR + tools/ watch recorder.
+
+## Fri 22:16 ET · Grok · Submit Build 5, stage A/B
+- Did: submitted PR #10 head `2a0cbad` by SHA (BB-AA244730). Not merged. Staged variant branch `build-5b-f4-fire` (same as Build 5 but heals without the F4 fire gate) for the next slot.
+- Result: 2.04 vs parent Build 3 2.23 (−0.19), inconclusive. Board 10:15 PM ET: 89th of 119 on best 2.23; 1st 5.48, 16th 4.52, 32nd 4.13.
+- Found: the F4 "only fire if hit in the last 2 s" gate is the likeliest cost. Loop now runs every 15 min (4 submissions/hour); a match watcher is collecting top-team data.
+- Blocked / next: Grok submits `build-5b-f4-fire` at the 10:21 PM slot; keep whichever scores higher, revert both if neither beats 2.23 + noise.

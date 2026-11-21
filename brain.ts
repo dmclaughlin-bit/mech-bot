@@ -24,7 +24,8 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, UNDER_FIRE_RUSH_M,
+  UNDER_FIRE_RUSH_S, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -638,9 +639,13 @@ function buildBot(hello: Hello): Bot {
       const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
       // Build 80: after the opening, a gun-only bot may start a new lightning/laser walk (champion only continues one).
       const lateLight = LATE_LIGHT_ON && gunOnly && obs.t >= LASER_RUSH_S
+      // UF100: early in the match, a recent mech hit no longer stops a walk to a laser we know is near (lasers only).
+      const quiet = obs.t - lastMechHit > FARM_QUIET_S
+      const ufLaser = UNDER_FIRE_RUSH_M > 0 && obs.t < UNDER_FIRE_RUSH_S &&
+        [...arms].some(([id, a]) => a.kind === "laser" && !laserSkip.has(id) && flat(a.pos, me.pos) <= UNDER_FIRE_RUSH_M)
       if (
         LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush || lateLight) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
-        !claimGoal && !hurt && !(cubeFirst && !lateLight) && obs.t - lastMechHit > FARM_QUIET_S
+        !claimGoal && !hurt && !(cubeFirst && !lateLight) && (quiet || ufLaser)
       ) {
         const pace = ZONE_WALK * walkSpeed
         const onward = (p: Vec3) => Math.max(0, flat(p, z.next_center) - inner)
@@ -649,7 +654,7 @@ function buildBot(hello: Hello): Bot {
         // A laser always counts; a lightning only while we hold nothing but the gun. Lasers first, then the nearest.
         const options = [...arms]
           .filter(([id, a]) =>
-            (a.kind === "laser" || gunOnly) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
+            (a.kind === "laser" || (gunOnly && quiet)) && (quiet || flat(a.pos, me.pos) <= UNDER_FIRE_RUSH_M) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
             !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4) && fits(a.pos, flat(me.pos, a.pos)))
           .sort((a, b) => Number(a[1].kind !== "laser") - Number(b[1].kind !== "laser") || flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos))
         const kept = rush ? options.find(([id]) => id === rush!.id) : undefined

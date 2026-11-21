@@ -113,3 +113,15 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * UF100 (under-fire laser rush): in the first UNDER_FIRE_RUSH_S seconds, a mech hit in the last 3 s no longer stops the
+ * Build 17 walk toward a known laser within UNDER_FIRE_RUSH_M (m). While under fire only such lasers are trip targets
+ * (no lightning, nothing farther). Every other gate stays: not hurt (retreatHp), not engaging, no claim, slot, zone,
+ * LASER_TRIP_M and LASER_CHASE_S. Audit (sim, seeds 2000+3000, n=192): laser by 30 s 58 -> 82, died < 40 s 56 -> 54.
+ * Different from B64 (that relaxed the gate only with no LOS enemy inside 100 m). Set UNDER_FIRE_RUSH_M to 0 to roll
+ * back to Build 80 behavior exactly.
+ */
+export const UNDER_FIRE_RUSH_M = 100
+/** UF100: only this early in the match (s). */
+export const UNDER_FIRE_RUSH_S = 30

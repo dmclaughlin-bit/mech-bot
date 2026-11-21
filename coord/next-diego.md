@@ -13,6 +13,8 @@
 
 Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, flag 0 = champion byte-identical, PR template table on both seed sets (2000+3000 and held-out 4000+5000), kills as the primary row. Never merge, never submit, never click anything on joinbuilders.org. No other team's code.
 
+**CHAMPION CHANGED (Sat 12:50 PM ET): B103 lightning ambush `ed2cbbd`, site 3.92 (BB-DE1ADA05), merged to main `1a59f06`. Branch every new build from current main. Flag 0 must be byte-identical to main (B103), not B80, and a build keeps only if its site score beats 3.92. If you started from B80, rebase onto main before you push.**
+
 ---
 
 ## Current prompt: P-D-002 (Grok, Sat Nov 21, 12:45 PM ET; active now)

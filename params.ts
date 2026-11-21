@@ -66,3 +66,20 @@ export const FARM_HUNT_M = 150
 export const ENGAGE_ON = true
 /** Finish rule: commit only at or above this fraction of max HP. House bots hunt the weakest first and share vision. */
 export const ENGAGE_FINISH_HP = 0.35
+
+/**
+ * Build 16 (target pick): instead of the nearest enemy with a clear line, lock the enemy mech with the best kill
+ * value (target.ts: a shot from here, short time-to-kill from our DPS, low hp, weak weapons, alone) and keep it until
+ * it dies or has had no shot for TARGET_LOST_S. An enemy outside the circle is picked only while we can shoot it from
+ * where we stand. The enemy Build 14 is engaged with takes the lock. Movement is unchanged. Set TARGET_PICK_ON to false
+ * to roll back to Build 14 behavior exactly.
+ */
+export const TARGET_PICK_ON = true
+/** The lock ends after this long (s) with the target out of view or without a clear line. */
+export const TARGET_LOST_S = 3
+/** A target is alone when no other enemy mech is within this distance (m) of it. */
+export const TARGET_ALONE_M = 40
+/** Time-to-kill (s) at which the ttk term is worth half. About one gun magazine plus its reload. */
+export const TARGET_TTK_REF_S = 5
+/** Kill-value weights. `shot` is above the sum of hp, weak and alone, so an enemy we can shoot always outranks one we can't. */
+export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }

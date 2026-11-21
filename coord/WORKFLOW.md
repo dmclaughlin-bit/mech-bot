@@ -1,3 +1,5 @@
+> The official process is coord/WORKFLOW_CHART.md, LOCKED by Doug Sat Nov 21 3:09 PM ET. Changes need Doug's explicit yes.
+
 # Workflow (source of truth from Fri 22:45 ET, Nov 20)
 
 > **OPEN DIRECTIVE (Sat Nov 21, 11:18 AM ET, from Diego, highest priority):** read [`coord/DIRECTIVE-2026-11-21-master-audit.md`](DIRECTIVE-2026-11-21-master-audit.md) first and answer its §18. Today's audits are in `coord/audit/`; don't redo them.

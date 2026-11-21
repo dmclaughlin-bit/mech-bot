@@ -113,3 +113,23 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 33 (jet routes): plan routes over short walls and ledges, and fly them: walk into the wall, jump within
+ * about 2 m of it, hold boost in the air until our feet clear its top by JET_CLIMB_MARGIN_M, and keep moving over
+ * (protocol §7, Ledges). nav.ts builds a second "jet" grid where buildings no taller than the climb limit are roofs and
+ * hop links cross ledge bands (climb at most the limit, drop at most DROP_MAX_M); a hop costs extra time and energy, so
+ * ground routes still win when similar. Routes use the jet grid only while we hold enough energy for a climb at the
+ * limit plus JET_ENERGY_RESERVE (so combat boosting is not starved); otherwise, and for a while after a failed climb,
+ * they come from the ground grid exactly as before. No climb starts while the laser charges. Every mode's decisions are
+ * unchanged: only how routes are planned and followed. Set JET_ROUTE_ON to false to roll back to Build 30 behavior exactly.
+ */
+export const JET_ROUTE_ON = true
+/** Energy left after any planned climb (of max 100). The retreat boosts only above 30. */
+export const JET_ENERGY_RESERVE = 40
+/** Highest climb planned (m), whatever the energy would allow: one or two storeys, not the towers. */
+export const JET_CLIMB_MAX_M = 8
+/** Feet clear the top of the ledge by this much (m) before we stop jetting. */
+export const JET_CLIMB_MARGIN_M = 1
+/** Deepest planned drop (m). hello.config has no fall damage; a moderate drop keeps every hop climbable back. */
+export const DROP_MAX_M = 8

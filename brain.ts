@@ -17,11 +17,12 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 33 (jet routes): routes may hop short walls and ledges; travel() flies the climbs (see JET_ROUTE_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
-import { createNav } from "./nav.ts"
+import { type Hop, type Waypoint, createNav } from "./nav.ts"
 import {
-  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, JET_CLIMB_MARGIN_M, JET_ROUTE_ON,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -116,6 +117,21 @@ const LASER_RELEASE = 0.8
 const LASER_LEAD_S = 0.075
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
+
+/** Build 33 (jet routes): jump when the body is this close (m) to the ledge (the center is our radius further back). */
+const HOP_JUMP_M = 2
+/** Build 33: also jump when pinned (HOP_PINNED decisions with almost no speed) this much further back (m), e.g. against the wall at an angle. */
+const HOP_PRESS_M = 4
+const HOP_PINNED = 2
+/** Build 33: a hop counts as crossed once our center is this far (m) past the ledge line beyond our radius. */
+const HOP_PAST_M = 0.5
+/** Build 33: give up a climb not crossed this long (s) after its first jump, then plan ground routes only for HOP_BAN_S. */
+const HOP_GIVEUP_S = 3
+const HOP_BAN_S = 10
+/** Build 33: a hop we have not followed for this long (s) was left (another mode took over, or the route changed). */
+const HOP_LEFT_S = 1
+/** Build 33: hop outcomes for an instrumented copy (no-op here). */
+const hopTrace = (_what: string, _t: number) => {}
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -235,7 +251,20 @@ function buildBot(hello: Hello): Bot {
   const hitBy = new Map<number, number>()
   const nav = createNav(hello)
   /** The current route: waypoints from nav.path toward `goal`, planned at time `at`. */
-  let route: { goal: Vec3; at: number; points: Vec3[]; next: number; found: boolean } | null = null
+  let route: { goal: Vec3; at: number; points: Waypoint[]; next: number; found: boolean } | null = null
+  /**
+   * Build 33 (jet routes): `self` is this decision's own state, for travel(). `hopCmd` is what travel() asks for on a
+   * hop segment, kept with the move it returned (applied only if that move is the one we follow). `hopping` is the hop
+   * we are executing (a climb from its first jump, a drop from when we head for it), and `jetBanUntil` turns jet routes
+   * off for a while after a failed climb.
+   */
+  let self: Observation["self"] | null = null
+  let hopCmd: { move: [number, number]; hop: Hop; land: Waypoint; pending: boolean; jump: boolean; pinJump: boolean; boost: boolean | null } | null = null
+  let hopping: { hop: Hop; land: Waypoint; since: number; seen: number } | null = null
+  /** Build 33: decisions in a row we have pushed toward a climb on the ground with almost no speed. */
+  let pinned = 0
+  let jetBanUntil = -Infinity
+  const stepUp = cfg.mech.step_up ?? 1.2
   /** Build 17 (early arm-up): laser and lightning pickups seen so far (they are listed only while in view), the ones we gave up on, and the one we are walking to. */
   const arms = new Map<number, { kind: "laser" | "lightning"; pos: Vec3 }>()
   /** Build 17 fix: when the laser's charge was first seen full (it fires on its own hold_s later), and where the beam last led. */
@@ -297,15 +326,28 @@ function buildBot(hello: Hello): Bot {
     return sum * cubeDamage(e.cubes)
   }
 
+  /** Build 33: how far (m) our center at `p` still is from crossing the hop to `land`: its ledge line, plus our radius and HOP_PAST_M. */
+  function hopLeft(hop: Hop, land: number[], p: number[]): number {
+    const ux = land[0] - hop.from[0], uy = land[1] - hop.from[1], l = Math.hypot(ux, uy) || 1
+    const at = (q: number[]) => ((q[0] - hop.from[0]) * ux + (q[1] - hop.from[1]) * uy) / l
+    return at(hop.ledge) + cfg.mech.radius * scale(self?.cubes) + HOP_PAST_M - at(p)
+  }
+
   /** Follow a path to `goal`, re-planning at most once a second (Z1, Build 3). Returns the move and the distance left. */
   function travel(from: Vec3, goal: Vec3, t: number, canPlan: boolean): { move: [number, number]; dist: number; points: Vec3[] } {
     const stale = !route || t - route.at >= ROUTE_REPLAN_S || flat(route.goal, goal) > ROUTE_GOAL_SHIFT
-    if (stale && canPlan) {
-      const found = nav.path(from, goal, PATH_BUDGET)
+    // Build 33: no re-plan in the air on a climb; jet routes while we hold the energy for a climb (or are on one) and no climb failed lately.
+    const flying = JET_ROUTE_ON && !!hopping && !!self && !self.grounded
+    if (stale && canPlan && !flying) {
+      const found = JET_ROUTE_ON
+        ? nav.path(from, goal, PATH_BUDGET, t >= jetBanUntil && !!self && (self.energy >= nav.jetNeed || !!hopping))
+        : nav.path(from, goal, PATH_BUDGET)
       route = { goal, at: t, points: found ?? [goal], next: 0, found: !!found }
     }
     const r = route ?? { goal, at: t, points: [goal], next: 0, found: false }
-    while (r.next < r.points.length - 1 && flat(from, r.points[r.next]) < WAYPOINT_REACHED) r.next++
+    // Build 33: never move on past a hop's landing before we are over its ledge.
+    const held = (w: Waypoint) => JET_ROUTE_ON && !!w.hop && hopLeft(w.hop, w, from) > 0
+    while (r.next < r.points.length - 1 && flat(from, r.points[r.next]) < WAYPOINT_REACHED && !held(r.points[r.next])) r.next++
     const rest = r.points.slice(r.next)
     let dist = 0
     let prev: number[] = from
@@ -314,7 +356,26 @@ function buildBot(hello: Hello): Bot {
       prev = w
     }
     const yaw = yawTo(from, rest[0])
-    return { move: [Math.cos(yaw), Math.sin(yaw)], dist, points: rest }
+    const move: [number, number] = [Math.cos(yaw), Math.sin(yaw)]
+    // Build 33: on a hop segment, the climb: walk in, jump with the body within HOP_JUMP_M of the ledge (never while the
+    // laser charges), and in the air jet until the feet clear its top by JET_CLIMB_MARGIN_M. A drop is just walked off.
+    const land: Waypoint = rest[0]
+    if (JET_ROUTE_ON && land.hop && self) {
+      const hop = land.hop, me = self
+      const radius = cfg.mech.radius * scale(me.cubes)
+      const left = hopLeft(hop, land, from)
+      const toLedge = left - radius - HOP_PAST_M // center to the ledge line
+      const climb = left > 0 && hop.up > stepUp
+      const charging = me.weapons.some((w) => (w?.charge ?? 0) > 0)
+      const below = from[2] < hop.top - stepUp
+      const canJump = climb && me.grounded && below && !charging
+      const jump = canJump && toLedge <= radius + HOP_JUMP_M
+      const pinJump = canJump && toLedge <= radius + HOP_JUMP_M + HOP_PRESS_M
+      // In the air on a climb (whoever jumped), jet until the feet clear the top.
+      const boost = jump ? true : climb && !me.grounded ? from[2] < hop.top + JET_CLIMB_MARGIN_M : null
+      hopCmd = { move, hop, land, pending: left > 0, jump, pinJump, boost }
+    }
+    return { move, dist, points: rest }
   }
 
   /** How many enemies seen in the last 10 s are within ROUTE_TRACK_M of the route. */
@@ -421,6 +482,10 @@ function buildBot(hello: Hello): Bot {
       const canPlan = () => performance.now() - started < DEADLINE_MS - PLAN_RESERVE_MS
       remember(obs)
       const me = obs.self
+      if (JET_ROUTE_ON) {
+        self = me
+        hopCmd = null
+      }
       const muzzle: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.muzzle_height ?? cfg.mech.muzzle_height * scale(me.cubes))]
       const tube: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.height ?? cfg.mech.height * scale(me.cubes)) + 0.5]
       const act: BotAction = {}
@@ -731,13 +796,65 @@ function buildBot(hello: Hello): Bot {
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
+      // Build 33: the hop command applies only if the move we follow is the one travel() returned with it.
+      const onHop = JET_ROUTE_ON && !!hopCmd && hopCmd.move === move ? hopCmd : null
       if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      let climbing = false
+      if (JET_ROUTE_ON) {
+        // Build 33: a hop we were on and no longer follow is crossed (we are past its ledge) or was left.
+        if (hopping && hopping.hop !== onHop?.hop) {
+          const done = hopLeft(hopping.hop, hopping.land, me.pos) <= 0
+          if (done || obs.t - hopping.seen > HOP_LEFT_S) {
+            hopTrace(`${hopping.hop.up > stepUp ? "climb" : "drop"} ${done ? "crossed" : "left"}`, obs.t)
+            hopping = null
+          }
+        }
+        if (!onHop?.pending) pinned = 0
+        if (onHop?.pending) {
+          // Pushing toward a climb with almost no speed: the wall stopped us short of the jump point (met at an angle).
+          const slow = me.grounded && Math.hypot(me.vel[0], me.vel[1]) < 0.15 * walkSpeed
+          pinned = onHop.pinJump && slow ? pinned + 1 : 0
+          if (pinned >= HOP_PINNED) onHop.jump = true
+          if (onHop.jump) onHop.boost = true
+          if (onHop.hop.up <= stepUp || onHop.jump || onHop.boost !== null) {
+            if (hopping?.hop !== onHop.hop) {
+              hopping = { hop: onHop.hop, land: onHop.land, since: obs.t, seen: obs.t }
+              hopTrace(`${onHop.hop.up > stepUp ? "climb" : "drop"} start ${onHop.hop.up.toFixed(1)} ${onHop.hop.down.toFixed(1)}`, obs.t)
+            }
+          }
+          if (hopping?.hop === onHop.hop) {
+            hopping.seen = obs.t
+            if (onHop.jump) {
+              act.jump = true
+              pinned = 0
+            }
+            if (onHop.boost !== null) boost = onHop.boost
+            climbing = onHop.hop.up > stepUp
+            // A climb not crossed within HOP_GIVEUP_S of its first jump: give up, ground routes only for a while.
+            if (climbing && obs.t - hopping.since > HOP_GIVEUP_S) {
+              hopTrace("climb failed", obs.t)
+              hopping = null
+              climbing = false
+              jetBanUntil = obs.t + HOP_BAN_S
+              route = null
+            }
+          }
+        } else if (onHop && hopping?.hop === onHop.hop) {
+          hopTrace(`${hopping.hop.up > stepUp ? "climb" : "drop"} crossed`, obs.t)
+          hopping = null
+        }
+      }
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
-      if (nav.stuck(me, move)) {
+      // Build 33: not during a climb (pressing into the wall is the plan); the stuck count restarts.
+      if (nav.stuck(me, climbing ? [0, 0] : move)) {
         if (me.grounded) act.jump = true
         else if (me.energy > 15) boost = true
         route = null
+        if (JET_ROUTE_ON && hopping) {
+          hopTrace(`${hopping.hop.up > stepUp ? "climb" : "drop"} stuck`, obs.t)
+          hopping = null
+        }
       }
       let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
 
@@ -936,7 +1053,7 @@ function buildBot(hello: Hello): Bot {
       act.boost = boost
       act.aim = [aim[0], clamp(aim[1], minPitch, maxPitch)]
       act.fire = fire
-      draw.label(`${label} · ${mode}`)
+      draw.label(`${label} · ${mode}${JET_ROUTE_ON && climbing ? " · climb" : ""}`)
       const took = performance.now() - started
       if (took > DEADLINE_MS) log(`decision at tick ${obs.tick} took ${took.toFixed(1)} ms`)
       return act

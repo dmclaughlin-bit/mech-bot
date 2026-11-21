@@ -19,6 +19,7 @@
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  * Build 80 (late lightning): after 45 s, a gun-only bot may walk to a reachable ground lightning or laser
  * (see LATE_LIGHT_ON).
+ * Build 92 (earlier late walk): the same gun-only walk may start at 35 s instead of 45 s (see LATE_EARLY_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -129,6 +130,13 @@ const CROSSFIRE_ON = true
  * Take, swap, and drop are unchanged (B66 and B68 lost on the site). Different from B76/B78 (first 45 s only).
  * false = champion. */
 const LATE_LIGHT_ON = true
+/** Build 92 (earlier late walk): B80's gun-only lightning/laser walk starts at LATE_EARLY_S instead of LASER_RUSH_S
+ * (45 s). Reach stays LASER_TRIP_M 250, and the no-hit-3s, zone-time, crossfire-yield, and hurt-retreat gates stay.
+ * The opening Build 17 rush window is unchanged (still the first 45 s). This is not B76 (any special as an early
+ * trip in the first 45 s; site 3.25). It probes the middle between B76's early any-special and B80's 45 s start.
+ * false = champion B80. */
+const LATE_EARLY_ON = true
+const LATE_EARLY_S = 35
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -637,7 +645,9 @@ function buildBot(hello: Hello): Bot {
       const rushSlot = me.weapons.includes(null) || (enemies.length === 0 && me.weapons.some((x) => x?.kind === "gun"))
       const cubeFirst = me.hp >= HEAL_HP * me.max_hp && (farmHold || (!!farmGoal && !farmHunt && flat(farmGoal.pos, me.pos) < LASER_CUBE_M))
       // Build 80: after the opening, a gun-only bot may start a new lightning/laser walk (champion only continues one).
-      const lateLight = LATE_LIGHT_ON && gunOnly && obs.t >= LASER_RUSH_S
+      // Build 92: the late walk may start at 35 s instead of 45 s; flag off uses LASER_RUSH_S.
+      const lateStartS = LATE_EARLY_ON ? LATE_EARLY_S : LASER_RUSH_S
+      const lateLight = LATE_LIGHT_ON && gunOnly && obs.t >= lateStartS
       if (
         LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush || lateLight) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
         !claimGoal && !hurt && !(cubeFirst && !lateLight) && obs.t - lastMechHit > FARM_QUIET_S

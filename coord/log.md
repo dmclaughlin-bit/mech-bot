@@ -353,3 +353,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 5:37 AM ET: Build 64 rush-start (f171f20, PR #60) scored 3.63, receipt BB-061D8305. Below B60 3.67, closed. Rank 123/218; #32 Eagle Eye 5.17.
 
 - 5:49 AM ET: Build 45 tracksweep (a34996d, PR #65) scored 3.35, receipt BB-CB222B29. Below B60 3.67, closed. Rank 125/218; #32 RN SUS 5.21.
+
+- 6:19 AM ET: Build 76 any-special early trip (56cb559, PR #71) scored 3.25, receipt BB-3AB97F36. Below B60 3.67, closed. Chasing lightning/mortar early hurts on site. Rank 128/224; #32 Kuki 5.23.

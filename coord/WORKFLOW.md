@@ -40,7 +40,7 @@ flowchart TD
 |---|---|---|
 | Grok (coordinator) | picks the next change, submits, scores, merges or closes, logs | writes bot code itself |
 | Grok's Claude (Doug's Max) | builds assigned changes: one change per branch, check must pass | merges, submits |
-| Diego's Claude | code audits and research; builds a change only when Diego approves it and Grok assigns it (UF100, Sat 11:15 ET) | merges, submits, builds anything unassigned |
+| Diego's Claude | code audits, research, AND bot code (Doug approved Sat 12:14 PM ET): edits `*.ts` only for the change Grok assigns in `coord/next-diego.md`, on its own branch, one flag with flag 0 = champion byte-identical | merges, submits, pushes to main, touches files or logic another builder is assigned (lightning/H1 is Doug's Claude's now) |
 | Doug's own Claude | stopped (handoff in `coord/handoff-doug-claude.md`) | — |
 | Doug / Diego | set direction, approve big pivots | — |
 

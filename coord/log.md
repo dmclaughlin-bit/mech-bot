@@ -371,3 +371,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 2026-11-21 7:50 AM ET: B90 keeplight dd716d3 (PR #80, keep lightning, drop gun for laser) site 3.73 (BB-D3165A39). Below champion B80 3.79. Closed. Sim was -0.021. Rank 123/237, #1 5.96, #32 5.23. Next slot 8:20: B92 a941607.
 
 - 2026-11-21 8:22 AM ET: B92 late35 a941607 (PR #81, late walk from 35 s) site 3.79 (BB-ECD38FB6), tie with champion B80; earlier tie keeps final. Closed. Sim was +0.000. Rank 126/238, #1 5.96, #32 5.23. Next slot 8:27: B98 39b2fe9.
+
+- 2026-11-21 8:28 AM ET: B98 nofinish40 39b2fe9 (PR #84, P12 no finish-engage before 40 s without laser) site 3.63 (BB-970E5B69). Below champion B80 3.79. Closed. Sim was -0.042 (62/192 changed). Rank 127/238, #1 5.96, #32 5.23. Note: sim-inert builds (B86, B92) scored exactly 3.79, so the site looks deterministic per behavior.

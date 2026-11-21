@@ -23,6 +23,8 @@
  * close to our best weapon's effective range (see STANDOFF_BREAK_S).
  * P-D-003 (drop run): walk to a called supply drop within 150 m, timed to arrive as it lands, and hold its ring
  * (see DROP_RUN_M).
+ * Build 105 (laser-charge react): when an enemy in view is charging a laser with its torso on us, step out of its
+ * sight or sideways off its line (see LASER_CHARGE_REACT_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -144,6 +146,21 @@ const LATE_LIGHT_ON = true
 const LIGHT_AMBUSH_ON = true
 /** Build 103: the far edge (m) of the standoff band the ambush answers. */
 const AMBUSH_MAX_M = 90
+/** Build 105 (P-B-002, a narrow slice of S6): the protocol shows every viewer `charging: true` and the charger's aim
+ * (research/protocol.md, weapons table: "so the line can be dodged"), and nothing in the champion reads it. When this
+ * is on, one more safety check sits with the cover checks: a visible enemy mech that is charging a laser, has a line
+ * to us, is inside laser range and has its torso within CHARGE_AIM_RAD of us is about to fire at us, so we walk to the
+ * nearest spot out of its sight (B60's hideSpot), or, with no such spot, step sideways off its line. Only the legs
+ * change: aim, target, firing and path planning are untouched, and our own laser is never held back (that was B88,
+ * which lost). Zone travel, engage, the hurt retreat, collecting a kill, the laser walks, the crossfire break and the
+ * B103 lightning ambush all rank first; the P-B-001 standoff break only replaces heal or hold, so it never runs on a
+ * decision that dodges. false = champion (P-B-001). */
+const LASER_CHARGE_REACT_ON = true
+/** Build 105: a charging enemy counts as aiming at us when its torso yaw is within this angle (rad) of the bearing to us
+ * (the torso turns 4 rad/s, so it covers this in under 0.1 s of a 0.75 s charge). */
+const CHARGE_AIM_RAD = 0.35
+/** Build 105: the sidestep needs this much (s) of clear, in-zone walking on the side it picks. */
+const CHARGE_STEP_S = 0.5
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 /** P-B-001 (standoff break, see STANDOFF_BREAK_S): the lone enemy's distance window (m), no other enemy seen for this
@@ -741,6 +758,7 @@ function buildBot(hello: Hello): Bot {
         }
       }
       let spot: Vec3 | null = null
+      let dodge: [number, number] | null = null
       let move: [number, number] = [0, 0]
       let boost = false
       let mode = "hold"
@@ -812,6 +830,34 @@ function buildBot(hello: Hello): Bot {
       })())) {
         move = heading(spot)
         mode = "lightning ambush"
+      } else if (LASER_CHARGE_REACT_ON && (dodge = (() => {
+        // Build 105 (P-B-002): an enemy in view is charging a laser with its torso on us. Break its line of sight, or
+        // with no cover in reach step sideways off its line (the side we are already moving to, else toward the circle).
+        const reach = Number(cfg.weapons.laser?.range ?? baseReach.laser)
+        const aimed = threats.filter(
+          (e) => e.charging && flat(e.pos, me.pos) <= reach && Math.abs(wrap(yawTo(e.pos, me.pos) - e.aim[0])) < CHARGE_AIM_RAD && seenAt(me.pos, myHeight, [e], false),
+        )
+        if (!aimed.length) return null
+        const cover = hideSpot(me, myHeight, walkSpeed, aimed, false, zoneKeep, canPlan)
+        if (cover) return heading(cover)
+        const line = yawTo(aimed[0].pos, me.pos)
+        const left: [number, number] = [-Math.sin(line), Math.cos(line)]
+        const drift = me.vel[0] * left[0] + me.vel[1] * left[1]
+        const inward = (zoneKeep[0][0] - me.pos[0]) * left[0] + (zoneKeep[0][1] - me.pos[1]) * left[1]
+        const first = (Math.abs(drift) > 1 ? drift : inward) >= 0 ? 1 : -1
+        const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + myHeight / 2]
+        for (const side of [first, -first]) {
+          const x = me.pos[0] + left[0] * side * walkSpeed * CHARGE_STEP_S, y = me.pos[1] + left[1] * side * walkSpeed * CHARGE_STEP_S
+          if (Math.hypot(x - zoneKeep[0][0], y - zoneKeep[0][1]) > zoneKeep[1]) continue
+          const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+          if (g === -Infinity || !clearLine(solids, from, [x, y, g + myHeight / 2], 0, 0)) continue
+          return [left[0] * side, left[1] * side] as [number, number]
+        }
+        return null
+      })())) {
+        move = dodge
+        boost = me.energy > 0.3 * me.max_energy
+        mode = "laser dodge"
       } else if (dropHold) {
         // P-D-003: inside a called drop's ring, stand still until it lands and the capture completes.
         mode = "drop, hold"
@@ -870,7 +916,7 @@ function buildBot(hello: Hello): Bot {
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush" && mode !== "laser dodge") move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

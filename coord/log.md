@@ -76,6 +76,7 @@ Format:
 
 ## Fri 21:40 ET · Diego · D9: qualify first
 - Did: changed plan D9 and `coord/GROK_BRIEF.md`: practice score is the target until we're about 0.5 above the 32nd team's best, then tune for the final again. Grok tracks the 32nd-place score each update.
+  Brief also gives Grok a qualifying order: Build 3 (nav), then break LOS + heal + sight cones (F3, F4, Q2) ahead of Build 4, then full F2, then dodge.
 - Result: docs only, not submitted.
 - Found: only the top 32 practice teams play the final (buildathon brief). The brief's "any valid entry qualifies" held at ~31 teams; there are now 94 and we were 72nd.
 - Blocked / next: Doug's Build 3 (nav) is the next submission after S3.

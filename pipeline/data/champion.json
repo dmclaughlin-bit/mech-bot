@@ -1,12 +1,12 @@
 {
- "experiment_id": "B80",
- "commit": "28c3acc1a0f58571163e90b562da1c25067085c4",
- "merge_commit": "cb939807143f1602a7b63db674c78082c9a3d2ce",
+ "experiment_id": "B103",
+ "commit": "ed2cbbd06051c92a23c40a2ef2317576175e9ea2",
+ "merge_commit": "(this merge)",
  "branch": "main",
- "score": 3.79,
- "submission_id": "BB-78A44AAF",
+ "score": 3.92,
+ "submission_id": "BB-DE1ADA05",
  "target_score": 6.0,
- "updated_at": "2026-11-21T11:35:00-05:00",
+ "updated_at": "2026-11-21T12:50:00-05:00",
  "history": [
   {
    "experiment_id": "EXP-0000",
@@ -85,6 +85,12 @@
    "commit": "b889814",
    "score": 3.67,
    "at": "2026-11-21T04:17:00-05:00"
+  },
+  {
+   "experiment_id": "B80",
+   "commit": "28c3acc1a0f58571163e90b562da1c25067085c4",
+   "score": 3.79,
+   "at": "2026-11-21T11:35:00-05:00"
   }
  ]
 }

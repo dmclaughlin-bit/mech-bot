@@ -311,3 +311,7 @@ Doug approved: Lane A = movement (nav/map/positioning), Lane B = combat (target/
 
 ## Sat 01:38 ET · Grok · Build 21 (upgrade order) result
 e0710b6 scored 3.46 (BB-1AFE6423, 1:35 AM), below champion 3.50 → not kept, PR #34 closed. Sim pre-check had it at −0.08 ± 0.17 (tie), consistent. Stack #37 sim −0.29 ± 0.24 → held; B23 sim −0.06 → next slot 1:47.
+
+## Sat 01:55 ET · Grok · Build 23 (laser-safe early spacing) result
+5b36504 scored 3.46 (BB-D6AC95A2, Sat 1:47 AM ET), below champion 3.50 → not kept, PR #38 closed.
+Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate factory screens builds on fresh sim seeds (SEED_BASE 2000+) before they take a site slot.

@@ -427,3 +427,6 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 12:12 PM ET: Doug asked that Diego's Claude get prompts from Grok via GitHub. `coord/next-diego.md` is now Grok's prompt inbox: one current prompt with an ID, ACK in this log, report by PR with the ID in the title. Current: P-D-001 (late hunt / supply drops / post-kill claim, measure first).
 
 - 12:14 PM ET: Doug approved Diego's Claude editing bot code, for the change Grok assigns only, on its own branch, one flag with flag 0 = champion. No merges, submits, or pushes to main. WORKFLOW roles and next-diego.md updated.
+
+- ACK P-D-001 (Diego's Claude) 12:13 PM ET
+- 12:18 PM ET: P-D-001 Step A (Diego's Claude, B80, sim 2000+3000 and held-out 4000+5000), in `coord/audit/P-D-001/stepA.md`. Late hunt: a lone house mech is known within 150 m while we idle after 120 s in only 10 and 12 games. Drops: **0 claims** in 106 games that reach 95 s (189 landed while we were alive). Claim: about 85% of our kills give no cubes, but Grok's ≤ 12 m shape reaches only 5 games per set (near-inert). Step B: the supply-drop flag, on `diego/P-D-001-droprun`.

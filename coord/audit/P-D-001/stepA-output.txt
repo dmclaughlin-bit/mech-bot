@@ -1,0 +1,22 @@
+== 2000+3000
+games 192, kills 646, score mean 3.536
+[1 late hunt] games alive at 120 s: 34; decision ticks after 120 s: 26124; hold/heal with no target: 11284 (43%); of those, a lone house mech known within 150 m: 285 ticks in 10 games; our kills after 120 s: 43 (0.70/min)
+[2 drops] games reaching 95 s: 52; drops landed while alive 85; we stood in a ring 0; claimed by us 0 (0.00/game); by house 1; contested at some point 3
+[3 claim] our kills 645; got >=1 cube within 13 s: 110; got 0: 535
+   of all kills: claim blocked on some tick 607; by seen only 484; by a hit <2 s 527
+   cubes within 12 m of the kill (max seen in episode): total 2705, left uncollected on 0-gain kills 2259
+   0-gain kills that Grok's claim shape could reach (seen-only, cubes <=12 m, HP>=60%, <=1 LOS): 5 in 5 games
+   0-gain, seen-blocked, came within 12 m of the cubes: 22 kills in 19 games
+   0-gain, seen-blocked, came within 30 m of the cubes: 67 kills in 50 games
+   0-gain, seen-blocked, came within 60 m of the cubes: 232 kills in 126 games
+== held-out 4000+5000
+games 192, kills 677, score mean 3.781
+[1 late hunt] games alive at 120 s: 41; decision ticks after 120 s: 39126; hold/heal with no target: 23095 (59%); of those, a lone house mech known within 150 m: 456 ticks in 12 games; our kills after 120 s: 38 (0.45/min)
+[2 drops] games reaching 95 s: 54; drops landed while alive 104; we stood in a ring 1; claimed by us 0 (0.00/game); by house 0; contested at some point 4
+[3 claim] our kills 674; got >=1 cube within 13 s: 109; got 0: 565
+   of all kills: claim blocked on some tick 635; by seen only 513; by a hit <2 s 552
+   cubes within 12 m of the kill (max seen in episode): total 2831, left uncollected on 0-gain kills 2494
+   0-gain kills that Grok's claim shape could reach (seen-only, cubes <=12 m, HP>=60%, <=1 LOS): 6 in 5 games
+   0-gain, seen-blocked, came within 12 m of the cubes: 16 kills in 14 games
+   0-gain, seen-blocked, came within 30 m of the cubes: 73 kills in 57 games
+   0-gain, seen-blocked, came within 60 m of the cubes: 214 kills in 124 games

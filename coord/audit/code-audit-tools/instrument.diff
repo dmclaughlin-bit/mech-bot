@@ -1,0 +1,49 @@
+--- /home/claude/mech-bot/brain.ts	2026-11-21 16:24:40.954174417 +0000
++++ /tmp/claude-0/-home-claude/ea968d87-0090-5ec2-8a45-fb15f3949e46/scratchpad/b80/brain.ts	2026-11-21 16:28:34.172142148 +0000
+@@ -238,6 +238,11 @@
+   }
+ }
+ 
++import { appendFileSync } from "node:fs"
++const __I = process.env.INSTR_FILE
++const __buf: string[] = []
++const __flush = () => { if (__I && __buf.length) { appendFileSync(__I, __buf.join("\n") + "\n"); __buf.length = 0 } }
++process.on("exit", __flush)
+ function buildBot(hello: Hello): Bot {
+   const cfg = hello.config
+   const solids = loadMap(hello)
+@@ -859,6 +864,7 @@
+       }
+       let label = `knows ${known.size}`
+ 
++      let __supp = 0
+       if (target) {
+         const { m, c, d, clear } = target
+         const vel: Vec3 = [m.vel[0], m.vel[1], 0]
+@@ -940,6 +946,7 @@
+         }
+         if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true
+         if (gun >= 0 && (w(gun).ammo ?? 1) === 0 && (w(gun).reload ?? 0) <= 0) act.reload = true
++        if (clear && gun >= 0 && gunOpen && !fire[gun] && (w(gun).ammo ?? 1) > 0 && (w(gun).reload ?? 0) <= 0 && d <= w(gun).stats.range && (leading === "laser" || leading === "re-aim" || leading === "lightning")) __supp = leading === "lightning" ? 2 : 1
+ 
+         draw.line(muzzle, c, clear ? "#ff5040" : "#888888")
+         label += ` · ${farmShot ? "farm " : ""}${leading} at ${m.id} ${d.toFixed(0)}m${clear ? "" : " (behind cover)"}${pickNote}`
+@@ -966,6 +973,18 @@
+       act.aim = [aim[0], clamp(aim[1], minPitch, maxPitch)]
+       act.fire = fire
+       draw.label(`${label} · ${mode}`)
++      if (__I) {
++        const gunSlot = me.weapons.findIndex((w) => w?.kind === "gun")
++        const lasSlot = me.weapons.findIndex((w) => w?.kind === "laser")
++        const charging = lasSlot >= 0 && ((me.weapons[lasSlot] as any).charge ?? 0) > 0
++        const quietDmg = obs.t - lastDamaged
++        __buf.push(JSON.stringify({ t: +obs.t.toFixed(1), m: mode, hp: +(me.hp / me.max_hp).toFixed(3), en: enemies.length, qd: +quietDmg.toFixed(1),
++          loot: !!lootTarget, fg: !!farmGoal, fh: farmHunt, fhold: farmHold, fs: farmShot, fire: fire.map(Number), ch: charging, mv: +Math.hypot(act.move![0], act.move![1]).toFixed(2),
++          gunHeld: gunSlot >= 0, gunFire: gunSlot >= 0 && fire[gunSlot], tgt: !!target, tclear: !!target?.clear, td: target ? +target.d.toFixed(0) : -1,
++          gunAmmo: gunSlot >= 0 ? (me.weapons[gunSlot] as any).ammo : -1, gunRl: gunSlot >= 0 ? (me.weapons[gunSlot] as any).reload : -1,
++          supp: __supp, cubes: me.cubes, w: me.weapons.map((x) => x?.kind ?? "-").join("+") }))
++        if (__buf.length > 2000) __flush()
++      }
+       const took = performance.now() - started
+       if (took > DEADLINE_MS) log(`decision at tick ${obs.tick} took ${took.toFixed(1)} ms`)
+       return act

@@ -1,0 +1,11 @@
+--- /tmp/claude-0/-home-claude/ea968d87-0090-5ec2-8a45-fb15f3949e46/scratchpad/b80/brain.ts	2026-11-21 16:28:34.172142148 +0000
++++ /tmp/claude-0/-home-claude/ea968d87-0090-5ec2-8a45-fb15f3949e46/scratchpad/zc/brain.ts	2026-11-21 16:44:39.737020693 +0000
+@@ -941,7 +941,7 @@
+               lined = other.on
+             }
+             fire[laser] = !(full && lined)
+-          } else if (leading === "laser") fire[laser] = true
++          } else if (leading === "laser" && me.in_zone && !leaveNow) fire[laser] = true
+           if (LASER_RUSH_ON && leading === "laser") beamAt = c
+         }
+         if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true

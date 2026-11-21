@@ -1,0 +1,10 @@
+--- /tmp/claude-0/-home-claude/ea968d87-0090-5ec2-8a45-fb15f3949e46/scratchpad/b80/brain.ts	2026-11-21 16:28:34.172142148 +0000
++++ /tmp/claude-0/-home-claude/ea968d87-0090-5ec2-8a45-fb15f3949e46/scratchpad/rl/brain.ts	2026-11-21 16:38:57.241586725 +0000
+@@ -946,6 +946,7 @@
+         }
+         if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true
+         if (gun >= 0 && (w(gun).ammo ?? 1) === 0 && (w(gun).reload ?? 0) <= 0) act.reload = true
++        if (gun >= 0 && !clear && obs.t - lastMechHit > 1 && (w(gun).ammo ?? 12) < (w(gun).stats.mag ?? 12) / 2 && (w(gun).reload ?? 0) <= 0) act.reload = true
+         if (clear && gun >= 0 && gunOpen && !fire[gun] && (w(gun).ammo ?? 1) > 0 && (w(gun).reload ?? 0) <= 0 && d <= w(gun).stats.range && (leading === "laser" || leading === "re-aim" || leading === "lightning")) __supp = leading === "lightning" ? 2 : 1
+ 
+         draw.line(muzzle, c, clear ? "#ff5040" : "#888888")

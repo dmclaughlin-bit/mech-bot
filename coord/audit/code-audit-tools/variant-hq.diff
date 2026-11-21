@@ -1,0 +1,11 @@
+--- /tmp/claude-0/-home-claude/ea968d87-0090-5ec2-8a45-fb15f3949e46/scratchpad/b80/brain.ts	2026-11-21 16:28:34.172142148 +0000
++++ /tmp/claude-0/-home-claude/ea968d87-0090-5ec2-8a45-fb15f3949e46/scratchpad/hq/brain.ts	2026-11-21 16:32:11.472450449 +0000
+@@ -738,7 +738,7 @@
+         move = heading(spot)
+         boost = me.energy > 0.3 * me.max_energy
+         mode = "break crossfire"
+-      } else if (me.hp < HEAL_HP * me.max_hp) {
++      } else if (me.hp < HEAL_HP * me.max_hp && !(process.env.HQ === "1" && enemies.length === 0 && (lootTarget || farmGoal))) {
+         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
+         // Build 19: the walk to a hiding spot only while hurt.
+         spot = !noSneak && threats.length && seenAt(me.pos, myHeight, threats, true) ? hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan) : null

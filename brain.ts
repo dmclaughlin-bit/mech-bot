@@ -151,7 +151,7 @@ const LASER_REAIM_S = 0.8
 const STANDOFF_MIN_M = 45
 const STANDOFF_MAX_M = 90
 const STANDOFF_SECOND_S = 3
-const STANDOFF_HP_MARGIN = 0.2
+const STANDOFF_HP_MARGIN = 0.1
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]

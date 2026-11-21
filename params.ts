@@ -156,3 +156,14 @@ export const DROP_RUN_M = 200
 export const LATE_FARM_ON = true
 /** P23: sweep only from this match time (s). */
 export const LATE_FARM_S = 60
+/**
+ * P23b (LATE_FARM_ON only): the sweep turns the torso only while we stand still in hold, with our own ground speed
+ * under LATE_FARM_STILL_MPS (m/s). And a farm/hunt walk (B12 cube or drop, B13 crate or drone) that gets no closer by
+ * LATE_FARM_PROGRESS_M (path or straight distance) for LATE_FARM_STUCK_S seconds while it stays our goal is given up
+ * for good. Seed 90 (base 0) under P23: the sweep showed crate 1016 (138 m), the hunt walk toward it showed cube 5020
+ * (59 m), whose path starts away from it, so walking it hid the cube again; every 0.4 s hold, hunt and pickup took
+ * turns, each restarting the B12/B13 chase timer, and the bot stood pinned for 64 s.
+ */
+export const LATE_FARM_STILL_MPS = 0.5
+export const LATE_FARM_STUCK_S = 3
+export const LATE_FARM_PROGRESS_M = 1

@@ -28,7 +28,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LATE_FARM_ON, LATE_FARM_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LATE_FARM_ON, LATE_FARM_PROGRESS_M, LATE_FARM_S, LATE_FARM_STILL_MPS, LATE_FARM_STUCK_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -285,6 +285,8 @@ function buildBot(hello: Hello): Bot {
   let lastDamaged = -Infinity
   let farmChase: { id: number; since: number } | null = null
   const farmGiveUp = new Set<number>()
+  /** P23b (LATE_FARM_ON): per farm/hunt target, the best path and straight distances so far, when one last improved, and when it was last our goal. */
+  const farmProgress = new Map<number, { path: number; line: number; at: number; last: number }>()
   /** P-D-003: the drop we are walking to, and drops we gave up on. */
   let dropRun: { id: number; since: number } | null = null
   const dropSkip = new Set<number>()
@@ -600,6 +602,16 @@ function buildBot(hello: Hello): Bot {
         farmGiveUp.add(farmGoal.id)
         farmGoal = null
       }
+      // P23b (LATE_FARM_ON): a farm or hunt walk that got no closer (by path or straight line) for LATE_FARM_STUCK_S
+      // while it stayed our goal is pinned (a wall, or a goal that drops out of view as we turn to walk): skip it for good.
+      // The record survives brief gaps, so a goal that flickers in and out of view each tick cannot restart the clock.
+      if (LATE_FARM_ON && farmGoal) {
+        const p = farmProgress.get(farmGoal.id)
+        if (p && obs.t - p.last <= LATE_FARM_STUCK_S && obs.t - p.at > LATE_FARM_STUCK_S) {
+          farmGiveUp.add(farmGoal.id)
+          farmGoal = null
+        }
+      }
       // Engage (F1, Build 14): fight or flee by time-to-kill vs time-to-die. Only in the zone and not leaving for the
       // next circle, so zone safety always wins. `hurt` is the Build 5 retreat trigger, unchanged.
       const hurt = !!lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp
@@ -831,8 +843,20 @@ function buildBot(hello: Hello): Bot {
         // Build 12: inside a landed drop's ring, stand still for capture_s to take its cubes, full HP and energy.
         mode = "farm, capture"
       } else if (farmGoal) {
-        move = travel(me.pos, farmGoal.pos, obs.t, canPlan()).move
+        const go = travel(me.pos, farmGoal.pos, obs.t, canPlan())
+        move = go.move
         mode = farmHunt ? "farm, hunt" : "farm, pickup"
+        if (LATE_FARM_ON) {
+          const line = flat(farmGoal.pos, me.pos)
+          const p = farmProgress.get(farmGoal.id)
+          if (!p || obs.t - p.last > LATE_FARM_STUCK_S) farmProgress.set(farmGoal.id, { path: go.dist, line, at: obs.t, last: obs.t })
+          else {
+            p.last = obs.t
+            if (go.dist < p.path - LATE_FARM_PROGRESS_M || line < p.line - LATE_FARM_PROGRESS_M) p.at = obs.t
+            p.path = Math.min(p.path, go.dist)
+            p.line = Math.min(p.line, line)
+          }
+        }
       } else if (!noSneak && threats.length && seenAt(me.pos, myHeight, threats, true)) {
         // Hold out of sight (Q2, Build 5): outside every enemy's 45 m ring and 120° wedge, moving silently. Build 19: only while hurt.
         spot = hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan)
@@ -1058,7 +1082,12 @@ function buildBot(hello: Hello): Bot {
         // Build 17: at spawn, with no laser yet, turn the torso once around to see the pickups on every side.
         if (LASER_RUSH_ON && obs.t < LASER_SCAN_S && !holdsLaser) aim = [wrap(me.aim[0] + 1.5), 0]
         // P23 (LATE_FARM_ON): late, idle and farm-safe, turn the torso round so B12/B13 see the cubes, crates and drones around us.
-        if (LATE_FARM_ON && obs.t >= LATE_FARM_S && mode === "hold" && farmOk) aim = [wrap(me.aim[0] + 1.5), 0]
+        // P23b: only while we stand still in hold (no farm/loot walk, no move commanded, own speed ~0), so the sweep cannot
+        // flip a walk between a goal it reveals and one it hides from tick to tick.
+        if (
+          LATE_FARM_ON && obs.t >= LATE_FARM_S && mode === "hold" && farmOk && !farmGoal && !lootTarget &&
+          Math.hypot(move[0], move[1]) < 0.05 && Math.hypot(me.vel[0], me.vel[1]) < LATE_FARM_STILL_MPS
+        ) aim = [wrap(me.aim[0] + 1.5), 0]
         // Build 17 fix: a charge in progress and nobody left to aim at. Letting go here would fire it at nothing, so keep
         // it (unless we have to travel: charging halves the walk), on something else we can hit or facing where the
         // beam last led, and let go only inside an outline. It still fires on its own hold_s after it is full.

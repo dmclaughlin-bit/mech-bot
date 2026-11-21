@@ -22,7 +22,8 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, RACE_BANDS_M,
+  RACE_HIT_HOUSE, RACE_HOUSE_ON, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -177,6 +178,15 @@ function weaponReach(kind: WeaponKind, s: Record<string, number>): number {
 }
 const hitRate = (kind: WeaponKind, d: number) =>
   kind === "gun" ? (d <= GUN_NEAR_M ? HIT_GUN_NEAR : HIT_GUN_FAR) : kind === "mortar" ? HIT_MORTAR : HIT_BEAM
+type HitRate = (kind: WeaponKind, d: number) => number
+/** Build 48: measured house hit rate by range, or the Build 14 guess for a weapon with no row (mortar, lightning). */
+const houseRate: HitRate = (kind, d) => {
+  const row = RACE_HIT_HOUSE[kind]
+  if (!row) return hitRate(kind, d)
+  let i = 0
+  while (i < RACE_BANDS_M.length && d > RACE_BANDS_M[i]) i++
+  return row[Math.min(i, row.length - 1)]
+}
 
 // ------------------------------------------------------------------ the bot
 /** What the bot knows about one enemy mech. Kept for a while after it leaves view. */
@@ -293,7 +303,7 @@ function buildBot(hello: Hello): Bot {
   /** Build 14: what an enemy `d` m away deals per second: each weapon it is seen holding that reaches us, × the same hit-rate guess as ours, × its cube bonus. */
   function enemyDps(e: { weapons?: WeaponKind[]; cubes?: number }, d: number): number {
     let sum = 0
-    for (const kind of e.weapons ?? ["gun"]) if (baseReach[kind] >= d) sum += baseDps[kind] * hitRate(kind, d)
+    for (const kind of e.weapons ?? ["gun"]) if (baseReach[kind] >= d) sum += baseDps[kind] * (RACE_HOUSE_ON ? houseRate(kind, d) : hitRate(kind, d))
     return sum * cubeDamage(e.cubes)
   }
 

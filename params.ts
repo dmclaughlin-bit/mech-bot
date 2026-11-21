@@ -113,3 +113,20 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 48 (audit M4): the Build 14 race used the same high hit-rate guesses for us and for enemies
+ * (gun 0.8/0.5, laser 0.9). Measured house rates are much lower, so time-to-die was too short and we
+ * refused fights we would win. This applies the measured HOUSE table only to enemyDps in the race
+ * (TTK rule and finish ttk < ttd). Our DPS and the Build 16 target pick keep the old guesses.
+ * Different from PR #37 (3.35, closed), which changed both sides and added standoff, and from Build 26,
+ * which also removed the alone() veto and decided at any HP. Set RACE_HOUSE_ON false to roll back.
+ */
+export const RACE_HOUSE_ON = true
+/** Upper edge (m) of each band but the last; a distance on an edge falls in the nearer band. */
+export const RACE_BANDS_M = [60, 100, 150]
+/** Enemy (house) hit rate on us per band: gun 73/43/22/8%, laser 20% at all ranges (research-doug-0040). */
+export const RACE_HIT_HOUSE: Partial<Record<"gun" | "laser" | "lightning" | "mortar", number[]>> = {
+  gun: [0.73, 0.43, 0.22, 0.08],
+  laser: [0.2, 0.2, 0.2, 0.2],
+}

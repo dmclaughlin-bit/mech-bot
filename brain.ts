@@ -17,6 +17,9 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import { ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, params } from "./params.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
+// Build 15 (aim): lead from the target's estimated motion and the shot's real timing, and fire only when the shot is predicted to hit.
+import { type Sample, estimateMotion, intercept, predictFeet, shotMiss, slewAim } from "./aim.ts"
+import { AIM_LEAD_ON } from "./params.ts"
 
 // ------------------------------------------------------------------ geometry helpers
 const flat = (a: number[], b: number[]) => Math.hypot(b[0] - a[0], b[1] - a[1])
@@ -170,10 +173,13 @@ type Known = {
   hpLog: [number, number][]
 }
 
-/** Never throws: a failed setup gets the fallback bot instead of idling the whole match (plan D6). */
-export function createBot(hello: Hello): Bot {
+/**
+ * Never throws: a failed setup gets the fallback bot instead of idling the whole match (plan D6).
+ * `opts.aimLead` overrides AIM_LEAD_ON, for tools/aim_check.ts only (the match entry point never passes it).
+ */
+export function createBot(hello: Hello, opts?: { aimLead?: boolean }): Bot {
   try {
-    return buildBot(hello)
+    return buildBot(hello, opts?.aimLead ?? AIM_LEAD_ON)
   } catch (e) {
     log("bot setup failed, using the fallback bot:", e)
     return fallbackBot()
@@ -200,13 +206,27 @@ function fallbackBot(): Bot {
   }
 }
 
-function buildBot(hello: Hello): Bot {
+function buildBot(hello: Hello, aimLead: boolean): Bot {
   const cfg = hello.config
   const solids = loadMap(hello)
   const growth = Number(cfg.cubes.size_per_cube ?? 0.05)
   const minPitch = cfg.mech.min_pitch ?? -0.7
   const maxPitch = cfg.mech.max_pitch ?? 1.3
   const known = new Map<number, Known>()
+  /** Build 15 (aim): the last few observations of every mech and drone in view, newest last, for the motion estimate. */
+  const tracks = new Map<number, Sample[]>()
+  const tickS = 1 / (Number(cfg.match?.tick_hz) || 20)
+  const decideTicks = Number(cfg.match?.decide_every) || 2
+  const floorAt = solids?.ground ? (x: number, y: number) => groundAt(solids, x, y) : undefined
+  function track(obs: Observation) {
+    for (const m of obs.mechs) {
+      const seen = tracks.get(m.id) ?? []
+      seen.push({ t: obs.t, pos: m.pos, vel: m.vel })
+      if (seen.length > 3) seen.shift()
+      tracks.set(m.id, seen)
+    }
+    for (const [id, seen] of tracks) if (obs.t - seen[seen.length - 1].t > 1) tracks.delete(id)
+  }
   let lastHit: { bearing: number; t: number } | null = null
   /** attacker id → last time it damaged us */
   const hitBy = new Map<number, number>()
@@ -381,6 +401,7 @@ function buildBot(hello: Hello): Bot {
       // Deadline guard (D6, §7 rule 2): start a path search only while its worst case still fits in 30 ms.
       const canPlan = () => performance.now() - started < DEADLINE_MS - PLAN_RESERVE_MS
       remember(obs)
+      if (aimLead) track(obs)
       const me = obs.self
       const muzzle: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.muzzle_height ?? cfg.mech.muzzle_height * scale(me.cubes))]
       const tube: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.height ?? cfg.mech.height * scale(me.cubes)) + 0.5]
@@ -681,9 +702,32 @@ function buildBot(hello: Hello): Bot {
           Math.abs(wrap(me.aim[0] - yaw)) < yawTol && Math.abs(me.aim[1] - pitch) < pTol
         const gun = slotOf("gun"), laser = slotOf("laser"), arc = slotOf("lightning"), mortar = slotOf("mortar")
         const w = (i: number) => me.weapons[i] as WeaponObs
-        const led = lead(muzzle, c, vel, gun >= 0 ? w(gun).stats.speed : cfg.weapons.gun.speed)
-        const gunAim: [number, number] = [yawTo(muzzle, led), pitchTo(muzzle, led)]
-        const direct: [number, number] = [yawTo(muzzle, c), pitchTo(muzzle, c)]
+        const gunSpeed = gun >= 0 ? w(gun).stats.speed : cfg.weapons.gun.speed
+        const led = lead(muzzle, c, vel, gunSpeed)
+        let gunAim: [number, number] = [yawTo(muzzle, led), pitchTo(muzzle, led)]
+        let direct: [number, number] = [yawTo(muzzle, c), pitchTo(muzzle, c)]
+        // Build 15 (aim): lead from the target's estimated motion with the shot's real timing (aim.ts). A shot leaves on
+        // sim tick k after this decision (1, or 2 while the gun's cooldown runs out), from where we stand after that
+        // tick, and the torso has turned toward the commanded aim for k ticks by then. `shape` is what a shot must touch.
+        const shape =
+          m.kind === "mech" ? { r: cfg.mech.radius * size, h: cfg.mech.height * size }
+          : m.id >= 1000 ? { r: Number(cfg.crates.radius), h: Number(cfg.crates.height) }
+          : { r: Number(cfg.npc.radius), h: Number(cfg.npc.height) }
+        const motion = estimateMotion(tracks.get(m.id) ?? [{ t: obs.t, pos: m.pos, vel: m.vel }])
+        const centerAt = (t: number): Vec3 => {
+          const p = predictFeet(motion, t, cfg.mech.gravity ?? 22, floorAt)
+          return [p[0], p[1], p[2] + shape.h / 2]
+        }
+        const after = (from: Vec3, ticks: number): Vec3 => [from[0] + me.vel[0] * tickS * ticks, from[1] + me.vel[1] * tickS * ticks, from[2] + me.vel[2] * tickS * ticks]
+        const head = (me.stats.radius ?? cfg.mech.radius * scale(me.cubes)) + 0.5
+        const gunTick = gun >= 0 ? clamp(Math.ceil((w(gun).cooldown ?? 0) / tickS - 1e-6), 1, decideTicks) : 1
+        const gunFrom = after(muzzle, gunTick), beamFrom = after(muzzle, 1)
+        if (aimLead) {
+          const meet = intercept(gunFrom, centerAt, gunSpeed, head, (gunTick - 1) * tickS).point
+          const beamAt = centerAt(tickS)
+          gunAim = [yawTo(gunFrom, meet), pitchTo(gunFrom, meet)]
+          direct = [yawTo(beamFrom, beamAt), pitchTo(beamFrom, beamAt)]
+        }
 
         // Pick the weapon that steers the aim this decision.
         let leading = "track"
@@ -714,10 +758,23 @@ function buildBot(hello: Hello): Bot {
         const hittingUs = obs.t - (hitBy.get(m.id) ?? -Infinity) < 2
         const weak = (m.hp ?? 1) / (m.max_hp ?? 1) < 0.5
         const gunOpen = d <= GUN_GATE || hittingUs || weak || sideways <= radial
+        // Fire discipline (Build 15): a shot goes out only when, from where the torso will point on its tick, it is
+        // predicted to pass within the target's radius (plus the bullet's) and nothing solid is on its path.
+        const want: [number, number] = [aim[0], clamp(aim[1], minPitch, maxPitch)]
+        const turned = (ticks: number) =>
+          slewAim(me.aim, want, (me.stats.turn_rate ?? cfg.mech.turn_rate) * tickS * ticks, (me.stats.pitch_rate ?? cfg.mech.pitch_rate) * tickS * ticks)
+        const willHit = (from: Vec3, ticks: number, speed: number, reach: number, pad: number) => {
+          const [yaw, pitch] = turned(ticks)
+          const shot = shotMiss(from, yaw, pitch, centerAt, shape.h / 2, speed, head, (ticks - 1) * tickS)
+          return shot.miss <= shape.r + pad && span(from, shot.at) <= reach && clearLine(solids, from, shot.at)
+        }
         // Fire only what can hit from where the torso actually points.
         if (clear && gun >= 0 && gunOpen) {
           const g = w(gun)
-          if ((g.ammo ?? 1) > 0 && (g.reload ?? 0) <= 0 && d <= g.stats.range && onTarget(gunAim[0], gunAim[1])) fire[gun] = true
+          const lined = aimLead
+            ? willHit(gunFrom, gunTick, gunSpeed, g.stats.range, Number(cfg.projectile?.gun_radius ?? 0))
+            : onTarget(gunAim[0], gunAim[1])
+          if ((g.ammo ?? 1) > 0 && (g.reload ?? 0) <= 0 && d <= g.stats.range && lined) fire[gun] = true
         }
         if (clear && arc >= 0) {
           const l = w(arc)
@@ -728,9 +785,11 @@ function buildBot(hello: Hello): Bot {
           const l = w(laser)
           const charge = l.charge ?? 0
           if (charge > 0) {
-            // Charging: let go to fire once it is full and lined up.
+            // Charging: let go to fire once it is full and lined up. Build 15: lined up means the beam, from where the
+            // torso will point next tick, crosses the target where it will be then, with a clear path.
             const full = charge >= l.stats.charge - 0.03
-            fire[laser] = !(full && leading === "laser" && onTarget(direct[0], direct[1]))
+            const lined = aimLead ? willHit(beamFrom, 1, Infinity, l.stats.range, 0) : onTarget(direct[0], direct[1])
+            fire[laser] = !(full && leading === "laser" && lined)
           } else if (leading === "laser") fire[laser] = true
         }
         if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true
@@ -741,6 +800,10 @@ function buildBot(hello: Hello): Bot {
       } else {
         // Nobody known nearby: face whoever hit us last (hits from behind do 1.5x), and top up the gun.
         if (lastHit && obs.t - lastHit.t < 2) aim = [lastHit.bearing, 0]
+        // Build 15: a laser charge is let go only on a target. With none in view, keep holding it (it fires on its own
+        // after hold_s) unless we are outside the zone, where charging at half speed costs HP.
+        const held = me.weapons.findIndex((x) => x?.kind === "laser" && (x.charge ?? 0) > 0)
+        if (aimLead && held >= 0 && me.in_zone) fire[held] = true
         const g = me.weapons.find((x) => x?.kind === "gun")
         if (g && (g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0) act.reload = true
       }

@@ -23,6 +23,13 @@ export const params = {
 }
 
 /**
+ * Build 15 (aim): lead every shot from the target's estimated motion and the shot's real timing (aim.ts), fire the
+ * gun only when the shot is predicted to pass within the target's radius with a clear path, and let a laser charge go
+ * only when the beam is predicted to hit. Set AIM_LEAD_ON to false to roll back to Build 14 behavior exactly.
+ */
+export const AIM_LEAD_ON = true
+
+/**
  * Build 12 (farm): with no enemy mech within FARM_ENEMY_M or in view and no damage from a mech, shoot NPC drones
  * and crates in view and walk to visible cubes and landed supply drops within FARM_PICKUP_M. Zone safety always wins.
  * Set FARM_ON to false to roll back to Build 5b behavior exactly.

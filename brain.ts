@@ -17,12 +17,14 @@
  * and turn a charge that lost its target onto another enemy instead of letting it go at nothing (LASER_RUSH_ON).
  * Build 16 (target pick): lock the enemy with the best kill value instead of the nearest one (see target.ts).
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
+ * Build 43 (laser scout): in the opening, standing with no laser and nothing to aim at, sweep the idle aim over the
+ * bearings not yet looked along instead of facing the next circle, so a laser comes into view sooner (see LASER_SCOUT_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_SCOUT_ON, LASER_SCOUT_RESCAN_M, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -120,6 +122,8 @@ const LASER_LEAD_S = 0.075
  * multi-threat fights when the race looked winning, and changed hit rates). Against real house bots that share
  * vision and hit harder than the sim, a 2-on-1 stand-and-shoot is a fight we cannot finish. */
 const CROSSFIRE_ON = true
+/** Build 43 (laser scout): the bearings around us in this many equal sectors; a sector is looked along once it is wholly inside the view wedge. */
+const SCOUT_BINS = 12
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -273,6 +277,8 @@ function buildBot(hello: Hello): Bot {
   /** Build 14: targets we gave up on (id → time), and where our last kill died, to collect its cubes. */
   const engageGiveUp = new Map<number, number>()
   let claim: { pos: Vec3; until: number } | null = null
+  /** Build 43 (laser scout): for each bearing sector, where we stood when it was last wholly inside our view wedge. */
+  const scoutSeen: (Vec3 | null)[] = new Array(SCOUT_BINS).fill(null)
 
   /** Build 14: what we deal per second to a target `d` m away: every held weapon that reaches, × its hit-rate guess × our cube bonus. */
   function ourDps(me: Observation["self"], d: number): number {
@@ -438,6 +444,11 @@ function buildBot(hello: Hello): Bot {
         act.pick = ranks.indexOf(Math.min(...ranks))
       }
       const enemies = obs.mechs.filter((m) => m.kind === "mech")
+      // Laser scout (Build 43): mark the bearing sectors our actual torso aim's wedge covers from here.
+      if (LASER_SCOUT_ON) {
+        const half = (cfg.vision.fov_deg * Math.PI) / 360 - Math.PI / SCOUT_BINS
+        for (let b = 0; b < SCOUT_BINS; b++) if (Math.abs(wrap((2 * Math.PI * b) / SCOUT_BINS - me.aim[0])) <= half) scoutSeen[b] = me.pos
+      }
 
       // Loot (D3, L1, L2): laser and lightning only, never a mortar, and only with no enemy within 160 m.
       // Keep the gun until the second of the two shows up, then swap the gun out, never with an enemy in view.
@@ -655,6 +666,11 @@ function buildBot(hello: Hello): Bot {
       }
       if (!rushMove) rush = null
       else farmChase = null
+      // Laser scout (Build 43): in the rush window with no laser and a slot for one, in the zone and not leaving, no
+      // enemy mech in view, not hurt, and no laser rush under way. Only the no-target aim while standing reads it (below).
+      const scout =
+        LASER_SCOUT_ON && LASER_RUSH_ON && obs.t < LASER_RUSH_S && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !rushMove &&
+        enemies.length === 0 && me.hp >= RETREAT_HP * me.max_hp && obs.t - lastDamaged > NO_SNEAK_QUIET_S
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -931,6 +947,20 @@ function buildBot(hello: Hello): Bot {
         // Nobody known nearby: face whoever hit us last (hits from behind do 1.5x), and top up the gun.
         // Build 17: at spawn, with no laser yet, turn the torso once around to see the pickups on every side.
         if (LASER_RUSH_ON && obs.t < LASER_SCAN_S && !holdsLaser) aim = [wrap(me.aim[0] + 1.5), 0]
+        // Build 43 (laser scout): after that spin, while standing (the idle aim would face the next circle), turn to the
+        // nearest bearing sector not looked along since we moved LASER_SCOUT_RESCAN_M from where we last looked that way.
+        // Walking keeps the aim on the walk, which looks at the new ground ahead. With every sector fresh, nothing changes.
+        else if (scout && Math.hypot(move[0], move[1]) <= 0.05) {
+          const sector = (b: number) => (2 * Math.PI * b) / SCOUT_BINS
+          const turn = (b: number) => Math.abs(wrap(sector(b) - me.aim[0]))
+          let best = -1
+          for (let b = 0; b < SCOUT_BINS; b++) {
+            const at = scoutSeen[b]
+            if (at && flat(at, me.pos) <= LASER_SCOUT_RESCAN_M) continue
+            if (best < 0 || turn(b) < turn(best)) best = b
+          }
+          if (best >= 0) aim = [wrap(sector(best)), 0]
+        }
         // Build 17 fix: a charge in progress and nobody left to aim at. Letting go here would fire it at nothing, so keep
         // it (unless we have to travel: charging halves the walk), on something else we can hit or facing where the
         // beam last led, and let go only inside an outline. It still fires on its own hold_s after it is full.

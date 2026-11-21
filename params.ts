@@ -113,3 +113,17 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 export const NO_SNEAK_ON = true
 /** Not hurt needs no damage (mech, drone or zone) for this long (s). */
 export const NO_SNEAK_QUIET_S = 3
+
+/**
+ * Build 43 (laser scout): weapon pickups are listed only while in view (a 120° wedge around the torso aim out to
+ * 200 m, 45 m all round), so a laser the spawn spin missed often stays unseen and the Build 17 rush never starts.
+ * In the first LASER_RUSH_S seconds, holding no laser, standing still with no target to aim at, no enemy mech in view
+ * and not hurt (HP at or above params.retreatHp of max, no damage for NO_SNEAK_QUIET_S), the idle torso aim sweeps the
+ * bearings not looked along since we last moved LASER_SCOUT_RESCAN_M, instead of facing the next circle. Only that
+ * idle aim changes: target aim, firing, every move (laser rush, engage, retreat, heal, hide, zone) is untouched.
+ * Sim (48 seeds from 2000): neutral. In 70% of the ticks a laser within 250 m sits in clear sight outside our wedge,
+ * an enemy mech is in view, which this rule leaves alone. Set LASER_SCOUT_ON to false to roll back to Build 60 exactly.
+ */
+export const LASER_SCOUT_ON = true
+/** A bearing counts as looked along until we have moved this far (m) from where we looked. */
+export const LASER_SCOUT_RESCAN_M = 40

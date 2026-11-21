@@ -137,5 +137,5 @@ export const STANDOFF_BREAK_S = 60
  * FORECAST_LEAD_S counts as a second threat, so alone() fails. Engage decision only: nav, cover and retreat unchanged.
  * 0 = off, identical to main.
  */
-export const FORECAST2_S = 0
+export const FORECAST2_S = 60
 

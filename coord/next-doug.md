@@ -17,7 +17,8 @@ Build ONE flag `STANDOFF_BREAK_S` (0 = B80; ship at 60). After that many seconds
 Report: kills and kills per minute after 60 s first, on both seed sets, plus games changed and died before 40 s. PR title `P-B-001: standoff break`.
 
 ## Queued (take the top one when idle)
-- P-B-002: S6 from `coord/research/strategy-report-2026-11-21.md`. When a visible enemy is charging a laser at us, change ONE engagement safety check: break LOS or strafe off its line before release. Aim, path and firing stay unchanged. Flag `LASER_CHARGE_REACT_ON`, shipped ON. (B88's charge suppression lost, and this is a different mechanism; say why in the PR.)
+- P-B-003 (Grok, 12:52 PM ET; builds on the 3.92 win): widen the B103 lightning ambush. In PR #94, 37% of the 45–90 m standoffs were skipped because we also held a laser. Let the ambush run when we hold lightning AND a laser whose charge isn't ready, keeping every other B103 condition. Flag `AMBUSH_WITH_LASER_ON`, shipped ON; flag 0 = main (B103) byte-identical.
+- P-B-002 (TAKEN: Build 105 on Grok's computer): S6 from `coord/research/strategy-report-2026-11-21.md`. When a visible enemy is charging a laser at us, change ONE engagement safety check: break LOS or strafe off its line before release. Aim, path and firing stay unchanged. Flag `LASER_CHARGE_REACT_ON`, shipped ON. (B88's charge suppression lost, and this is a different mechanism; say why in the PR.)
 
 ---
 

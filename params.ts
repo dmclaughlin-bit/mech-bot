@@ -94,3 +94,28 @@ export const STANDOFF_GUN_M = 80
 export const STANDOFF_ARC_M = 28
 /** Dead band around the standoff (m): no move while the range is within this of it. */
 export const STANDOFF_BAND_M = 10
+/**
+ * Build 22 (calibrated race): the Build 14 TTK-vs-TTD race (both the TTK rule and the finish rule's ttk < ttd test)
+ * uses measured hit rates by range instead of the Build 14 guesses (gun 0.8 within 60 m, 0.5 beyond; laser 0.9).
+ * Source: coord/research-doug-0040.md §2 "Hit rate by range (MEASURED)", public free-for-alls, not practice.
+ *   Enemy side (RACE_HIT_HOUSE): the mean of the five house gun rows; house laser about 20% at all ranges.
+ *   Our side (RACE_HIT_OURS): our own hit rate is not measured anywhere in the repo (tools/sim/ASSUMPTIONS.md), so it
+ *   is the mean of the showdown rows: gun over winners, places 2-4 and bottom half; laser over winners and places 2-4.
+ * Bands are RACE_BANDS_M: up to 60 m (the 30-60 row also covers under 30 m), 60-100, 100-150, beyond 150 (the 150-230
+ * row). Weapons without measured rows (mortar, lightning) keep the Build 14 guesses. The Build 16 target pick still
+ * reads the Build 14 guesses, so targeting, aim, fire and movement are unchanged. Set RACE_CAL_ON to false to roll
+ * back to Build 16 behavior exactly.
+ */
+export const RACE_CAL_ON = true
+/** Upper edge (m) of each hit-rate band but the last; a distance on an edge falls in the nearer band. */
+export const RACE_BANDS_M = [60, 100, 150]
+/** Our hit rate per band (showdown means): gun 88/71/48/29%, laser 56/63/77/75%. */
+export const RACE_HIT_OURS: Partial<Record<"gun" | "laser" | "lightning" | "mortar", number[]>> = {
+  gun: [0.88, 0.71, 0.48, 0.29],
+  laser: [0.56, 0.63, 0.77, 0.75],
+}
+/** Enemy (house) hit rate on us per band: gun 73/43/22/8% (mean of expert, red-best, red-honest, astra-finalist, astra-skirmish), laser 20%. */
+export const RACE_HIT_HOUSE: Partial<Record<"gun" | "laser" | "lightning" | "mortar", number[]>> = {
+  gun: [0.73, 0.43, 0.22, 0.08],
+  laser: [0.2, 0.2, 0.2, 0.2],
+}

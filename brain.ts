@@ -17,8 +17,8 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, STANDOFF_ARC_M, STANDOFF_BAND_M,
-  STANDOFF_GUN_M, STANDOFF_LASER_M, STANDOFF_ON, TARGET_PICK_ON, params,
+  ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M, RACE_BANDS_M, RACE_CAL_ON, RACE_HIT_HOUSE, RACE_HIT_OURS,
+  STANDOFF_ARC_M, STANDOFF_BAND_M, STANDOFF_GUN_M, STANDOFF_LASER_M, STANDOFF_ON, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -82,7 +82,7 @@ const HUNT_CHASE_S = 25
 /** Build 12: stand this far (m) inside a drop's ring while capturing. */
 const DROP_INSET = 1.5
 
-/** Build 14 (engage): hit-rate guesses, the same for us and for enemies. Gun inside GUN_NEAR_M and beyond it, laser and lightning, mortar. */
+/** Build 14 (engage): hit-rate guesses. Gun inside GUN_NEAR_M and beyond it, laser and lightning, mortar. The Build 16 pick uses them; the race uses params.ts RACE_* (Build 22). */
 const GUN_NEAR_M = 60
 const HIT_GUN_NEAR = 0.8
 const HIT_GUN_FAR = 0.5
@@ -163,6 +163,20 @@ function weaponReach(kind: WeaponKind, s: Record<string, number>): number {
 }
 const hitRate = (kind: WeaponKind, d: number) =>
   kind === "gun" ? (d <= GUN_NEAR_M ? HIT_GUN_NEAR : HIT_GUN_FAR) : kind === "mortar" ? HIT_MORTAR : HIT_BEAM
+type HitRate = (kind: WeaponKind, d: number) => number
+/** Build 22: a measured by-range hit rate from `table` (params.ts RACE_*), or the Build 14 guess for a weapon it lacks. */
+function bandRate(table: Partial<Record<WeaponKind, number[]>>): HitRate {
+  return (kind, d) => {
+    const row = table[kind]
+    if (!row) return hitRate(kind, d)
+    let i = 0
+    while (i < RACE_BANDS_M.length && d > RACE_BANDS_M[i]) i++
+    return row[Math.min(i, row.length - 1)]
+  }
+}
+/** Build 22: hit rates the Build 14 race uses for us and for enemies. With RACE_CAL_ON false both are the Build 14 guesses. */
+const raceHitOurs: HitRate = RACE_CAL_ON ? bandRate(RACE_HIT_OURS) : hitRate
+const raceHitTheirs: HitRate = RACE_CAL_ON ? bandRate(RACE_HIT_HOUSE) : hitRate
 
 // ------------------------------------------------------------------ the bot
 /** What the bot knows about one enemy mech. Kept for a while after it leaves view. */
@@ -245,13 +259,14 @@ function buildBot(hello: Hello): Bot {
   const engageGiveUp = new Map<number, number>()
   let claim: { pos: Vec3; until: number } | null = null
 
-  /** Build 14: what we deal per second to a target `d` m away: every held weapon that reaches, × its hit-rate guess × our cube bonus. */
-  function ourDps(me: Observation["self"], d: number): number {
+  /** Build 14: what we deal per second to a target `d` m away: every held weapon that reaches, × its hit rate × our cube bonus.
+   * `rate` defaults to the Build 14 guess (the Build 16 target pick); the race passes the Build 22 table. */
+  function ourDps(me: Observation["self"], d: number, rate: HitRate = hitRate): number {
     let sum = 0
     for (const w of me.weapons) {
       if (!w) continue
       const stats = { ...cfg.weapons[w.kind], ...w.stats }
-      if (weaponReach(w.kind, stats) >= d) sum += weaponDps(w.kind, stats) * hitRate(w.kind, d)
+      if (weaponReach(w.kind, stats) >= d) sum += weaponDps(w.kind, stats) * rate(w.kind, d)
     }
     return sum * cubeDamage(me.cubes)
   }
@@ -267,10 +282,10 @@ function buildBot(hello: Hello): Bot {
     }
     return best * cubeDamage(me.cubes)
   }
-  /** Build 14: what an enemy `d` m away deals per second: each weapon it is seen holding that reaches us, × the same hit-rate guess as ours, × its cube bonus. */
+  /** Build 14: what an enemy `d` m away deals per second: each weapon it is seen holding that reaches us, × its hit rate (Build 22: house table), × its cube bonus. */
   function enemyDps(e: { weapons?: WeaponKind[]; cubes?: number }, d: number): number {
     let sum = 0
-    for (const kind of e.weapons ?? ["gun"]) if (baseReach[kind] >= d) sum += baseDps[kind] * hitRate(kind, d)
+    for (const kind of e.weapons ?? ["gun"]) if (baseReach[kind] >= d) sum += baseDps[kind] * raceHitTheirs(kind, d)
     return sum * cubeDamage(e.cubes)
   }
 
@@ -536,10 +551,10 @@ function buildBot(hello: Hello): Bot {
         for (const [id, t] of mechHitBy) if (obs.t - t < THREAT_HIT_S) hitters.push(id)
         const alone = (id: number) => !los.some((e) => e.id !== id) && !hitters.some((h) => h !== id)
         const rested = (id: number) => obs.t - (engageGiveUp.get(id) ?? -Infinity) > ENGAGE_REST_S
-        // Our time to kill `e` and its time to kill us (s), both sides at their hit-rate guess. Both rules use it.
+        // Our time to kill `e` and its time to kill us (s), each side at its hit rate by range (Build 22). Both rules use it.
         const race = (e: (typeof enemies)[number]) => {
           const d = flat(e.pos, me.pos)
-          const out = ourDps(me, d)
+          const out = ourDps(me, d, raceHitOurs)
           const taken = enemyDps(e, d) * (1 - clamp(me.stats.armor ?? 0, 0, 0.9))
           return { ttk: out > 0 ? e.hp! / out : Infinity, ttd: taken > 0 ? me.hp / taken : Infinity }
         }

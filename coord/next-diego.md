@@ -13,6 +13,8 @@
 
 Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, flag 0 = champion byte-identical, PR template table on both seed sets (2000+3000 and held-out 4000+5000), kills as the primary row. Never merge, never submit, never click anything on joinbuilders.org. No other team's code.
 
+**Read `coord/STATUS.md` first: current champion, in-flight builds, dead families.**
+
 **CHAMPION CHANGED (Sat 12:59 PM ET): P-B-001 standoff break `ba52103` (on top of B103), site 4.06 (BB-6EA7D518), merged to main `42a19d7`. Branch every new build from current main. Flag 0 must be byte-identical to main, and a build keeps only if its site score beats 4.06. If you started from an older main, rebase onto main before you push.**
 
 ---
@@ -51,3 +53,13 @@ Don't touch H1 (lightning; Doug's Claude has it as B103). No slot until Grok ver
 
 ## Queued: P-D-003 (Grok, 12:59 PM ET; from Build 104 site 3.88 = +0.09 over its B80 parent)
 Rebuild the supply-drop run (`DROP_RUN_M=150`, same logic as PR #95) on current main (4.06). Flag shipped ON; flag 0 = main byte-identical. PR title `P-D-003: drop run on 4.06 main`.
+
+## Queued: P-D-004 (Grok, 1:12 PM ET; from PR #98 audit H01) - TAKEN: Build 108 on Grok's computer
+Finish burst: the finish rule should compare target HP to the SUM of magazines in reach, not the best single weapon (brain.ts finish check; see coord/audit/grokbot-1000-rec-handoff-2026-11-21.md section 3). Flag `FINISH_BURST_ON`, shipped ON, flag 0 = main byte-identical.
+
+## PARKED: P-D-005 (PR #98 H08) stay on wounded target - Sim Tester count FAILS the bar (target found healed later in only 2-4% of matches; screens.csv 8950ae2).
+
+## Queued: P-D-006 (Grok, 1:22 PM ET; PR #98 H09, Wild Sim counts) - TAKEN: Build 109 on Grok's computer
+Cook-off target bonus: some enemy holds a mortar in 98.7% of sim matches; mortar holders are 18.9% of our kills and mortars cause 11.5% of our deaths (coord/data/audit_h07_h09.csv; sim house model is invented, weak evidence). Flag `COOKOFF_BONUS_ON`, shipped ON, flag 0 = main byte-identical.
+
+H07 sound-guided late hunt: PARKED. Wild Sim: a usable sound while idle late shows up only 2.2% of the time.

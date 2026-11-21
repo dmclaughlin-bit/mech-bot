@@ -32,6 +32,14 @@ export const FARM_ON = true
 export const FARM_ENEMY_M = 160
 /** Walk to cubes and drops at most this far (m). */
 export const FARM_PICKUP_M = 80
+/**
+ * Build 13 (farm reach): under the same farm conditions, with no cube/drop to walk to and nothing to shoot, walk
+ * toward the nearest drone or crate in view within FARM_HUNT_M until it is in clear gun range. Set FARM_HUNT_ON to
+ * false to roll back to Build 12 behavior exactly.
+ */
+export const FARM_HUNT_ON = true
+/** Hunt drones and crates in view up to this far (m). */
+export const FARM_HUNT_M = 150
 
 /**
  * Build 14 (engage): fight or flee by time-to-kill vs time-to-die instead of our HP alone.

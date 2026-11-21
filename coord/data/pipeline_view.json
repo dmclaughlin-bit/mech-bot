@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 18:53 ET",
- "origin_main": "0862c9220d15ac101395415f36e127e9a09a9ece",
+ "generated_at_et": "2026-11-21 18:58 ET",
+ "origin_main": "c2686c0e8787ea29d26a3dd352d4cb9104d93b2c",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -1571,7 +1571,12 @@
     ]
    },
    "screened_before_click": true,
-   "postmortems": [],
+   "postmortems": [
+    {
+     "label": "P27-drop-crossfire-skip.md",
+     "url": "https://github.com/dmclaughlin-bit/mech-bot/blob/main/coord/data/postmortems/P27-drop-crossfire-skip.md"
+    }
+   ],
    "first_mention": "2026-11-21 18:07 ET",
    "sha": "7df3a4a6ab809aae28ef4e63e6629db5b9aedd81",
    "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",

@@ -140,3 +140,12 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P20 (drop run when hurt): the P-D-003 run above also runs while hurt (the Build 5 retreat trigger) or below
+ * retreatHp, but only while no enemy has line of sight on us and only to a ring we reach by the time it lands. Every
+ * other gate is unchanged (in zone, not leaving, no laser trip, not engaging or claiming, zone-safe, not held by
+ * another mech). When this run is on, the blind hurt retreat does not override it. The ring is a full heal, full
+ * energy and +3 cubes. false = the champion (B113) exactly.
+ */
+export const DROP_HURT_ON = true

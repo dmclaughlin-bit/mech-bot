@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_HURT_ON, DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -719,15 +719,24 @@ function buildBot(hello: Hello): Bot {
       // P-D-003 (DROP_RUN_M): walk to a called supply drop, timed to arrive as it lands, then hold the ring.
       let dropMove: [number, number] | null = null
       let dropHold = false
+      // P20 (DROP_HURT_ON): true when this decision's drop run is the hurt one (it then outranks the blind retreat).
+      let dropHurt = false
       if (DROP_RUN_M > 0) {
         const pace = ZONE_WALK * walkSpeed
         const safe = (p: number[], stay: number) =>
           flat(p, z.center) < Math.max(0, z.radius - margin) &&
           (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
-        const d = me.in_zone && !leaveNow && !trip && !engage && !claimGoal && !hurt && me.hp >= RETREAT_HP * me.max_hp
+        const gates = me.in_zone && !leaveNow && !trip && !engage && !claimGoal
+        const fit = !hurt && me.hp >= RETREAT_HP * me.max_hp
+        // P20: hurt or below the retreat line, run only while no enemy has line of sight on us, and only to a ring we
+        // reach by the time it lands, at the pace we really walk (the silent cap applies while hurt in the next circle).
+        dropHurt = DROP_HURT_ON && gates && !fit && !seenAt(me.pos, myHeight, threats, false)
+        const hurtPace = toEnter === 0 ? walkSpeed * silent : walkSpeed
+        const d = gates && (fit || dropHurt)
           ? (obs.drops ?? [])
             .filter((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M &&
-              safe(x.pos, x.lands_in + x.capture_s - x.progress))
+              safe(x.pos, x.lands_in + x.capture_s - x.progress) &&
+              (!dropHurt || Math.max(0, flat(x.pos, me.pos) - (x.radius - DROP_INSET)) / hurtPace <= x.lands_in))
             .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
           : undefined
         if (!d) dropRun = null
@@ -773,8 +782,9 @@ function buildBot(hello: Hello): Bot {
         move = heading(spot)
         boost = me.energy > 0.3 * me.max_energy
         mode = "retreat to cover"
-      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp) {
+      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && !(dropHurt && (dropHold || dropMove))) {
         // Retreat (F2, F3) with no cover in reach, or hit by someone we can't see: back away from the attacker with the torso still on it.
+        // P20: not while the hurt drop run is on (nobody sees us and the ring is a full heal); the covered retreat above needs a seen threat.
         // Lean toward the center near the circle's edge; boost only above 30% energy.
         const away = lastHit.bearing + Math.PI
         let mx = Math.cos(away), my = Math.sin(away)

@@ -140,3 +140,14 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * B123 (late-game hurt kiting): Watcher Top-16 (coord/data/watcher/RANKED.md #1, evasion.md) with 2–4 mechs alive and
+ * HP < 35%: top teams keep 126 m from the nearest enemy vs 90 m for low teams, and move 8.94 vs 6.95 m/s. With this on,
+ * where the champion would heal, hide or hold (silent 5 m/s cap or standing still), with obs.alive <= 4, HP under 35% of
+ * max, and a visible or remembered (memory_s) enemy within 100 m: walk at full speed to cover out of its sight if one is
+ * in reach, else straight away from it, leaning toward the center near the circle's edge, torso on it, until it is 125 m
+ * away. No boost. Zone travel, retreat, crossfire break, ambush, drop run/hold and engage all rank first and are unchanged.
+ * false = champion (B113) behavior exactly.
+ */
+export const HURT_KITE_ON = true

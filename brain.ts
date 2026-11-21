@@ -28,7 +28,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, HURT_KITE_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -79,6 +79,12 @@ const HEAL_HP = 0.9
 /** F3, Q2 hiding spots: this many bearings around us, at the distances we walk in 1, 2 and 3 s, nearest first. */
 const HIDE_BEARINGS = 12
 const HIDE_STEPS_S = [1, 2, 3]
+/** B123 (HURT_KITE_ON): kite below this HP fraction with at most KITE_ALIVE mechs alive; start inside KITE_START_M of the
+ * nearest known enemy and keep going until KITE_STOP_M (hysteresis, Watcher top teams hold ~126 m). */
+const KITE_HP = 0.35
+const KITE_ALIVE = 4
+const KITE_START_M = 100
+const KITE_STOP_M = 125
 /** Build 12 (farm): no farming for this long (s) after damage from anything but a drone. */
 const FARM_QUIET_S = 3
 /** Build 12: known enemies seen this recently (s) count against the FARM_ENEMY_M ring. */
@@ -308,6 +314,8 @@ function buildBot(hello: Hello): Bot {
   let claim: { pos: Vec3; until: number } | null = null
   /** P-B-001: the enemy the standoff break walked at last decision (null when it did not run). */
   let standoffId: number | null = null
+  /** B123: the enemy we are kiting from (null when not kiting). */
+  let kiteFrom: { id: number; pos: Vec3 } | null = null
 
   /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
    * lightning 0.8 × its range, gun GUN_NEAR_M, laser and mortar their reach. */
@@ -866,6 +874,41 @@ function buildBot(hello: Hello): Bot {
         }
         standoffId = foe?.id ?? null
       }
+      // Hurt kiting (B123, HURT_KITE_ON): see params.ts. Only from heal, hide or hold; everything above ranks first.
+      // Named "retreat, kite" so the silent cap below does not apply.
+      if (HURT_KITE_ON) {
+        let foe: Known | undefined
+        if (
+          me.in_zone && !leaveNow && obs.alive <= KITE_ALIVE && me.hp < KITE_HP * me.max_hp &&
+          (mode === "heal" || mode === "heal, hiding" || mode === "hide" || mode === "hold")
+        ) {
+          foe = [...known.values()]
+            .filter((k) => obs.t - k.lastSeen <= (cfg.vision.memory_s ?? 5))
+            .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+          if (foe && flat(foe.pos, me.pos) >= (kiteFrom?.id === foe.id ? KITE_STOP_M : KITE_START_M)) foe = undefined
+        }
+        if (foe) {
+          const seen = enemies.find((e) => e.id === foe!.id)
+          const eye = seen ?? { pos: foe.pos, aim: [yawTo(foe.pos, me.pos), 0] as [number, number], cubes: foe.cubes }
+          const cover = seenAt(me.pos, myHeight, [eye], false) ? hideSpot(me, myHeight, walkSpeed, [eye], false, zoneKeep, canPlan) : null
+          if (cover) move = heading(cover)
+          else {
+            const away = yawTo(foe.pos, me.pos)
+            let mx = Math.cos(away), my = Math.sin(away)
+            const edge = clamp((flat(me.pos, zoneKeep[0]) - (zoneKeep[1] - 40)) / 40, 0, 1)
+            if (edge > 0) {
+              const [cx, cy] = heading(zoneKeep[0])
+              mx += 1.5 * edge * cx
+              my += 1.5 * edge * cy
+            }
+            const n = Math.hypot(mx, my) || 1
+            move = [mx / n, my / n]
+          }
+          boost = false
+          mode = "retreat, kite"
+        }
+        kiteFrom = foe ? { id: foe.id, pos: foe.pos } : null
+      }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
@@ -879,6 +922,8 @@ function buildBot(hello: Hello): Bot {
         route = null
       }
       let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
+      // B123: while kiting, the torso stays on the enemy we kite from (the target code below still overrides with a shot).
+      if (HURT_KITE_ON && kiteFrom) aim = [yawTo(me.pos, kiteFrom.pos), 0]
 
       // Target: the nearest enemy mech with a clear shot, else the nearest one we know is there (Build 16 re-picks below).
       const slotOf = (kind: WeaponKind) => me.weapons.findIndex((w) => w?.kind === kind)

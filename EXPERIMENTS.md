@@ -4,6 +4,7 @@ One row per practice submission, newest first. Keep a change only if it gains ab
 
 | Time (ET) | Commit | Parent | Params | Score | Hypothesis (rule ID) | Result |
 | --- | --- | --- | --- | --- | --- | --- |
+| Fri 11:33 PM | `8bfc89e` | `100941f` | `params.ts` defaults | 2.10 | Build 11b: nav INFLATE_M 2→2.5 m (PR #19, BB-5BB9D164) | −0.28 vs champion 5b 2.38. LOSS; PR closed. Board 11:36 PM ET: 110th of 142; 1st 5.58, 16th 4.75, 32nd 4.25 |
 | Fri 11:21 PM | `b4a65ba` | `100941f` | `params.ts` defaults | 2.35 | Build 10: nav.path nearest-reachable fallback (PR #16, BB-9A951653; Diego P0) | −0.03 vs champion 5b 2.38. LOSS; PR closed. Board 11:24 PM ET: 108th of 140; 1st 5.58, 16th 4.73, 32nd 4.23 |
 | Fri 11:12 PM | `beb9240` | `100941f` | `params.ts` defaults | 2.27 | Build 8: laser first (PR #14, BB-DB8A4479) | −0.11 vs champion 5b 2.38. LOSS; PR closed. Board 11:17 PM ET: 104th of 136; 1st 5.58, 16th 4.73, 32nd 4.23 |
 | Fri 10:37 PM | `209539f` | `100941f` | `params.ts` defaults | 2.04 | Build 7: drop D4 100 m gun gate (PR #13, BB-07153949) | −0.34 vs Build 5b (2.38). REVERT: PR closed. Board 10:39 PM ET: 95th of 130 on best 2.38; 32nd is 4.17 |

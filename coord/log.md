@@ -170,3 +170,9 @@ Format:
 - Result: docs only; all claims associative (our team absent from recordings).
 - Found: laser acquired >15 s scores better than <=15 s (10.51 vs 7.60 mean points, n=43/57), consistent with Build 8 laser-first losing; winners stand in the open 6.2% vs bottom-8 36.6%. Top hypotheses: conditional engage on isolated threats (EXP-A), threat-aware path costs (EXP-B), regen verification (EXP-F).
 - Blocked / next: fold into root-cause audit result before picking the next experiment.
+
+## Fri 23:36 ET · Grok · Build 11b reverted
+- Did: submitted PR #19 head `8bfc89e` (BB-5BB9D164) at 23:33 ET; closed it without merging.
+- Result: 2.10 vs champion 5b 2.38 (−0.28), a loss. Board 11:36 PM ET: 110th of 142; 1st 5.58, 16th 4.75, 32nd 4.25.
+- Found: wider wall padding hurts (offline: more cut-off goals 210→230, more null paths); narrower routes/gaps matter. Nav changes (B10 −0.03, B11b −0.28) are not where the ceiling is. Five straight losses vs 5b: stop blind variants; next build comes from the root-cause audit + Diego/watcher evidence.
+- Blocked / next: RCA report (branch rca-report); public-match entry research.

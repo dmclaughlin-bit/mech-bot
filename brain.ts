@@ -28,7 +28,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  HEAL_COVER, LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -821,7 +821,11 @@ function buildBot(hello: Hello): Bot {
       } else if (me.hp < HEAL_HP * me.max_hp) {
         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
         // Build 19: the walk to a hiding spot only while hurt.
-        spot = !noSneak && threats.length && seenAt(me.pos, myHeight, threats, true) ? hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan) : null
+        // P24 (HEAL_COVER): 1+ = noSneak no longer turns this walk off; 2 = also break plain line of sight (no wedge) first.
+        const wedge = (!noSneak || HEAL_COVER >= 1) && threats.length > 0 && seenAt(me.pos, myHeight, threats, true)
+        spot = wedge ? hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan) : null
+        // A spot out of plain sight is also out of the wedge, so only search again when the wedge test said unseen.
+        if (HEAL_COVER >= 2 && !wedge && threats.length && seenAt(me.pos, myHeight, threats, false)) spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan)
         if (spot) move = heading(spot)
         mode = spot ? "heal, hiding" : "heal"
       } else if (lootTarget) {

@@ -115,6 +115,16 @@ export const NO_SNEAK_ON = true
 export const NO_SNEAK_QUIET_S = 3
 
 /**
+ * P24 (heal in cover). Research coord/data/research/heal-positioning.md: we stand still for ~88% of heal time and an
+ * enemy can see us ~80% of it. Only the heal branch (HP under 90%, every higher-priority mode declined) changes.
+ * 0 = champion exactly. 1 = NO_SNEAK no longer turns off the heal's walk to a hiding spot (the wedge-test hide walk
+ * runs whenever we heal and an enemy sees us). 2 = 1, plus: an enemy has plain line of sight (no wedge test, as the
+ * retreat uses) and a hideSpot within 3 s inside the circle we keep to exists, so walk there first, firing as usual,
+ * and stand once unseen. No spot = stand and shoot as today. Zone, engage, retreat, drops, farm and healthy hold are unchanged.
+ */
+export const HEAL_COVER = 2
+
+/**
  * P-B-001 (standoff break): after STANDOFF_BREAK_S seconds of match time, stop sitting in a heal or hold standoff
  * against a lone enemy and close to our best weapon's effective range, then fight under the existing engage/target code.
  * It runs only where the champion would heal ("heal", "heal, hiding") or hold, and only when: exactly one enemy has line

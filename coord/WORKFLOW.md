@@ -88,6 +88,14 @@ A sim-only track (currently P-B-008, movement and evasion) may iterate in the lo
 - Mech Sim Tester is the checkpoint: trigger counts, flag-0 identity, crash and timing screens.
 - A Wild Sim idea earns a site slot only if it's deemed valuable enough: it triggers in about 10 of 192 sim games or more, flag 0 is identical to the champion, and it shows a real edge. There is no guaranteed slot.
 
+## HARD RULE: biggest impact first (Doug, Sat Nov 21 2:54 PM ET)
+
+Every site slot goes to the candidate with the **largest expected score gain** toward our goal. Rank by expected impact, not by readiness or age.
+- Expected impact = estimated size of the gain x chance it's real. Evidence, strongest first: site results of the same family (a winning family's next step ranks high, a losing family's ranks low), then how often it triggers in the sim (it must fire in enough games to move the score), then research findings.
+- Exception: a smaller test may go first ONLY when it's a needed prerequisite for a bigger one (it isolates a risk or confirms a mechanism the bigger test depends on). Name the dependency in the queue.
+- Every queue entry (coord/next-*.md, the routine queue) states its expected impact (high / medium / low) and why, in one line.
+- The sequence rule, the champion-base rule and "site score is the only truth" still apply.
+
 ## Source of truth data (Doug, Sat Nov 21 2:12 PM ET)
 - coord/data is the single source of truth for every improvement and every loss: site_results.csv, screens.csv, hazard_screens.csv, postmortems/, ideas.md.
 - coord/data/SOURCE_OF_TRUTH.md summarizes every change with its site delta and per-family record. Regenerate it after every site result.

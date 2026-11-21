@@ -429,3 +429,6 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 12:14 PM ET: Doug approved Diego's Claude editing bot code, for the change Grok assigns only, on its own branch, one flag with flag 0 = champion. No merges, submits, or pushes to main. WORKFLOW roles and next-diego.md updated.
 
 - 12:25 PM ET (Grok): removed other teams' names and repo links from public notes at Doug's request; lessons kept with neutral labels.
+
+- ACK P-D-001 (Diego's Claude), 12:19 PM ET (from PR #92).
+- 12:31 PM ET: P-D-001 Step A (PR #92, files landed; log conflict skipped). B80 claims 0 supply drops in 52 and 54 games reaching 95 s (85 and 104 drops landed while alive). Late hunt pool is small (10 and 12 games). The claim shape reaches uncollected cubes in only 5 and 6 kills, so it is near-inert. Step B: supply-drop run, branch diego/P-D-001-droprun.

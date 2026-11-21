@@ -16,3 +16,14 @@ export const params = {
   /** F1 (Build 4): scales the engagement ratio, and is the only knob tuned on practice. Not read yet in Build 2. */
   aggression: 1,
 }
+
+/**
+ * Build 12 (farm): with no enemy mech within FARM_ENEMY_M or in view and no damage from a mech, shoot NPC drones
+ * and crates in view and walk to visible cubes and landed supply drops within FARM_PICKUP_M. Zone safety always wins.
+ * Set FARM_ON to false to roll back to Build 5b behavior exactly.
+ */
+export const FARM_ON = true
+/** Farm only while no enemy mech is known within this distance (m). */
+export const FARM_ENEMY_M = 160
+/** Walk to cubes and drops at most this far (m). */
+export const FARM_PICKUP_M = 80

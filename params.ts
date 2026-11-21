@@ -128,4 +128,4 @@ export const NO_SNEAK_QUIET_S = 3
  * Evidence (B103 Step A, PR #94): lightning holders spend 54%/51% of clear-target decisions at 45–90 m, half of it a
  * standoff where neither side closes, most often while we heal. 0 = Build 103 (champion) behavior exactly.
  */
-export const STANDOFF_BREAK_S = 60
+export const STANDOFF_BREAK_S = 45

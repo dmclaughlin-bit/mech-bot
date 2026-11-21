@@ -1,0 +1,21 @@
+{
+ "id": "P28",
+ "title": "Midring patrol: when the farm gate is open and B12/B13 have nothing to walk to, walk a short zone-safe midring path instead of holding",
+ "family": "farm",
+ "flag": "MIDRING_PATROL_ON",
+ "owner": "Mech Builder",
+ "stage": "building",
+ "pr": null,
+ "sha": null,
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "single_decision": "Where the champion would stand in mode 'hold' with farmOk true, not hurt (noSneak), and no B12/B13 cube, drop, drone or crate to walk to, walk a short zone-safe nav leg to the next waypoint of a zig-zag patrol at zone ratio ~0.45-0.65 of the circle we keep to (the next circle once inside its inner ring, else the current one with the farm zone-safety test). No boost. Every existing branch (zone escape, leave for the next circle, engage, retreat, collect, laser walk, crossfire, ambush, drop hold/run, heal, loot, farm capture/pickup/hunt, standoff break) stays above it, so any of them breaks the patrol at once. Own no-progress guard: a leg that is not found, too long, or not closing for 2 s is dropped and the direction flips; 3 failed legs in a row, or 6 s of patrol with under 4 m of movement, rest the patrol (hold) for 10 s. Off when the circle is under 70 m. MIDRING_PATROL_ON=false (default) = champion byte-identical.",
+ "evidence": "coord/data/watcher/SKILLS.md (93 showdown matches, T01-T04 vs T13-T16): hold 24.6% vs 40.1% of ticks (d=-0.34), mid-phase hold 28.5% vs 48.2% (d=-0.42; 6231/5574 ticks, 54/56 matches); speed while healthy and not engaged 7.21 vs 4.35 m/s (d=0.55); idle cube rate 3.94 vs 2.27 /min, mid-phase 5.11 vs 3.12; most high-team cubes are gained in the midring (909) not the center (638); best place/cubes in the 20-40% center-share bin. Champion gap 2 in SKILLS.md: the champion holds when nothing is in the 80 m cube / 150 m hunt window. Correlation in exhibition FFA, not house-bot proof. ideas_queue.md item 3 (Medium) and item 5.",
+ "closest_prior": "No official receipt for a midring patrol. P23 late idle torso sweep (76c3fa8, VETO: new 64 s in-zone pin on base-0 seed 90, vision-flicker loop) and P23b sweep + 3 s farm-walk abort (cf96cf5, official 4.00, BB-AEFC0FA8, CLOSE): standing torso sweep / abort, not a foot patrol; P28 adds no sweep and does not touch B12/B13 give-up. B122 mid-game unstuck (4296b43, VETO, do not site-test): sidestep+hop on stalled travel moves; P28 has no sidestep, no hop, no jet and does not change nav.stuck outside patrol mode. P25 cube memory (PR #136, HOLD): different target (remembered cubes); P28 does not depend on it.",
+ "disprove": "Full paired screen (2000+3000 and 4000+5000) fires in under ~10/192 games, adds new 20 s+ in-zone pins with patrol active in the window, loses drop-ring arrivals, or raises deaths before 40 s by more than 3/192; or an official site score at or below 4.17.",
+ "screens": {},
+ "checks": {},
+ "receipt": null,
+ "score": null,
+ "decision": null,
+ "updated": "2026-11-21 18:58 ET"
+}

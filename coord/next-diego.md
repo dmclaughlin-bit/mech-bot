@@ -21,22 +21,19 @@ Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, f
 
 ---
 
-## Current prompt: P-D-007 late-game kill-source measurement on 4.17 (Grok, Sat Nov 21, 3:44 PM ET)
+## Current prompt: P-D-008 laserSkip expiry (audit H12) (Grok, Sat Nov 21, 4:16 PM ET)
 
-Not ACKed. Add `ACK P-D-007 (Diego's Claude) <time ET>` to `coord/log.md` in your first PR.
+Not ACKed. Add `ACK P-D-008 (Diego's Claude) <time ET>` to `coord/log.md` in your first PR. Doug (4:14 PM ET) wants every lane working for the next half hour: when this is done, go straight on to P-D-009 below without waiting.
 
-Why: score tracks our kills, kill rate falls after 120 s, and the sim is mostly blind late (few sim games are still alive at 95 s). Queue rule: a research idea gets a site slot only after a sim trigger count of about 10 of 192 games or more. This prompt finds the biggest late gap and counts it before anything is built (audit H20 + H18; research before building).
+Once a laser target fails (no route, or chase longer than `LASER_CHASE_S`), it goes into `laserSkip` for the rest of the match (`brain.ts:280`, `:693`, `:704` on 4.17 main), so the late walk can never retry it. Lasers matter: in the sim, laser by 30 s scores 6.28 vs 2.01 without (coord/RESEARCH.md).
+**Step A:** count games on both seed sets (2000+3000 and 4000+5000, n=192 each) where a skipped id later becomes reachable and in-zone while we still lack the weapon. **Step B, only if ~10/192 or more on both sets:** branch `diego/P-D-008-laserskip`, flag `LASER_SKIP_EXPIRE_S` (0 = main byte-identical), skip entries expire after that many seconds; gate PASS, PR template table on both seed sets, kills first. No slot until Grok verifies. Branch from current origin/main (champion bot code still 6182d29).
 
-**Step A (docs/tools PR, no bot-code change):** on current main (4.17), seeds 2000+3000 and held-out 4000+5000, n=192 each, add a mid/late event log (wrapper or tools/ script, the bot itself unchanged) and report, for games alive after 60 s and after 120 s separately:
-1. Ticks per mode (hold/heal/walk/engage/drop run) with no target, and how often a known enemy was within 150 m during those ticks.
-2. Our kills and deaths after 60 s / 120 s by cause (which rule was active, LOS count, HP band), and the last 5 s before each death.
-3. Downside tail: worst-quartile placement games and score after a first-fight win.
-4. For the top 3 gaps you find: how many of 192 games each one touches (trigger count), on both seed sets.
-Title: `P-D-007 Step A: ...`. Report the numbers before building. Don't invent numbers; mark sim-only evidence as such.
+Site context since P-D-007: P21 4.17 tie, standoff 90 s 3.96, ambush 100 m 4.10, B117 matchup 4.08, all closed. Your P-D-007 finding (zone timing makes zone-travel deaths worse) is logged, no slot. Grok's Claude is building mid-game unstuck pathing and late-game hurt kiting (Watcher Top-16 evidence, coord/data/watcher/RANKED.md); don't duplicate those.
 
-**Step B (only if a gap clears ~10/192 on both seed sets):** build ONE flag on branch `diego/P-D-007-<name>` for the gap with the largest (games touched × kill gap). Flag 0 = main byte-identical, gate PASS, PR template table on both seed sets, kills and kills/min after 60 s as primary rows. Avoid dead families (STATUS.md): no opening/first-30 s, cover-search widening, finish burst, threat-forecast, blanket avoidance, lightning late-walk distance/time. No slot until Grok verifies.
+## DONE (no slot): P-D-007 late-game kill-source measurement (Grok, 3:44 PM ET)
+Step A PR #124 (late deaths are multi-LOS; zone travel in last 5 s touches 28/37 games). Step B PR #125 `ZONE_EARLY_S` failed in sim (zone-travel deaths 28→30 and 37→45), no slot.
 
-## Queued: P-D-008 laserSkip expiry (audit H12) (Grok, 3:44 PM ET)
+## (moved to Current above) P-D-008
 Once a laser target fails (no route, or chase longer than `LASER_CHASE_S`), it goes into `laserSkip` for the rest of the match (`brain.ts:280`, `:693`, `:704` on 4.17 main), so the late walk can never retry it. Step A: count games on both seed sets where a skipped id later becomes reachable and in-zone while we still lack the weapon. Step B only if ~10/192 or more: flag `LASER_SKIP_EXPIRE_S` (0 = main byte-identical), skip entries expire after that many seconds.
 
 ## Queued: P-D-009 two-horizon race, shadow count only (audit H13) (Grok, 3:44 PM ET)

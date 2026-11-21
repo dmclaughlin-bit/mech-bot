@@ -5,8 +5,10 @@
  * Build 2 (survival-min): setup that cannot fail, terrain in the cover check, laser and lightning
  * only, a fire gate on the gun, zone travel that leaves just in time and holds silently,
  * unsticking, retreat when hurt, and an upgrade order. The rules are §9 of the team plan.
+ * Build 3: zone travel along nav.ts paths, nav.stuck for unsticking, and a 30 ms deadline guard.
  */
 import { clearLine, loadMap } from "./map.ts"
+import { createNav } from "./nav.ts"
 import { params } from "./params.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
@@ -17,6 +19,12 @@ const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
 const yawTo = (from: number[], to: number[]) => Math.atan2(to[1] - from[1], to[0] - from[0])
 const pitchTo = (from: number[], to: number[]) => Math.atan2(to[2] - from[2], flat(from, to))
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
+/** Horizontal distance from p to the segment a-b. */
+const segmentDistance = (p: number[], a: number[], b: number[]) => {
+  const vx = b[0] - a[0], vy = b[1] - a[1], len2 = vx * vx + vy * vy
+  const s = len2 > 0 ? clamp(((p[0] - a[0]) * vx + (p[1] - a[1]) * vy) / len2, 0, 1) : 0
+  return Math.hypot(p[0] - a[0] - s * vx, p[1] - a[1] - s * vy)
+}
 
 // ------------------------------------------------------------------ rule constants (plan §9)
 /** L2: loot only when no enemy mech is within this distance (m). */
@@ -29,6 +37,22 @@ const ZONE_WALK = params.zoneWalk
 const ZONE_BUFFER = params.zoneBuffer
 const SILENT_SPEED = params.silentSpeed
 const RETREAT_HP = params.retreatHp
+
+/** Z1 (Build 3): seconds added to the trip for each enemy known within ROUTE_TRACK_M (m) of the route. */
+const ROUTE_TRACK_S = 2
+const ROUTE_TRACK_M = 50
+/** In-tick A* budget in node expansions, from Diego's nav bench (about 7 ms worst case on bun). */
+const PATH_BUDGET = 20000
+/** Re-plan at most this often (s), or sooner when the goal moves more than ROUTE_GOAL_SHIFT (m). */
+const ROUTE_REPLAN_S = 1
+const ROUTE_GOAL_SHIFT = 10
+/** Move on to the next waypoint within this distance (m). */
+const WAYPOINT_REACHED = 4
+/** D6, §7 rule 2: hard per-decision guard (ms). A path search starts only while its worst case still fits. */
+const DEADLINE_MS = 30
+const PLAN_RESERVE_MS = 10
+/** Line-of-sight checks per decision go to the nearest few enemies only. */
+const LOS_TARGETS = 8
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -130,8 +154,43 @@ function buildBot(hello: Hello): Bot {
   let lastHit: { bearing: number; t: number } | null = null
   /** attacker id → last time it damaged us */
   const hitBy = new Map<number, number>()
-  /** where we were over the last half second, and whether we were trying to move */
-  const trail: { t: number; pos: Vec3; moving: boolean }[] = []
+  const nav = createNav(hello)
+  /** The current route: waypoints from nav.path toward `goal`, planned at time `at`. */
+  let route: { goal: Vec3; at: number; points: Vec3[]; next: number } | null = null
+
+  /** Follow a path to `goal`, re-planning at most once a second (Z1, Build 3). Returns the move and the distance left. */
+  function travel(from: Vec3, goal: Vec3, t: number, canPlan: boolean): { move: [number, number]; dist: number; points: Vec3[] } {
+    const stale = !route || t - route.at >= ROUTE_REPLAN_S || flat(route.goal, goal) > ROUTE_GOAL_SHIFT
+    if (stale && canPlan) route = { goal, at: t, points: nav.path(from, goal, PATH_BUDGET) ?? [goal], next: 0 }
+    const r = route ?? { goal, at: t, points: [goal], next: 0 }
+    while (r.next < r.points.length - 1 && flat(from, r.points[r.next]) < WAYPOINT_REACHED) r.next++
+    const rest = r.points.slice(r.next)
+    let dist = 0
+    let prev: number[] = from
+    for (const w of rest) {
+      dist += flat(prev, w)
+      prev = w
+    }
+    const yaw = yawTo(from, rest[0])
+    return { move: [Math.cos(yaw), Math.sin(yaw)], dist, points: rest }
+  }
+
+  /** How many enemies seen in the last 10 s are within ROUTE_TRACK_M of the route. */
+  function tracksAlong(from: Vec3, points: Vec3[], t: number): number {
+    let n = 0
+    for (const k of known.values()) {
+      if (t - k.lastSeen > 10) continue
+      let prev: number[] = from
+      for (const w of points) {
+        if (segmentDistance(k.pos, prev, w) < ROUTE_TRACK_M) {
+          n++
+          break
+        }
+        prev = w
+      }
+    }
+    return n
+  }
 
   const scale = (cubes = 0) => 1 + growth * cubes
   const centerOf = (m: { pos: Vec3; cubes?: number }): Vec3 => [m.pos[0], m.pos[1], m.pos[2] + (cfg.mech.height / 2) * scale(m.cubes)]
@@ -163,6 +222,9 @@ function buildBot(hello: Hello): Bot {
   return {
     name: "mech-bot",
     act(obs: Observation): BotAction {
+      const started = performance.now()
+      // Deadline guard (D6, §7 rule 2): start a path search only while its worst case still fits in 30 ms.
+      const canPlan = () => performance.now() - started < DEADLINE_MS - PLAN_RESERVE_MS
       remember(obs)
       const me = obs.self
       const muzzle: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.muzzle_height ?? cfg.mech.muzzle_height * scale(me.cubes))]
@@ -199,9 +261,23 @@ function buildBot(hello: Hello): Bot {
       const walkSpeed = me.stats.walk_speed ?? cfg.mech.walk_speed
       const silent = Math.min(1, (SILENT_SPEED * 0.9) / walkSpeed)
       const margin = Math.min(15, z.next_radius * 0.25)
-      const toEnter = Math.max(0, flat(me.pos, z.next_center) - (z.next_radius - margin))
+      const fromNext = flat(me.pos, z.next_center)
+      const inner = Math.max(0, z.next_radius - margin)
+      const toEnter = Math.max(0, fromNext - inner)
       const timeLeft = z.shrink_end - obs.t
-      const leaveNow = toEnter > 0 && toEnter / (ZONE_WALK * walkSpeed) + ZONE_BUFFER >= timeLeft
+      // Z1 with path distance (Build 3): aim where the straight line to the next center crosses the circle we want, and
+      // plan a path only once there might be little slack (a path is rarely more than twice the straight line).
+      const entry: Vec3 =
+        fromNext > 1e-6
+          ? [z.next_center[0] + ((me.pos[0] - z.next_center[0]) * inner) / fromNext, z.next_center[1] + ((me.pos[1] - z.next_center[1]) * inner) / fromNext, me.pos[2]]
+          : [z.next_center[0], z.next_center[1], me.pos[2]]
+      let trip: { move: [number, number]; dist: number; points: Vec3[] } | null = null
+      let needed = toEnter / (ZONE_WALK * walkSpeed) + ZONE_BUFFER
+      if (toEnter > 0 && (2 * toEnter) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + ROUTE_TRACK_S * known.size >= timeLeft) {
+        trip = travel(me.pos, entry, obs.t, canPlan())
+        needed = trip.dist / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + ROUTE_TRACK_S * tracksAlong(me.pos, trip.points, obs.t)
+      }
+      const leaveNow = toEnter > 0 && needed >= timeLeft
       const heading = (to: number[]): [number, number] => {
         const yaw = yawTo(me.pos, to)
         return [Math.cos(yaw), Math.sin(yaw)]
@@ -210,13 +286,14 @@ function buildBot(hello: Hello): Bot {
       let boost = false
       let mode = "hold"
       if (!me.in_zone) {
-        // Outside the circle every tick costs HP and stops regen (Z2): head straight in, boosting.
-        move = heading(z.center)
+        // Outside the circle every tick costs HP and stops regen (Z2): head in along a path, boosting.
+        move = travel(me.pos, [z.center[0], z.center[1], me.pos[2]], obs.t, canPlan()).move
         boost = true
         mode = "zone escape"
       } else if (leaveNow) {
-        move = heading(z.next_center)
-        boost = toEnter / walkSpeed > timeLeft
+        const go = trip ?? travel(me.pos, entry, obs.t, canPlan())
+        move = go.move
+        boost = go.dist / walkSpeed > timeLeft
         mode = "to next circle"
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp) {
         // Retreat (F2, F3): hurt and under fire, so back away from the attacker with the torso still on it
@@ -239,25 +316,26 @@ function buildBot(hello: Hello): Bot {
       }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1).
       if (toEnter === 0 && !boost && mode !== "retreat") move = [move[0] * silent, move[1] * silent]
-      // Unstick: jump, then jet, only when we've been trying to move but covered under 1 m in 0.5 s.
-      trail.push({ t: obs.t, pos: me.pos, moving: Math.hypot(move[0], move[1]) > 0.2 })
-      while (trail.length > 1 && obs.t - trail[0].t > 0.5) trail.shift()
-      const stuck = obs.t - trail[0].t >= 0.45 && trail.every((s) => s.moving) && flat(trail[0].pos, me.pos) < 1
-      if (stuck) {
+      // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
+      // decision. Jump, jet if already in the air, and plan a fresh route next decision.
+      if (nav.stuck(me, move)) {
         if (me.grounded) act.jump = true
         else if (me.energy > 15) boost = true
+        route = null
       }
       let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
 
       // Target: the nearest enemy mech with a clear shot, else the nearest one we know is there.
       const slotOf = (kind: WeaponKind) => me.weapons.findIndex((w) => w?.kind === kind)
-      const options = obs.mechs
-        .filter((m) => m.kind === "mech")
+      const options = enemies
         .map((m) => {
           const c = centerOf(m)
-          return { m, c, d: span(muzzle, c), clear: clearLine(solids, muzzle, c) }
+          return { m, c, d: span(muzzle, c), clear: false }
         })
-        .sort((a, b) => Number(b.clear) - Number(a.clear) || a.d - b.d)
+        .sort((a, b) => a.d - b.d)
+        .slice(0, LOS_TARGETS)
+      for (const o of options) o.clear = clearLine(solids, muzzle, o.c)
+      options.sort((a, b) => Number(b.clear) - Number(a.clear) || a.d - b.d)
       const target = options[0]
       let label = `knows ${known.size}`
 
@@ -341,6 +419,8 @@ function buildBot(hello: Hello): Bot {
       act.aim = [aim[0], clamp(aim[1], minPitch, maxPitch)]
       act.fire = fire
       draw.label(`${label} · ${mode}`)
+      const took = performance.now() - started
+      if (took > DEADLINE_MS) log(`decision at tick ${obs.tick} took ${took.toFixed(1)} ms`)
       return act
     },
   }

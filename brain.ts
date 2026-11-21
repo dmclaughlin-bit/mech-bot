@@ -10,10 +10,12 @@
  * heal there silently until HP is back over 90% (F4; Build 5b keeps normal fire while healing), and while holding, slip out of any
  * enemy's sight: its 45 m proximity ring and its 120° wedge around its aim (Q2). Q1 (silent hold) is unchanged.
  * Build 12 (farm): with no enemy mech near or in view, shoot drones and crates and walk to cubes and drops (see farmPlan).
+ * Build 14 (engage): fight or flee by time-to-kill vs time-to-die (F1): against one enemy we would kill first, or one
+ * within a magazine of dying, fight on instead of the HP retreat, then collect its cubes (see engageChoice, ENGAGE_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
-import { FARM_ENEMY_M, FARM_ON, FARM_PICKUP_M, params } from "./params.ts"
+import { ENGAGE_ON, FARM_ENEMY_M, FARM_ON, FARM_PICKUP_M, params } from "./params.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
 // ------------------------------------------------------------------ geometry helpers
@@ -71,6 +73,23 @@ const FARM_CHASE_S = 15
 /** Build 12: stand this far (m) inside a drop's ring while capturing. */
 const DROP_INSET = 1.5
 
+/** Build 14 (engage): our hit-rate guesses. Gun inside GUN_NEAR_M and beyond it, laser and lightning, mortar. */
+const GUN_NEAR_M = 60
+const HIT_GUN_NEAR = 0.8
+const HIT_GUN_FAR = 0.5
+const HIT_BEAM = 0.9
+const HIT_MORTAR = 0.5
+/** Build 14: an enemy that damaged us this recently (s) threatens us even without line of sight (same window as the retreat). */
+const THREAT_HIT_S = 2
+/** Build 14: once the test passes, stay engaged this long (s) so the choice does not flip tick to tick. A second threat ends it at once. */
+const ENGAGE_LATCH_S = 1
+/** Build 14: drop a target we have engaged this long (s) with no HP lost over the hpLog window, and leave it alone for ENGAGE_REST_S. */
+const ENGAGE_CHASE_S = 8
+const ENGAGE_REST_S = 10
+/** Build 14: after a kill, walk to cubes within CLAIM_M (m) of where the target died, for at most CLAIM_S (s). */
+const CLAIM_M = 12
+const CLAIM_S = 12
+
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
 const MOBILITY = ["servos", "jets", "capacitor", "reactor"]
@@ -115,6 +134,22 @@ function lob(from: Vec3, at: Vec3, vel: Vec3, speed: number, g: number, high: bo
   }
   return out
 }
+
+// ------------------------------------------------------------------ weapon numbers (Build 14)
+const WEAPON_KINDS: WeaponKind[] = ["gun", "mortar", "laser", "lightning"]
+const finite = (v: number) => (Number.isFinite(v) && v > 0 ? v : 0)
+/** Sustained damage per second of one weapon from its config numbers: before hit rate, cube scaling and armor. */
+function weaponDps(kind: WeaponKind, s: Record<string, number>): number {
+  if (kind === "gun") return finite((s.damage * s.mag) / (s.mag * s.cooldown + s.reload)) || finite(s.damage / s.cooldown)
+  if (kind === "laser") return finite(s.damage / ((s.charge ?? 0) + s.cooldown))
+  return finite(s.damage / s.cooldown)
+}
+/** How far one weapon reaches (m). The mortar's is its flat-ground maximum, v²/g. */
+function weaponReach(kind: WeaponKind, s: Record<string, number>): number {
+  return finite(kind === "mortar" ? (s.speed * s.speed) / s.gravity : s.range)
+}
+const hitRate = (kind: WeaponKind, d: number) =>
+  kind === "gun" ? (d <= GUN_NEAR_M ? HIT_GUN_NEAR : HIT_GUN_FAR) : kind === "mortar" ? HIT_MORTAR : HIT_BEAM
 
 // ------------------------------------------------------------------ the bot
 /** What the bot knows about one enemy mech. Kept for a while after it leaves view. */
@@ -178,6 +213,50 @@ function buildBot(hello: Hello): Bot {
   let lastMechHit = -Infinity
   let farmChase: { id: number; since: number } | null = null
   const farmGiveUp = new Set<number>()
+  /** Build 14 (engage): each weapon's DPS and reach from hello.config, read once here. */
+  const baseDps = {} as Record<WeaponKind, number>
+  const baseReach = {} as Record<WeaponKind, number>
+  for (const kind of WEAPON_KINDS) {
+    baseDps[kind] = weaponDps(kind, cfg.weapons[kind] ?? {})
+    baseReach[kind] = weaponReach(kind, cfg.weapons[kind] ?? {})
+  }
+  const cubeDamage = (cubes = 0) => 1 + Number(cfg.cubes.damage_per_cube ?? 0) * Math.min(cubes, Number(cfg.cubes.stat_cap ?? cubes))
+  /** Build 14: mech attacker id → last time it damaged us (drones and the zone left out). */
+  const mechHitBy = new Map<number, number>()
+  /** Build 14: the enemy we are fighting on against, why, since when, and until when the choice holds without a fresh pass. */
+  let engaged: { id: number; why: "ttk" | "finish"; since: number; until: number } | null = null
+  /** Build 14: targets we gave up on (id → time), and where our last kill died, to collect its cubes. */
+  const engageGiveUp = new Map<number, number>()
+  let claim: { pos: Vec3; until: number } | null = null
+
+  /** Build 14: what we deal per second to a target `d` m away: every held weapon that reaches, × its hit-rate guess × our cube bonus. */
+  function ourDps(me: Observation["self"], d: number): number {
+    let sum = 0
+    for (const w of me.weapons) {
+      if (!w) continue
+      const stats = { ...cfg.weapons[w.kind], ...w.stats }
+      if (weaponReach(w.kind, stats) >= d) sum += weaponDps(w.kind, stats) * hitRate(w.kind, d)
+    }
+    return sum * cubeDamage(me.cubes)
+  }
+  /** Build 14: the most damage one magazine of a held weapon that reaches `d` m can do (gun: a full mag; laser: one full shot; lightning: what our energy pays for). */
+  function ourMagazine(me: Observation["self"], d: number): number {
+    let best = 0
+    for (const w of me.weapons) {
+      if (!w) continue
+      const stats = { ...cfg.weapons[w.kind], ...w.stats }
+      if (weaponReach(w.kind, stats) < d) continue
+      const shots = w.kind === "gun" ? (stats.mag ?? 1) : w.kind === "lightning" ? Math.floor(me.energy / (stats.energy || 1)) : 1
+      best = Math.max(best, finite(stats.damage * shots))
+    }
+    return best * cubeDamage(me.cubes)
+  }
+  /** Build 14: what an enemy `d` m away deals per second if every shot lands: each weapon it is seen holding that reaches us, × its cube bonus. */
+  function enemyDps(e: { weapons?: WeaponKind[]; cubes?: number }, d: number): number {
+    let sum = 0
+    for (const kind of e.weapons ?? ["gun"]) if (baseReach[kind] >= d) sum += baseDps[kind]
+    return sum * cubeDamage(e.cubes)
+  }
 
   /** Follow a path to `goal`, re-planning at most once a second (Z1, Build 3). Returns the move and the distance left. */
   function travel(from: Vec3, goal: Vec3, t: number, canPlan: boolean): { move: [number, number]; dist: number; points: Vec3[] } {
@@ -280,7 +359,10 @@ function buildBot(hello: Hello): Bot {
       known.set(m.id, k)
     }
     for (const e of obs.events) {
+      // Build 14: our kill drops its cubes plus two where it died; remember the place before forgetting the mech.
+      if (e.type === "kill" && ENGAGE_ON && known.has(e.target)) claim = { pos: known.get(e.target)!.pos, until: obs.t + CLAIM_S }
       if (e.type === "kill") known.delete(e.target)
+      if (e.type === "damaged" && e.by !== null && e.weapon !== "npc") mechHitBy.set(e.by, obs.t)
       if (e.type === "damaged" && e.bearing !== null) lastHit = { bearing: e.bearing, t: obs.t }
       if (e.type === "damaged" && e.by !== null) hitBy.set(e.by, obs.t)
       if (e.type === "damaged" && e.weapon !== "npc") lastMechHit = obs.t
@@ -386,6 +468,63 @@ function buildBot(hello: Hello): Bot {
         farmGiveUp.add(farmGoal.id)
         farmGoal = null
       }
+      // Engage (F1, Build 14): fight or flee by time-to-kill vs time-to-die. Only in the zone and not leaving for the
+      // next circle, so zone safety always wins. `hurt` is the Build 5 retreat trigger, unchanged.
+      const hurt = !!lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp
+      let engage: { m: (typeof enemies)[number]; why: "ttk" | "finish"; clear: boolean } | null = null
+      if (ENGAGE_ON && me.in_zone && !leaveNow && threats.length) {
+        // Who threatens us: enemies with line of sight to us (wherever they look), and mechs that hit us in the last 2 s.
+        const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        const hitters: number[] = []
+        for (const [id, t] of mechHitBy) if (obs.t - t < THREAT_HIT_S) hitters.push(id)
+        const alone = (id: number) => !los.some((e) => e.id !== id) && !hitters.some((h) => h !== id)
+        const rested = (id: number) => obs.t - (engageGiveUp.get(id) ?? -Infinity) > ENGAGE_REST_S
+        let pick: (typeof enemies)[number] | undefined
+        let why: "ttk" | "finish" = "finish"
+        // Finish rule: the weakest enemy within one magazine of dying, while no second enemy sees us or is hitting us.
+        pick = threats
+          .filter((e) => e.hp !== undefined && rested(e.id) && alone(e.id) && e.hp <= ourMagazine(me, flat(e.pos, me.pos)))
+          .sort((a, b) => a.hp! - b.hp!)[0]
+        // TTK rule: where the HP retreat would trigger, with exactly one threat and it in sight, fight on if we kill it first.
+        if (!pick && hurt && los.length === 1 && los[0].hp !== undefined && alone(los[0].id) && rested(los[0].id)) {
+          const e = los[0], d = flat(e.pos, me.pos)
+          const out = ourDps(me, d)
+          const taken = enemyDps(e, d) * (1 - clamp(me.stats.armor ?? 0, 0, 0.9))
+          const ttk = out > 0 ? e.hp! / out : Infinity
+          const ttd = taken > 0 ? me.hp / taken : Infinity
+          if (ttk < params.aggression * ttd) {
+            pick = e
+            why = "ttk"
+          }
+        }
+        if (pick) engaged = { id: pick.id, why, since: engaged?.id === pick.id ? engaged.since : obs.t, until: obs.t + ENGAGE_LATCH_S }
+        else if (engaged && obs.t < engaged.until && (pick = threats.find((e) => e.id === engaged!.id && alone(e.id)))) why = engaged.why
+        else engaged = null
+        // Give up on a target we have engaged for ENGAGE_CHASE_S without taking any HP off it over the hpLog window.
+        if (pick && engaged && obs.t - engaged.since > ENGAGE_CHASE_S) {
+          const seen = known.get(pick.id)?.hpLog
+          if (!seen?.length || seen[0][1] <= (pick.hp ?? Infinity)) {
+            engageGiveUp.set(pick.id, obs.t)
+            engaged = null
+            pick = undefined
+          }
+        }
+        if (pick) engage = { m: pick, why, clear: clearLine(solids, muzzle, centerOf(pick)) }
+      } else engaged = null
+      // Collect (Build 14): after our kill, walk to the cubes it dropped (all of its cubes plus two) if it is safe:
+      // nobody has line of sight to us, no mech hit us in the last 2 s, and the same zone test as farming.
+      let claimGoal: Vec3 | null = null
+      if (claim && obs.t > claim.until) claim = null
+      if (claim && me.in_zone && !leaveNow && !engage) {
+        const at = claim.pos
+        const cube = obs.cubes.filter((c) => flat(c.pos, at) < CLAIM_M).sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+        const goal = cube?.pos ?? at
+        const zoneSafe =
+          flat(goal, z.center) < Math.max(0, z.radius - margin) &&
+          (flat(me.pos, goal) + Math.max(0, flat(goal, z.next_center) - inner)) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER < timeLeft
+        if (!cube && flat(me.pos, at) < Number(cfg.cubes.pickup_radius ?? cfg.loot.pickup_radius)) claim = null
+        else if (zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && !seenAt(me.pos, myHeight, threats, false)) claimGoal = goal
+      }
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -400,6 +539,15 @@ function buildBot(hello: Hello): Bot {
         move = go.move
         boost = go.dist / walkSpeed > timeLeft
         mode = "to next circle"
+      } else if (engage) {
+        // Engage (F1, Build 14): fight on instead of the HP retreat. Hold the line of fire, and close in along a path
+        // when the target is behind cover, or (finish rule) beyond our best range. Never walk outside the circle we keep to.
+        const d = flat(engage.m.pos, me.pos)
+        const arc = me.weapons.find((w) => w?.kind === "lightning")
+        const close = arc ? 0.8 * (arc.stats.range ?? baseReach.lightning) : GUN_NEAR_M
+        if ((!engage.clear || (engage.why === "finish" && d > close)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1])
+          move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
+        mode = `engage, ${engage.why}`
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && seenAt(me.pos, myHeight, threats, false) && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
         // Retreat (F2, F3, Build 5): hurt and under fire, so head for the nearest in-zone spot out of every visible
         // enemy's line of sight, torso still on the attacker (legs and torso are independent). Boost only above 30% energy.
@@ -421,6 +569,9 @@ function buildBot(hello: Hello): Bot {
         move = [mx / n, my / n]
         boost = me.energy > 0.3 * me.max_energy
         mode = "retreat"
+      } else if (claimGoal) {
+        move = travel(me.pos, claimGoal, obs.t, canPlan()).move
+        mode = "engage, collect"
       } else if (me.hp < HEAL_HP * me.max_hp) {
         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
         spot = threats.length && seenAt(me.pos, myHeight, threats, true) ? hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan) : null
@@ -444,8 +595,9 @@ function buildBot(hello: Hello): Bot {
         }
       }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
+      // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if ((toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat")) move = [move[0] * silent, move[1] * silent]
+      if ((toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage")) move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {
@@ -465,7 +617,9 @@ function buildBot(hello: Hello): Bot {
         .sort((a, b) => a.d - b.d)
         .slice(0, LOS_TARGETS)
       for (const o of options) o.clear = clearLine(solids, muzzle, o.c)
-      options.sort((a, b) => Number(b.clear) - Number(a.clear) || a.d - b.d)
+      // Build 14: among equally clear targets, the one we are engaged with comes first.
+      const engagedId = engage?.m.id
+      options.sort((a, b) => Number(b.clear) - Number(a.clear) || Number(b.m.id === engagedId) - Number(a.m.id === engagedId) || a.d - b.d)
       // Farm targets (Build 12): with no enemy mech to shoot, the nearest drone or crate in view with a clear line,
       // within the gun gate, unless we are hurt to retreat level. They go through the same aim and fire code.
       let farmShot = false

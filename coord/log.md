@@ -328,39 +328,39 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 
 - 2026-11-21 2:35 AM ET: Build 27 strafe-while-holding (d5fb49d, PR #43) scored 3.38, receipt BB-0D0F93D6. Below champion 3.50, so the PR is closed. Rank 106/183; rank 32 is at 4.92.
 
-- 2026-11-21 2:48 AM ET: Build 30 settings comboA (7b71e43, PR #46: aggression 1.5, retreatHp 0.30, LASER_TRIP_M 250) scored 3.54, receipt BB-5E7DE301. NEW CHAMPION (was 3.50 B17); merged. Site auto-set it as final entry. Rank 108/184; rank 32 Hachimi 4.96.
+- 2026-11-21 2:48 AM ET: Build 30 settings comboA (7b71e43, PR #46: aggression 1.5, retreatHp 0.30, LASER_TRIP_M 250) scored 3.54, receipt BB-5E7DE301. NEW CHAMPION (was 3.50 B17); merged. Site auto-set it as final entry. Rank 108/184; rank 32 4.96.
 
-- 2026-11-21 3:17 AM ET: Build 36 rush-first (9a9cf10, PR #50) scored 3.54, receipt BB-285D47C5. Ties champion B30 3.54 and does not beat it, so the PR is closed. Rank 114/188; rank 32 who dey 5.02.
+- 2026-11-21 3:17 AM ET: Build 36 rush-first (9a9cf10, PR #50) scored 3.54, receipt BB-285D47C5. Ties champion B30 3.54 and does not beat it, so the PR is closed. Rank 114/188; rank 32 5.02.
 
-- 2026-11-21 3:23 AM ET: Build 40 stack (34eefff, PR #51: rush-first + pre-charge + backstab) scored 3.23, receipt BB-2F1AD6E9. Below champion 3.54 despite the best sim tonight (+0.29 ± 0.13), so the PR is closed. Rank 114/190; rank 32 ManiFest 5.02.
+- 2026-11-21 3:23 AM ET: Build 40 stack (34eefff, PR #51: rush-first + pre-charge + backstab) scored 3.23, receipt BB-2F1AD6E9. Below champion 3.54 despite the best sim tonight (+0.29 ± 0.13), so the PR is closed. Rank 114/190; rank 32 5.02.
 
-- 2026-11-21 3:36 AM ET: Build 32 laser pre-charge (f478895, PR #47) scored 3.48, receipt BB-C5622A3A. Below champion 3.54, so the PR is closed. Rank 114/192; rank 32 ImagineLosing 5.04.
+- 2026-11-21 3:36 AM ET: Build 32 laser pre-charge (f478895, PR #47) scored 3.48, receipt BB-C5622A3A. Below champion 3.54, so the PR is closed. Rank 114/192; rank 32 5.04.
 
-- 2026-11-21 3:48 AM ET: Build 48 house hit rates in TTK race (51a5e10, PR #54) scored 3.50, receipt BB-D03F8790. Below champion 3.54, so the PR is closed. Rank 116/198; rank 32 Tark305 5.06.
+- 2026-11-21 3:48 AM ET: Build 48 house hit rates in TTK race (51a5e10, PR #54) scored 3.50, receipt BB-D03F8790. Below champion 3.54, so the PR is closed. Rank 116/198; rank 32 5.06.
 
 - 2026-11-21 4:17 AM ET: Build 60 break LOS in 2-on-1 crossfire (b889814, PR #57) scored 3.67, receipt BB-A0BBBFEE. NEW CHAMPION (was 3.54 B30); merged. Site auto-set it as final entry. Rank 115/201; rank 32 1212 5.10.
 
 - 2026-11-21 4:24 AM ET: Build 39 laserdash on B60 base (147f305, PR #59) scored 3.38, receipt BB-ECAB0443. Below champion 3.67, so the PR is closed. Rank 116/203; rank 32 1212 5.10.
 
-- 4:36 AM ET: Build 66 laser slot swap (45d8073, PR #61) scored 3.58, receipt BB-4E471C6E. Below B60 3.67, closed. Rank 119/207; #32 ManiFest 5.13.
+- 4:36 AM ET: Build 66 laser slot swap (45d8073, PR #61) scored 3.58, receipt BB-4E471C6E. Below B60 3.67, closed. Rank 119/207; #32 5.13.
 
-- 4:49 AM ET: Build 41 rear-hit step (95af0bc, PR #63) scored 3.65, receipt BB-411B5ADB. Below B60 3.67, closed. Rank 120/209; #32 ManiFest 5.13.
+- 4:49 AM ET: Build 41 rear-hit step (95af0bc, PR #63) scored 3.65, receipt BB-411B5ADB. Below B60 3.67, closed. Rank 120/209; #32 5.13.
 
 - 5:19 AM ET: Build 74 finish last 30 m of laser walk (153b7bd, PR #68, sim +0.18) scored 3.67, receipt BB-CD0FED5C. Exact tie with B60, closed. Rank 123/215; #32 5.17.
 
 - 5:26 AM ET: Build 68 laser slot (a117939, PR #62) scored 3.21, receipt BB-ABA74C24. Below B60 3.67, closed. Slot/weapon-swap changes hurt on site (B66 3.58, B68 3.21). Rank 123/215; #32 5.17.
 
-- 5:37 AM ET: Build 64 rush-start (f171f20, PR #60) scored 3.63, receipt BB-061D8305. Below B60 3.67, closed. Rank 123/218; #32 Eagle Eye 5.17.
+- 5:37 AM ET: Build 64 rush-start (f171f20, PR #60) scored 3.63, receipt BB-061D8305. Below B60 3.67, closed. Rank 123/218; #32 5.17.
 
-- 5:49 AM ET: Build 45 tracksweep (a34996d, PR #65) scored 3.35, receipt BB-CB222B29. Below B60 3.67, closed. Rank 125/218; #32 RN SUS 5.21.
+- 5:49 AM ET: Build 45 tracksweep (a34996d, PR #65) scored 3.35, receipt BB-CB222B29. Below B60 3.67, closed. Rank 125/218; #32 5.21.
 
-- 6:19 AM ET: Build 76 any-special early trip (56cb559, PR #71) scored 3.25, receipt BB-3AB97F36. Below B60 3.67, closed. Chasing lightning/mortar early hurts on site. Rank 128/224; #32 Kuki 5.23.
+- 6:19 AM ET: Build 76 any-special early trip (56cb559, PR #71) scored 3.25, receipt BB-3AB97F36. Below B60 3.67, closed. Chasing lightning/mortar early hurts on site. Rank 128/224; #32 5.23.
 
-- 6:26 AM ET: Build 53 post-kill cover (dc7f26f, PR #73) scored 3.50, receipt BB-290B6BD3. Below B60 3.67, closed. Rank 129/228; #32 Kuki 5.23.
+- 6:26 AM ET: Build 53 post-kill cover (dc7f26f, PR #73) scored 3.50, receipt BB-290B6BD3. Below B60 3.67, closed. Rank 129/228; #32 5.23.
 
-- 6:37 AM ET: Build 80 late gun-only walk to lightning/laser (28c3acc, PR #74) scored 3.79, receipt BB-78A44AAF. NEW CHAMPION (beats B60 3.67). Merged as cb93980. Site auto-set it as final entry. Rank 120/229; #32 Kuki 5.23. B82 merged with new main -> e7df41f (gate PASS).
+- 6:37 AM ET: Build 80 late gun-only walk to lightning/laser (28c3acc, PR #74) scored 3.79, receipt BB-78A44AAF. NEW CHAMPION (beats B60 3.67). Merged as cb93980. Site auto-set it as final entry. Rank 120/229; #32 5.23. B82 merged with new main -> e7df41f (gate PASS).
 
-- 6:49 AM ET: Build 82 wider crossfire cover search on B80 (e7df41f, PR #76) scored 3.46, receipt BB-4023B260. Below B80 3.79, closed. Rank 121/229; #32 Kuki 5.23.
+- 6:49 AM ET: Build 82 wider crossfire cover search on B80 (e7df41f, PR #76) scored 3.46, receipt BB-4023B260. Below B80 3.79, closed. Rank 121/229; #32 5.23.
 
 - 2026-11-21 7:20 AM ET: B86 latelong b93ae6d (PR #78, late walk 400 m after 60 s) site 3.79 (BB-7A43732D), tie with champion B80 3.79; earlier tie keeps final. Closed. Sim was +0.016 (3/192 changed). Rank 121/231, #1 5.96, #32 5.23. Next: B88 2c52220 at 7:26.
 
@@ -374,9 +374,9 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 
 - 2026-11-21 8:28 AM ET: B98 nofinish40 39b2fe9 (PR #84, P12 no finish-engage before 40 s without laser) site 3.63 (BB-970E5B69). Below champion B80 3.79. Closed. Sim was -0.042 (62/192 changed). Rank 127/238, #1 5.96, #32 5.23. Note: sim-inert builds (B86, B92) scored exactly 3.79, so the site looks deterministic per behavior.
 
-- 2026-11-21 8:44 AM ET: B100 latecover 8ec3946 (PR #85, B60 cover at 1+ LOS after 45 s when just hit) site 3.50 (BB-813FFACF). Below champion B80 3.79. Closed. Sim was -0.052 (21/192 changed). Rank 129/239, #1 kyoto-max 6.00, #32 5.25.
+- 2026-11-21 8:44 AM ET: B100 latecover 8ec3946 (PR #85, B60 cover at 1+ LOS after 45 s when just hit) site 3.50 (BB-813FFACF). Below champion B80 3.79. Closed. Sim was -0.052 (21/192 changed). Rank 129/239, #1 6.00, #32 5.25.
 
-- 2026-11-21 8:50 AM ET: B94 lateclaim 1657334 (PR #82, P9+P10, submitted by routine tick) site 3.73 (BB-EA74B72B). Below champion B80 3.79. Closed. Sim was +0.000 with only 6/192 changed, yet it scored 0.06 lower, so near-inert builds do not always reproduce the champion score exactly. Rank 129/239, #1 kyoto-max 6.00, #32 5.25. Overnight push ended; final entry stays B80 3.79.
+- 2026-11-21 8:50 AM ET: B94 lateclaim 1657334 (PR #82, P9+P10, submitted by routine tick) site 3.73 (BB-EA74B72B). Below champion B80 3.79. Closed. Sim was +0.000 with only 6/192 changed, yet it scored 0.06 lower, so near-inert builds do not always reproduce the champion score exactly. Rank 129/239, #1 6.00, #32 5.25. Overnight push ended; final entry stays B80 3.79.
 
 - 2026-11-21 afternoon ET: Added `coord/RESEARCH.md` (and `coord/research/` tables) as a self-contained dossier of everything learned through B94, for a deep-research pass on the next change. No bot code changed, no PR touched, nothing submitted. Champion stays B80 28c3acc, site 3.79, receipt BB-78A44AAF.
 
@@ -392,7 +392,7 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - Found: the zone reaches radius 0 at ~6:55 (phases sum to 415 s) with 260 HP/s, no armor and no regen, so even ~2,980 HP lasts ~11.5 s. The 8:00 HP tiebreak never happens. The endgame order is HP at 6:55. Plating helps there and armor does not. Low priority at 3.50, since we usually die earlier. My supply-drop proposal (PR #39) is still open and is the stronger next Lane A candidate.
 - Blocked / next: Grok: merge PR #39 and this one; restate HYP-011 as "most HP at the 6:55 collapse".
 - 2026-11-21 10:57 AM ET: B26 race rematched on B80 1fb397f (PR #42, multi-threat fight race at any HP; sim -0.167 +/- 0.115, 65/192 changed) site 3.48 (BB-58CA917D). Below champion B80 3.79. Closed.
-- 2026-11-21 10:59 AM ET: B51 cornerduel rematched on B80 ba84a1a (PR #70, early corner duel vs one closing enemy, no laser; sim -0.068 +/- 0.078, 23/192 changed) site 3.79 (BB-2FD05CB0). Ties champion, does not beat it (earlier submission keeps the tie). Closed. Rank 137/256, #1 kyoto-max 6.31, #32 4141 5.33. 2 of 4 slots left this hour; next frees 11:57 AM ET.
+- 2026-11-21 10:59 AM ET: B51 cornerduel rematched on B80 ba84a1a (PR #70, early corner duel vs one closing enemy, no laser; sim -0.068 +/- 0.078, 23/192 changed) site 3.79 (BB-2FD05CB0). Ties champion, does not beat it (earlier submission keeps the tie). Closed. Rank 137/256, #1 6.31, #32 5.33. 2 of 4 slots left this hour; next frees 11:57 AM ET.
 
 - 2026-11-21 11:25 AM ET: Diego's master audit directive for Grok committed as `coord/DIRECTIVE-2026-11-21-master-audit.md` (verbatim, plus a header listing finished audits and where each §16 deliverable already lives). Copied today's audits into `coord/audit/` (11:15 AM perf-fix handoff: only UF100 / PR #86 is worth a slot; multi-hunter, combat-math and nav fixes recommended dropped; champion B80 3.79; plus its plan and the 2:00 AM brief). Pointer added at the top of GROK_BRIEF.md, learnings.md and WORKFLOW.md. Delivered via the repo only, not sent to Grok directly. No bot code changed, nothing submitted.
 - 2026-11-21 11:37 AM ET: Added `coord/grok-read-first-2026-11-21.md`: Grok's reading order for the master directive, plus the ask (UF100 already approved and in build; plan its slot, keep only above 3.79; then a short §18 reply). Docs only, nothing submitted.
@@ -427,3 +427,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 12:12 PM ET: Doug asked that Diego's Claude get prompts from Grok via GitHub. `coord/next-diego.md` is now Grok's prompt inbox: one current prompt with an ID, ACK in this log, report by PR with the ID in the title. Current: P-D-001 (late hunt / supply drops / post-kill claim, measure first).
 
 - 12:14 PM ET: Doug approved Diego's Claude editing bot code, for the change Grok assigns only, on its own branch, one flag with flag 0 = champion. No merges, submits, or pushes to main. WORKFLOW roles and next-diego.md updated.
+
+- 12:25 PM ET (Grok): removed other teams' names and repo links from public notes at Doug's request; lessons kept with neutral labels.

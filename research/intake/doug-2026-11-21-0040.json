@@ -40,12 +40,12 @@
       "sample_size": 224
     },
     {
-      "claim": "The Wolverines bot (rank 3 on the 9:40 PM board) spins its torso for the first 3 s, sweeps around its heading while walking, remembers ground pickups for 60 s, and walks to the best remembered weapon with no distance cap and no enemy-distance gate outside fight mode.",
+      "claim": "The Team A bot (rank 3 on the 9:40 PM board) spins its torso for the first 3 s, sweeps around its heading while walking, remembers ground pickups for 60 s, and walks to the best remembered weapon with no distance cap and no enemy-distance gate outside fight mode.",
       "topic": "top_team_behavior",
       "sources": [
-        {"ref": "https://github.com/varchaskukreja/TTUN/blob/b7e9a6db75154271185035ef856859be37dff60e/mech-royale/bot/bot.ts#L616-L621", "kind": "repo", "quote": "if (t < 3) aimYaw = me.aim[0] + 1.6"},
-        {"ref": "https://github.com/varchaskukreja/TTUN/blob/b7e9a6db75154271185035ef856859be37dff60e/mech-royale/bot/bot.ts#L154-L162", "kind": "repo", "quote": "this.pickMem.set(p.id, { pos: p.pos, kind: p.kind, t })"},
-        {"ref": "https://github.com/varchaskukreja/TTUN/blob/b7e9a6db75154271185035ef856859be37dff60e/mech-royale/bot/bot.ts#L431-L441", "kind": "repo", "quote": null}
+        {"ref": "public bot (Team A), spawn scan", "kind": "repo", "quote": "if (t < 3) aimYaw = me.aim[0] + 1.6"},
+        {"ref": "public bot (Team A), pickup memory", "kind": "repo", "quote": "this.pickMem.set(p.id, { pos: p.pos, kind: p.kind, t })"},
+        {"ref": "public bot (Team A), loot choice", "kind": "repo", "quote": null}
       ],
       "confidence": 0.8,
       "is_guess": false,
@@ -54,15 +54,15 @@
       "mechanism": "Pickups are listed only while seen (protocol.md:374), so a bot that neither turns nor remembers knows a small share of the weapons near it.",
       "expected_gain": 0.3,
       "effort": 3,
-      "keywords": ["scan", "pickup memory", "wolverines"]
+      "keywords": ["scan", "pickup memory", "public-bot"]
     },
     {
-      "claim": "Quiet slow-walking costs points in practice for other teams: the same Lance controller scored 4.54 with its 4.6 m/s sneak cap on and 4.75 with it off, and r1ver went from 4.54 to 4.67 with normal speed plus a supply-capture fix.",
+      "claim": "Quiet slow-walking costs points in practice for other teams: the same Team B controller scored 4.54 with its 4.6 m/s sneak cap on and 4.75 with it off, and Team C went from 4.54 to 4.67 with normal speed plus a supply-capture fix.",
       "topic": "contradiction",
       "sources": [
-        {"ref": "https://github.com/brycehcmcgrath/mechfight-bot/blob/18ae7c471959166ca4eea7b2a0f2581dbcbcd407/docs/RESULTS.md#L13-L14", "kind": "repo", "quote": "explicit MR_FLAGS empty; quiet speed cap disabled ... 4.75"},
-        {"ref": "https://github.com/moonriver0922/wgsrobot/blob/2f343ebeb3e7121b6e1c322e569e46cef18d8d25/experiments/official-runs.md#L7-L8", "kind": "repo", "quote": null},
-        {"ref": "https://github.com/varchaskukreja/TTUN/blob/596f339454aa7e0c407618299315b7dc57b678a6/mech-royale/bot/bot.ts#L379", "kind": "repo", "quote": "practice: squad focus-fire makes cover-seek too passive; FFA only"}
+        {"ref": "published A/B results (Team D)", "kind": "repo", "quote": "explicit MR_FLAGS empty; quiet speed cap disabled ... 4.75"},
+        {"ref": "published official runs (Team C)", "kind": "repo", "quote": null},
+        {"ref": "public bot (Team A), practice note", "kind": "repo", "quote": "practice: squad focus-fire makes cover-seek too passive; FFA only"}
       ],
       "confidence": 0.6,
       "is_guess": false,
@@ -111,12 +111,12 @@
       "sample_size": 847
     },
     {
-      "claim": "Our laser releases with up to 3.0 m of sideways aim error (4.2 m at 280 m) against a mech of radius 2.5 m, because yawTol is atan2(radius x size x 1.2, d) with a 0.015 rad floor; the Wolverines bot releases inside 0.9 x a 2.2 m half-width.",
+      "claim": "Our laser releases with up to 3.0 m of sideways aim error (4.2 m at 280 m) against a mech of radius 2.5 m, because yawTol is atan2(radius x size x 1.2, d) with a 0.015 rad floor; the Team A bot releases inside 0.9 x a 2.2 m half-width.",
       "topic": "our_weakness",
       "sources": [
         {"ref": "brain.ts:678", "kind": "repo", "quote": "const yawTol = Math.max(0.015, Math.atan2(cfg.mech.radius * size * 1.2, d))"},
         {"ref": "/workspace/mechfight-kit/protocol.md:101", "kind": "protocol", "quote": "A mech is a vertical cylinder of radius 2.5 m and height 9 m"},
-        {"ref": "https://github.com/varchaskukreja/TTUN/blob/596f339454aa7e0c407618299315b7dc57b678a6/mech-royale/bot/bot.ts#L312", "kind": "repo", "quote": "yawErr < tol * 0.9"}
+        {"ref": "public bot (Team A), laser release", "kind": "repo", "quote": "yawErr < tol * 0.9"}
       ],
       "confidence": 0.6,
       "is_guess": false,
@@ -149,7 +149,7 @@
       "sources": [
         {"ref": "/workspace/mechfight-kit/check/stream.jsonl.gz hello.config.upgrades", "kind": "protocol", "quote": "gun_mag: +8 rounds, -20% reload time"},
         {"ref": "brain.ts:97-104", "kind": "repo", "quote": "const UPGRADE_FIRST = [\"plating\", \"armor\", \"nanites\", \"sensors\"]"},
-        {"ref": "https://github.com/varchaskukreja/TTUN/blob/b7e9a6db75154271185035ef856859be37dff60e/mech-royale/bot/bot.ts#L15-L18", "kind": "repo", "quote": null}
+        {"ref": "public bot (Team A), upgrade order", "kind": "repo", "quote": null}
       ],
       "confidence": 0.6,
       "is_guess": false,

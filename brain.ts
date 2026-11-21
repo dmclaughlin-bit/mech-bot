@@ -7,7 +7,7 @@
  * unsticking, retreat when hurt, and an upgrade order. The rules are §9 of the team plan.
  * Build 3: zone travel along nav.ts paths, nav.stuck for unsticking, and a 30 ms deadline guard.
  * Build 5 (survival half): retreat to the nearest in-zone spot out of the attackers' line of sight (F3), then
- * heal there silently without shooting until HP is back over 90% (F4), and while holding, slip out of any
+ * heal there silently until HP is back over 90% (F4; Build 5b keeps normal fire while healing), and while holding, slip out of any
  * enemy's sight: its 45 m proximity ring and its 120° wedge around its aim (Q2). Q1 (silent hold) is unchanged.
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
@@ -378,8 +378,7 @@ function buildBot(hello: Hello): Bot {
         boost = me.energy > 0.3 * me.max_energy
         mode = "retreat"
       } else if (me.hp < HEAL_HP * me.max_hp) {
-        // Heal (F4, Build 5): stay out of contact until HP is over 90%: no shooting (dealing damage restarts the
-        // regen timer), stand still, and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
+        // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
         spot = threats.length && seenAt(me.pos, myHeight, threats, true) ? hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan) : null
         if (spot) move = heading(spot)
         mode = spot ? "heal, hiding" : "heal"
@@ -463,15 +462,12 @@ function buildBot(hello: Hello): Bot {
         const hittingUs = obs.t - (hitBy.get(m.id) ?? -Infinity) < 2
         const weak = (m.hp ?? 1) / (m.max_hp ?? 1) < 0.5
         const gunOpen = d <= GUN_GATE || hittingUs || weak || sideways <= radial
-        // F4: while healing, shoot back only if we were hit in the last 2 s; otherwise stay out of contact.
-        const quiet = mode.startsWith("heal") && !(lastHit && obs.t - lastHit.t < 2)
-
         // Fire only what can hit from where the torso actually points.
-        if (clear && gun >= 0 && gunOpen && !quiet) {
+        if (clear && gun >= 0 && gunOpen) {
           const g = w(gun)
           if ((g.ammo ?? 1) > 0 && (g.reload ?? 0) <= 0 && d <= g.stats.range && onTarget(gunAim[0], gunAim[1])) fire[gun] = true
         }
-        if (clear && arc >= 0 && !quiet) {
+        if (clear && arc >= 0) {
           const l = w(arc)
           const halfCone = ((l.stats.cone_deg ?? 30) * Math.PI) / 360
           if (d <= l.stats.range && Math.abs(wrap(me.aim[0] - direct[0])) < halfCone && me.energy >= (l.stats.energy ?? 3)) fire[arc] = true
@@ -483,9 +479,9 @@ function buildBot(hello: Hello): Bot {
             // Charging: let go to fire once it is full and lined up.
             const full = charge >= l.stats.charge - 0.03
             fire[laser] = !(full && leading === "laser" && onTarget(direct[0], direct[1]))
-          } else if (leading === "laser" && !quiet) fire[laser] = true
+          } else if (leading === "laser") fire[laser] = true
         }
-        if (mortar >= 0 && leading === "mortar" && !quiet && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true
+        if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true
         if (gun >= 0 && (w(gun).ammo ?? 1) === 0 && (w(gun).reload ?? 0) <= 0) act.reload = true
 
         draw.line(muzzle, c, clear ? "#ff5040" : "#888888")

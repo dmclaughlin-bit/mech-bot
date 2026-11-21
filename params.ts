@@ -166,4 +166,4 @@ export const DROP_RUN_M = 150
  * velocity x AIM_LAG_S; the kit's projectiles fly straight at `speed` from the muzzle and the protocol gives them no
  * shooter velocity), and keeps the torso on the foe instead of the move heading. Never ship above 0 as a site default.
  */
-export const EVADE_MODE: number = 0
+export const EVADE_MODE: number = 6

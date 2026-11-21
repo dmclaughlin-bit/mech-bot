@@ -594,7 +594,8 @@ function buildBot(hello: Hello): Bot {
           const finish = me.hp >= ENGAGE_FINISH_HP * me.max_hp ? ready.filter((e) => e.hp! <= ourMagazine(me, flat(e.pos, me.pos))).sort((a, b) => a.hp! - b.hp!)[0] : undefined
           const focus = finish ?? ready.filter((e) => los.includes(e) || hitters.includes(e.id)).sort((a, b) => ttkOf(a) - ttkOf(b))[0]
           const ttk = focus ? ttkOf(focus) : Infinity
-          const d = !focus ? null : ttk < params.aggression * ttd ? "win" : ttk >= ttd && (me.hp < HEAL_HP * me.max_hp || los.length > 1) ? "break" : null
+          // Ratio 1, not params.aggression: Build 30 raised aggression to 1.5 for the hurt TTK rule; the race at any HP keeps 1.
+          const d = !focus ? null : ttk < ttd ? "win" : ttk >= ttd && (me.hp < HEAL_HP * me.max_hp || los.length > 1) ? "break" : null
           // Hold a decision at least ENGAGE_LATCH_S (a held win keeps its target while it is still a threat).
           const held = raceHold && obs.t < raceHold.until && (raceHold.d === "break" || threats.some((e) => e.id === raceHold!.id))
           if (!held) raceHold = d && focus ? { d, id: focus.id, fin: focus === finish, until: obs.t + ENGAGE_LATCH_S } : null

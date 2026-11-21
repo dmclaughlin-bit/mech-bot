@@ -83,7 +83,7 @@ export const LASER_RUSH_S = 45
 /** Longest path (m) to a weapon we walk for. Showdown winners' early laser trips: median 78 m of path, longest 176 m. */
 export const LASER_TRIP_M = 250
 /** Give up on a weapon we have walked toward this long (s) without reaching it. */
-export const LASER_CHASE_S = 20
+export const LASER_CHASE_S = 30
 /**
  * Build 16 (target pick): instead of the nearest enemy with a clear line, lock the enemy mech with the best kill
  * value (target.ts: a shot from here, short time-to-kill from our DPS, low hp, weak weapons, alone) and keep it until

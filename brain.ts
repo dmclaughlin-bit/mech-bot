@@ -148,8 +148,6 @@ function buildBot(hello: Hello): Bot {
   let lastHit: { bearing: number; t: number } | null = null
   /** attacker id → last time it damaged us */
   const hitBy = new Map<number, number>()
-  /** where we were over the last half second, and whether we were trying to move */
-  const trail: { t: number; pos: Vec3; moving: boolean }[] = []
   const nav = createNav(hello)
   /** The current route: waypoints from nav.path toward `goal`, planned at time `at`. */
   let route: { goal: Vec3; at: number; points: Vec3[]; next: number } | null = null
@@ -309,13 +307,12 @@ function buildBot(hello: Hello): Bot {
       }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1).
       if (toEnter === 0 && !boost && mode !== "retreat") move = [move[0] * silent, move[1] * silent]
-      // Unstick: jump, then jet, only when we've been trying to move but covered under 1 m in 0.5 s.
-      trail.push({ t: obs.t, pos: me.pos, moving: Math.hypot(move[0], move[1]) > 0.2 })
-      while (trail.length > 1 && obs.t - trail[0].t > 0.5) trail.shift()
-      const stuck = obs.t - trail[0].t >= 0.45 && trail.every((s) => s.moving) && flat(trail[0].pos, me.pos) < 1
-      if (stuck) {
+      // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
+      // decision. Jump, jet if already in the air, and plan a fresh route next decision.
+      if (nav.stuck(me, move)) {
         if (me.grounded) act.jump = true
         else if (me.energy > 15) boost = true
+        route = null
       }
       let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
 

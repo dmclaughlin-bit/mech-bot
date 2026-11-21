@@ -19,6 +19,8 @@
  * Build 19 (stop sneaking): while not hurt, no silent speed cap and no hide-from-sight move (see NO_SNEAK_ON).
  * Build 80 (late lightning): after 45 s, a gun-only bot may walk to a reachable ground lightning or laser
  * (see LATE_LIGHT_ON).
+ * Build 94 (late walk over claim + longer late chase): after 45 s, the gun-only late walk outranks kill-cube
+ * collection and may take 30 s instead of 20 s to arrive (see LATE_CLAIM_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -129,6 +131,14 @@ const CROSSFIRE_ON = true
  * Take, swap, and drop are unchanged (B66 and B68 lost on the site). Different from B76/B78 (first 45 s only).
  * false = champion. */
 const LATE_LIGHT_ON = true
+/** Build 94 (P9+P10): when lateLight is on, the gun-only late walk may start during a post-kill cube claim
+ * (the !claimGoal gate is dropped, and claim movement yields to the walk). Late walks also get LATE_CHASE_S
+ * (30 s) instead of LASER_CHASE_S (20 s), enough to finish a 250 m trip at 11.7 m/s; a late time-out ends the
+ * attempt but does not permanently laserSkip the pickup (a missing path still does). The 3 s no-hit gate, hurt
+ * retreat, and B60 crossfire yield stay ahead of the walk. Early rush stays at 20 s and still bans on time-out.
+ * Take, swap, and drop are unchanged. false = champion B80. */
+const LATE_CLAIM_ON = true
+const LATE_CHASE_S = 30
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 
@@ -640,7 +650,7 @@ function buildBot(hello: Hello): Bot {
       const lateLight = LATE_LIGHT_ON && gunOnly && obs.t >= LASER_RUSH_S
       if (
         LASER_RUSH_ON && (obs.t < LASER_RUSH_S || rush || lateLight) && !holdsLaser && rushSlot && me.in_zone && !leaveNow && !trip && !engage &&
-        !claimGoal && !hurt && !(cubeFirst && !lateLight) && obs.t - lastMechHit > FARM_QUIET_S
+        (!claimGoal || (LATE_CLAIM_ON && lateLight)) && !hurt && !(cubeFirst && !lateLight) && obs.t - lastMechHit > FARM_QUIET_S
       ) {
         const pace = ZONE_WALK * walkSpeed
         const onward = (p: Vec3) => Math.max(0, flat(p, z.next_center) - inner)
@@ -659,9 +669,13 @@ function buildBot(hello: Hello): Bot {
           if (rush?.id !== id) rush = { id, since: obs.t }
           const go = travel(me.pos, pos, obs.t, canPlan())
           const planned = !!route && flat(route.goal, pos) <= ROUTE_GOAL_SHIFT
-          // No path (a ledge, a walled yard) or a walk that has taken too long: leave this one for good.
-          if ((planned && !route!.found) || obs.t - rush.since > LASER_CHASE_S) laserSkip.add(id)
-          else if (planned && fits(pos, go.dist)) rushMove = go.move
+          // No path (a ledge, a walled yard): leave this one for good. A late walk (Build 94) may take
+          // LATE_CHASE_S instead of LASER_CHASE_S, and a late time-out just ends this attempt (no permanent ban).
+          const chaseS = LATE_CLAIM_ON && lateLight ? LATE_CHASE_S : LASER_CHASE_S
+          const noPath = planned && !route!.found
+          const timedOut = obs.t - rush.since > chaseS
+          if (noPath || (timedOut && !(LATE_CLAIM_ON && lateLight))) laserSkip.add(id)
+          else if (!timedOut && planned && fits(pos, go.dist)) rushMove = go.move
         }
       }
       // Build 80: a late walk yields to B60's crossfire break when two or more enemies can see us.
@@ -719,7 +733,7 @@ function buildBot(hello: Hello): Bot {
         move = [mx / n, my / n]
         boost = me.energy > 0.3 * me.max_energy
         mode = "retreat"
-      } else if (claimGoal) {
+      } else if (claimGoal && !(LATE_CLAIM_ON && lateLight && rushMove)) {
         move = travel(me.pos, claimGoal, obs.t, canPlan()).move
         mode = "engage, collect"
       } else if (rushMove) {

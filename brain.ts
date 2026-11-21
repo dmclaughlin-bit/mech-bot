@@ -28,7 +28,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LATE_FARM_ON, LATE_FARM_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -1057,6 +1057,8 @@ function buildBot(hello: Hello): Bot {
         // Nobody known nearby: face whoever hit us last (hits from behind do 1.5x), and top up the gun.
         // Build 17: at spawn, with no laser yet, turn the torso once around to see the pickups on every side.
         if (LASER_RUSH_ON && obs.t < LASER_SCAN_S && !holdsLaser) aim = [wrap(me.aim[0] + 1.5), 0]
+        // P23 (LATE_FARM_ON): late, idle and farm-safe, turn the torso round so B12/B13 see the cubes, crates and drones around us.
+        if (LATE_FARM_ON && obs.t >= LATE_FARM_S && mode === "hold" && farmOk) aim = [wrap(me.aim[0] + 1.5), 0]
         // Build 17 fix: a charge in progress and nobody left to aim at. Letting go here would fire it at nothing, so keep
         // it (unless we have to travel: charging halves the walk), on something else we can hit or facing where the
         // beam last led, and let go only inside an outline. It still fires on its own hold_s after it is full.

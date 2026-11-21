@@ -140,3 +140,19 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P23 (late idle farm sweep): after LATE_FARM_S seconds of match time, while we would only hold (no target, nothing
+ * to pick up, shoot or hunt, no drop run, not healing) and the Build 12 farm conditions hold (in the zone, not leaving
+ * for the next circle, no enemy mech in view or known within FARM_ENEMY_M, no mech damage for 3 s), turn the torso
+ * steadily round instead of facing the next circle. Cubes and crates are listed only while in view (120° wedge, or
+ * within 45 m), so this lets the existing B12/B13 farm see and take the cubes, crates and drones around us, with their
+ * zone-safety and distance limits unchanged. A hit, a laser charge in progress, or anything to aim at overrides it.
+ * Diagnosis (sim, main 6182d29, SEED_BASE 2000+3000, 192 games): after 60 s, 33% of ticks are hold with no target, and
+ * the farm gate is already open on 91% of those. A zone-safe ground cube <80 m or crate/drone <150 m that a turn would
+ * reveal exists on 21% of them, vs 10% with only a visible cube at 80–150 m (a wider pickup radius).
+ * false = the champion (B113) exactly.
+ */
+export const LATE_FARM_ON = true
+/** P23: sweep only from this match time (s). */
+export const LATE_FARM_S = 60

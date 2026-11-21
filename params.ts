@@ -59,3 +59,26 @@ export const FARM_HUNT_M = 150
 export const ENGAGE_ON = true
 /** Finish rule: commit only at or above this fraction of max HP. House bots hunt the weakest first and share vision. */
 export const ENGAGE_FINISH_HP = 0.35
+
+/**
+ * Build 17 (early laser): in the first LASER_RUSH_S seconds, while we hold no laser, walk at full speed along a nav
+ * path to a laser pickup we see or remember (pickups are listed only while in view), when all of these hold:
+ *   - bounded detour: the path there, plus the leg on to the next circle, is at most LASER_DETOUR_M longer than going
+ *     to the next circle directly;
+ *   - zone-safe: it lies inside the current circle and the trip there and on to the next circle fits before the shrink ends;
+ *   - reachable on the ground (not on a roof, a path exists), given up after LASER_CHASE_S;
+ *   - no enemy (in view or seen in the last 10 s) is nearer to it than our path, and none within 160 m of the route has
+ *     line of sight to it.
+ * Engage, retreat, zone travel and collecting a kill's cubes rank first, and any mech damage in the last 3 s stops the
+ * rush, so Build 14's fight-or-flee choice is untouched while an enemy is engaging. Also: one torso turn at spawn to
+ * see the pickups around us, a laser in reach is taken into a free slot whoever is in view, and once held the laser is
+ * let go only when the torso is inside the target's outline (the beam has no spread), with a clear laser line holding
+ * the finish rule at range instead of walking in. Set LASER_RUSH_ON to false to roll back to Build 14 behavior exactly.
+ */
+export const LASER_RUSH_ON = true
+/** Start a laser trip only this early in the match (s). */
+export const LASER_RUSH_S = 45
+/** Most extra path (m) a laser trip may add over going straight to the next circle. */
+export const LASER_DETOUR_M = 120
+/** Give up on a laser we have walked toward this long (s) without reaching it. */
+export const LASER_CHASE_S = 20

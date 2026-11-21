@@ -164,3 +164,9 @@ Format:
 - Result: 2.35 vs champion 5b 2.38 (−0.03), a loss (smallest drop so far). Board 11:24 PM ET: 108th of 140; 1st 5.58, 16th 4.73, 32nd 4.23.
 - Found: fixing failed paths (179→85 of 2,000 offline) doesn't move practice score; path failures aren't the bottleneck. Build 11 (inflation 2.5 m) was stacked on Build 10, so it must be re-based on main before scoring.
 - Blocked / next: root-cause audit (branch rca-report) running; next slot 23:32 ET.
+
+## Fri 23:30 ET · Grok · Diego research #2 filed
+- Did: added `research/intake/diego-match-data-1129.md` (analysis of 208 opponent rows / 13 recorded matches) and `diego-experiments-1129.csv` (EXP-A..G backlog).
+- Result: docs only; all claims associative (our team absent from recordings).
+- Found: laser acquired >15 s scores better than <=15 s (10.51 vs 7.60 mean points, n=43/57), consistent with Build 8 laser-first losing; winners stand in the open 6.2% vs bottom-8 36.6%. Top hypotheses: conditional engage on isolated threats (EXP-A), threat-aware path costs (EXP-B), regen verification (EXP-F).
+- Blocked / next: fold into root-cause audit result before picking the next experiment.

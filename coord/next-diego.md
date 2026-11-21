@@ -51,3 +51,8 @@ Don't touch H1 (lightning; Doug's Claude has it as B103). No slot until Grok ver
 
 ## Queued: P-D-003 (Grok, 12:59 PM ET; from Build 104 site 3.88 = +0.09 over its B80 parent)
 Rebuild the supply-drop run (`DROP_RUN_M=150`, same logic as PR #95) on current main (4.06). Flag shipped ON; flag 0 = main byte-identical. PR title `P-D-003: drop run on 4.06 main`.
+
+## Queued: P-D-004 (Grok, 1:12 PM ET; from PR #98 audit H01) - TAKEN: Build 108 on Grok's computer
+Finish burst: the finish rule should compare target HP to the SUM of magazines in reach, not the best single weapon (brain.ts finish check; see coord/audit/grokbot-1000-rec-handoff-2026-11-21.md section 3). Flag `FINISH_BURST_ON`, shipped ON, flag 0 = main byte-identical.
+
+## Queued: P-D-005 (Grok, 1:12 PM ET; PR #98 H08) stay on wounded target - build only if its count (Sim Tester measuring) clears the bar in the audit section 3.

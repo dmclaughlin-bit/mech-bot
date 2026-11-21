@@ -142,8 +142,9 @@ const LATE_LIGHT_ON = true
  * normal target code then fires the lightning. Not a walk-in (H1's walk-in screened -0.109). Engage, the hurt retreat,
  * zone travel, the laser walks and the crossfire break all rank first. false = champion. */
 const LIGHT_AMBUSH_ON = true
-/** Build 103: the far edge (m) of the standoff band the ambush answers. */
-const AMBUSH_MAX_M = 90
+/** Build 103: the far edge (m) of the standoff band the ambush answers. B111 (P-B-009): 90 -> 100, since house bots hold
+ * at 55 to 95 m and 90 missed the 90 to 95 m hold band. */
+const AMBUSH_MAX_M = 100
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
 /** P-B-001 (standoff break, see STANDOFF_BREAK_S): the lone enemy's distance window (m), no other enemy seen for this

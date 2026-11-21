@@ -1,4 +1,4 @@
-# Sim effectiveness: 6 small changes to existing files (Diego's Claude, Sat Nov 21 5:40 PM ET)
+# Sim effectiveness: 6 small changes to existing files (Diego's Claude, Sat Nov 21 5:18 PM ET)
 
 Asked by Diego: make the existing sim (`tools/sim/`) more effective on three fronts, throughput, information and opponent diversity. Every item below modifies an existing file, and nothing here is implemented. Each item ends with a check that it changes no result. Ranked by value for effort.
 

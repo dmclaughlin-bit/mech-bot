@@ -2,7 +2,7 @@
 
 **LOCKED: confirmed by Doug, Sat Nov 21 3:09 PM ET.** The process runs exactly as drawn here. Any change to the flow or rules needs Doug's explicit confirmation first; no agent may change it on its own.
 
-This chart changes only when Doug changes a rule. Each edit notes the rule, with its date and time. Updated Sat Nov 21 3:06 PM ET: queue ranking is now by biggest expected impact (Doug 2:54 PM), research comes before building (Doug 2:40 PM), and the best score is now 4.17. Updated Sat Nov 21 3:27 PM ET (Doug confirmed): added the per-mechanic Top-16 Watcher analysis (coord/data/watcher/), which ranks the highest-placing behaviors by expected impact; they go through the sim before the queue and also feed the research step.
+This chart changes only when Doug changes a rule. Each edit notes the rule, with its date and time. Updated Sat Nov 21 3:06 PM ET: queue ranking is now by biggest expected impact (Doug 2:54 PM), research comes before building (Doug 2:40 PM), and the best score is now 4.17. Updated Sat Nov 21 3:27 PM ET (Doug confirmed): added the per-mechanic Top-16 Watcher analysis (coord/data/watcher/), which ranks the highest-placing behaviors by expected impact; they go through the sim before the queue and also feed the research step. Updated Sat Nov 21 4:10 PM ET (Doug confirmed): the site now allows 6 tests per hour, and we use all 6.
 
 ```mermaid
 flowchart TD
@@ -29,7 +29,7 @@ flowchart TD
     D --> F{Any score pending on the site?}
     F -- yes --> G[Wait for the score]
     G --> F
-    F -- no --> H[Submit one build, max 4 per hour]
+    F -- no --> H[Submit one build, max 6 per hour]
     H --> I{Score above best?}
     I -- yes --> J[Merge as new best, currently 4.17, and rebase every queued build]
     I -- no --> K[Close PR and Sim Tester writes post-mortem]

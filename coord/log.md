@@ -80,3 +80,9 @@ Format:
 - Result: docs only, not submitted.
 - Found: only the top 32 practice teams play the final (buildathon brief). The brief's "any valid entry qualifies" held at ~31 teams; there are now 94 and we were 72nd.
 - Blocked / next: Doug's Build 3 (nav) is the next submission after S3.
+
+## Fri 21:40 ET · Diego · Offline gate with bun
+- Did: ran `check/check.py` with bun 1.4.4 (the Dockerfile's version) on Build 2 `4726cfc` and on current `main` (Build 2 + `nav.ts`, not yet wired), pinned to one CPU with `taskset`.
+- Result: `4726cfc` PASS: 300/300 in time, p99 1.4–2.0 ms, max 3.3–4.0 ms, ready 272 ms. `main` PASS: 300/300, p99 1.1 ms, ready 171 ms.
+- Found: the full Docker run (`--cpus 1 --memory 512m --read-only --user 65534`) could not run here: no Docker daemon in the cloud container. Someone with Docker should still run it once before Build 3 (plan §5). `next-diego.md` is unchanged: its nav task is done (PR #5 merged).
+- Blocked / next: Diego resubmits `4726cfc` as S3 around midnight. Doug wires nav for Build 3.

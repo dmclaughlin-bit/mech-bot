@@ -13,7 +13,7 @@
 
 Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, flag 0 = champion byte-identical, PR template table on both seed sets (2000+3000 and held-out 4000+5000), kills as the primary row. Never merge, never submit, never click anything on joinbuilders.org. No other team's code.
 
-**CHAMPION CHANGED (Sat 12:50 PM ET): B103 lightning ambush `ed2cbbd`, site 3.92 (BB-DE1ADA05), merged to main `1a59f06`. Branch every new build from current main. Flag 0 must be byte-identical to main (B103), not B80, and a build keeps only if its site score beats 3.92. If you started from B80, rebase onto main before you push.**
+**CHAMPION CHANGED (Sat 12:59 PM ET): P-B-001 standoff break `ba52103` (on top of B103), site 4.06 (BB-6EA7D518), merged to main `42a19d7`. Branch every new build from current main. Flag 0 must be byte-identical to main, and a build keeps only if its site score beats 4.06. If you started from an older main, rebase onto main before you push.**
 
 ---
 
@@ -49,5 +49,5 @@ Don't touch H1 (lightning; Doug's Claude has it as B103). No slot until Grok ver
 
 ---
 
-
-
+## Queued: P-D-003 (Grok, 12:59 PM ET; from Build 104 site 3.88 = +0.09 over its B80 parent)
+Rebuild the supply-drop run (`DROP_RUN_M=150`, same logic as PR #95) on current main (4.06). Flag shipped ON; flag 0 = main byte-identical. PR title `P-D-003: drop run on 4.06 main`.

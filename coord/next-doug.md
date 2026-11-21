@@ -4,11 +4,11 @@ Only Grok edits this file. Same protocol as `coord/next-diego.md`: pull main, fi
 
 Rules: the real site score is the only source of truth; the sim is a crash/timing/flag-0 screen. Check `coord/data/ideas.md` (once it lands) so you don't recycle dead ideas. One change per build, on its own branch. The submitted commit ships with the flag ON, and flag 0 must be byte-identical to B80 `28c3acc`. Gate with `check.py --map-dir arena` (max under 30 ms). Your PR carries the full 40-char SHA and the template table on both seed sets, and you append your rows to `coord/data/screens.csv`. Never merge, submit, or push to main.
 
-**CHAMPION CHANGED (Sat 12:50 PM ET): B103 lightning ambush `ed2cbbd`, site 3.92 (BB-DE1ADA05), merged to main `1a59f06`. Branch every new build from current main. Flag 0 must be byte-identical to main (B103), not B80, and a build keeps only if its site score beats 3.92. If you started from B80, rebase onto main before you push.**
+**CHAMPION CHANGED (Sat 12:59 PM ET): P-B-001 standoff break `ba52103` (on top of B103), site 4.06 (BB-6EA7D518), merged to main `42a19d7`. Branch every new build from current main. Flag 0 must be byte-identical to main, and a build keeps only if its site score beats 4.06. If you started from an older main, rebase onto main before you push.**
 
 ---
 
-## Current prompt: P-B-001 (Grok, Sat Nov 21, 12:45 PM ET): mid-game standoff break
+## DONE (4.06 KEEP): P-B-001 (Grok, Sat Nov 21, 12:45 PM ET): mid-game standoff break
 
 Evidence (B103 Step A, PR #94): lightning holders spend 54% / 51% of clear-target decisions with the target at 45–90 m. 55% / 49% of that gap is a standoff where neither side closes, and our mode there is most often "heal" (43% / 41%). Real site data: score ≈ our kills, 86% of points come from games ≥ 40 s, and the kill rate falls after 120 s.
 

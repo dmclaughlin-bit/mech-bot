@@ -6,7 +6,7 @@ Rules: the real site score is the only source of truth; the sim is a crash/timin
 
 **Read `coord/STATUS.md` first: current champion, in-flight builds, dead families.**
 
-**CHAMPION CHANGED (Sat 12:59 PM ET): P-B-001 standoff break `ba52103` (on top of B103), site 4.06 (BB-6EA7D518), merged to main `42a19d7`. Branch every new build from current main. Flag 0 must be byte-identical to main, and a build keeps only if its site score beats 4.06. If you started from an older main, rebase onto main before you push.**
+**CHAMPION CHANGED (Sat 2:00 PM ET): P-D-003 drop run `4d6e71b` (PR #99, on top of 4.06), site 4.10 (BB-DA9AC664), merged to main `9168d841c734ec6970340322600feb89f9c27ce6`. Bot code on main equals `4d6e71b`. Branch every new build from current main. Flag 0 must be byte-identical to this main, and a build keeps only if its site score beats 4.10. If you started from an older main (including 4.06 / `42a19d7`), rebase onto this main before you push. P-D-003 is DONE KEEP 4.10. P-D-002 forecast lost at 3.79.**
 
 ---
 
@@ -14,9 +14,9 @@ Rules: the real site score is the only source of truth; the sim is a crash/timin
 
 Doug, 1:52 PM ET: train movement in the local sim (strafe, slide, fluid motion) so the mech is harder to hit, keep pathfinding from getting stuck on objects, fine-tune map awareness (always know where we are), and improve evasion plus aiming while moving. **All current 4.06 champion rules stay in place.** Only movement / evasion / aim-while-moving mechanics change. This is **sim-only**: do not submit to the site, do not merge to main, do not take a practice slot. After the gate is green and the sim testers show opponent hit rate down without new stuck/pathing damage, Grok hands the winning variant to Mech Builder for a later site test on the then-current champion.
 
-**Base.** Branch off current `origin/main`. Verify bot code is still the champion: `git merge-base --is-ancestor 42a19d7f56770855d7583f569e1b2ebbae630822 HEAD` must succeed, and `git diff 42a19d7 -- bot.ts brain.ts params.ts nav.ts target.ts map.ts mechfight.ts` is empty before you start. Flag 0 must be byte-identical to that main bot code (not to B80).
+**Base.** Branch off current `origin/main`. Verify bot code is still the 4.10 champion: `git merge-base --is-ancestor 4d6e71bf3e2aa823e0c8c24dbc0e155d03f36971 HEAD` must succeed, and `git diff 4d6e71b -- bot.ts brain.ts params.ts nav.ts target.ts map.ts mechfight.ts` is empty before you start. Flag 0 must be byte-identical to that main bot code (not to B80 or to the 4.06 tree). If this track was started on 4.06, rebase onto `9168d84` first.
 
-**Champion rules you must not change** (from current main / EXPERIMENTS.md). Decision priorities, triggers, and thresholds stay exactly as they are. In particular, keep:
+**Champion rules you must not change** (from current 4.10 main / EXPERIMENTS.md). Decision priorities, triggers, and thresholds stay exactly as they are. In particular, keep:
 
 - Path-aware nav and the existing `nav.stuck` unstick (Build 3): jump / jet / replan after ~0.5 s of a commanded move with almost no speed.
 - Farm (`FARM_ON`, `FARM_HUNT_ON`) and the farm distances.
@@ -27,6 +27,7 @@ Doug, 1:52 PM ET: train movement in the local sim (strafe, slide, fluid motion) 
 - Crossfire break (`CROSSFIRE_ON`) and late lightning walk (`LATE_LIGHT_ON`, Build 80).
 - Lightning ambush (`LIGHT_AMBUSH_ON` in `brain.ts`: lightning, no laser, seen by exactly one enemy at 45–90 m, step out of sight and wait). Do not widen it.
 - Standoff break (`STANDOFF_BREAK_S=60`: after 60 s, lone 45–90 m heal/hold standoff, close to best-weapon range). Do not change the trigger or the close-to-range rule; you may only change *how* the mech moves while closing or fighting (strafe/slide/orbit), not *when* it decides to break or stand off.
+- Supply-drop run (`DROP_RUN_M=150`, P-D-003, now in the 4.10 champion): called drop within 150 m, not held by another mech, zone-safe for the whole capture, HP at or above retreatHp — walk to arrive as it lands, then hold the ring. Do not change this rule or its rank.
 - Rank order stays: engage, hurt retreat, zone travel, crossfire break, laser walk, and the lightning ambush all rank first. Zone safety always wins.
 
 Today, when `engage` has a clear shot and is not closing for a finish, `move` stays `[0, 0]` (`brain.ts` initializes move to zero and only calls `travel` toward the foe when the shot is unclear or a finish needs range). House bots in the sim already strafe. That standing-still gunfight is the main thing this track may change.
@@ -69,8 +70,8 @@ Report: kills and kills per minute after 60 s first, on both seed sets, plus gam
 
 ## Queued (take the top one when idle)
 - P-B-003 (TAKEN: Build 106, PR #97, submitted 12:55 PM ET) (Grok, 12:52 PM ET; builds on the 3.92 win): widen the B103 lightning ambush. In PR #94, 37% of the 45–90 m standoffs were skipped because we also held a laser. Let the ambush run when we hold lightning AND a laser whose charge isn't ready, keeping every other B103 condition. Flag `AMBUSH_WITH_LASER_ON`, shipped ON; flag 0 = main (B103) byte-identical.
-- P-B-006 (Grok, 1:43 PM ET; builds on the 4.06 win) ASSIGNED to Mech Builder: tune the champion's standoff break earlier. Change only the default `STANDOFF_BREAK_S` 60 -> 45. PR title 'P-B-006: standoff break at 45 s'. Report kills/min after 45 s and games changed vs main.
-- P-B-007 (Grok, 1:43 PM ET; queued) same knob the other way: `STANDOFF_BREAK_S` 60 -> 90. Build only after P-B-006 scores.
+- P-B-006 (Grok, 1:43 PM ET; originally on 4.06) ASSIGNED / REBASE REQUIRED: tune the standoff break earlier. Change only the default `STANDOFF_BREAK_S` 60 -> 45, **on current 4.10 main** (`9168d84` / `4d6e71b`). The 4.06 build (PR #107, `f93ed86`) was held back and must be rebuilt or rebased onto the drop-run champion before any site test. PR title 'P-B-006: standoff break at 45 s'. Report kills/min after 45 s and games changed vs the 4.10 main.
+- P-B-007 (Grok, 1:43 PM ET; queued) same knob the other way: `STANDOFF_BREAK_S` 60 -> 90, on the then-current champion. Build only after P-B-006 scores.
 - P-B-005 (DONE: PR #106, 21242ef, sim -0.135; reserve behind #104) (Grok, 1:12 PM ET; PR #98 audit H02): keep the gun leading while the laser charges. When the laser leads, the torso aims with no bullet lead and the gun goes quiet on crossers past ~65 m. Let the gun keep firing on its own lead (or split aim) during the charge. Flag `GUN_LEAD_DURING_CHARGE_ON`, shipped ON, flag 0 = main byte-identical. ASSIGNED to Mech Builder 1:21 PM ET: build it now and report its own trigger count (games per 192 where the gun would have gone quiet during a charge) in the PR.
 - P-B-004 (DONE: PR #104, 9c0a1a0, 2/192 changed; reserve candidate, slots after the higher-change builds) (Grok, 12:58 PM ET; from Wild Sim hazard screen, coord/data/hazard_screens.csv): fix the inherited nav pin outside the zone. Same seeds pin in B80/B103/B104 (e.g. SEED_BASE 0 seed 92: stuck 57 s outside the zone, then zone death; ~4-5 of 336 matches per build pin outside, ~10-11 pin in-zone 20 s+). When we are outside the zone and our distance to the zone edge has not dropped for N seconds, pick a detour waypoint (perpendicular step, then re-path). Flag `ZONE_UNPIN_S=6`, shipped ON; flag 0 = main byte-identical. Report zone deaths and pinned-outside counts on the same seeds vs main.
 - P-B-002 (TAKEN: Build 105 on Grok's computer): S6 from `coord/research/strategy-report-2026-11-21.md`. When a visible enemy is charging a laser at us, change ONE engagement safety check: break LOS or strafe off its line before release. Aim, path and firing stay unchanged. Flag `LASER_CHARGE_REACT_ON`, shipped ON. (B88's charge suppression lost, and this is a different mechanism; say why in the PR.)

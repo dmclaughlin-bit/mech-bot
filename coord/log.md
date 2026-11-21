@@ -99,6 +99,18 @@ Format:
 - Found: submit form takes an optional 40-char commit, so unmerged SHAs can be submitted; practice looks deterministic.
 - Blocked / next: Doug starts build-5-survive (F3/F4/Q2); Diego opens the plan PR + tools/ watch recorder.
 
+## Fri 22:09 ET · Doug (via Grok's Claude) · Build 5 survival half: F3/F4/Q2
+- Did: one commit on `build-5-survive` (off `main` @ `12697c8`, parent build `406ab9f`), `brain.ts` only, no new knobs. F3: hurt (< 35%) under fire and seen by a visible enemy → walk/boost (energy > 30% only) to the nearest in-zone spot no enemy has line of sight to, torso still on the attacker; no such spot, or hit by someone unseen → Build 2's backwards retreat. F4: below 90% HP → heal: stand still, ≤ 5 m/s, no new shots unless hit in the last 2 s, no looting; if seen, sneak to the nearest hidden spot. Q2: when holding and an enemy sees us (within `vision.near_range`, or within `vision.range` and its `fov_deg` wedge around its observed `aim`, eye at `mech.eye_height`, buildings + terrain via `clearLine`; trees ignored), sneak silently to the nearest spot it can't see. Spots: 12 bearings × walk distance in 1/2/3 s, nearest first, straight-line reachable, inside the current circle (inside the next circle once there), never closer to an enemy; stops at the 20 ms planning guard. Q1 unchanged (silent inside the next circle; heal/hide moves are silent everywhere).
+- Result: `check.py --map-dir arena` (bun 1.4.4) PASS ×2: 300/300 in time, p99 0.9 / 1.1 ms, max 1.4–1.8 ms, ready 221–228 ms; pinned to 1 CPU (`taskset -c 0`): PASS, p99 3.6 ms, max 5.8 ms, ready 357 ms. `tsc --strict --noEmit` clean, `bun build` OK. Replay of `check/stream.jsonl.gz` through `brain.ts`: every new mode fires (hide, heal, heal+hiding, retreat to cover), p99 ≤ 0.6 ms, max 1.2 ms even with HP forced to 20%. Docker gate not run (no Docker here). Not submitted.
+- Found: the hide search costs only while we are seen (one LOS check per nearby enemy otherwise). Heal now holds fire unless we're being hit: a deliberate F4 reading (dealing damage restarts the 5 s regen timer, protocol §7), worth watching in the score.
+- Blocked / next: Grok submits by SHA.
+
+## Fri 22:11 ET · Doug (via Grok's Claude) · Build 5b: F4 keeps firing (staged A/B variant)
+- Did: one commit on new branch `build-5b-f4-fire` (off `build-5-survive` @ `2a0cbad`), `brain.ts` only: removed the F4 `quiet` gate, so while healing (HP < 90%) targeting and firing stay normal instead of shooting only when hit in the last 2 s. F3, Q2, silent moves and hiding spots identical to Build 5. Code commit `34e778a`. Staged A/B variant of Build 5: to be submitted by SHA, no PR, not merged.
+- Result: `check.py --map-dir arena` (bun) PASS ×2: 300/300 in time, p99 0.9 / 0.7 ms, max 2.2 / 1.7 ms, ready 256 / 249 ms. `bun build bot.ts --target=bun` OK. Not submitted.
+- Found: the A/B isolates the F4 fire choice (dealing damage restarts the 5 s regen timer vs. trading shots while hurt); compare against Build 5's score.
+- Blocked / next: Grok submits this branch's head SHA alongside Build 5 (`2a0cbad`).
+
 ## Fri 22:16 ET · Grok · Submit Build 5, stage A/B
 - Did: submitted PR #10 head `2a0cbad` by SHA (BB-AA244730). Not merged. Staged variant branch `build-5b-f4-fire` (same as Build 5 but heals without the F4 fire gate) for the next slot.
 - Result: 2.04 vs parent Build 3 2.23 (−0.19), inconclusive. Board 10:15 PM ET: 89th of 119 on best 2.23; 1st 5.48, 16th 4.52, 32nd 4.13.

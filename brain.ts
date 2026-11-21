@@ -6,8 +6,11 @@
  * only, a fire gate on the gun, zone travel that leaves just in time and holds silently,
  * unsticking, retreat when hurt, and an upgrade order. The rules are §9 of the team plan.
  * Build 3: zone travel along nav.ts paths, nav.stuck for unsticking, and a 30 ms deadline guard.
+ * Build 5 (survival half): retreat to the nearest in-zone spot out of the attackers' line of sight (F3), then
+ * heal there silently until HP is back over 90% (F4; Build 5b keeps normal fire while healing), and while holding, slip out of any
+ * enemy's sight: its 45 m proximity ring and its 120° wedge around its aim (Q2). Q1 (silent hold) is unchanged.
  */
-import { clearLine, loadMap } from "./map.ts"
+import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import { params } from "./params.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -53,6 +56,11 @@ const DEADLINE_MS = 30
 const PLAN_RESERVE_MS = 10
 /** Line-of-sight checks per decision go to the nearest few enemies only. */
 const LOS_TARGETS = 8
+/** F4: heal (silent, out of contact) until HP is above this fraction of max. */
+const HEAL_HP = 0.9
+/** F3, Q2 hiding spots: this many bearings around us, at the distances we walk in 1, 2 and 3 s, nearest first. */
+const HIDE_BEARINGS = 12
+const HIDE_STEPS_S = [1, 2, 3]
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -195,6 +203,53 @@ function buildBot(hello: Hello): Bot {
   const scale = (cubes = 0) => 1 + growth * cubes
   const centerOf = (m: { pos: Vec3; cubes?: number }): Vec3 => [m.pos[0], m.pos[1], m.pos[2] + (cfg.mech.height / 2) * scale(m.cubes)]
 
+  /**
+   * F3, Q2: can any of `threats` see a mech standing at `p` (feet)? Protocol §8: its eye (pos.z + eye_height) needs a
+   * line to our center or top, and we must be within near_range, or within range and its fov wedge around its aim yaw.
+   * `cone` false drops the wedge test: an attacker already aiming at us sees us wherever it looks (F3).
+   */
+  function seenAt(p: Vec3, height: number, threats: { pos: Vec3; aim: [number, number]; cubes?: number }[], cone: boolean): boolean {
+    const v = cfg.vision
+    const halfFov = (v.fov_deg * Math.PI) / 360
+    const center: Vec3 = [p[0], p[1], p[2] + height / 2]
+    const top: Vec3 = [p[0], p[1], p[2] + height]
+    for (const e of threats) {
+      const d = flat(e.pos, p)
+      if (d > v.range) continue
+      if (cone && d > v.near_range && Math.abs(wrap(yawTo(e.pos, p) - e.aim[0])) > halfFov) continue
+      const eye: Vec3 = [e.pos[0], e.pos[1], e.pos[2] + (cfg.mech.eye_height ?? cfg.mech.height) * scale(e.cubes)]
+      if (clearLine(solids, eye, center, 0, 0) || clearLine(solids, eye, top, 0, 0)) return true
+    }
+    return false
+  }
+
+  /**
+   * F3, Q2: the nearest spot we can walk to in a straight line, inside `keepIn` (center, radius), no closer to any
+   * threat than we are now, where no threat sees us. Nearest first, no scoring (the full position query is later in
+   * Build 5). Null when there is none or the deadline is near.
+   */
+  function hideSpot(
+    me: Observation["self"], height: number, walk: number, threats: { pos: Vec3; aim: [number, number]; cubes?: number }[],
+    cone: boolean, keepIn: [number[], number], timeOk: () => boolean,
+  ): Vec3 | null {
+    const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
+    for (const s of HIDE_STEPS_S) {
+      for (let b = 0; b < HIDE_BEARINGS; b++) {
+        if (!timeOk()) return null
+        const yaw = (2 * Math.PI * b) / HIDE_BEARINGS
+        const x = me.pos[0] + Math.cos(yaw) * walk * s, y = me.pos[1] + Math.sin(yaw) * walk * s
+        if (Math.hypot(x - keepIn[0][0], y - keepIn[0][1]) > keepIn[1]) continue
+        const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+        if (g === -Infinity) continue
+        const p: Vec3 = [x, y, g]
+        if (threats.some((e) => flat(e.pos, p) < flat(e.pos, me.pos))) continue
+        if (!clearLine(solids, from, [x, y, p[2] + height / 2], 0, 0)) continue
+        if (!seenAt(p, height, threats, cone)) return p
+      }
+    }
+    return null
+  }
+
   /** Keep track of every enemy mech seen, and of where the last hit came from. */
   function remember(obs: Observation) {
     for (const m of obs.mechs) {
@@ -282,6 +337,12 @@ function buildBot(hello: Hello): Bot {
         const yaw = yawTo(me.pos, to)
         return [Math.cos(yaw), Math.sin(yaw)]
       }
+      // F3, Q2 (Build 5): the enemies in view (or remembered for memory_s), nearest first, and where we may hide:
+      // inside the circle we are in, and inside the next one once we are there, so hiding never undoes Z1.
+      const myHeight = me.stats.height ?? cfg.mech.height * scale(me.cubes)
+      const threats = enemies.slice().sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos)).slice(0, LOS_TARGETS)
+      const zoneKeep: [number[], number] = toEnter === 0 ? [z.next_center, inner] : [z.center, Math.max(0, z.radius - margin)]
+      let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
       let mode = "hold"
@@ -295,9 +356,15 @@ function buildBot(hello: Hello): Bot {
         move = go.move
         boost = go.dist / walkSpeed > timeLeft
         mode = "to next circle"
+      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && seenAt(me.pos, myHeight, threats, false) && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
+        // Retreat (F2, F3, Build 5): hurt and under fire, so head for the nearest in-zone spot out of every visible
+        // enemy's line of sight, torso still on the attacker (legs and torso are independent). Boost only above 30% energy.
+        move = heading(spot)
+        boost = me.energy > 0.3 * me.max_energy
+        mode = "retreat to cover"
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp) {
-        // Retreat (F2, F3): hurt and under fire, so back away from the attacker with the torso still on it
-        // (legs and torso are independent). Lean toward the center near the circle's edge; boost only above 30% energy.
+        // Retreat (F2, F3) with no cover in reach, or hit by someone we can't see: back away from the attacker with the torso still on it.
+        // Lean toward the center near the circle's edge; boost only above 30% energy.
         const away = lastHit.bearing + Math.PI
         let mx = Math.cos(away), my = Math.sin(away)
         const edge = clamp((flat(me.pos, z.center) - (z.radius - 40)) / 40, 0, 1)
@@ -310,12 +377,25 @@ function buildBot(hello: Hello): Bot {
         move = [mx / n, my / n]
         boost = me.energy > 0.3 * me.max_energy
         mode = "retreat"
+      } else if (me.hp < HEAL_HP * me.max_hp) {
+        // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
+        spot = threats.length && seenAt(me.pos, myHeight, threats, true) ? hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan) : null
+        if (spot) move = heading(spot)
+        mode = spot ? "heal, hiding" : "heal"
       } else if (lootTarget) {
         move = heading(lootTarget)
         mode = "loot"
+      } else if (threats.length && seenAt(me.pos, myHeight, threats, true)) {
+        // Hold out of sight (Q2, Build 5): outside every enemy's 45 m ring and 120° wedge, moving silently.
+        spot = hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan)
+        if (spot) {
+          move = heading(spot)
+          mode = "hide"
+        }
       }
-      // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1).
-      if (toEnter === 0 && !boost && mode !== "retreat") move = [move[0] * silent, move[1] * silent]
+      // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
+      const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
+      if ((toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat")) move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {
@@ -382,7 +462,6 @@ function buildBot(hello: Hello): Bot {
         const hittingUs = obs.t - (hitBy.get(m.id) ?? -Infinity) < 2
         const weak = (m.hp ?? 1) / (m.max_hp ?? 1) < 0.5
         const gunOpen = d <= GUN_GATE || hittingUs || weak || sideways <= radial
-
         // Fire only what can hit from where the torso actually points.
         if (clear && gun >= 0 && gunOpen) {
           const g = w(gun)

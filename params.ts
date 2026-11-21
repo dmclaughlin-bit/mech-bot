@@ -139,4 +139,4 @@ export const STANDOFF_BREAK_S = 60
  * above it; firing is unchanged. The standoff break never replaces it (that runs only from heal or hold).
  * 0 = off, identical to the champion.
  */
-export const DROP_RUN_M = 200
+export const DROP_RUN_M = 260

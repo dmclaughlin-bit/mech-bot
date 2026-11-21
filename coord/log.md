@@ -337,3 +337,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 2026-11-21 3:36 AM ET: Build 32 laser pre-charge (f478895, PR #47) scored 3.48, receipt BB-C5622A3A. Below champion 3.54, so the PR is closed. Rank 114/192; rank 32 ImagineLosing 5.04.
 
 - 2026-11-21 3:48 AM ET: Build 48 house hit rates in TTK race (51a5e10, PR #54) scored 3.50, receipt BB-D03F8790. Below champion 3.54, so the PR is closed. Rank 116/198; rank 32 Tark305 5.06.
+
+- 2026-11-21 4:17 AM ET: Build 60 break LOS in 2-on-1 crossfire (b889814, PR #57) scored 3.67, receipt BB-A0BBBFEE. NEW CHAMPION (was 3.54 B30); merged. Site auto-set it as final entry. Rank 115/201; rank 32 1212 5.10.

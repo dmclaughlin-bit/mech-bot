@@ -104,6 +104,11 @@ const CLAIM_M = 12
 const CLAIM_S = 12
 /** Build 17 (early laser): turn the torso once around for this long (s) at spawn, to see the pickups on every side (the view is a 120° wedge). */
 const LASER_SCAN_S = 1.8
+/** Build 68 (keep a free slot for a laser): in the first LASER_RUSH_S, do not pick up or walk to lightning
+ * until we already hold a laser. Build 66 (LASERSWAP_ON) still takes lightning first, then walks to a later
+ * laser and swaps on pickup. This stops the dead end from forming: take-in-reach and the trip need a free
+ * slot, so gun+lightning plus any remembered enemy blocks a laser. false = champion. */
+const LASERSLOT_ON = true
 /** Build 17: a remembered laser we stand this close to (m) with a clear line and no longer see has been taken. */
 const LASER_GONE_M = 30
 /** Build 17: change to another laser only if it is this much nearer (m). */
@@ -435,13 +440,15 @@ function buildBot(hello: Hello): Bot {
 
       // Loot (D3, L1, L2): laser and lightning only, never a mortar, and only with no enemy within 160 m.
       // Keep the gun until the second of the two shows up, then swap the gun out, never with an enemy in view.
+      const holdsLaser = me.weapons.some((x) => x?.kind === "laser")
+      const skipLightning = LASERSLOT_ON && !holdsLaser && obs.t < LASER_RUSH_S
       let lootTarget: Vec3 | null = null
       if (!enemies.some((m) => flat(m.pos, me.pos) < LOOT_CLEAR)) {
         const held = me.weapons.map((x) => x?.kind ?? null)
         const free = held.indexOf(null)
         const swapSlot = free < 0 && enemies.length === 0 && (held.includes("laser") || held.includes("lightning")) ? held.indexOf("gun") : -1
         const want = obs.pickups
-          .filter((p) => (p.kind === "laser" || p.kind === "lightning") && !held.includes(p.kind))
+          .filter((p) => (p.kind === "laser" || (p.kind === "lightning" && !skipLightning)) && !held.includes(p.kind))
           .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
         if (want && (free >= 0 || swapSlot >= 0)) {
           if (flat(want.pos, me.pos) < cfg.loot.pickup_radius && Math.abs(want.pos[2] - me.pos[2]) < 4) {
@@ -453,7 +460,6 @@ function buildBot(hello: Hello): Bot {
       // Early arm-up (Build 17): remember every laser and lightning seen, forget one that is gone, and take a laser in
       // reach (holding only the gun: a lightning too, the laser first) into a free slot whoever is in view (taking
       // costs nothing; the 160 m rule above would leave us standing on it).
-      const holdsLaser = me.weapons.some((x) => x?.kind === "laser")
       const gunOnly = me.weapons.every((x) => !x || x.kind === "gun") && me.weapons.some((x) => x?.kind === "gun")
       if (LASER_RUSH_ON) {
         const eye: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.eye_height ?? cfg.mech.eye_height ?? cfg.mech.height)]
@@ -462,7 +468,7 @@ function buildBot(hello: Hello): Bot {
         for (const [id, a] of arms)
           if (!obs.pickups.some((p) => p.id === id) && flat(a.pos, me.pos) < LASER_GONE_M && clearLine(solids, eye, a.pos, 0, 0)) arms.delete(id)
         const reach = (kind: string) => obs.pickups.find((p) => p.kind === kind && flat(p.pos, me.pos) < cfg.loot.pickup_radius && Math.abs(p.pos[2] - me.pos[2]) < 4)
-        const here = holdsLaser || !me.weapons.includes(null) ? undefined : (reach("laser") ?? (gunOnly ? reach("lightning") : undefined))
+        const here = holdsLaser || !me.weapons.includes(null) ? undefined : (reach("laser") ?? (gunOnly && !skipLightning ? reach("lightning") : undefined))
         if (here) {
           act.take = here.id
           lootTarget = null
@@ -632,7 +638,7 @@ function buildBot(hello: Hello): Bot {
         // A laser always counts; a lightning only while we hold nothing but the gun. Lasers first, then the nearest.
         const options = [...arms]
           .filter(([id, a]) =>
-            (a.kind === "laser" || gunOnly) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
+            (a.kind === "laser" || (gunOnly && !skipLightning)) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
             !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4) && fits(a.pos, flat(me.pos, a.pos)))
           .sort((a, b) => Number(a[1].kind !== "laser") - Number(b[1].kind !== "laser") || flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos))
         const kept = rush ? options.find(([id]) => id === rush!.id) : undefined

@@ -6,6 +6,8 @@ Related data: `screens.csv` (sim screens), `hazard_screens.csv` (Wild Sim), `pos
 
 | Submitted (ET) | Build | Change | Family | Champion then | Site | Delta | Verdict | Receipt |
 |---|---|---|---|---|---|---|---|---|
+| 2026-11-21 14:57 ET | B118 | B118 drop reach DROP_RUN_M 200 -> 260, on 4.17 main | drops | 4.17 | 4.17 | +0.00 | CLOSE | BB-BAC9670C |
+| 2026-11-21 14:54 ET | B115 | B115 drop-run arrival lead 5 -> 10 s, on 4.17 main | drops | 4.17 | 4.13 | -0.04 | CLOSE | BB-D76FEDCF |
 | 2026-11-21 14:40 ET | B113 | B113 drop reach DROP_RUN_M 150 -> 200, on 4.10 drop-run main | drops | 4.10 | 4.17 | +0.07 | KEEP | BB-09AE8A68 |
 | 2026-11-21 14:04 ET | P-B-006 | P-B-006 STANDOFF_BREAK_S 60->45, on 4.10 drop-run main | standoff | 4.10 | 4.02 | -0.08 | CLOSE | BB-A1312E8D |
 | 2026-11-21 13:55 ET | B107 | P-D-003 supply-drop run on 4.06 main (DROP_RUN_M=150), rebuilt from B104 | drops | 4.06 | 4.10 | +0.04 | KEEP | BB-DA9AC664 |

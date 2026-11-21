@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_RUN_LEAD_S, DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -736,7 +736,7 @@ function buildBot(hello: Hello): Bot {
           const dist = flat(d.pos, me.pos)
           if (dist < d.radius - DROP_INSET) dropHold = true
           else if (obs.t - dropRun.since > d.lands_in + DROP_RUN_M / walkSpeed + 10) { dropSkip.add(d.id); dropRun = null }
-          else if (dist / walkSpeed + 5 >= d.lands_in) dropMove = travel(me.pos, d.pos, obs.t, canPlan()).move
+          else if (dist / walkSpeed + DROP_RUN_LEAD_S >= d.lands_in) dropMove = travel(me.pos, d.pos, obs.t, canPlan()).move
           else dropRun = null
         }
       }

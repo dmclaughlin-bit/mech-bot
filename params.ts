@@ -140,3 +140,11 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 150
+
+/**
+ * P-B-013 (B115, drop-run arrival lead): the drop run starts walking only once dist / walkSpeed + DROP_RUN_LEAD_S >= lands_in,
+ * so we accept arriving up to this many seconds early and then stand in the ring until the drop lands and the capture
+ * finishes. More lead gives margin for nav unsticking or pathing around obstacles (arriving late misses the capture),
+ * at the cost of more standing time in the open before landing. 5 = the champion value, identical to main.
+ */
+export const DROP_RUN_LEAD_S = 10

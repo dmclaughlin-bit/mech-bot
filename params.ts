@@ -131,6 +131,13 @@ export const NO_SNEAK_QUIET_S = 3
 export const STANDOFF_BREAK_S = 60
 
 /**
+ * P-B-013 (B115, drop-run arrival lead): the drop run starts walking only once dist / walkSpeed + DROP_RUN_LEAD_S >= lands_in,
+ * so we accept arriving up to this many seconds early and then stand in the ring until the drop lands and the capture
+ * finishes. More lead gives margin for nav unsticking or pathing around obstacles (arriving late misses the capture),
+ * at the cost of more standing time in the open before landing. 5 = the champion value, identical to main.
+ */
+export const DROP_RUN_LEAD_S = 10
+/**
  * P-D-003 (supply-drop run, first built as P-D-001 on B80): the bot never takes a supply drop once enemies are
  * around (0 claims in 106 sim games reaching 95 s), because farming needs no enemy known within 160 m. With this set above 0: a called drop
  * within DROP_RUN_M (m), not held by another mech, zone-safe for the capture, and not hurt (HP at or above retreatHp),
@@ -139,12 +146,4 @@ export const STANDOFF_BREAK_S = 60
  * above it; firing is unchanged. The standoff break never replaces it (that runs only from heal or hold).
  * 0 = off, identical to the champion.
  */
-export const DROP_RUN_M = 150
-
-/**
- * P-B-013 (B115, drop-run arrival lead): the drop run starts walking only once dist / walkSpeed + DROP_RUN_LEAD_S >= lands_in,
- * so we accept arriving up to this many seconds early and then stand in the ring until the drop lands and the capture
- * finishes. More lead gives margin for nav unsticking or pathing around obstacles (arriving late misses the capture),
- * at the cost of more standing time in the open before landing. 5 = the champion value, identical to main.
- */
-export const DROP_RUN_LEAD_S = 10
+export const DROP_RUN_M = 200

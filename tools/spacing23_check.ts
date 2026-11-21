@@ -134,6 +134,8 @@ function play(s: Scene, who: "base" | Flags): Run {
   return out
 }
 const xy = (p: Vec3) => `(${p[0].toFixed(0)}, ${p[1].toFixed(0)})`
+// Walking to a weapon is `loot` or, since Build 17 (main 81fc5fc), `laser rush`.
+const walkTicks = (m: Map<string, number>) => (m.get("loot") ?? 0) + (m.get("laser rush") ?? 0)
 const showModes = (m: Map<string, number>) => [...m].map(([k, n]) => `${k} ${n}`).join(", ")
 const gapAt = (s: Scene, p: Vec3) => Math.min(...s.foes.map((e) => flat(e.pos, p)))
 const vsBase = (s: Scene) => {
@@ -149,7 +151,7 @@ const vsBase = (s: Scene) => {
 {
   const s: Scene = { t0: 2, seconds: 14, foes: [{ id: 1, pos: [100, 0, 0], inView: (t, took) => t <= 2 || took }], pickups: [{ kind: "laser", pos: [60, 0, 0] }] }
   const r = vsBase(s)
-  check("laser next to an enemy is walked to and taken as on main", r.same && r.on.took >= 0 && (r.on.modes.get("loot") ?? 0) > 0 && !r.on.modes.has("space"),
+  check("laser next to an enemy is walked to and taken as on main", r.same && r.on.took >= 0 && walkTicks(r.on.modes) > 0 && !r.on.modes.has("space"),
     `identical actions on all ${r.on.acts.length} ticks: ${r.same}; modes ${showModes(r.on.modes)} (base ${showModes(r.b.modes)}); take at tick ${r.on.took} (base ${r.b.took}); loot ticks ${r.on.modes.get("loot") ?? 0} (base ${r.b.modes.get("loot") ?? 0}); ends ${xy(r.on.end)}, ${gapAt(s, r.on.end).toFixed(0)} m from the enemy`)
 }
 // Enemy 170 m east in view (just outside the 160 m loot gate), laser 50 m east (120 m from it, inside the ring): base
@@ -157,7 +159,7 @@ const vsBase = (s: Scene) => {
 {
   const s: Scene = { t0: 2, seconds: 14, foes: [{ id: 1, pos: [170, 0, 0] }], pickups: [{ kind: "laser", pos: [50, 0, 0] }] }
   const r = vsBase(s)
-  check("laser walk toward an enemy in view = base", r.same && (r.on.modes.get("loot") ?? 0) > 0, `identical actions: ${r.same}; loot ticks ${r.on.modes.get("loot") ?? 0}; ends ${xy(r.on.end)} (base ${xy(r.b.end)})`)
+  check("laser walk toward an enemy in view = base", r.same && walkTicks(r.on.modes) > 0, `identical actions: ${r.same}; loot + laser rush ticks ${walkTicks(r.on.modes)}; ends ${xy(r.on.end)} (base ${xy(r.b.end)})`)
 }
 // The same with a lightning to the west as a second choice: base picks the nearer laser on the enemy side; so must we.
 {

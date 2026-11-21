@@ -377,3 +377,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 2026-11-21 8:44 AM ET: B100 latecover 8ec3946 (PR #85, B60 cover at 1+ LOS after 45 s when just hit) site 3.50 (BB-813FFACF). Below champion B80 3.79. Closed. Sim was -0.052 (21/192 changed). Rank 129/239, #1 kyoto-max 6.00, #32 5.25.
 
 - 2026-11-21 8:50 AM ET: B94 lateclaim 1657334 (PR #82, P9+P10, submitted by routine tick) site 3.73 (BB-EA74B72B). Below champion B80 3.79. Closed. Sim was +0.000 with only 6/192 changed, yet it scored 0.06 lower, so near-inert builds do not always reproduce the champion score exactly. Rank 129/239, #1 kyoto-max 6.00, #32 5.25. Overnight push ended; final entry stays B80 3.79.
+
+- 2026-11-21 afternoon ET: Added `coord/RESEARCH.md` (and `coord/research/` tables) as a self-contained dossier of everything learned through B94, for a deep-research pass on the next change. No bot code changed, no PR touched, nothing submitted. Champion stays B80 28c3acc, site 3.79, receipt BB-78A44AAF.

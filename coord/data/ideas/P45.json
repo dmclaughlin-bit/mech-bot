@@ -10,7 +10,7 @@
     "Only inside the existing P29 settle branch (brain.ts ~848-869: mode hold, farmOk, afterShrink, r > MIDRING_MIN_R, no near-and-reachable drop). Instead of the single goal at MIDRING_GOAL*r on our own side, score up to 3 reachable candidates inside MIDRING_LO..MIDRING_HI by static building/trunk cover near the spot, open exit directions on the nav grid, and slack to the next zone. P29 trigger, drop yields, timing and MIDRING_STUCK_S give-up unchanged. No patrol, no wider search, no omniscient inputs."
   ],
   "owner": "Mech Builder",
-  "stage": "step-a",
+  "stage": "step-a-fail",
   "pr": null,
   "sha": null,
   "champion_sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
@@ -32,9 +32,78 @@
     "more deaths < 40 s",
     "worse time in zone"
   ],
-  "next_action": "Mech Builder: Step A in the next free session (ahead of P37b). If it passes, build one flag on main, flag-off byte-identical, 4-base trees-on checklist, archive < 15,000,000, then full paired screen by Sim Tester before any site test.",
+  "next_action": "None for P45 (stopped at Step A, no build). Coordinator: retire or re-scope; settle itself fires in only ~20-22/192 games per set, so any settle-spot refinement has a low ceiling.",
   "approval_requirements": "None new: Step A and the build follow the existing workflow. Site test only after a full passing screen, submitted by the loop. Any exception or rule change needs Doug's yes.",
   "decision": null,
-  "blocker": null,
-  "updated_et": "2026-11-21 21:25"
+  "blocker": "Step A FAIL: rare choice: a real cover/exit choice between 2+ reachable midring candidates occurs in 11/192 games on 2000+3000 but only 5/192 on 4000+5000 (< 10); only 20/192 games there settle at all.",
+  "updated_et": "2026-11-21 21:48",
+  "step_a_result": {
+    "verdict": "FAIL",
+    "reason": "Step A FAIL: rare choice: a real cover/exit choice between 2+ reachable midring candidates occurs in 11/192 games on 2000+3000 but only 5/192 on 4000+5000 (< 10); only 20/192 games there settle at all.",
+    "champion": "main 588557e (P34 0e6fadd), bot code identical to origin/main",
+    "sim": "copy of /tmp/builder-sim-trees, --trees, --jobs 1, 96 seeds per base",
+    "method": "Passive /tmp copy of the champion. At each P29 settle start (unchanged trigger), 3 candidates on the MIDRING_GOAL ring: the own-side goal and 25 m of arc either side. Candidate valid = free nav cell in our nav component + zone-safe (same test as P29). Proxy: cover = of 16 bearings, how many a building/hill/trunk (world.json trees) blocks within 12 m at chest height; exits = of 8 compass rays, how many stay on reachable nav cells for 12 m. Real choice = 2+ valid candidates with different (cover, exits). Would-pick-other = cover + exits + min(slack,30)/60 picks a non-default spot. Stuck while settled = settle-walk decisions with speed < 0.15 walk speed (0.1 s each).",
+    "sets": {
+      "2000+3000": {
+        "games": 192,
+        "settle_starts": 109,
+        "games_with_settle": 22,
+        "real_choice_games": 11,
+        "would_pick_other_games": 10,
+        "settle_walk_s": 132.9,
+        "stuck_while_settled_s": 9.5,
+        "deaths_within_20s_of_settle_start": 2,
+        "stuck_giveups": 2,
+        "worst_scoring_ms": 1.045
+      },
+      "4000+5000": {
+        "games": 192,
+        "settle_starts": 27,
+        "games_with_settle": 20,
+        "real_choice_games": 5,
+        "would_pick_other_games": 3,
+        "settle_walk_s": 97.9,
+        "stuck_while_settled_s": 11.0,
+        "deaths_within_20s_of_settle_start": 1,
+        "stuck_giveups": 4,
+        "worst_scoring_ms": 0.807
+      }
+    },
+    "per_base": {
+      "2000": {
+        "settle_starts": 51,
+        "games_with_settle": 9,
+        "real_choice_games": 6,
+        "stuck_s": 4.8,
+        "deaths20": 1,
+        "worst_ms": 0.807
+      },
+      "3000": {
+        "settle_starts": 58,
+        "games_with_settle": 13,
+        "real_choice_games": 5,
+        "stuck_s": 4.7,
+        "deaths20": 1,
+        "worst_ms": 1.045
+      },
+      "4000": {
+        "settle_starts": 14,
+        "games_with_settle": 9,
+        "real_choice_games": 2,
+        "stuck_s": 3.9,
+        "deaths20": 1,
+        "worst_ms": 0.733
+      },
+      "5000": {
+        "settle_starts": 13,
+        "games_with_settle": 11,
+        "real_choice_games": 3,
+        "stuck_s": 7.1,
+        "deaths20": 0,
+        "worst_ms": 0.733
+      }
+    },
+    "passivity": "instrumented vs plain champion CSV rows identical (timing columns excluded) on all 4 bases: 384/384",
+    "pass_rule": ">= 10/192 real-choice games on BOTH sets and worst < 30 ms: timing passes, 4000+5000 fails (5/192)"
+  }
 }

@@ -198,3 +198,12 @@ export const TREE_RETREAT_STUCK_S = 3
  */
 export const BACKAWAY_FAR_COVER_ON = true
 export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]
+
+/**
+ * P66 (body-width cover at knee height): in the champion's building-cover retreat ("retreat to cover"), from
+ * t = TREE_RETREAT_MIN_T (40 s), never in a drop run/hold or while a drop is near AND reachable within DROP_RUN_M,
+ * hideSpot's walk test also needs three knee-height lines (feet + step_up + 0.3 m; offsets -radius, 0, +radius
+ * perpendicular to the walk) clear, so walls taller than step_up but under the mid-height line reject the spot (P65 reuse
+ * note: 6024's 4.1-4.7 m wall). Hide test, other hideSpot callers, torso and aim unchanged (N8). false = champion exactly.
+ */
+export const BODY_WIDTH_COVER_KNEE_ON = false

@@ -1,0 +1,51 @@
+{
+  "id": "P68",
+  "title": "EARLY_BACKAWAY_FAR_COVER_ON: let only the P60 far-cover search/walk inside the back-away retreat fire from 10 s instead of 40 s (tree, building, P64 LOS-break keep their gates)",
+  "family": "retreat / movement (back-away mode, timing gate)",
+  "flag": "EARLY_BACKAWAY_FAR_COVER_ON",
+  "flags": ["EARLY_BACKAWAY_FAR_COVER_ON"],
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "branch": "p68-early-backaway-far-cover",
+  "base": "bc640a6b98617c66f3b9a3c4df97940bfbdd7b55",
+  "champion": "P64 BACKAWAY_LOS_BREAK_ON, bot code 8ada6a4 (merge 297f133), site 3.90 builders-4 BB-0E81A218",
+  "champion_sha_tested_against": "8ada6a4005cfe94e640e1f27c7108c05133255be",
+  "champion_main": "297f1332c190b034be1248662460716a437d54c3",
+  "builds_on": [
+    "synergy_research.md opp 3: 67 official pre-40 s plain back-away deaths; P60 Step A t<40 skip bucket 2691/2019",
+    "F16"
+  ],
+  "interacts_with": [
+    {"mechanic": "P60 far cover (BACKAWAY_FAR_COVER_ON)", "interaction": "the same search/walk/latch, only its time gate moves from TREE_RETREAT_MIN_T (40 s) to 10 s; P60's drop gate, seer test, 3 s give-up and skip list unchanged", "source": "brain.ts farRetreat; synergy_research.md opp 3"},
+    {"mechanic": "P64 LOS break (BACKAWAY_LOS_BREAK_ON)", "interaction": "keeps its own 40 s gate; before 40 s a back-away with no far spot stays the champion's plain back-away. Before 40 s no P64 decision exists to preempt, so the change cannot steal P64 activations", "source": "brain.ts losBreak"},
+    {"mechanic": "P48 tree retreat (TREE_RETREAT_ON)", "interaction": "keeps its 40 s gate, so before 40 s a 4-6 s far spot can be chosen even where a 1-3 s tree spot exists (tree search is not run before 40 s)", "source": "brain.ts treeRetreat"},
+    {"mechanic": "building-cover retreat (hideSpot)", "interaction": "precedes far cover in the branch order and has no time gate; unchanged. The 15 official pre-40 s building-cover deaths are not targeted", "source": "brain.ts retreat branch order; synergy_research.md opp 3"},
+    {"mechanic": "laser rush", "interaction": "the retreat branches already preempt laser rush; a far walk is longer than a back-away and may carry us farther from the laser we were rushing, so arm-up could be delayed", "source": "brain.ts branch order (retreat before claimGoal/rushMove)"},
+    {"mechanic": "drops", "interaction": "P60's drop gate applies unchanged: never in a drop run or ring hold, never while a drop is near AND reachable within DROP_RUN_M (never 'any drop exists')", "source": "/workspace/drop-gate-rule.txt; brain.ts dropReach"}
+  ],
+  "hypothesis": "Before 40 s the back-away retreat never uses P60's far-cover walk because it inherits the tree retreat's 40 s gate. 67 official games end in a plain back-away death before 40 s (39 on 2000+3000, 28 on 4000+5000), and t<40 is the largest skip bucket of P60's Step A (2691 and 2019 back-away decisions). If a 4-6 s spot hidden from the shooters exists in a useful share of those decisions, walking to it instead of backing straight away breaks LOS sooner and turns some early back-away deaths into survivals.",
+  "mechanism": "One flag EARLY_BACKAWAY_FAR_COVER_ON (default false) and one value EARLY_BACKAWAY_FAR_MIN_T = 10. When on, farRetreat's time gate is 10 s instead of TREE_RETREAT_MIN_T (40 s); nothing else changes: same branch position (after building cover and tree retreat, before P64 and plain back-away), same drop gate (no drop run/hold, no near-and-reachable drop within DROP_RUN_M), same shooters/seers test, same 4/5/6 s search, latch, 3 s no-progress give-up and skip list. Never at t < 10 s. Legs only; aim/torso/timing untouched (N8).",
+  "activation": "Decision-level: mode 'retreat' (plain back-away) at 10 s <= t < 40 s, P60's gates pass with the drop gate, and the far search returns a spot whose heading differs from the back-away heading by > 20 deg (P60's Step A definition). Game-level Step A count = games where this happens at least once, per 192-game set.",
+  "disproof": "Fails if Step A fire-and-change < 10/192 on either set (2000+3000, 4000+5000), OR deaths < 40 s rise on either practice base (0, 6000), OR the paired mean vs P64 is lower on both practice bases, OR a NEW >= 20 s pin appears, OR there are 0 activations between 10 s and 40 s that change the move.",
+  "positives": null,
+  "negatives": null,
+  "confidence": "Uncertain (no measurement yet: whether a far spot exists before 40 s was never measured)",
+  "reuse": null,
+  "novelty": {
+    "vs_P32": "P32 (FIGHT_FADE_ON) changed the engage finish walk (an offensive movement) and failed item 5 (deaths < 40 s 33->35). P68 changes only which spot an existing retreat walks to, in the decisions where the champion already retreats; the pre-40 s death count is the main risk and is a hard disproof here.",
+    "vs_P33": "P33 extended retreat duration in mid phase behind an 'any drop on the map' gate and fired 0/96. P68 uses the near-AND-reachable drop gate (drop-gate-rule.txt) and acts in 10-40 s, before most drop windows.",
+    "vs_P64": "P64 is the 'no far spot' leftover of the t >= 40 s cell; P68 is the t < 40 s cell, with P60's own search, and leaves P64's gate at 40 s.",
+    "vs_P60": "Same mechanism; only the activation window changes (10-40 s added). Not a re-test under a new name: P60 never searched before 40 s."
+  },
+  "outcome": "pending",
+  "timestamps": {"recorded": "2026-11-22 ET (Step 0, before any results)"},
+  "sources": [
+    "coord/data/synergy_research.md Opportunity 3",
+    "coord/data/ideas/P60.json step_a_result back_away_decisions_by_reason",
+    "coord/data/ideas/P64.json",
+    "coord/data/ideas/P32.json",
+    "coord/data/ideas/P33.json",
+    "coord/data/findings.md F16, F18, F20, N8, N9",
+    "/workspace/drop-gate-rule.txt"
+  ]
+}

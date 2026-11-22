@@ -5,7 +5,7 @@ code, and practice returns only an aggregate score. Use the sim to rank builds, 
 calibration numbers are in the pull request that added this folder.
 
 ```sh
-bun tools/sim/run.ts --bot <path/to/bot.ts> --seeds 48 --out sim.csv   # [--jobs N] [--kit <mechfight-kit dir>] [--vs-champions <bot.ts>]
+bun tools/sim/run.ts --bot <path/to/bot.ts> --seeds 48 --out sim.csv   # [--jobs N] [--kit <mechfight-kit dir>] [--trees] [--vs-champions <bot.ts>]
 SIM_TRACE=1 bun tools/sim/run.ts --worker --bot bot.ts --seed-list 1000   # one match, a status line every 5 s
 ```
 
@@ -41,7 +41,7 @@ house_gun_hits, decisions, missed, late_over_50ms, bot_ms_mean, bot_ready`.
 | Zone centres | Each next centre is uniform in the disc that keeps the next circle inside the current one, clamped 60 m inside the map. |
 | Crates, drones, floor loot | Uniform on open ground inside 0.9 of the first circle; the roof share lands on a random roof 4 to 45 m high. |
 | Supply drops | Land on open ground within `drops.spread` of the next circle's radius. House bots do not contest them. |
-| Trees | Ignored: they block neither sight nor shots. The real server lets canopy block sight, so real hiding is a little better. |
+| Trees | Off by default: trees block neither sight nor shots. With `--trees` (P-D-014), trees from `arena/world.json` block sight only. Assumed: (1) a tree's `height` and `crownBase` are measured up from its own ground `z`; (2) the trunk is a vertical cylinder of radius `trunkR` from `z` to `z+crownBase`, and blocks at every range; (3) the crown is an ellipsoid centred on (`crownX`,`crownY`), radius `crownR`, spanning `z+crownBase` to `z+height`; (4) canopy is soft: the line's length inside crowns gives transmittance `exp(-rules.canopyDensity × length)`, blocked below `rules.canopyBlockT` (Protocol §8); (5) canopy never blocks within `near_range` (45 m); (6) a tree blocks the centre or top sight line, and the target is seen if either line is clear of buildings and trees (same two lines as buildings); (7) shots, lasers and sound ignore trees. Off, the sim is unchanged. |
 | Geometry | One base and one top per 1 m cell (stacked prisms merge). The mech collides at its center and 8 points on its radius. The 50° slope limit is not modelled, only the 1.2 m step. Roof-edge sliding and eave rules are not modelled. |
 | Mortar direct hit | The target takes `damage` plus full splash. |
 | Lightning cone | Within `cone_deg` on either side of the aim yaw. |

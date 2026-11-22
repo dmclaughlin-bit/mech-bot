@@ -2,7 +2,7 @@
  * Local practice approximation. Runs our bot.ts as a subprocess speaking mechfight/1 against 15 scripted house
  * bots, for a fixed list of seeds, and writes one CSV row per match.
  *
- *   bun tools/sim/run.ts --bot <path/to/bot.ts> --seeds 48 --out sim.csv [--jobs N] [--kit /workspace/mechfight-kit]
+ *   bun tools/sim/run.ts --bot <path/to/bot.ts> --seeds 48 --out sim.csv [--jobs N] [--kit /workspace/mechfight-kit] [--trees]
  *     [--vs-champions <path/to/champion/bot.ts>]   P-D-016: the 15 other slots run that bot instead of house bots
  *
  * This is a model of the house squad, not the house squad: read ASSUMPTIONS.md before trusting a number.
@@ -12,7 +12,7 @@ import { availableParallelism } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { gunzipSync } from "node:zlib"
 import { buildObs, createSim, hdist, setAction, tick } from "./engine.ts"
-import { loadGeo } from "./geom.ts"
+import { loadGeo, loadTrees } from "./geom.ts"
 import { squadDecide } from "./house.ts"
 
 const args = process.argv.slice(2)
@@ -166,6 +166,8 @@ async function worker() {
   const kit = findKit(), arena = join(kit, "arena")
   const cfg = JSON.parse(gunzipSync(readFileSync(join(kit, "check/stream.jsonl.gz"))).toString("utf8").split("\n")[0]).config
   const geo = loadGeo(arena)
+  // P-D-014: trees block sight only with --trees (off by default, so screens are unchanged).
+  if (flag("trees")) geo.trees = loadTrees(arena)
   const bot = resolve(opt("bot")!), champ = opt("vs-champions") ? resolve(opt("vs-champions")!) : undefined
   for (const seed of opt("seed-list")!.split(",").map(Number)) {
     const row = await runMatch(geo, cfg, seed, bot, arena, champ)
@@ -185,7 +187,7 @@ async function main() {
   await Promise.all(Array.from({ length: jobs }, async (_, j) => {
     const mine = seeds.filter((_, i) => i % jobs === j)
     if (!mine.length) return
-    const pass = ["--bot", botPath, "--seed-list", mine.join(","), ...(opt("kit") ? ["--kit", opt("kit")!] : []), ...(opt("vs-champions") ? ["--vs-champions", resolve(opt("vs-champions")!)] : [])]
+    const pass = ["--bot", botPath, "--seed-list", mine.join(","), ...(opt("kit") ? ["--kit", opt("kit")!] : []), ...(opt("vs-champions") ? ["--vs-champions", resolve(opt("vs-champions")!)] : []), ...(flag("trees") ? ["--trees"] : [])]
     const p = Bun.spawn(["bun", import.meta.path, "--worker", ...pass], { stdout: "pipe", stderr: "inherit" })
     const text = await new Response(p.stdout).text()
     for (const line of text.split("\n")) if (line.startsWith("RESULT ")) rows.push(JSON.parse(line.slice(7)))

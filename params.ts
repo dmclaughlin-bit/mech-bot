@@ -156,3 +156,17 @@ export const MIDRING_HI = 0.7
 export const MIDRING_GOAL = 0.55
 export const MIDRING_MIN_R = 70
 export const MIDRING_STUCK_S = 3
+
+/**
+ * P36 (claim watched): after our kill, Build 14's collect walk normally needs nobody to have line of sight to us.
+ * With this on, the same walk to a visible cube within CLAIM_M of the death spot may also run while exactly one enemy
+ * sees us and it is at least params.gunRange away, our HP is at least CLAIM_WATCHED_HP of max, t >= CLAIM_WATCHED_MIN_T,
+ * and no supply drop is listed in obs.drops (so it never starts or runs while a drop is announced, landed, run to or
+ * held, and drop run/hold take over on the same tick a drop is called). Every other claim gate is unchanged. A cube
+ * walked to without 1 m of progress for CLAIM_WATCHED_STUCK_S is skipped by this rule for the rest of the match.
+ * false = champion behavior exactly.
+ */
+export const CLAIM_WATCHED_ON = false
+export const CLAIM_WATCHED_HP = 0.5
+export const CLAIM_WATCHED_MIN_T = 10
+export const CLAIM_WATCHED_STUCK_S = 3

@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  CLAIM_WATCHED_ON, CLAIM_WATCHED_HP, CLAIM_WATCHED_MIN_T, CLAIM_WATCHED_STUCK_S, DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -306,6 +306,9 @@ function buildBot(hello: Hello): Bot {
   /** Build 14: targets we gave up on (id → time), and where our last kill died, to collect its cubes. */
   const engageGiveUp = new Map<number, number>()
   let claim: { pos: Vec3; until: number } | null = null
+  /** P36 (CLAIM_WATCHED_ON): the watched claim walk in progress (cube id, best distance, when it last improved), and cubes given up on. */
+  let watchedWalk: { id: number; best: number; at: number } | null = null
+  const watchedSkip = new Set<number>()
   /** P-B-001: the enemy the standoff break walked at last decision (null when it did not run). */
   let standoffId: number | null = null
   /** P-D-012 (P29): the midring settle walk in progress, and the hold phases (by shrink_start) it gave up on. */
@@ -660,6 +663,7 @@ function buildBot(hello: Hello): Bot {
       // Collect (Build 14): after our kill, walk to the cubes it dropped (all of its cubes plus two) if it is safe:
       // nobody has line of sight to us, no mech hit us in the last 2 s, and the same zone test as farming.
       let claimGoal: Vec3 | null = null
+      let claimWatched: Vec3 | null = null
       if (claim && obs.t > claim.until) claim = null
       if (claim && me.in_zone && !leaveNow && !engage) {
         const at = claim.pos
@@ -670,7 +674,25 @@ function buildBot(hello: Hello): Bot {
           (flat(me.pos, goal) + Math.max(0, flat(goal, z.next_center) - inner)) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER < timeLeft
         if (!cube && flat(me.pos, at) < Number(cfg.cubes.pickup_radius ?? cfg.loot.pickup_radius)) claim = null
         else if (zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && !seenAt(me.pos, myHeight, threats, false)) claimGoal = goal
+        else if (
+          // P36 (see CLAIM_WATCHED_ON): the same walk to a visible cube while exactly one enemy, at least params.gunRange
+          // away, sees us, our HP is at least CLAIM_WATCHED_HP of max, after CLAIM_WATCHED_MIN_T, and no drop is listed.
+          CLAIM_WATCHED_ON && cube && zoneSafe && obs.t - lastMechHit > THREAT_HIT_S && obs.t >= CLAIM_WATCHED_MIN_T &&
+          (obs.drops ?? []).length === 0 && me.hp >= CLAIM_WATCHED_HP * me.max_hp && !watchedSkip.has(cube.id)
+        ) {
+          const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+          if (los.length === 1 && flat(los[0].pos, me.pos) >= params.gunRange) {
+            const left = flat(me.pos, cube.pos)
+            if (watchedWalk?.id !== cube.id) watchedWalk = { id: cube.id, best: left, at: obs.t }
+            else if (left < watchedWalk.best - 1) { watchedWalk.best = left; watchedWalk.at = obs.t }
+            // No 1 m of progress for CLAIM_WATCHED_STUCK_S: leave this cube to the champion's claim rule.
+            if (obs.t - watchedWalk.at > CLAIM_WATCHED_STUCK_S) watchedSkip.add(cube.id)
+            else claimWatched = goal
+          }
+        }
       }
+      if (claimWatched) claimGoal = claimWatched
+      else watchedWalk = null
       // Stop sneaking (Build 19): not hurt (HP at or above the retreat line, no damage for NO_SNEAK_QUIET_S), so no
       // silent speed cap and no walk to a hiding spot. While hurt, the retreat, the heal and their hiding are unchanged.
       const noSneak = NO_SNEAK_ON && me.hp >= RETREAT_HP * me.max_hp && obs.t - lastDamaged > NO_SNEAK_QUIET_S

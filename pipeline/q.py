@@ -111,7 +111,7 @@ def eligibility(e, exps, cfg):
         reasons.append("already submitted")
     for o in exps:
         if o["id"] != e["id"] and o.get("score") is not None and o["candidate_commit"][:7] == e["candidate_commit"][:7]:
-            reasons.append(f"commit {e['candidate_commit'][:7]} already scored in {o['id']} (practice is deterministic)")
+            reasons.append(f"commit {e['candidate_commit'][:7]} already scored in {o['id']} (identical code keeps its first score under the same scorer version)")
     used, nxt = slots_used(exps, cfg)
     if used >= cfg["max_submissions_per_hour"]:
         reasons.append(f"no free slot: {used}/{cfg['max_submissions_per_hour']} used; next free {nxt.strftime('%-I:%M %p')} ET")
@@ -161,19 +161,49 @@ def _idea_by_sha(sha):
     return None
 
 
+def _verdict_token(row):
+    """First word of the verdict, uppercased (e.g. LOSS from 'LOSS builders-4 (3.49 < 3.75)')."""
+    v = (row.get("verdict") or "").strip().upper()
+    if not v:
+        return ""
+    return v.replace(";", " ").replace(",", " ").split()[0]
+
+
+def _row_is_rejected(row):
+    """Rejected receipts (e.g. BB-FB8CB5AE, P34 archive over 20 MB) are terminal, never pending."""
+    return _verdict_token(row) == "REJECTED"
+
+
+def _row_is_queued(row):
+    """A genuinely queued unofficial receipt: no site_score, verdict pending/queued, not rejected."""
+    if _row_is_rejected(row):
+        return False
+    sc = (row.get("site_score") or "").strip()
+    if sc:
+        return False
+    tok = _verdict_token(row)
+    return tok in ("PENDING", "QUEUED")
+
+
 def _current_champion_sha():
+    """Champion bot SHA from champion.json (current official bar), with a CSV fallback.
+
+    Official gains are judged only within the same scorer version. champion.json.score is
+    the highest confirmed builders-4 score (P48 3.75, BB-5727119F). Do not select the last
+    KEEP row: later promotions were recorded as WIN (P29, P34, P48).
+    """
+    c = lib.read_json(CHAMP) or {}
+    if c.get("commit"):
+        return c["commit"]
     path = lib.REPO / "coord/data/site_results.csv"
     champ = None
     if path.exists():
         import csv
-        rows = list(csv.DictReader(path.open()))
-        for r in rows:
-            if (r.get("verdict") or "").upper() == "KEEP" and r.get("commit_sha"):
+        for r in csv.DictReader(path.open()):
+            tok = _verdict_token(r)
+            if tok in ("KEEP", "WIN", "BASELINE") and r.get("commit_sha"):
                 champ = r["commit_sha"]
-    if champ:
-        return champ
-    c = lib.read_json(CHAMP) or {}
-    return c.get("commit")
+    return champ
 
 
 def _pr_body(n):
@@ -262,14 +292,15 @@ def site_eligibility_reasons(sha, rec=None, pr_info=None):
     site = lib.REPO / "coord/data/site_results.csv"
     if site.exists():
         import csv
+        scored_tok = {"KEEP", "CLOSE", "LOSS", "TIE", "WIN", "BASELINE", "SCORED"}
         for row in csv.DictReader(site.open()):
-            v = (row.get("verdict") or "").upper()
+            tok = _verdict_token(row)
             sc = (row.get("site_score") or "").strip()
-            if v == "PENDING" or (not sc and v not in ("KEEP", "CLOSE", "LOSS", "TIE", "")):
+            if _row_is_queued(row):
                 reasons.append(f"pending official score: {row.get('build_id')} {row.get('receipt_id') or ''}".strip())
                 break
-            if sha and (row.get("commit_sha") or "").startswith(sha[:12]) and v in ("KEEP", "CLOSE", "LOSS", "TIE") and sc:
-                reasons.append(f"already submitted and scored as {row.get('build_id')} ({v} {sc}, {row.get('receipt_id')})")
+            if sha and (row.get("commit_sha") or "").startswith(sha[:12]) and tok in scored_tok and sc:
+                reasons.append(f"already submitted and scored as {row.get('build_id')} ({row.get('verdict')} {sc}, {row.get('receipt_id')})")
     return reasons
 
 
@@ -407,7 +438,7 @@ def cmd_add_exp(a):
                 "Pass --repeat-reason (new reason, changed implementation, or changed conditions).", 2)
         for e in exps:
             if e["candidate_commit"][:7] == a.commit[:7] and e.get("score") is not None:
-                die(f"commit {a.commit[:7]} already scored in {e['id']}; practice is deterministic, don't resubmit.", 2)
+                die(f"commit {a.commit[:7]} already scored in {e['id']}; identical code keeps its first score under the same scorer version, don't resubmit.", 2)
         e = {
             "id": lib.next_id(exps, "EXP-"), "label": a.label, "hypothesis_id": h["id"],
             "change": a.change or h["change"], "evidence_ids": a.evidence or h.get("evidence_ids", []),
@@ -416,8 +447,8 @@ def cmd_add_exp(a):
             "candidate_commit": a.commit, "branch": a.branch, "pr": a.pr, "agent": a.agent,
             "kit_check": {"status": "pending"}, "codex_review": {"status": "not_run", "verdict": "none", "review_id": None},
             "submission": {"id": None, "timestamp": None}, "score": None, "delta_vs_baseline": None, "metrics": {},
-            "evaluation": {"type": "practice_48_fixed_seeds", "n_matches": 48, "deterministic": True, "comparable": True,
-                           "note": "NO PER-MATCH OFFICIAL DATA: aggregate practice score only", "per_match_data": "none"},
+            "evaluation": {"type": "official_site_score", "n_matches": 96, "deterministic": False, "comparable": True,
+                           "note": "builders-4 official practice: 96 fresh private seeds; identical code keeps its first builders-4 score. Compare only within the same scorer version.", "per_match_data": "none"},
             "outcome": "candidate", "lesson": None, "next_action": None, "failure_classes": [], "backfilled": False,
             "synthetic": bool(a.synthetic), "created_at": lib.now_et(), "updated_at": None,
         }
@@ -563,11 +594,11 @@ def cmd_record_score(a):
                      "evidence_class": "validated", "timestamp": lib.now_et(),
                      "source": {"type": "practice_score", "ref": f"{e['id']} {e['submission'].get('id')}"},
                      "claim": f"{h['title']}: {e['candidate_commit'][:7]} scored {a.score} vs baseline {e['baseline_score']} "
-                              f"(Δ {e['delta_vs_baseline']:+.2f}) on 48 fixed practice seeds",
+                              f"(Δ {e['delta_vs_baseline']:+.2f}) vs champion {c['score']} ({c.get('scorer_version') or 'current scorer'})",
                      "experiment_id": e["id"], "hypothesis_id": h["id"], "sample_size": 48,
                      "confidence": 1.0 if e["evaluation"].get("deterministic") else 0.5,
                      "synthetic": e.get("synthetic", False),
-                     "notes": "valid for the 48 fixed practice seeds only; the final uses new seeds"})
+                     "notes": "official score is comparable only within the same scorer version; builders-4 uses 96 fresh seeds and keeps the first score for identical code"})
         lib.write_jsonl(HYP, hyps)
         lib.write_jsonl(EVI, evid)
     print(f"{e['id']} score {a.score} Δ {e['delta_vs_baseline']:+.2f} vs champion {c['score']} -> {e['outcome'].upper()}; {h['id']} -> {h['status']}")
@@ -587,9 +618,15 @@ def cmd_promote(a):
             die(f"{e['id']} evaluation not comparable; champion preserved")
         if not e["score"] > c["score"] + mg:
             die(f"NOT PROMOTED: {e['id']} score {e['score']} does not beat champion {c['experiment_id']} {c['score']} (+{mg}); champion preserved")
-        c["history"].append({"experiment_id": c["experiment_id"], "commit": c["commit"], "score": c["score"], "at": c["updated_at"]})
+        c["history"].append({"experiment_id": c["experiment_id"], "commit": c["commit"], "score": c["score"], "at": c["updated_at"],
+                             "scorer_version": c.get("scorer_version"), "submission_id": c.get("submission_id")})
+        scorer = c.get("scorer_version") or "builders-4"
         c.update({"experiment_id": e["id"], "commit": e["candidate_commit"], "merge_commit": a.merge_commit,
-                  "score": e["score"], "submission_id": e["submission"].get("id"), "updated_at": lib.now_et()})
+                  "score": e["score"], "submission_id": e["submission"].get("id"), "updated_at": lib.now_et(),
+                  "scorer_version": scorer})
+        sbs = dict(c.get("scores_by_scorer") or {})
+        sbs[scorer] = {"score": e["score"], "submission_id": e["submission"].get("id"), "at": c["updated_at"]}
+        c["scores_by_scorer"] = sbs
         lib.require_valid(c, "champion_state")
         e["outcome"] = "adopted"
         e["updated_at"] = lib.now_et()
@@ -627,7 +664,7 @@ def cmd_task(a):
             h.get("acceptance") or "Behavior is visible in the recorded kit match or a unit state test.",
             f"Practice success = score > {c['score']} (champion {c['experiment_id']}); any lower or equal score = revert.",
         ],
-        "measure": f"One practice submission (48 fixed seeds, deterministic) compared with champion {c['score']}.",
+        "measure": f"One official submission compared with the current {c.get('scorer_version') or 'scorer'} champion bar {c['score']} (same scorer version only).",
         "time_budget_min": 12, "created_at": lib.now_et(),
         "parent_commit": c["commit"], "single_hypothesis": f"{h['id']}: {h['title']}",
         "observed_failure": h.get("observed_failure") or "NO PER-MATCH OFFICIAL DATA; targeted failure inferred from watcher/research evidence",

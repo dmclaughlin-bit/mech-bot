@@ -101,10 +101,10 @@
       "source": "/tmp/builder-sim-trees --trees --jobs 1 vs /workspace/tester/runs/trees-0e6fadd-7000.csv; traces /tmp/p48/logs (not committed)"
     }
   ],
-  "receipt": "BB-94897D91",
-  "site_score": 4.44,
+  "receipt": "BB-5727119F",
+  "site_score": 3.75,
   "score": 4.44,
-  "decision": "Submitted 10:27 PM ET as near-miss data test (failed exactly one veto: drop-ring set totals 9->7 and 8->5; means -0.005/+0.026). Site 4.44 beat champion P34 4.38: NEW CHAMPION. Confirmed sim false negative for the drop-ring veto (Doug must decide any veto change). Merge of PR #157 pending (coordinator cannot merge).",
+  "decision": "Submitted 10:27 PM ET as near-miss data test (failed exactly one veto: drop-ring set totals 9->7 and 8->5; means -0.005/+0.026). Site 4.44 beat champion P34 4.38: NEW CHAMPION. Confirmed sim false negative for the drop-ring veto (Doug must decide any veto change). Merge of PR #157 pending (coordinator cannot merge). | builders-4 baseline BB-5727119F scored 3.75 (confirmed 1:55 AM ET Sun); this is the official champion bar. builders-3 4.44 (BB-94897D91) is history only.",
   "blocker": "",
   "next_action": "Merge PR #157 (b9492c6) to main; builders rebase all waiting builds on b9492c6 and Sim Tester re-screens.",
   "doug_waiver": false,
@@ -195,5 +195,10 @@
   "outcome": "A",
   "builds_on": null,
   "disproof": "Trees-on paired screen: deaths within 10 s of a trigger not lower, or damage taken during retreat not lower; drop-ring set totals below the champion; deaths < 40 s above; new 20 s+ pins with the flag active; official score at or below the champion.",
-  "updated_et": "2026-11-22 12:55 AM ET"
+  "updated_et": "2026-11-22 12:55 AM ET",
+  "site_score_builders_3": 4.44,
+  "receipt_builders_3": "BB-94897D91",
+  "scorer_version": "builders-4",
+  "site_score_builders_4": 3.75,
+  "receipt_builders_4": "BB-5727119F"
 }

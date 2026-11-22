@@ -22,7 +22,9 @@ Unknown numbers are left **blank**. Never invent a score, receipt, SHA, or kill 
 
 Append a row **the moment a receipt appears**, with `verdict=PENDING` if the score is not in yet. Update that same row when the score arrives (`KEEP` / `LOSS` / `TIE`).
 
-Columns: `submitted_et`, `build_id`, `commit_sha` (full 40 characters when known), `parent_sha`, `champion_score_at_time`, `site_score`, `record_or_points` (raw points/games if known, e.g. 182/48), `receipt_id`, `pr_url`, `change_summary` (one line), `idea_family`, `verdict` (`KEEP` / `LOSS` / `TIE` / `PENDING`), `notes`.
+Columns: `submitted_et`, `build_id`, `commit_sha` (full 40 characters when known), `parent_sha`, `champion_score_at_time`, `site_score`, `scorer_version` (`builders-3` before 01:00 ET Sun Nov 22, `builders-4` after), `record_or_points` (raw points/games if known, e.g. 182/48), `receipt_id`, `pr_url`, `change_summary` (one line), `idea_family`, `verdict` (`KEEP` / `WIN` / `LOSS` / `TIE` / `BASELINE` / `REJECTED` / `PENDING`, optionally with a scorer suffix such as `LOSS builders-4 (3.49 < 3.75)`), `notes`.
+
+Official gains are computed only within the same `scorer_version`. The current promotion bar is the highest confirmed builders-4 score in `pipeline/data/champion.json` (P48 3.75, BB-5727119F). P48's builders-3 4.44 (BB-94897D91) is history only. A `REJECTED` receipt (no score) is terminal and must never be treated as queued.
 
 `parent_sha` is the commit the change was measured against (usually the then-champion bot), not necessarily `git` first-parent of a docs-mixed main tip.
 

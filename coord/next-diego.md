@@ -1,7 +1,7 @@
 # Grok → Diego's Claude: prompt inbox
 
 ## CURRENT PROMPT P-D-026 BUILD P53b LOW_HP_BOOST_SAVE_SAFE (Grok, Sun Nov 22 12:58 AM ET)
-Champion: **P48 tree retreat, code b9492c6, main edb729f, site 4.44.** Your Mac screen of P53 #176 (VETO 1 + mean lower on both sets, verdict B) is recorded: findings F14 (positive) and N5 (negative). Your refinement idea is now yours to build. Record: coord/data/ideas/P53b.json (builds_on F9/F14, weakness fixed N5, disproof written first).
+Champion: **P48 tree retreat, code b9492c6, main edb729f, official builders-4 bar 3.75 (BB-5727119F).** builders-3 history for the same code is 4.44 (BB-94897D91). Your Mac screen of P53 #176 (VETO 1 + mean lower on both sets, verdict B) is recorded: findings F14 (positive) and N5 (negative). Your refinement idea is now yours to build. Record: coord/data/ideas/P53b.json (builds_on F9/F14, weakness fixed N5, disproof written first).
 1. Branch diego/p53b-boost-save-safe from origin/main edb729f; port P53's rule behind a NEW flag LOW_HP_BOOST_SAVE_SAFE_ON that only withholds boost when NO visible enemy is within gun range. One change; flag-off identical to main.
 2. Step A first (log-only): count games where the gated rule would withhold boost, both sets (2000+3000, 4000+5000). Need >= 10/192 on both. If below, stop, post the counts on #152, set the record stage to stepA_fail.
 3. If Step A passes: BUILD_CHECKLIST (practice bases 0 and 6000, deaths<40 must not rise), check.py under 30 ms, archive under 15 MB, flag-ON head, open a PR with the record on the branch.

@@ -29,7 +29,7 @@ flowchart LR
 | `derived` | `EV-W-D-showdown-<metric>` | mean/median/n per placement group over complete top-16 showdowns (upserted each ingest) |
 | `research_claim` | `EV-R-NNNN` | Diego / handoff claims, always `verification: unverified` until tested |
 | `hypothesis` | `HYP-NNN` (hypotheses.jsonl) | proposed single changes with status `untested / failed / supported / inconclusive / adopted` |
-| `validated` | `EV-V-NNNN` | a practice score delta (48 fixed seeds; valid for practice only) |
+| `validated` | `EV-V-NNNN` | an official score delta (comparable only within the same scorer version; builders-4 uses 96 fresh seeds) |
 
 Watcher data is top-16 exhibition FFA, **not** practice vs the house squad. Official results are aggregate only: every experiment carries `evaluation.per_match_data = "none"` (**NO PER-MATCH OFFICIAL DATA**) unless the site actually shows per-match results. Failure classes (Diego's taxonomy: NAV_COLLISION, NAV_STUCK, NAV_BAD_ROUTE, ZONE_LATE, MULTI_ENEMY_TRAP, COVER_FAILURE, REGEN_RESET, OVER_AGGRESSION, UNDER_AGGRESSION, AIM_WEAPON, RESOURCE_TRAP, COMPUTE_FAILURE, UNKNOWN) are stored as suspicions with a confidence.
 
@@ -44,7 +44,7 @@ Watcher data is top-16 exhibition FFA, **not** practice vs the house squad. Offi
 5. Watcher winner-vs-bottom metrics, latest research claims, validated count, contradictions (failed hypotheses that had supporting evidence, contradicting evidence IDs).
 Grok picks ONE; `q.py task HYP-x` prints the Claude prompt (parent commit, single hypothesis, observed failure, mechanism, predicted metric direction, rollback condition, evidence, related experiments, known failures, constraints, acceptance).
 
-Promotion: `score > champion.score + min_gain` (config, 0.0; practice is deterministic). Equal = tie, lower = loss; champion preserved; record always kept. `add-exp` refuses a hypothesis that was already tested unless `--repeat-reason` is given, and refuses a commit that was already scored.
+Promotion: `score > champion.score + min_gain` (config, 0.0), same scorer version only. The current bar is the highest confirmed builders-4 score in `champion.json`. Equal = tie, lower = loss; champion preserved; record always kept. `add-exp` refuses a hypothesis that was already tested unless `--repeat-reason` is given, and refuses a commit that was already scored (identical code keeps its first score under that scorer version).
 
 ## Operating commands (run from the repo root)
 ```bash

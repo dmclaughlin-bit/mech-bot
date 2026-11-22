@@ -3,7 +3,7 @@
   "max_submissions_per_hour": 6,
   "slot_window_minutes": 60,
   "promotion": {
-    "rule": "score > champion.score + min_gain (practice is deterministic: 48 fixed seeds)",
+    "rule": "score > champion.score + min_gain, same scorer version only. champion.score is the highest confirmed builders-4 official score (P48 3.75, BB-5727119F). P48's builders-3 4.44 (BB-94897D91) is history only and is not the promotion bar. builders-4 practice uses 96 fresh private seeds; identical code keeps its first builders-4 score.",
     "min_gain": 0.0,
     "require_comparable_evaluation": true
   },

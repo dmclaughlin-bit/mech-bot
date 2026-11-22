@@ -53,6 +53,35 @@ def parse_site_time(s):  # "2026-11-21 17:33 ET"
     return datetime.strptime(s.replace(" ET", ""), "%Y-%m-%d %H:%M").replace(tzinfo=ET)
 
 
+def parse_score(s):
+    """Leading number from a site_score or champion_score_at_time cell (plain 4.44, or '4.44 (builders-3)')."""
+    if s is None or str(s).strip() == "":
+        return None
+    m = re.search(r"-?\d+(?:\.\d+)?", str(s))
+    return float(m.group(0)) if m else None
+
+
+BUILDERS4_CUTOVER = datetime(2026, 11, 22, 1, 0, tzinfo=ET)
+
+
+def row_scorer_version(r):
+    v = (r.get("scorer_version") or "").strip()
+    if v:
+        return v
+    try:
+        t = parse_site_time(r["submitted_et"])
+    except Exception:
+        return "builders-3"
+    return "builders-4" if t >= BUILDERS4_CUTOVER else "builders-3"
+
+
+def verdict_token(r):
+    v = (r.get("verdict") or "").strip().upper()
+    if not v:
+        return ""
+    return v.replace(";", " ").replace(",", " ").split()[0]
+
+
 # ------------------------------------------------------------------ curated metadata
 # (source, owner, declared_changes, basis). Only used where the repo has no structured record.
 # declared_changes counts distinct behaviors in the build as its own text states them.
@@ -391,21 +420,33 @@ def main():
     # ---------------- site tests (all) with change audit
     tests = []
     site.sort(key=lambda r: parse_site_time(r["submitted_et"]))
-    running = 1.15  # published kit baseline; later the best KEEP so far
+    # Official gains only within the same scorer version. builders-3 running starts at the
+    # published kit baseline; builders-4 starts empty until a confirmed score (KEEP/WIN/BASELINE).
+    running = {"builders-3": 1.15, "builders-4": None}
     mismatch = []
     for i, r in enumerate(site):
         t = parse_site_time(r["submitted_et"])
-        score = float(r["site_score"]) if r["site_score"] else None
-        recorded = float(r["champion_score_at_time"])
-        champ_then = running  # the verdict is judged against the real champion at click time
-        if abs(recorded - running) > 1e-9:
-            mismatch.append(f"{r['build_id']} (recorded {recorded}, champion then {running})")
-        if score is not None and r["verdict"] == "KEEP" and score > running:
-            running = score
-        bools, knobs = diff_switches(r["parent_sha"], r["commit_sha"]) if r["parent_sha"] != r["commit_sha"] else ([], [])
+        ver = row_scorer_version(r)
+        score = parse_score(r.get("site_score"))
+        recorded = parse_score(r.get("champion_score_at_time"))
+        champ_then = running[ver]
+        tok = verdict_token(r)
+        if recorded is not None and champ_then is not None and abs(recorded - champ_then) > 1e-9 and ver == "builders-3":
+            # Pre-cutover ledger mismatches only (known: B104, and WIN rows recorded before KEEP was retired).
+            mismatch.append(f"{r['build_id']} (recorded {recorded}, champion then {champ_then})")
+        if score is not None and tok in ("KEEP", "WIN", "BASELINE"):
+            if running[ver] is None or score > running[ver]:
+                running[ver] = score
+        parent, commit = (r.get("parent_sha") or "").strip(), (r.get("commit_sha") or "").strip()
+        if parent and commit and parent != commit:
+            bools, knobs = diff_switches(parent, commit)
+        else:
+            bools, knobs = [], []
         decl, basis = DECL.get(r["build_id"], (1, "one behavior in the summary"))
         if score is None:
             outcome = "pending"
+        elif tok == "BASELINE" or champ_then is None:
+            outcome = "baseline" if tok == "BASELINE" else "scored"
         elif score > champ_then + 1e-9:
             outcome = "win"
         elif abs(score - champ_then) < 1e-9:
@@ -414,7 +455,8 @@ def main():
             outcome = "loss"
         tests.append(dict(
             build=r["build_id"], submitted_et=fmt(t), sub_dt=t.isoformat(), sha=r["commit_sha"], parent=r["parent_sha"],
-            champion_then=champ_then, champion_recorded=recorded, score=score, delta=(round(score - champ_then, 2) if score is not None else None),
+            champion_then=champ_then, champion_recorded=recorded, score=score, delta=(round(score - champ_then, 2) if score is not None and champ_then is not None else None),
+            scorer_version=ver,
             outcome=outcome, receipt=r["receipt_id"], pr_url=r["pr_url"], pr=(int(r["pr_url"].rstrip("/").split("/")[-1]) if r["pr_url"] else None),
             summary=r["change_summary"], family=r["idea_family"], verdict=r["verdict"],
             changes=decl, changes_basis=basis, diff_bool_flags=len(bools), diff_knobs_changed=len(knobs),
@@ -667,7 +709,8 @@ def main():
     champ_since = parse_site_time(next(t for t in tests if t["build"] == champ_id)["submitted_et"]) if any(t["build"] == champ_id for t in tests) else since
     vs_cur = [t for t in tests if parse_site_time(t["submitted_et"]) > champ_since and t["score"] is not None]
     header = dict(
-        champion=dict(build=champ_id, score=champ["score"], sha=champ_sha, receipt=champ.get("submission_id"), scored_at=champ.get("updated_at")),
+        champion=dict(build=champ_id, score=champ["score"], sha=champ_sha, receipt=champ.get("submission_id"), scored_at=champ.get("updated_at"),
+                      scorer_version=champ.get("scorer_version"), scores_by_scorer=champ.get("scores_by_scorer")),
         pending=pending,
         slots=dict(limit=cfg["max_submissions_per_hour"], used_rolling_60=len(rolling), used_clock_hour=len(clock_hour),
                    last_submit=fmt(max(sub_times)) if sub_times else None),

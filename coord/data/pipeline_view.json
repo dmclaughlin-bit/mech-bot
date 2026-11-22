@@ -17,10 +17,24 @@
  "header": {
   "champion": {
    "build": "P48",
-   "score": 4.44,
+   "score": 3.75,
    "sha": "b9492c6f122c549c705b69402157f078b4a57857",
-   "receipt": "BB-94897D91",
-   "scored_at": "2026-11-21T22:29:00-05:00"
+   "receipt": "BB-5727119F",
+   "scored_at": "2026-11-22T01:55:00-05:00",
+   "scorer_version": "builders-4",
+   "scores_by_scorer": {
+    "builders-3": {
+     "score": 4.44,
+     "submission_id": "BB-94897D91",
+     "at": "2026-11-21T22:29:00-05:00"
+    },
+    "builders-4": {
+     "score": 3.75,
+     "submission_id": "BB-5727119F",
+     "at": "2026-11-22T01:55:00-05:00",
+     "site_status": "Entered in the final"
+    }
+   }
   },
   "pending": [
    "P34"

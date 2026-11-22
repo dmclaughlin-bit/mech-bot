@@ -150,3 +150,10 @@ Near-miss data test: screen vs P34 0e6fadd failed exactly one veto (drop-ring se
 
 ## P53b LOW_HP_BOOST_SAVE_SAFE_ON, PR #178, 52c28624bac2ecf6a80edc1d9c6fcd8a6599b5d4 (loop 1:29 AM ET Sun) - READY (neutral)
 Champion: P48 edb729f (contains it: merge-base OK). Single change (one flag; flag-off only hoists dropSafe/dropReach scope; Diego checklist flag-off identical 96/96 on bases 0 and 6000). Flag ON committed (params.ts:195 = true); head adds docs only. Loop check.py rerun PASS, max 3.7 ms. Archive 3,727,360 bytes. Diego's Mac full paired trees-on screen vs Mac P48 baseline: no veto. 2000+3000 -0.005+/-0.063, drops 8->8, pause games 2->2, died<40 48->48, survivors 2->2, activation 33/192. 4000+5000 -0.021+/-0.053, drops 4->5, pause 2->2, died<40 38->38, survivors 3->4, activation 38/192. Signal: neutral (no mean above +1 SE). builds_on F9/F14, fixes N5. Novel vs P53 (adds the no-enemy-in-gun-range gate). Decision: READY neutral; next slot once P49b (BB-7C26BD16) scores. Submit not done at 1:29: P49b still queued (#40 of 80) on the site.
+
+## BUILDERS-4 CHAMPION BAR 1:55 AM ET Sun: P48 3.75 (BB-5727119F), commit b9492c6
+
+Same code as the builders-3 win 4.44 (BB-94897D91). Official gains are judged only against this 3.75 builders-4 bar. The 4.44 score is history only.
+
+- P49b #177 0c6b134, BB-7C26BD16, scored 3.49 under builders-4: LOSS (3.49 < 3.75). Champion stays P48.
+- P53b #178 52c28624bac2ecf6a80edc1d9c6fcd8a6599b5d4, submitted 1:59 AM ET, receipt BB-9617EF60, queued. Ready-ledger entry above still describes the screen; it is no longer waiting on P49b. Check.py rerun (this audit) PASS, max 2.9 ms; archive 3,727,360 bytes; contains edb729f. Next after it scores: P41 near miss #173 c21d23b, subject to the site rule of one queued submission per team and the loop cap.

@@ -7,7 +7,7 @@
   ],
   "flag": "TREE_HEAL_ON",
   "owner": "Mech Builder",
-  "stage": "site_pending",
+  "stage": "scored",
   "pr": 177,
   "sha": "0c6b134",
   "branch": "p49b-tree-heal-cap",
@@ -20,7 +20,7 @@
     "sha": "38aa9576069ead7982ddd0e0de736931486b8a64"
   },
   "receipt": "BB-7C26BD16",
-  "site_score": null,
+  "site_score": 3.49,
   "score": null,
   "screens": [],
   "doug_waiver": false,
@@ -36,7 +36,7 @@
     "created": "2026-11-22 00:35 ET",
     "updated": "2026-11-22 12:55 AM ET"
   },
-  "decision": "In flight. Same TREE_HEAL_ON as P49, plus a hard 8 s cap per heal attempt and an immediate exit when zone/drop travel needs moving (P49.json p49b.change). Must show pins gone on seeds 2022, 3066, 3086 and no rise in pause games before a site slot (findings F4).",
+  "decision": "LOSS builders-4: 3.49 (BB-7C26BD16) < P48 bar 3.75 (BB-5727119F). Champion stays P48. Not a promotion.",
   "next_action": "Mech Builder finishes the build; then a full trees-on paired screen vs P48.",
   "blocker": null,
   "hypothesis": "P49's survivor rise (2\u21923 and 3\u21925) can be kept if heal-hold pins are cut by capping each tree-heal at 8 s (findings F4).",
@@ -46,11 +46,12 @@
   "negatives": "Not yet measured. Parent P49's official \u22120.42 was blamed on heal-hold pins.",
   "confidence": "Promising",
   "reuse": "narrow-follow-up",
-  "outcome": null,
+  "outcome": "C",
   "builds_on": [
     "F4"
   ],
   "disproof": "Pins on 2022, 3066, or 3086 remain, pause games rise vs P48, or official score \u2264 4.44.",
   "updated_et": "2026-11-22 12:55 AM ET",
-  "stage_detail": "Submitted 1:09 AM ET (BB-7C26BD16), queued. Screens: Mac PASS (#177 7075117444), Sim Tester VETO 1 (stall c 2->3, seed 2021; means +0.068+/-0.074, -0.021+/-0.085; survivors 2->4, 3->5; drops 7->9, 5->9). Sim Tester verdict counts -> near-miss data test (exactly one veto, mean not lower on both). Own checks 1:17 AM: contains edb729f, check.py PASS max 4.7 ms, archive 3,553,280 bytes."
+  "stage_detail": "Submitted 1:09 AM ET (BB-7C26BD16), queued. Screens: Mac PASS (#177 7075117444), Sim Tester VETO 1 (stall c 2->3, seed 2021; means +0.068+/-0.074, -0.021+/-0.085; survivors 2->4, 3->5; drops 7->9, 5->9). Sim Tester verdict counts -> near-miss data test (exactly one veto, mean not lower on both). Own checks 1:17 AM: contains edb729f, check.py PASS max 4.7 ms, archive 3,553,280 bytes.",
+  "scorer_version": "builders-4"
 }

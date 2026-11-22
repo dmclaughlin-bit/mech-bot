@@ -102,43 +102,50 @@ class TestRepeatsAndSlots(Base):
 
 class TestPromotion(Base):
     def _cand(self, sha):
-        eid = run("add-exp", "--hyp", "HYP-010", "--commit", sha, "--synthetic", env=self.env).stdout.strip()
+        eid = run("add-exp", "--hyp", "HYP-010", "--commit", sha, "--synthetic", "--repeat-reason", "synthetic test of promotion", env=self.env).stdout.strip()
         run("set-check", eid, "pass", "--p99", "1.0", env=self.env)
         return eid
 
     def test_failed_check_not_eligible_and_no_slot_used(self):
-        eid = run("add-exp", "--hyp", "HYP-010", "--commit", "aaaaaaa", "--synthetic", env=self.env).stdout.strip()
+        eid = run("add-exp", "--hyp", "HYP-010", "--commit", "aaaaaaa", "--synthetic", "--repeat-reason", "synthetic test of eligibility", env=self.env).stdout.strip()
         run("set-check", eid, "fail", env=self.env)
         env = dict(self.env, PIPELINE_NOW="2026-11-21T01:00:00-05:00")
         p = run("eligible", eid, env=env, check=False)
         self.assertEqual(p.returncode, 1)
         self.assertIn("kit check", p.stdout)
         self.assertEqual(run("mark-submitted", eid, "--submission-id", "BB-SYNTH", env=env, check=False).returncode, 1)
-        self.assertTrue(run("slots", env=env).stdout.startswith("0/4"))
+        self.assertTrue(run("slots", env=env).stdout.startswith("0/"), run("slots", env=env).stdout)
 
     def test_lower_score_preserves_champion(self):
         eid = self._cand("bbbbbbb")
-        p = run("record-score", eid, "--score", "2.30", "--failure", "NAV_STUCK:0.3", env=self.env)
+        bar = lib.read_json("champion.json")["score"]
+        p = run("record-score", eid, "--score", str(round(bar - 0.08, 2)), "--failure", "NAV_STUCK:0.3", env=self.env)
         self.assertIn("LOSS", p.stdout)
         p = run("promote", eid, env=self.env, check=False)
         self.assertEqual(p.returncode, 1)
-        self.assertEqual(lib.read_json("champion.json")["score"], 2.38)
+        self.assertEqual(lib.read_json("champion.json")["score"], bar)
         e = [x for x in lib.read_jsonl("experiments.jsonl") if x["id"] == eid][0]
         self.assertEqual(e["failure_classes"][0]["class"], "NAV_STUCK")
         self.assertEqual(e["evaluation"]["per_match_data"], "none")
 
     def test_equal_score_is_tie_not_promoted(self):
         eid = self._cand("ccccccc")
-        self.assertIn("TIE", run("record-score", eid, "--score", "2.38", env=self.env).stdout)
+        bar = lib.read_json("champion.json")["score"]
+        self.assertIn("TIE", run("record-score", eid, "--score", str(bar), env=self.env).stdout)
         self.assertEqual(run("promote", eid, env=self.env, check=False).returncode, 1)
 
     def test_higher_score_promotes(self):
         eid = self._cand("ddddddd")
-        self.assertIn("KEEP", run("record-score", eid, "--score", "2.51", env=self.env).stdout)
+        before = lib.read_json("champion.json")
+        bar = before["score"]
+        prev_id = before["experiment_id"]
+        new_score = round(bar + 0.13, 2)
+        self.assertIn("KEEP", run("record-score", eid, "--score", str(new_score), env=self.env).stdout)
         run("promote", eid, env=self.env)
         c = lib.read_json("champion.json")
-        self.assertEqual((c["score"], c["commit"], c["experiment_id"]), (2.51, "ddddddd", eid))
-        self.assertEqual(c["history"][-1]["experiment_id"], "EXP-0006")
+        self.assertEqual((c["score"], c["commit"], c["experiment_id"]), (new_score, "ddddddd", eid))
+        self.assertEqual(c["history"][-1]["experiment_id"], prev_id)
+        self.assertEqual(c["history"][-1]["score"], bar)
         h = [x for x in lib.read_jsonl("hypotheses.jsonl") if x["id"] == "HYP-010"][0]
         self.assertEqual(h["status"], "adopted")
 
@@ -199,6 +206,55 @@ class TestCodex(Base):
     def test_codex_error_recorded(self):
         p, r = self._run(mode="fail")
         self.assertEqual((p.returncode, r["status"]), (0, "error"))
+
+
+class TestSiteEligibilityRecords(unittest.TestCase):
+    """Read-only checks against saved coord/data/site_results.csv (no site calls)."""
+
+    def test_checker_selects_p48(self):
+        import q
+        sha = q._current_champion_sha()
+        self.assertTrue(sha.startswith("b9492c6f122c549c705b69402157f078b4a57857"), sha)
+        c = q.champion()
+        self.assertEqual(c["experiment_id"], "P48")
+        self.assertEqual(c["score"], 3.75)
+        self.assertEqual(c["submission_id"], "BB-5727119F")
+        self.assertEqual(c.get("scorer_version"), "builders-4")
+        self.assertEqual(c["scores_by_scorer"]["builders-3"]["score"], 4.44)
+        self.assertEqual(c["scores_by_scorer"]["builders-3"]["submission_id"], "BB-94897D91")
+
+    def test_rejected_p34_receipt_is_terminal(self):
+        import q, csv
+        path = REPO / "coord/data/site_results.csv"
+        with path.open() as fh:
+            rows = list(csv.DictReader(fh))
+        rejected = [r for r in rows if (r.get("receipt_id") or "") == "BB-FB8CB5AE"]
+        self.assertEqual(len(rejected), 1)
+        self.assertEqual(rejected[0]["build_id"], "P34")
+        self.assertEqual(q._verdict_token(rejected[0]), "REJECTED")
+        self.assertTrue(q._row_is_rejected(rejected[0]))
+        self.assertFalse(q._row_is_queued(rejected[0]))
+        reasons = q.site_eligibility_reasons("0" * 40)
+        self.assertFalse(any("BB-FB8CB5AE" in r or "pending official score: P34" in r for r in reasons))
+
+    def test_queued_receipt_blocks_second_submission(self):
+        import q, csv
+        # Saved record: P53b BB-9617EF60 is PENDING with no score.
+        path = REPO / "coord/data/site_results.csv"
+        with path.open() as fh:
+            rows = list(csv.DictReader(fh))
+        queued = [r for r in rows if q._row_is_queued(r)]
+        self.assertTrue(queued, "expected a queued receipt in the saved ledger")
+        self.assertEqual(queued[0]["receipt_id"], "BB-9617EF60")
+        reasons = q.site_eligibility_reasons("0" * 40)
+        self.assertTrue(any("pending official score: P53b BB-9617EF60" in r for r in reasons), reasons)
+        # Fixture: a rejected row plus a queued row — rejected must not hide the queue block.
+        fake = [
+            {"verdict": "REJECTED", "site_score": "", "build_id": "P34", "receipt_id": "BB-FB8CB5AE", "commit_sha": "c281bf59e6276ffda376cc84a0c95f620331485e"},
+            {"verdict": "PENDING", "site_score": "", "build_id": "SYNTH", "receipt_id": "BB-SYNTHQUEUE", "commit_sha": "abc"},
+        ]
+        self.assertFalse(q._row_is_queued(fake[0]))
+        self.assertTrue(q._row_is_queued(fake[1]))
 
 
 if __name__ == "__main__":

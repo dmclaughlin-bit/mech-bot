@@ -55,6 +55,39 @@
      "at"
     ]
    }
+  },
+  "scorer_version": {
+   "type": "string"
+  },
+  "scores_by_scorer": {
+   "type": "object",
+   "additionalProperties": {
+    "type": "object",
+    "required": [
+     "score",
+     "submission_id"
+    ],
+    "properties": {
+     "score": {
+      "type": "number"
+     },
+     "submission_id": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "at": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "site_status": {
+      "type": "string"
+     }
+    }
+   }
   }
  }
 }

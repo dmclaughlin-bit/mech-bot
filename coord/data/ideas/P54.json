@@ -1,0 +1,203 @@
+{
+  "id": "P54",
+  "title": "EARLY_SPACING: in the first 30 s, when a known enemy is within 120 m and we are not engaging, pick the farm / arm-up / zone target that keeps us >= 120 m from it (EARLY_SPACING_ON)",
+  "family": "movement (early-game spacing)",
+  "flags": [
+    "EARLY_SPACING_ON"
+  ],
+  "flag": "EARLY_SPACING_ON",
+  "behaviors": [
+    "t < EARLY_SPACING_T (30 s), a known enemy within EARLY_SPACING_M (120 m), not engaging, not in laser rush, drop gate open: among the farm / arm-up / zone targets the champion would consider, pick one that keeps us >= 120 m from that enemy when one exists, else the champion's choice"
+  ],
+  "owner": "Mech Builder",
+  "stage": "retired",
+  "base": "c2b3e1d",
+  "champion": "P48 b9492c6 (merge edb729f)",
+  "champion_sha_tested_against": "b9492c6",
+  "champion_sha": "b9492c6",
+  "builds_on": [
+    "F10"
+  ],
+  "evidence": {
+    "source": "Mech Watcher ladder (coord/data/findings.md F10): nearest enemy in the first 30 s is 145 m for winners vs 117 m for losers",
+    "confidence": "medium"
+  },
+  "novelty": "P52 (EARLY_FARM_ON) widens the farm reach and gate from 10 to 60 s, picking the nearest cube when every enemy is > 145 m away; it never picks a target BY distance to an enemy. P54 changes only which of the champion's own candidate targets is chosen, in the first 30 s, when an enemy is already within 120 m. The champion has no early-game target rule that scores targets by enemy distance.",
+  "step_a": "Log only, trees-on on P48: count games where t < 30, a known enemy within 120 m, not engaging / laser rush, drop gate open, and an alternative target keeping >= 120 m exists that differs from the champion's pick, on 2000+3000 and 4000+5000. Fewer than 10/192 on either set: step-a-fail, no build.",
+  "what_would_disprove": "No rise in our early (t < 30 s) nearest-enemy distance, or deaths before 40 s up.",
+  "drop_gate": "Never when a drop is near AND reachable within DROP_RUN_M (champion's drop-run candidate filter) or on a drop run / ring hold. Never 'any drop exists'.",
+  "pr": null,
+  "sha": "13e83b8 (flag false; see head_sha)",
+  "screens": [
+    {
+      "sha": "ec5af30 with EARLY_SPACING_ON=true (first build)",
+      "seed_set": "0",
+      "trees": true,
+      "fired": 14,
+      "diff_behavior": 13,
+      "diff_score": 10,
+      "sim_delta": 0.229,
+      "sim_se": 0.132,
+      "better_worse": "9/1",
+      "episodes": 19,
+      "activations_t_lt_10": 0,
+      "drop_ring_arrivals_champ_head": "5/6",
+      "deaths_lt_40_champ_head": "24/20",
+      "survivors_champ_head": "2/3",
+      "kills_champ_head": "293/314",
+      "pins": "3/3 identical, none new, flag never active",
+      "verdict": "pass on this base",
+      "source": "/tmp/p54/haz (not committed)"
+    },
+    {
+      "sha": "ec5af30 with EARLY_SPACING_ON=true (first build)",
+      "seed_set": "6000",
+      "trees": true,
+      "fired": 11,
+      "diff_behavior": 11,
+      "diff_score": 10,
+      "sim_delta": -0.156,
+      "sim_se": 0.096,
+      "better_worse": "3/7",
+      "episodes": 27,
+      "activations_t_lt_10": 0,
+      "drop_ring_arrivals_champ_head": "1/0",
+      "deaths_lt_40_champ_head": "16/17",
+      "survivors_champ_head": "0/0",
+      "kills_champ_head": "358/343",
+      "pins": "2/2 identical, none new, flag never active",
+      "verdict": "FAIL item 5 (seed 6020: walk replaced heal right after damage and at 24% HP; laser trip lost; died 38.6 s vs 84.0 s)",
+      "source": "/tmp/p54/haz/v1 (not committed)"
+    },
+    {
+      "sha": "13e83b8 with EARLY_SPACING_ON=true (fixed build)",
+      "seed_set": "0",
+      "trees": true,
+      "fired": 0,
+      "diff_behavior": 0,
+      "diff_score": 0,
+      "sim_delta": 0.0,
+      "sim_se": 0.0,
+      "activations_t_lt_10": 0,
+      "drop_ring_arrivals_champ_head": "5/5",
+      "deaths_lt_40_champ_head": "24/24",
+      "survivors_champ_head": "2/2",
+      "kills_champ_head": "293/293",
+      "pins": "3/3 identical",
+      "nearest_visible_enemy_t_lt_30_champ_head_m": "78.0/78.0",
+      "verdict": "checklist pass, no activation",
+      "source": "/tmp/p54/haz (not committed)"
+    },
+    {
+      "sha": "13e83b8 with EARLY_SPACING_ON=true (fixed build)",
+      "seed_set": "6000",
+      "trees": true,
+      "fired": 5,
+      "diff_behavior": 5,
+      "diff_score": 5,
+      "sim_delta": -0.042,
+      "sim_se": 0.059,
+      "better_worse": "2/3",
+      "episodes": 5,
+      "activations_t_lt_10": 0,
+      "drop_ring_arrivals_champ_head": "1/0",
+      "deaths_lt_40_champ_head": "16/16",
+      "survivors_champ_head": "0/0",
+      "kills_champ_head": "358/353",
+      "pins": "2/2 identical",
+      "nearest_visible_enemy_t_lt_30_champ_head_m": "76.9/77.0",
+      "verdict": "checklist pass, low activation",
+      "source": "/tmp/p54/haz (not committed)"
+    }
+  ],
+  "receipt": null,
+  "site_score": null,
+  "decision": "FAILED (builder, 2026-11-22): the build that passes the checklist fires below the Step A bar. The first build failed checklist item 5 on base 6000 (deaths < 40 s 16 -> 17). The one allowed fix (fire only while not hurt, Build 19 noSneak) passes every blocking item, but on the champion it now fires 4/192 (2000+3000) and 8/192 (4000+5000), below 10/192, and early nearest-enemy distance does not rise (DISPROOF met). Flag left false; not flipped.",
+  "blocker": "post-fix activation 4/192 and 8/192 < 10/192",
+  "next_action": "Grok: retire, or assign a different early-spacing trigger. Data worth keeping: the pre-fix version (hold/heal while hurt included) is in screens.",
+  "doug_waiver": false,
+  "branch": "p54-early-spacing",
+  "timestamps": {
+    "created": "2026-11-22 00:47 ET",
+    "updated": "2026-11-22 01:45 ET"
+  },
+  "sources": [
+    "coord/data/findings.md F10",
+    "coord/BUILD_CHECKLIST.md (aee5017)",
+    "/workspace/drop-gate-rule.txt",
+    "/tmp/p54/haz/summary.json, /tmp/p54/stepa (not committed)",
+    "/workspace/champ-p48/trees-b9492c6-{0,6000}.csv",
+    "/workspace/tester/runs/trees-b9492c6-{2000..5000}.csv"
+  ],
+  "step_a_result": {
+    "champion": "P48 b9492c6 (merge edb729f; bot files identical on main c2b3e1d), TREE_RETREAT_ON=true",
+    "trees": true,
+    "seeds_per_set": 192,
+    "trigger_as_counted": "10 <= t < 30 (opening excluded, checklist item 2), champion's final mode 'hold' or 'heal' (so not engaging, not laser rush, no retreat/zone travel/drop run/hold), an enemy mech in view or seen in the last 10 s within 120 m, drop gate open (no drop passes the drop run's candidate filter: not skipped, holder null or us, within DROP_RUN_M 200 m, zone-safe for lands_in + capture), and an alternative among the champion's targets (rushable laser/lightning per the Build 17 filter with a free slot, zone-safe cube within FARM_PICKUP_M, next-circle entry point when outside it) that is >= 120 m from every such enemy and not toward the nearest one (strict). Champion's pick in hold/heal is no target, so every such alternative differs.",
+    "2000+3000": {
+      "fired_games": 29
+    },
+    "4000+5000": {
+      "fired_games": 21
+    },
+    "per_base_games": {
+      "2000": 20,
+      "3000": 9,
+      "4000": 9,
+      "5000": 12
+    },
+    "variants_games": {
+      "t<30 (brief literal), hold+heal, strict": {
+        "2000+3000": 37,
+        "4000+5000": 25
+      },
+      "10<=t<30, hold+heal, loose (no 'not toward' test)": {
+        "2000+3000": 32,
+        "4000+5000": 37
+      },
+      "10<=t<30, hold only, strict": {
+        "2000+3000": 5,
+        "4000+5000": 6
+      },
+      "10<=t<30, any non-combat mode incl. hide/heal hiding, strict": {
+        "2000+3000": 30,
+        "4000+5000": 22
+      }
+    },
+    "champion_early_spacing": "Mean nearest known enemy (in view or seen <= 10 s, bot's own view) over decisions with t < 30, averaged per game: 75.6 / 81.6 / 80.3 / 73.8 m on bases 2000/3000/4000/5000 (about 78.6 m on 2000+3000, 77.0 m on 4000+5000); mean per-game minimum 45.0 / 49.5 / 47.2 / 45.0 m. Not the Watcher's site measure (145 vs 117 m).",
+    "passivity": "IDENTICAL: every non-timing column (all but late_over_50ms, bot_ms_mean) equals /workspace/tester/runs/trees-b9492c6-<b>.csv on 96/96 games per base (384/384); 0 probe exceptions; log-to-seed order checked on decisions of all games that died before 29.5 s (28/28).",
+    "method": "Passive probe (try/catch, read-only, appended just before act.move) in a /tmp copy of the champion bot; sim = copy of /workspace/builder-sim/tools/sim; `STEPA_DIR=<dir> SEED_BASE=<b> bun sim/run.ts --bot /tmp/p54/stepa/bot/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees`, b = 2000..5000. Logs in /tmp (not committed).",
+    "rule": "coord/BUILD_CHECKLIST.md Step A: fewer than 10/192 on either set retires the idea.",
+    "verdict": "step_a_pass",
+    "run": "2026-11-22 01:05 ET",
+    "post_fix_recount": {
+      "trigger": "same as trigger_as_counted plus Build 19 noSneak (HP >= retreatHp x max, no damage for 3 s), the shipped fix",
+      "2000+3000": {
+        "fired_games": 4
+      },
+      "4000+5000": {
+        "fired_games": 8
+      },
+      "per_base_games": {
+        "2000": 1,
+        "3000": 3,
+        "4000": 3,
+        "5000": 5
+      },
+      "passivity": "IDENTICAL 384/384 non-timing columns vs /workspace/tester/runs/trees-b9492c6-<b>.csv, 0 probe exceptions",
+      "verdict": "below 10/192 on both sets"
+    }
+  },
+  "checklist": {
+    "record_one_change": "PASS: one flag EARLY_SPACING_ON default false; eqdrive flag-off vs detached origin/main (bot files = b9492c6) 0 action mismatches in 77,747 decisions (96 games, base 0, trees on, both bots fed the same obs stream), rerun after the fix also 0/77,747; check.py PASS default max 2.8 ms, flag-on max 2.9 ms (fixed build; first build 3.0 / 3.2 ms)",
+    "opening": "PASS: 0 activations t < 10 s on bases 0 and 6000 (both builds; t >= 10 s by construction)",
+    "drops": "Reported: drop-ring arrivals champ/head 5/5 (base 0), 1/0 (base 6000) for the fixed build; first build 5/6 and 1/0",
+    "pins": "PASS: pins >= 20 s champ/head 3/3 and 2/2, identical, none new, flag never active in them (both builds)",
+    "early_deaths": "First build FAIL on 6000 (16 -> 17; base 0 24 -> 20). Fixed build PASS: 24/24 and 16/16",
+    "archive_bytes": 3614720,
+    "merge_base_edb729f": "OK"
+  },
+  "disproof": "MET: early (t < 30 s) mean nearest visible enemy did not rise with the fixed build: 78.0 -> 78.0 m (base 0), 76.9 -> 77.0 m (base 6000); share of t < 30 decisions with an enemy within 120 m 0.490 -> 0.490 and 0.440 -> 0.439. Deaths < 40 s not up for the fixed build.",
+  "what_worked": "The pre-fix version (allowed to walk out of heal while hurt) cut base-0 deaths < 40 s 24 -> 20 with +0.229 +/- 0.132 mean and kills 293 -> 314, but broke base 6000 (16 -> 17, -0.156 +/- 0.096). Spacing only matters in the states where we are already being hit; a not-hurt gate removes nearly all of it.",
+  "finding_note": "Measure mismatch (Coordinator 1:20 AM ET Nov 22): the bot's own view of nearest known enemy in the first 30 s is ~78 m (77.0-78.0 m on bases 0/6000/2000-5000), while F10's evidence (Mech Watcher ladder) is 145 m winners vs 117 m on a different, full-information measure. F10 does not carry over to the bot's own view."
+}

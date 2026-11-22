@@ -27,6 +27,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
+  CUBE_GONE_M, CUBE_MEMORY_M, CUBE_MEMORY_ON, CUBE_MEMORY_TTL_S,
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
@@ -288,6 +289,9 @@ function buildBot(hello: Hello): Bot {
   /** P-D-003: the drop we are walking to, and drops we gave up on. */
   let dropRun: { id: number; since: number } | null = null
   const dropSkip = new Set<number>()
+  /** P25c (CUBE_MEMORY_ON): cubes seen so far (they are listed only while in view) and our sticky cube target. */
+  const cubeMem = new Map<number, { pos: Vec3; seen: number }>()
+  let cubeTarget: number | null = null
   /** Build 14 (engage): each weapon's DPS and reach from hello.config, read once here. */
   const baseDps = {} as Record<WeaponKind, number>
   const baseReach = {} as Record<WeaponKind, number>
@@ -600,6 +604,38 @@ function buildBot(hello: Hello): Bot {
         farmGiveUp.add(farmGoal.id)
         farmGoal = null
       }
+      // P25c (CUBE_MEMORY_ON, see params.ts): remember every cube seen, and with the farm gate open and nothing for B12/B13
+      // to walk to, walk to the nearest remembered or visible cube within CUBE_MEMORY_M. B12/B13 above are unchanged; cubes
+      // B12 gave up on (farmGiveUp, read only) are not remembered. No give-up of its own: a target ends when it is taken,
+      // expires (CUBE_MEMORY_TTL_S after last seen) or is no longer eligible.
+      let cubeGoal: { id: number; pos: Vec3 } | null = null
+      if (CUBE_MEMORY_ON) {
+        const eye: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.eye_height ?? cfg.mech.eye_height ?? cfg.mech.height)]
+        for (const c of obs.cubes) if (!farmGiveUp.has(c.id)) cubeMem.set(c.id, { pos: c.pos, seen: obs.t })
+        for (const [id, c] of cubeMem) {
+          if (farmGiveUp.has(id) || obs.t - c.seen > CUBE_MEMORY_TTL_S) cubeMem.delete(id)
+          else if (c.seen === obs.t) continue
+          else if (flat(c.pos, me.pos) < CUBE_GONE_M && clearLine(solids, eye, [c.pos[0], c.pos[1], c.pos[2] + 0.5], 0, 0)) cubeMem.delete(id)
+        }
+        if (cubeTarget !== null && !cubeMem.has(cubeTarget)) cubeTarget = null
+        if (farmOk && !farmGoal && !farmHold) {
+          const pace = ZONE_WALK * walkSpeed
+          const safe = (p: number[]) =>
+            flat(p, z.center) < Math.max(0, z.radius - margin) &&
+            (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER < timeLeft
+          // Ground cubes only (a roof cube is a pin), zone-safe, in reach.
+          const ok = (c: { pos: Vec3 }) =>
+            flat(c.pos, me.pos) < CUBE_MEMORY_M && safe(c.pos) && !(solids?.ground && Math.abs(c.pos[2] - groundAt(solids, c.pos[0], c.pos[1])) >= 4)
+          const kept = cubeTarget !== null ? cubeMem.get(cubeTarget) : undefined
+          if (kept && ok(kept)) cubeGoal = { id: cubeTarget!, pos: kept.pos }
+          else {
+            let best: { id: number; pos: Vec3 } | null = null
+            for (const [id, c] of cubeMem) if (ok(c) && (!best || flat(c.pos, me.pos) < flat(best.pos, me.pos))) best = { id, pos: c.pos }
+            cubeGoal = best
+            cubeTarget = best?.id ?? null
+          }
+        }
+      }
       // Engage (F1, Build 14): fight or flee by time-to-kill vs time-to-die. Only in the zone and not leaving for the
       // next circle, so zone safety always wins. `hurt` is the Build 5 retreat trigger, unchanged.
       const hurt = !!lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp
@@ -833,6 +869,10 @@ function buildBot(hello: Hello): Bot {
       } else if (farmGoal) {
         move = travel(me.pos, farmGoal.pos, obs.t, canPlan()).move
         mode = farmHunt ? "farm, hunt" : "farm, pickup"
+      } else if (cubeGoal) {
+        // P25c: walk to a remembered (or 80–150 m visible) cube.
+        move = travel(me.pos, cubeGoal.pos, obs.t, canPlan()).move
+        mode = "farm, memory"
       } else if (!noSneak && threats.length && seenAt(me.pos, myHeight, threats, true)) {
         // Hold out of sight (Q2, Build 5): outside every enemy's 45 m ring and 120° wedge, moving silently. Build 19: only while hurt.
         spot = hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan)

@@ -10,7 +10,7 @@
     "with an enemy mech as target and not in an engage mode, send reload when the gun holds fewer than half a magazine, is not reloading, and for at least LULL_RELOAD_QUIET_S (2 s) we have not fired it, the target has had no clear line, and no visible enemy has line of sight to us; t >= 10 s; never while a drop run/ring hold is in progress or a claimable drop (holder none or us) is within DROP_RUN_M"
   ],
   "owner": "Mech Builder (P38b rebuild)",
-  "stage": "hold",
+  "stage": "built",
   "pr": null,
   "sha": null,
   "champion_sha_tested_against": "588557e464dd4946680bff964a7c8e86700b8739",
@@ -52,7 +52,7 @@
   "receipt": null,
   "site_score": null,
   "score": null,
-  "decision": "FAILED (builder checklist item 3, base 0)",
+  "decision": "Doug 10:30 PM ET (via Coordinator): 'Count the seed 44 drop as not a real loss and send P38b to the screen.' Base-0 item 3 (5->3, seed 44 won sooner at 222.4 s vs main 287.9 s, same place/score) waived; flag-ON head sent to Sim Tester.",
   "blocker": "Checklist item 3 (HARD) fails on base 0: drop-ring arrival total 5 -> 3, one seed (44), where P38b wins the match outright (place 1, same as main) 65 s sooner, before the drops land. One fix (engage-mode exclusion) already used.",
   "next_action": "Grok/Doug: decide whether an arrival 'loss' caused by winning the match earlier (equal place, equal score) counts under item 3; otherwise park P38b. Flag-false head pushed on p38b-lull-reload for inspection.",
   "doug_waiver": false,

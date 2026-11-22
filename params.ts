@@ -185,3 +185,20 @@ export const LETHAL_RELEASE_MIN_T = 40
 export const TREE_RETREAT_ON = true
 export const TREE_RETREAT_MIN_T = 40
 export const TREE_RETREAT_STUCK_S = 3
+
+/**
+ * P52 (early farm, Mech Watcher 11:38 PM ET: winners alive at 60 s held 4.2 cubes vs 2.2): from EARLY_FARM_FROM_S to
+ * EARLY_FARM_T, when the champion has no farm goal (its farm gate needs no enemy in view at all), walk to the nearest
+ * zone-safe cube within EARLY_FARM_PICKUP_M if every enemy in view, or known in the last 10 s, is more than
+ * EARLY_FARM_SPACE_M away and no mech hit us for 3 s. This keeps the early spacing: it never walks toward a cube that is
+ * closer than EARLY_FARM_SPACE_M to a known enemy. Drops, the hunt and every mode above "farm, pickup" are unchanged.
+ * P52b drop safety (same flag): never while a drop run is on, and with a drop near AND reachable within DROP_RUN_M (the
+ * drop run's own candidate filter) a cube is taken only if it stays within DROP_RUN_M of that drop and the detour still
+ * leaves 5 s before the drop run would start; a landed reachable drop blocks the early farm (the drop run wins).
+ * Mode label "farm, early". false = champion exactly.
+ */
+export const EARLY_FARM_ON = false
+export const EARLY_FARM_FROM_S = 10
+export const EARLY_FARM_T = 60
+export const EARLY_FARM_SPACE_M = 145
+export const EARLY_FARM_PICKUP_M = 120

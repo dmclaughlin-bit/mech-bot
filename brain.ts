@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_RUN_M, EARLY_FARM_FROM_S, EARLY_FARM_ON, EARLY_FARM_PICKUP_M, EARLY_FARM_SPACE_M, EARLY_FARM_T, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
@@ -639,6 +639,30 @@ function buildBot(hello: Hello): Bot {
           }
         }
       }
+      // P52 (EARLY_FARM_ON): early cube walk with enemies in view but all beyond EARLY_FARM_SPACE_M (see params.ts).
+      // P52b drop safety: the drops the drop run could take (its own candidate filter: not skipped, ours to take, within
+      // DROP_RUN_M, zone-safe). Never while a drop run is on; a cube must keep us within DROP_RUN_M of each such drop and
+      // leave time to reach it before the drop run would start (so a drop run always wins; a landed drop blocks it).
+      const earlyDrops = EARLY_FARM_ON && DROP_RUN_M > 0 ? (obs.drops ?? []).filter((x) => !dropSkip.has(x.id) &&
+        (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M &&
+        flat(x.pos, z.center) < Math.max(0, z.radius - margin) &&
+        (flat(me.pos, x.pos) + Math.max(0, flat(x.pos, z.next_center) - inner)) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + x.lands_in + x.capture_s - x.progress < timeLeft) : []
+      let earlyFarm = false
+      const dropKeep = (p: number[]) => earlyDrops.every((x) => flat(p, x.pos) <= DROP_RUN_M &&
+        (flat(me.pos, p) + flat(p, x.pos)) / walkSpeed + 5 < x.lands_in)
+      if (EARLY_FARM_ON && !farmGoal && !farmHold && dropRun === null && obs.t >= EARLY_FARM_FROM_S && obs.t < EARLY_FARM_T && FARM_ON && me.in_zone && !leaveNow &&
+        obs.t - lastMechHit > FARM_QUIET_S && enemies.every((e) => flat(e.pos, me.pos) > EARLY_FARM_SPACE_M) &&
+        ![...known.values()].some((k) => obs.t - k.lastSeen < FARM_MEMORY_S && flat(k.pos, me.pos) <= EARLY_FARM_SPACE_M)) {
+        const pace = ZONE_WALK * walkSpeed
+        const spaced = (p: number[]) => enemies.every((e) => flat(e.pos, p) > EARLY_FARM_SPACE_M) &&
+          ![...known.values()].some((k) => obs.t - k.lastSeen < FARM_MEMORY_S && flat(k.pos, p) <= EARLY_FARM_SPACE_M)
+        const cube = obs.cubes
+          .filter((c) => !farmGiveUp.has(c.id) && flat(c.pos, me.pos) < EARLY_FARM_PICKUP_M && spaced(c.pos) && dropKeep(c.pos) &&
+            flat(c.pos, z.center) < Math.max(0, z.radius - margin) &&
+            (flat(me.pos, c.pos) + Math.max(0, flat(c.pos, z.next_center) - inner)) / pace + ZONE_BUFFER < timeLeft)
+          .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+        if (cube) { farmGoal = cube; earlyFarm = true }
+      }
       if (farmGoal && farmChase?.id !== farmGoal.id) farmChase = { id: farmGoal.id, since: obs.t }
       if (!farmGoal && !farmHold) farmChase = null
       if (farmGoal && farmChase && obs.t - farmChase.since > (farmHunt ? HUNT_CHASE_S : FARM_CHASE_S)) {
@@ -911,7 +935,7 @@ function buildBot(hello: Hello): Bot {
         mode = "farm, capture"
       } else if (farmGoal) {
         move = travel(me.pos, farmGoal.pos, obs.t, canPlan()).move
-        mode = farmHunt ? "farm, hunt" : "farm, pickup"
+        mode = farmHunt ? "farm, hunt" : earlyFarm ? "farm, early" : "farm, pickup"
       } else if (!noSneak && threats.length && seenAt(me.pos, myHeight, threats, true)) {
         // Hold out of sight (Q2, Build 5): outside every enemy's 45 m ring and 120° wedge, moving silently. Build 19: only while hurt.
         spot = hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan)

@@ -36,9 +36,25 @@
     "pr": null,
     "created_et": "2026-11-22 12:47 AM ET",
     "sources": [
+      "coord/LEARNING_STANDARD.md",
       "coord/data/findings.md (F8, F11)",
-      "git show 911a662",
-      "gh pr view 169"
-    ]
+      "coord/data/findings.md (N3)",
+      "gh pr view 169",
+      "git show 911a662"
+    ],
+    "weakness_fixed_finding": "N3",
+    "hypothesis": "P52's early-death gain (F11) can be kept without its drop-ring loss (N3, site 4.23 vs 4.44) if the early farm never pulls us away from a drop the drop run could take.",
+    "mechanism": "Same early-farm trigger as P52 (10-60 s, no farm goal, all enemies in view or known in 10 s beyond 145 m, no mech hit for 3 s, nearest zone-safe cube within 120 m). Added inside EARLY_FARM_ON: no early farm while a drop run is on; with a drop near AND reachable within DROP_RUN_M (the drop run's own candidate filter), a cube is allowed only if it stays within DROP_RUN_M of that drop and (me->cube->drop)/walk_speed + 5 s < lands_in, so a landed reachable drop blocks early farm and the drop run always wins.",
+    "activation": null,
+    "positives": null,
+    "negatives": null,
+    "confidence": "Uncertain",
+    "reuse": "Drop-keep gate (stay within DROP_RUN_M and leave time before the drop run starts) can wrap any new movement goal.",
+    "outcome": null,
+    "disproof": "Drop-ring arrivals below the champion on either practice base (0, 6000), or deaths <40 s no better than the champion's (written before the build was measured).",
+    "strength_kept": "Early-death gain from early farming (F11: died<40 s 48->45, 38->37 in P52's Mac sim).",
+    "weakness_fixed": "N3: P52's drop-ring loss (8->3 on 2000+3000) was real on the site (4.23 vs 4.44).",
+    "differs_from_P52": "Same trigger and cube choice, plus the drop-keep gate: P52 could walk to a cube that took us out of drop-run range or made us late; P52b refuses those cubes and never early-farms during a drop run or with a landed reachable drop.",
+    "success": "No drop-ring arrival loss vs the champion on EITHER practice base (0, 6000) while deaths <40 s stay below the champion's."
   }
 }

@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 21:36 ET",
- "origin_main": "9ad425a1bbb708a44c65931973dc963d664567ee",
+ "generated_at_et": "2026-11-21 21:46 ET",
+ "origin_main": "85cf8da355be8a72266e9c3c78bd6da92e77b95f",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -4820,7 +4820,7 @@
    "title": "Mid-game unstuck: with 5-8 alive, when we have barely moved for ~5 s and are not in a drop ring, settling by P29, healing or fighting, pick a nearby reachable spot and move (UNSTUCK_MID_ON)",
    "kind": "build",
    "source": "Watcher refresh 74cdbcf (9:29-9:33 PM ET, 128 showdown matches)",
-   "owner": "Mech Builder",
+   "owner": "Doug's Claude",
    "decision": null,
    "changes": 1,
    "changes_basis": "idea record flags",

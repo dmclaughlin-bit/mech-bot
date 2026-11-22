@@ -205,4 +205,4 @@ export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]
  * last 2 s). The next candidate is taken; with none, the champion back-away runs. Search only; latch, give-up, gates, boost
  * and torso/aim unchanged (N8). false = P60 behavior exactly.
  */
-export const FAR_COVER_SAFE_ON = false
+export const FAR_COVER_SAFE_ON = true

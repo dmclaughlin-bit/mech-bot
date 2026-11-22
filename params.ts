@@ -185,3 +185,16 @@ export const LETHAL_RELEASE_MIN_T = 40
 export const TREE_RETREAT_ON = true
 export const TREE_RETREAT_MIN_T = 40
 export const TREE_RETREAT_STUCK_S = 3
+
+/**
+ * P47 (tree rotate, P-D-023): on the zone trip ("to next circle"), from TREE_ROTATE_FROM_S, while an enemy beyond
+ * near_range sees us and trees + buildings do not already hide us from all such enemies, step to the nearest spot 1-3 s
+ * away (12 bearings, inside the circle we keep to) that trees + buildings hide from all of them and that is at least
+ * 0.5 s of walking closer to the entry point; else one 1-2 s away that is no farther from it. Only if the trip still
+ * fits (distance via the spot / (zoneWalk x walk speed) + zoneBuffer < time left). Boost is unchanged. Never while a
+ * drop run/hold is possible (the P34 dropOpen test). No-progress guard: at most TREE_ROTATE_MAX_S of rotating in a row,
+ * then TREE_ROTATE_MAX_S on the champion's route. false = champion exactly.
+ */
+export const TREE_ROTATE_ON = false
+export const TREE_ROTATE_FROM_S = 10
+export const TREE_ROTATE_MAX_S = 3

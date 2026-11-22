@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_RUN_M, TREE_ROTATE_FROM_S, TREE_ROTATE_MAX_S, TREE_ROTATE_ON, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
@@ -286,6 +286,8 @@ function buildBot(hello: Hello): Bot {
   let rush: { id: number; since: number } | null = null
   /** Build 12: last time a mech (or the zone) damaged us, the item we are walking to, and items we gave up on. */
   let lastMechHit = -Infinity
+  /** P47: when the current run of tree-rotate steps began (null when not rotating). */
+  let rotateSince: number | null = null
   /** Build 19: the last time we took damage from anything (mech, drone or zone). */
   let lastDamaged = -Infinity
   let farmChase: { id: number; since: number } | null = null
@@ -827,6 +829,37 @@ function buildBot(hello: Hello): Bot {
         move = go.move
         boost = go.dist / walkSpeed > timeLeft
         mode = "to next circle"
+        // P47 (TREE_ROTATE_ON): a short detour into tree shadow that costs no ground (see params.ts).
+        if (TREE_ROTATE_ON && trees && obs.t >= TREE_ROTATE_FROM_S && !dropMove && !dropHold && dropRun === null &&
+          !(obs.drops ?? []).some((x) => (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M)) {
+          const seers = threats.filter((e) => flat(e.pos, me.pos) > cfg.vision.near_range && seenAt(me.pos, myHeight, [e], false))
+          const resting = rotateSince !== null && obs.t - rotateSince > TREE_ROTATE_MAX_S
+          if (resting && obs.t - rotateSince! > 2 * TREE_ROTATE_MAX_S) rotateSince = null
+          let p: Vec3 | null = null
+          if (!resting && seers.length && !seers.every((e) => treeHidden(me.pos, myHeight, e))) {
+            const pace = ZONE_WALK * walkSpeed, here = flat(me.pos, entry)
+            const fits = (q: Vec3) => (flat(me.pos, q) + flat(q, entry)) / pace + ZONE_BUFFER < timeLeft
+            const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + myHeight / 2]
+            const pick = (steps: number[], gain: number): Vec3 | null => {
+              for (const s of steps) for (let k = 0; k < HIDE_BEARINGS; k++) {
+                if (!canPlan()) return null
+                const yaw = (2 * Math.PI * k) / HIDE_BEARINGS
+                const x = me.pos[0] + Math.cos(yaw) * walkSpeed * s, y = me.pos[1] + Math.sin(yaw) * walkSpeed * s
+                if (Math.hypot(x - zoneKeep[0][0], y - zoneKeep[0][1]) > zoneKeep[1]) continue
+                const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+                if (g === -Infinity) continue
+                const q: Vec3 = [x, y, g]
+                if (flat(q, entry) > here - gain || !fits(q)) continue
+                if (!clearLine(solids, from, [x, y, g + myHeight / 2], 0, 0)) continue
+                if (seers.every((e) => treeHidden(q, myHeight, e))) return q
+              }
+              return null
+            }
+            p = pick(HIDE_STEPS_S, 0.5 * walkSpeed) ?? pick([1, 2], 0)
+          }
+          if (p) { move = heading(p); if (rotateSince === null) rotateSince = obs.t }
+          else if (!resting) rotateSince = null
+        }
       } else if (engage) {
         // Engage (F1, Build 14): fight on instead of the HP retreat. Hold the line of fire, and close in along a path
         // when the target is behind cover, or (finish rule) beyond our best range. Never walk outside the circle we keep to.

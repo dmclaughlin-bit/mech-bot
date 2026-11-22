@@ -185,3 +185,18 @@ export const LETHAL_RELEASE_MIN_T = 40
 export const TREE_RETREAT_ON = true
 export const TREE_RETREAT_MIN_T = 40
 export const TREE_RETREAT_STUCK_S = 3
+
+/**
+ * P49 (tree heal): in the champion's standing heal (HP < 90%, no building hide spot from hideSpot, or not hurt enough
+ * to hide), from t = TREE_HEAL_MIN_T (40 s: before it, play and so every death before 40 s equal the champion's; the
+ * record's 10 s raised once after the 4-base checklist showed deaths < 40 s up on bases 0 and 6000), when an enemy that sees us (the heal's own test: seenAt with the fov cone) is not
+ * already hidden from us by trees + buildings: walk (silent cap as in "heal, hiding") to the nearest in-zone spot 1, 2
+ * or 3 s away, no closer to any of those enemies, straight-line walkable, that trees + buildings hide from all of them,
+ * and heal there. A spot with less than TREE_HEAL_PROGRESS_M of progress in TREE_HEAL_STUCK_S goes on a skip list
+ * (cleared each zone phase). Off while a drop is near AND reachable within DROP_RUN_M (the drop run's own candidate
+ * filter) or a drop run/hold is on. Mode "heal, trees". false = champion behavior exactly.
+ */
+export const TREE_HEAL_ON = false
+export const TREE_HEAL_MIN_T = 40
+export const TREE_HEAL_STUCK_S = 3
+export const TREE_HEAL_PROGRESS_M = 1

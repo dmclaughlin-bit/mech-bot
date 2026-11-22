@@ -29,7 +29,8 @@ import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
-  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
+  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_HEAL_MIN_T, TREE_HEAL_ON, TREE_HEAL_PROGRESS_M, TREE_HEAL_STUCK_S, TREE_RETREAT_MIN_T, TREE_RETREAT_ON,
+  TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -265,8 +266,8 @@ function fallbackBot(): Bot {
 function buildBot(hello: Hello): Bot {
   const cfg = hello.config
   const solids = loadMap(hello)
-  /** P48: map trees (sight only), read only when TREE_RETREAT_ON. */
-  const trees = TREE_RETREAT_ON ? loadTrees(hello) : null
+  /** P48: map trees (sight only), read only when TREE_RETREAT_ON (or P49 TREE_HEAL_ON). */
+  const trees = TREE_RETREAT_ON || TREE_HEAL_ON ? loadTrees(hello) : null
   const growth = Number(cfg.cubes.size_per_cube ?? 0.05)
   const minPitch = cfg.mech.min_pitch ?? -0.7
   const maxPitch = cfg.mech.max_pitch ?? 1.3
@@ -296,6 +297,10 @@ function buildBot(hello: Hello): Bot {
   /** P48: the tree spot we are retreating to (with its best distance so far, for the no-progress give-up) and spots we gave up on. */
   let treeRun: { spot: Vec3; key: string; best: number; bestAt: number; used: number } | null = null
   const treeSkip = new Set<string>()
+  /** P49: the tree spot we are walking to while healing (same give-up bookkeeping), its skip list, and the zone phase that list belongs to. */
+  let healRun: { spot: Vec3; key: string; best: number; bestAt: number; used: number } | null = null
+  const healSkip = new Set<string>()
+  let healPhase = NaN
   /** Build 14 (engage): each weapon's DPS and reach from hello.config, read once here. */
   const baseDps = {} as Record<WeaponKind, number>
   const baseReach = {} as Record<WeaponKind, number>
@@ -465,6 +470,7 @@ function buildBot(hello: Hello): Bot {
    */
   function treeSpot(
     me: Observation["self"], height: number, walk: number, seers: { pos: Vec3; cubes?: number }[], keepIn: [number[], number], timeOk: () => boolean,
+    skip: Set<string> = treeSkip,
   ): Vec3 | null {
     const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
     for (const s of HIDE_STEPS_S) {
@@ -473,7 +479,7 @@ function buildBot(hello: Hello): Bot {
         const yaw = (2 * Math.PI * b) / HIDE_BEARINGS
         const x = me.pos[0] + Math.cos(yaw) * walk * s, y = me.pos[1] + Math.sin(yaw) * walk * s
         if (Math.hypot(x - keepIn[0][0], y - keepIn[0][1]) > keepIn[1]) continue
-        if (treeSkip.has(treeKey(x, y))) continue
+        if (skip.has(treeKey(x, y))) continue
         const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
         if (g === -Infinity) continue
         const p: Vec3 = [x, y, g]
@@ -813,6 +819,36 @@ function buildBot(hello: Hello): Bot {
         if (p) treeRun = { spot: p, key: treeKey(p[0], p[1]), best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
         return p
       }
+      // P49 (TREE_HEAL_ON): the tree spot for the standing heal, or null (champion stands). Called only from the heal
+      // branch when it found no building hide spot. Off before TREE_HEAL_MIN_T, while a drop run/hold is on, and while a
+      // drop is near AND reachable (treeRetreat's dropReach test); off when no enemy sees us (the heal's cone test) or
+      // trees + buildings already hide us from every one that does (then we heal where we stand).
+      const treeHeal = (): Vec3 | null => {
+        const pace = ZONE_WALK * walkSpeed
+        const dropSafe = (p: number[], stay: number) =>
+          flat(p, z.center) < Math.max(0, z.radius - margin) &&
+          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
+        const dropReach = () => DROP_RUN_M > 0 && (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
+          flat(x.pos, me.pos) <= DROP_RUN_M && dropSafe(x.pos, x.lands_in + x.capture_s - x.progress))
+        if (!TREE_HEAL_ON || !trees || obs.t < TREE_HEAL_MIN_T || dropMove || dropHold || dropReach()) return (healRun = null)
+        if (healPhase !== z.shrink_start) { healPhase = z.shrink_start; healSkip.clear() }
+        const seers = threats.filter((e) => seenAt(me.pos, myHeight, [e], true))
+        if (!seers.length || seers.every((e) => treeHidden(me.pos, myHeight, e))) return (healRun = null)
+        if (healRun && obs.t - healRun.used > 0.5) healRun = null
+        if (healRun) {
+          const run = healRun
+          const d = flat(me.pos, run.spot)
+          if (d < run.best - TREE_HEAL_PROGRESS_M) { run.best = d; run.bestAt = obs.t }
+          const stuck = obs.t - run.bestAt > TREE_HEAL_STUCK_S
+          const still = !stuck && d >= 1.5 && flat(run.spot, zoneKeep[0]) <= zoneKeep[1] && seers.every((e) => treeHidden(run.spot, myHeight, e))
+          if (still) { run.used = obs.t; return run.spot }
+          if (stuck) healSkip.add(run.key)
+          healRun = null
+        }
+        const p = treeSpot(me, myHeight, walkSpeed, seers, zoneKeep, canPlan, healSkip)
+        if (p) healRun = { spot: p, key: treeKey(p[0], p[1]), best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
+        return p
+      }
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -903,6 +939,11 @@ function buildBot(hello: Hello): Bot {
         spot = !noSneak && threats.length && seenAt(me.pos, myHeight, threats, true) ? hideSpot(me, myHeight, walkSpeed, threats, true, zoneKeep, canPlan) : null
         if (spot) move = heading(spot)
         mode = spot ? "heal, hiding" : "heal"
+        // P49 (TREE_HEAL_ON): where the champion would stand in sight, walk to a spot trees + buildings hide instead.
+        if (TREE_HEAL_ON && !spot && (spot = treeHeal())) {
+          move = heading(spot)
+          mode = "heal, trees"
+        }
       } else if (lootTarget) {
         move = heading(lootTarget)
         mode = "loot"
@@ -954,7 +995,7 @@ function buildBot(hello: Hello): Bot {
       // ambush) ranks first, and the target/aim/fire code below is unchanged. Named "engage, ..." so the silent cap does not apply.
       if (STANDOFF_BREAK_S > 0) {
         let foe: (typeof enemies)[number] | undefined
-        if (obs.t >= STANDOFF_BREAK_S && (mode === "heal" || mode === "heal, hiding" || mode === "hold") && me.hp >= (RETREAT_HP + STANDOFF_HP_MARGIN) * me.max_hp) {
+        if (obs.t >= STANDOFF_BREAK_S && (mode === "heal" || mode === "heal, hiding" || mode === "heal, trees" || mode === "hold") && me.hp >= (RETREAT_HP + STANDOFF_HP_MARGIN) * me.max_hp) {
           const los = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
           const e = los.length === 1 ? los[0] : undefined
           const d = e ? flat(e.pos, me.pos) : Infinity
@@ -976,7 +1017,7 @@ function buildBot(hello: Hello): Bot {
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
-      const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
+      const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "heal, trees" || mode === "hide"
       if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.

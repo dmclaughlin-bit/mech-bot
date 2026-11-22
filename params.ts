@@ -168,7 +168,7 @@ export const MIDRING_STUCK_S = 3
  * followed watched claims at t 10-20 s, where the walk displaced the opening laser rush or a hiding heal.
  * false = champion behavior exactly.
  */
-export const CLAIM_WATCHED_ON = false
+export const CLAIM_WATCHED_ON = true
 export const CLAIM_WATCHED_HP = 0.5
 export const CLAIM_WATCHED_MIN_T = 40
 export const CLAIM_WATCHED_STUCK_S = 3

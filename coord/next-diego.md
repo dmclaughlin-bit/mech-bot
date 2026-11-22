@@ -25,8 +25,12 @@ Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, f
 
 ---
 
-## CURRENT (Doug 10:02 PM ET): P-D-018 = P50 ST-1 clear-shot laser charge (`CHARGE_LINED_ON`), a BUILD
-Order: finish the P-D-016 run in progress (P-D-017 death reports are already up as PR #154), then start this right away, ahead of P-D-015. Branch `diego/P-D-018-charge-lined` from current origin/main (must contain 8c130ad, champion P34 0e6fadd, 4.38).
+## CURRENT ORDER (Doug 10:06 PM ET, speed-up): P-D-015 second screening station FIRST, then P-D-018 (P50)
+Doug approved making Diego's Mac a second screening station NOW so two builds can be screened at once. Order: finish the P-D-016 run in progress, then P-D-015 (below; match check first), then P-D-018 P50. Update for P-D-015: screens are now TREES-ON. The match check uses Sim Tester's sim "#148 22f72a8 tools/sim + #133 item 1, --trees" and reproduces the P34 0e6fadd trees-on champion baseline rows in coord/data/screens.csv (2000+3000 mean 3.750, 4000+5000 mean 4.099) exactly, not the old trees-off P29 screen. Once it matches, take screens Sim Tester hands you (post them tagged "station: diego-mac, mode: official-screen" on the build's PR and in screens.csv). Sim Tester stays the primary screener. You never submit.
+
+
+## NEXT (Doug 10:02 PM ET): P-D-018 = P50 ST-1 clear-shot laser charge (`CHARGE_LINED_ON`), a BUILD
+Order (updated 10:06 PM ET): after P-D-015 is matched and running. Branch `diego/P-D-018-charge-lined` from current origin/main (must contain 8c130ad, champion P34 0e6fadd, 4.38).
 - **Change (one flag, CHARGE_LINED_ON):** brain.ts around :1096 (`} else if (leading === "laser") fire[laser] = true`) starts a charge whenever the laser leads. Start the charge only when `clear && beamOn` (the same "lined" test the release uses around :1071). Release logic (full / P34 lethal) is unchanged. Source: Sim Tester death report /workspace/tester/proposals/20261121-2153-0e6fadd.md (the champion has no laser at the end in 53% of games; opponents can see `charging: true`).
 - **Record first (D2):** write `coord/data/ideas/P50.json` (owner Diego's Claude) before code.
 - **Step A (log only, trees-on, bases 2000-5000):** count the games where a charge starts with `!clear || !beamOn`, and how long those charges run. Under 10/192 on either set: retire it and stop.

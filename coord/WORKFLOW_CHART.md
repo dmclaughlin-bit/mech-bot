@@ -90,3 +90,8 @@ flowchart TD
     SC -- yes --> WIN[New champion; record a confirmed sim false negative]
     SC -- no --> LOG[Champion unchanged; log the official result]
 ```
+
+## Speed-ups (Doug confirmed Sat Nov 21 10:06 PM ET)
+1. Second screening station: Diego's Mac (P-D-015) screens trees-on in parallel with Mech Sim Tester once its match check reproduces the champion baseline exactly. Same screen rules; Sim Tester stays primary.
+2. Fires-often-enough check (log-only Step A, 10/192 on both sets) before every full build of a new idea (coord/BUILD_CHECKLIST.md).
+3. Spare tests go to the top eligible near miss under the 9:47 PM ET near-miss pathway, every 10-minute check, without waiting.

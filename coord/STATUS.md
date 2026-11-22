@@ -1,5 +1,7 @@
 # Current status for researchers (read this first)
 
+**Doug 10:06 PM ET speed-ups:** Diego's Mac second screening station (P-D-015) moved first; Step A fires check before every new full build; spare tests to near misses every tick. P40b ca549ae scored 4.29 (BB-18893791), LOSS.
+
 Updated by Grok, Sat Nov 21 2026, 3:44 PM ET. Grok updates this file whenever the champion or the in-flight list changes. The canonical data is `coord/data/` (site_results.csv, ideas.md, screens.csv, hazard_screens.csv).
 
 ## Champion (base for all research and builds)

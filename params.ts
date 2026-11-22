@@ -185,3 +185,12 @@ export const LETHAL_RELEASE_MIN_T = 40
 export const TREE_RETREAT_ON = true
 export const TREE_RETREAT_MIN_T = 40
 export const TREE_RETREAT_STUCK_S = 3
+
+/**
+ * P42 (zone trip, no new laser charge): while the mode is "to next circle" or "zone escape" (from t = 10 s), the laser
+ * may not take the lead and START a new charge (charge 0): charging halves the walk (protocol §305, charge_move_mult
+ * 0.5). Lightning or the gun leads instead, as when the laser is cooling down. A charge already in progress keeps the
+ * laser in the lead and is released by the champion's rules. Path, boost and every other decision are unchanged. Zone
+ * travel ranks above the drop run/hold, so this never runs on a drop tick. false = champion behavior exactly.
+ */
+export const ZONE_TRIP_NO_CHARGE_ON = false

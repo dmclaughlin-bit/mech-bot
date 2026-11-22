@@ -29,7 +29,7 @@ import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
-  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
+  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, ZONE_TRIP_NO_CHARGE_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -1101,7 +1101,10 @@ function buildBot(hello: Hello): Bot {
         // Pick the weapon that steers the aim this decision.
         let leading = "track"
         aim = gunAim
-        if (clear && laser >= 0 && w(laser).cooldown <= 0 && d <= w(laser).stats.range) {
+        // P42 (ZONE_TRIP_NO_CHARGE_ON): on a zone trip the laser may not start a new charge (charging halves the walk);
+        // lightning or the gun leads instead. A charge already in progress keeps the lead and is released as before.
+        const tripNoCharge = ZONE_TRIP_NO_CHARGE_ON && obs.t >= 10 && (mode === "to next circle" || mode === "zone escape") && laser >= 0 && (w(laser).charge ?? 0) <= 0
+        if (clear && laser >= 0 && w(laser).cooldown <= 0 && d <= w(laser).stats.range && !tripNoCharge) {
           leading = "laser"
           aim = beamAim
         } else if (clear && arc >= 0 && d <= w(arc).stats.range) {

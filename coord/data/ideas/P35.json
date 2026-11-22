@@ -4,15 +4,15 @@
   "family": "targeting",
   "flag": "UNSEEN_TARGET_ON",
   "owner": "Mech Builder",
-  "stage": "building",
+  "stage": "built",
   "source": "PR #145 research-doug-1941 ranked build 2 (target.ts); first hit decides first fights (KILL/DIED 309/171 vs 129/297)",
   "champion_sha": "8c130ad7f0c81acb03508c40f20c31867f29d358",
   "created_et": "2026-11-21 19:57",
   "pr": "https://github.com/dmclaughlin-bit/mech-bot/pull/150",
-  "sha": "5778086",
-  "status": "rebuilding",
-  "head": "5778086d38a531d03f8d2940f5da1634f9ddd90e",
-  "decision": "9:04 PM ET coordinator: VETO confirmed (https://github.com/dmclaughlin-bit/mech-bot/pull/150#issuecomment-7072641748). Drop-arrival set total 2000+3000 8->7, all from seed 2089 (place 1->9, died 121.45 s before the champion arrival). Effect otherwise flat or negative: +0.010 +/- 0.056 and -0.068 +/- 0.037. Note: seed 2089 also cost P34 and P37 a drop; it is a fragile late-drop game.",
+  "sha": "491c3b6388c016c58538631168e3d67863868de2",
+  "status": "built",
+  "head": "flag-ON head = the commit after this record update on p35b-unseen-target; it only flips UNSEEN_TARGET_ON to true (SHA in the builder report / branch tip)",
+  "decision": "BUILT (near miss): Builder four-base trees-on checklist pass on all items after one fix",
   "near_miss": true,
   "rebuild": {
     "branch": "p35b-unseen-target",
@@ -23,11 +23,72 @@
     "flag": "UNSEEN_TARGET_ON",
     "pathway": "near-miss (Doug 9:47 PM ET Sat Nov 21); near_miss_ranking.md rank 1",
     "started_et": "2026-11-21 22:00",
-    "note": "Same single behavior as 5778086 (target-pick bonus for a visible enemy facing away from us beyond 45 m, t>=10 s), re-applied on champion P34. Trees-on four-base checklist (0/1000/6000/7000); drop-ring arrivals reported only for this near-miss rebuild."
+    "note": "Same single behavior as 5778086 (target-pick bonus for a visible enemy facing away from us beyond 45 m, t>=10 s), re-applied on champion P34. Trees-on four-base checklist (0/1000/6000/7000); drop-ring arrivals reported only for this near-miss rebuild.",
+    "flag_off_commit": "491c3b6388c016c58538631168e3d67863868de2",
+    "first_flag_off_commit": "8ccca317704e85bf400f5a879d8354ee181d1ad1 (UNSEEN_TARGET_FROM_S 10)"
   },
-  "next_action": "Mech Builder: rebuild on a4fa643, trees-on four-base checklist, push p35b-unseen-target flag-ON head",
+  "next_action": "Sim Tester: full paired trees-on screen of the flag-ON head on 2000+3000 and 4000+5000 vs champion P34; coordinator re-ranks the near-miss pool after it",
   "sources": [
     "coord/data/near_miss_ranking.md",
     "coord/WORKFLOW_CHART.md near-miss pathway"
-  ]
+  ],
+  "sha_flag_off": "491c3b6388c016c58538631168e3d67863868de2",
+  "champion_sha_tested_against": "588557e464dd4946680bff964a7c8e86700b8739",
+  "screens": [
+    {
+      "sha": "flag-on copy of 491c3b6388c016c58538631168e3d67863868de2 (= head), instrumented (not committed)",
+      "seed_set": "0 (96, trees on, --jobs 1, /tmp/builder-sim-trees), vs champion 0e6fadd /workspace/tester/runs/trees-0e6fadd-0.csv",
+      "fired": 14,
+      "diff_behavior": 8,
+      "diff_score": 2,
+      "pins": "41 (34 s), 43 (46 s), 79 (22 s): all same spot as champion, flag 0 decisions in window; no NEW",
+      "verdict": "Builder checklist PASS (near-miss rebuild): drop-ring arrivals 5=5, died<40 s 24=24, survivors 2=2, kills 292->293, better/tied/worse 1/94/1, t<10 s activations 0",
+      "source": "Mech Builder hazard run /tmp/p35b (not committed)",
+      "sim_delta": 0.0,
+      "sim_se": 0.015
+    },
+    {
+      "sha": "flag-on copy of 491c3b6388c016c58538631168e3d67863868de2 (= head), instrumented (not committed)",
+      "seed_set": "1000 (96, trees on, --jobs 1, /tmp/builder-sim-trees), vs champion 0e6fadd /workspace/tester/runs/trees-0e6fadd-1000.csv",
+      "fired": 10,
+      "diff_behavior": 7,
+      "diff_score": 2,
+      "pins": "1005 (77 s, 59 s), 1015 (20 s), 1018 (32 s), 1037 (57 s): all same spot as champion, flag 0 decisions in window; no NEW",
+      "verdict": "Builder checklist PASS (near-miss rebuild): drop-ring arrivals 1=1, died<40 s 15=15, survivors 2=2, kills 368->367, better/tied/worse 0/94/2, t<10 s activations 0",
+      "source": "Mech Builder hazard run /tmp/p35b (not committed)",
+      "sim_delta": -0.021,
+      "sim_se": 0.015
+    },
+    {
+      "sha": "flag-on copy of 491c3b6388c016c58538631168e3d67863868de2 (= head), instrumented (not committed)",
+      "seed_set": "6000 (96, trees on, --jobs 1, /tmp/builder-sim-trees), vs champion 0e6fadd /workspace/tester/runs/trees-0e6fadd-6000.csv",
+      "fired": 15,
+      "diff_behavior": 10,
+      "diff_score": 2,
+      "pins": "6011 (21 s), 6082 (20 s): same spot as champion, flag 0 decisions in window; no NEW",
+      "verdict": "Builder checklist PASS (near-miss rebuild): drop-ring arrivals 1=1, died<40 s 16=16, survivors 0=0, kills 367->370, better/tied/worse 1/94/1, t<10 s activations 0",
+      "source": "Mech Builder hazard run /tmp/p35b (not committed)",
+      "sim_delta": 0.042,
+      "sim_se": 0.053
+    },
+    {
+      "sha": "flag-on copy of 491c3b6388c016c58538631168e3d67863868de2 (= head), instrumented (not committed)",
+      "seed_set": "7000 (96, trees on, --jobs 1, /tmp/builder-sim-trees), vs champion 0e6fadd /workspace/tester/runs/trees-0e6fadd-7000.csv",
+      "fired": 16,
+      "diff_behavior": 13,
+      "diff_score": 7,
+      "pins": "7065 (21 s): same spot as champion, flag 0 decisions in window; no NEW",
+      "verdict": "Builder checklist PASS (near-miss rebuild): drop-ring arrivals 3=3, died<40 s 22=22, survivors 1->2, kills 367->382, better/tied/worse 5/89/2, t<10 s activations 0",
+      "source": "Mech Builder hazard run /tmp/p35b (not committed)",
+      "sim_delta": 0.177,
+      "sim_se": 0.12
+    }
+  ],
+  "gate": "eqdrive flag-off vs main IDENTICAL (cmp); check.py --map-dir arena PASS default max 3.2 ms, flag-on max 2.8 ms; git merge-base --is-ancestor 588557e OK; archive 3430400 bytes (< 15,000,000)",
+  "activation": "early count bases 0+1000 at UNSEEN_TARGET_FROM_S 10: 31/192 (17+14); after fix (40 s): 24/192 (14+10); 4 bases 55/384 (14/10/15/16). Fired = a decision where the unseen bonus changed the score-based pick (new lock or interim), measured by instrumented copy; plain flag-on base 7000 CSV identical to instrumented in all non-timing columns",
+  "fix": "one allowed fix used: UNSEEN_TARGET_FROM_S 10 -> 40 (commit 491c3b6). Reason: item 5 at 10 s, base 1000 deaths <40 s 15 -> 16 (seed 1024, pick changed at 21.3 s, death 42.95 -> 34.75 s). Base 0 at 10 s: drop 5=5, deaths 24=24.",
+  "blocker": null,
+  "timestamps": {
+    "updated": "2026-11-21 22:26 ET"
+  }
 }

@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 20:34 ET",
- "origin_main": "f843459c295fe86a53ec2e02c0431a47df18b5e9",
+ "generated_at_et": "2026-11-21 20:41 ET",
+ "origin_main": "8f0ca4c2c431661509a9e3dc64e7294937e0659a",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -75,7 +75,7 @@
  },
  "board": {
   "Idea": 0,
-  "Researched": 27,
+  "Researched": 26,
   "Assigned": 0,
   "Built (PR)": 1,
   "Screened": 15,
@@ -83,12 +83,12 @@
   "Submitted": 0,
   "Scored": 0,
   "Merged": 5,
-  "Retired": 39
+  "Retired": 41
  },
  "board_detail": {
   "Retired_loss": 13,
   "Retired_tie": 3,
-  "Retired_unsubmitted": 23
+  "Retired_unsubmitted": 25
  },
  "items": [
   {
@@ -1709,6 +1709,17 @@
       "at": "2026-11-21 19:59 ET",
       "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/143#issuecomment-7071912642",
       "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "PR #143 comment",
+      "sets": [
+       "A",
+       "B"
+      ],
+      "at": "2026-11-21 20:42 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/143#issuecomment-7072375870",
+      "after_click": true,
       "exact_sha": true
      },
      {
@@ -4305,7 +4316,7 @@
    "kind": "build",
    "source": "Research P34-37 (this run): champion claim gate brain.ts:669 + passive sim log; watcher RANKED.md rule 2, SKILLS.md cube rate; site B53/B94 losses",
    "owner": "unassigned (research P34-37; Grok assigns)",
-   "decision": null,
+   "decision": "RETIRED 8:38 PM ET by coordinator: after the one fix (t>=40 s), base 1000 paired -0.250 +/- 0.118, kills 309->287, drop arrivals 3->1; the far watcher hit us on 8/40 and 6/32 walks; claims completed only 0 and 6. Third claim-family loss (with B53, B94).",
    "changes": 1,
    "changes_basis": "idea record flags",
    "multi": false,
@@ -4320,22 +4331,22 @@
    "screened_before_click": false,
    "postmortems": [],
    "first_mention": null,
-   "sha": null,
-   "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",
+   "sha": "70a0228540868da255ec99ab521f915af77e4fc8",
+   "champion_sha_note": "b6f2f8be91abacbf9f31469ce8b5ad4576c289c9",
    "research": [],
    "prs": [],
    "pr_opened": null,
    "primary_pr": null,
    "pr_url": null,
    "pr_state": null,
-   "head": null,
+   "head": "70a0228540868da255ec99ab521f915af77e4fc8",
    "pr_closed": null,
    "pr_merged": null,
    "contains_champion": null,
    "stage_idx": null,
-   "stage": "Researched",
+   "stage": "Retired",
    "outcome": null,
-   "blocker": null,
+   "blocker": "BUILD_CHECKLIST item 3 FAILS on base 1000 (drop-ring arrivals 1 vs 3, one game that died earlier after walks; the drop gate already excludes every drop-listed tick, so no further fix within this behavior). One fix round used (item 5, MIN_T 10 -> 40). Base 1000 also -0.250 +/- 0.118 and kills 287 vs 309.",
    "from_idea_record": true
   },
   {
@@ -4537,6 +4548,45 @@
    "from_idea_record": true
   },
   {
+   "id": "P29b",
+   "title": "Midring settle fix (drop yield + no-progress give-up)",
+   "kind": "build",
+   "source": null,
+   "owner": "Diego's Claude",
+   "decision": "RETIRED 8:39 PM ET by coordinator: Sim Tester VETO (#146 comment 7072301136). The new dropNear gate is true whenever any drop is announced or on the ground (drops stay in obs.drops), so the settle fired 0/384 and the build effectively removes the P29 champion behavior. Drop-arrival set totals 8->6 and 7->5. Same drop-on-map gate trap as P26b/P33.",
+   "changes": null,
+   "changes_basis": "unknown",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": "6ff499b8cc58",
+   "champion_sha_note": null,
+   "research": [],
+   "prs": [],
+   "pr_opened": null,
+   "primary_pr": 146,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/146",
+   "pr_state": null,
+   "head": "6ff499b8cc58",
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Retired",
+   "outcome": null,
+   "blocker": null,
+   "from_idea_record": true
+  },
+  {
    "id": "P30",
    "title": "Front-arc facing: while retreating/healing/hiding and hit in the last 2 s by a visible mech, keep that attacker in the torso's front 180 deg arc on non-firing ticks (FACE_ATTACKER_ON)",
    "kind": "build",
@@ -4579,9 +4629,9 @@
    "id": "P34",
    "title": "Lethal release: fire a partially charged laser as soon as its damage is lethal on the current target, instead of waiting for full charge (LETHAL_RELEASE_ON)",
    "kind": "build",
-   "source": "PR #145 research-doug-1941 ranked build 1 (brain.ts:1036-1046)",
+   "source": "PR #145 research-doug-1941 ranked build 1 (brain.ts:1036-1046 on 6182d29; on the P29 champion the hook is brain.ts:1078-1093)",
    "owner": "Mech Builder",
-   "decision": null,
+   "decision": "Builder check failed drop arrivals (5->4, 3->2 on base 0/1000). Doug 8:35 PM ET: send to the full official screen; the drop-ring set-total rule still decides there.",
    "changes": 1,
    "changes_basis": "idea record flags",
    "multi": false,
@@ -4596,22 +4646,22 @@
    "screened_before_click": false,
    "postmortems": [],
    "first_mention": null,
-   "sha": null,
-   "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",
+   "sha": "c281bf59e6276ffda376cc84a0c95f620331485e",
+   "champion_sha_note": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
    "research": [],
    "prs": [],
    "pr_opened": null,
-   "primary_pr": null,
-   "pr_url": null,
+   "primary_pr": 147,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/147",
    "pr_state": null,
-   "head": null,
+   "head": "c281bf59e6276ffda376cc84a0c95f620331485e",
    "pr_closed": null,
    "pr_merged": null,
    "contains_champion": null,
    "stage_idx": null,
    "stage": "Researched",
    "outcome": null,
-   "blocker": null,
+   "blocker": "Drop-ring arrival totals lower on both sets. Every early release that changed a drop game killed its target before any drop was called (46-47 s); the lost arrivals are 150-235 s later in games that diverged. The behavior already never starts while a drop run/hold is possible. Closing the rest within this behavior means turning it off for most of the match. Needs a coordinator / Doug decision (the noise-calibration benchmark and the 7:55 PM ET set-total ruling are the context)",
    "from_idea_record": true
   },
   {

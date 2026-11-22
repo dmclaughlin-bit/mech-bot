@@ -5,7 +5,7 @@ code, and practice returns only an aggregate score. Use the sim to rank builds, 
 calibration numbers are in the pull request that added this folder.
 
 ```sh
-bun tools/sim/run.ts --bot <path/to/bot.ts> --seeds 48 --out sim.csv   # [--jobs N] [--kit <mechfight-kit dir>]
+bun tools/sim/run.ts --bot <path/to/bot.ts> --seeds 48 --out sim.csv   # [--jobs N] [--kit <mechfight-kit dir>] [--trees] [--vs-champions <bot.ts>]
 SIM_TRACE=1 bun tools/sim/run.ts --worker --bot bot.ts --seed-list 1000   # one match, a status line every 5 s
 ```
 
@@ -41,7 +41,7 @@ house_gun_hits, decisions, missed, late_over_50ms, bot_ms_mean, bot_ready`.
 | Zone centres | Each next centre is uniform in the disc that keeps the next circle inside the current one, clamped 60 m inside the map. |
 | Crates, drones, floor loot | Uniform on open ground inside 0.9 of the first circle; the roof share lands on a random roof 4 to 45 m high. |
 | Supply drops | Land on open ground within `drops.spread` of the next circle's radius. House bots do not contest them. |
-| Trees | Ignored: they block neither sight nor shots. The real server lets canopy block sight, so real hiding is a little better. |
+| Trees | Off by default: trees block neither sight nor shots. With `--trees` (P-D-014), trees from `arena/world.json` block sight only. Assumed: (1) a tree's `height` and `crownBase` are measured up from its own ground `z`; (2) the trunk is a vertical cylinder of radius `trunkR` from `z` to `z+crownBase`, and blocks at every range; (3) the crown is an ellipsoid centred on (`crownX`,`crownY`), radius `crownR`, spanning `z+crownBase` to `z+height`; (4) canopy is soft: the line's length inside crowns gives transmittance `exp(-rules.canopyDensity × length)`, blocked below `rules.canopyBlockT` (Protocol §8); (5) canopy never blocks within `near_range` (45 m); (6) a tree blocks the centre or top sight line, and the target is seen if either line is clear of buildings and trees (same two lines as buildings); (7) shots, lasers and sound ignore trees. Off, the sim is unchanged. |
 | Geometry | One base and one top per 1 m cell (stacked prisms merge). The mech collides at its center and 8 points on its radius. The 50° slope limit is not modelled, only the 1.2 m step. Roof-edge sliding and eave rules are not modelled. |
 | Mortar direct hit | The target takes `damage` plus full splash. |
 | Lightning cone | Within `cone_deg` on either side of the aim yaw. |
@@ -75,6 +75,40 @@ Tiers (`tune.ts`):
 | medium | 8° | 0.8 s | 75 m | 30 m | 60% | no |
 | hard | 6° | 0.5 s | 65 m | 45 m | 85% | yes |
 | expert | 4.3° | 0.25 s | 55 m | 60 m | 100% | yes |
+
+## `--vs-champions <bot.ts>` (P-D-016, off by default)
+
+An information mode, not a practice model. The 15 other slots each run their own copy of the given bot (normally the
+champion) as a subprocess, with its own hello (its slot and the same per-slot seed rule as ours), observations and
+events built exactly as ours are. There are no house bots, so the squad, tiers, hunters and the house-shot counters are
+off (`house_dead`, `house_gun_*` stay 0). Every mech can hurt every other mech. Spawns, our slot, zone, drops, loot and
+NPCs come from the same seed as a normal run (the tier shuffle still draws from the rng so the world matches). The
+match still ends when we die, when we are the last mech alive, or at time; place 1 means we outlived all 15.
+All 16 bots answer every decision before the tick runs, so a seed can fork under CPU load when a bot's own wall-clock
+planning budget runs out (same caveat as the normal sim, more likely with 16 processes per match).
+
+## `--death-report` (P-D-017, off by default)
+
+This option is read-only. It adds `dr_*` columns to each row about our own death. `bun tools/sim/deaths.ts` groups those
+rows into the top causes for each seed set. The option only reads sim state; it never draws from the rng and never
+writes to state, so turning it on leaves every game unchanged.
+
+Each column, and where it comes from:
+- `dr_mode`: the last `mode` our bot printed in its own debug label (`label · mode`, brain.ts). Commas are written as `;`.
+- `dr_mode_cat`: `dr_mode` grouped into categories. These are settle, drop run/hold, zone walk/escape, heal/hide,
+  engage, farm, hold and other. Two extra categories were added because they are frequent: retreat, and weapon trip
+  (laser rush).
+- `dr_hit`: whether the last non-zone hit on us was `front` or `rear`.
+- `dr_seers_2s`: how many enemy mechs had sight of us, by the sim's own `sees()`, at any decision in the last 2 s.
+- `dr_hp_3s`: our HP 3 s before death.
+- `dr_alive`: our place, which equals the number of mechs alive when we died.
+- `dr_zone_r`: the zone radius when we died.
+- `dr_trees_blocked`: 1 if, in the last 2 s, any enemy would have seen us except for trees. It is blank when `--trees`
+  is off.
+
+Two limits on what the report knows:
+- The killer is the mech whose damage finished us (the house tier and slot, or `champ#id`).
+- The bot's mode is only as fine-grained as its debug label.
 
 ## Calibration from the recordings
 

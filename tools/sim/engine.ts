@@ -2,7 +2,7 @@
  * The match: 20 Hz ticks, one decision every 2 ticks (10 Hz), rules from protocol.md and hello.config.
  * Everything that is a guess is listed in ASSUMPTIONS.md.
  */
-import { type Geo, type Vec3, clear, floorAt, groundAt, rayDist, walkable } from "./geom.ts"
+import { type Geo, type Vec3, clear, floorAt, groundAt, rayDist, treeBlocks, walkable } from "./geom.ts"
 import { TIER_COUNTS, type Tier } from "./tune.ts"
 
 export const DT = 0.05
@@ -20,13 +20,14 @@ export function mulberry32(a: number) {
 export type Sim = any
 export type Mech = any
 
-export function createSim(geo: Geo, cfg: any, seed: number): Sim {
+/** `vsBots` (P-D-016 --vs-champions): every mech is a bot-driven player and there are no house bots. Off: unchanged. */
+export function createSim(geo: Geo, cfg: any, seed: number, vsBots = false): Sim {
   const rng = mulberry32(seed * 7919 + 13)
   const S: Sim = {
     geo, cfg, seed, rng, tick: 0, t: 0, mechs: [], npcs: [], crates: [], cubes: [], pickups: [], projs: [], drops: [],
     ids: { cube: 5000, pickup: 8000, proj: 1, drop: 20000 }, sounds: [], beams: [], events: [], zoneDmgAcc: 0,
     upById: Object.fromEntries(cfg.upgrades.map((u: any) => [u.id, u])), seen: new Map<number, number>(), offerSeq: 0,
-    stats: { ourShots: 0, ourHits: 0, houseShots: 0, houseHits: 0 }, deaths: [], dropIdx: 0, over: false,
+    stats: { ourShots: 0, ourHits: 0, houseShots: 0, houseHits: 0 }, deaths: [], dropIdx: 0, over: false, vsBots,
   }
   S.gauss = () => { let u = 0; while (u === 0) u = rng(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(TAU * rng()) }
   // zone schedule
@@ -69,9 +70,10 @@ export function createSim(geo: Geo, cfg: any, seed: number): Sim {
     const m: Mech = {
       id, kind: "mech", pos: pos.slice(), vel: [0, 0, 0], aim: [yaw, 0], cmdAim: [yaw, 0], hp: cfg.mech.hp, maxHp: cfg.mech.hp, energy: cfg.mech.energy,
       grounded: true, cubes: 0, ups: {}, upList: [], weapons: [{ kind: "gun", cooldown: 0, ammo: cfg.weapons.gun.mag, reload: 0, charge: 0 }, null],
-      alive: true, lastCombat: -99, lastSpend: -99, act: { move: [0, 0], boost: false, fire: [false, false] }, once: {}, tier: id === S.meId ? null : tiers.pop(),
+      alive: true, lastCombat: -99, lastSpend: -99, act: { move: [0, 0], boost: false, fire: [false, false] }, once: {}, tier: id === S.meId ? null : vsBots ? (tiers.pop(), null) : tiers.pop(),
       kills: 0, dmgDealt: 0, dmgTaken: 0, pendingOffers: 0, offer: null, shortUntil: 0, stepT: 0, inZone: true, charging: false, ai: {},
     }
+    if (vsBots && id !== S.meId) { m.player = true; m.events = []; m.sounds = []; m.zacc = 0; m.seen = new Map<number, number>(); m.missedRun = 0 }
     recompute(S, m)
     S.mechs.push(m)
   }
@@ -131,6 +133,9 @@ export function zoneAt(S: Sim, t: number) {
   return { center: [p.c0[0] + (p.c1[0] - p.c0[0]) * f, p.c0[1] + (p.c1[1] - p.c0[1]) * f], radius: p.r0 + (p.r1 - p.r0) * f, next_center: p.c1, next_radius: p.r1, shrink_start: p.start, shrink_end: p.end, dps: p.dps }
 }
 
+/** Queue an event for a bot-driven mech: our bot (S.events) or, with --vs-champions, another player. */
+const pushEv = (S: Sim, m: any, e: any) => { if (m === S.me) S.events.push(e); else if (m && m.player) m.events.push(e) }
+
 export const dirOf = (aim: number[]): Vec3 => [Math.cos(aim[1]) * Math.cos(aim[0]), Math.cos(aim[1]) * Math.sin(aim[0]), Math.sin(aim[1])]
 const isHouse = (e: any) => e && e.kind === "mech" && e.tier != null
 const heightOf = (e: any, S: Sim) => (e.kind === "mech" ? e.stats.height : e.kind === "npc" ? S.cfg.npc.height : S.cfg.crates.height)
@@ -138,6 +143,7 @@ const radiusOf = (e: any, S: Sim) => (e.kind === "mech" ? e.stats.radius : e.kin
 export const centerOf = (e: any, S: Sim): Vec3 => [e.pos[0], e.pos[1], e.pos[2] + heightOf(e, S) / 2]
 
 function sound(S: Sim, kind: string, pos: number[], src: number) {
+  if (S.vsBots) for (const p of S.mechs) if (p.player && p.alive && p.id !== src && hdist(pos, p.pos) <= S.cfg.sound.range[kind]) p.sounds.push({ kind, pos: [pos[0], pos[1]], t: S.t })
   if (src === S.meId || !S.me.alive) return
   if (hdist(pos, S.me.pos) <= S.cfg.sound.range[kind]) S.sounds.push({ kind, pos: [pos[0], pos[1]], t: S.t })
 }
@@ -155,7 +161,30 @@ export function sees(S: Sim, m: Mech, e: any): boolean {
   }
   const eye: Vec3 = [m.pos[0], m.pos[1], m.pos[2] + m.stats.eye_height]
   const h = e.kind ? heightOf(e, S) : 1
-  return clear(S.geo, eye, [e.pos[0], e.pos[1], e.pos[2] + h / 2], 1.5) || clear(S.geo, eye, [e.pos[0], e.pos[1], e.pos[2] + h], 0.5)
+  const c: Vec3 = [e.pos[0], e.pos[1], e.pos[2] + h / 2], top: Vec3 = [e.pos[0], e.pos[1], e.pos[2] + h]
+  // P-D-014 (--trees): trunks stop sight; canopy fades it, except inside near range (protocol §8: "canopy does not").
+  const T = S.geo.trees
+  if (T) { const canopy = d > near; return (clear(S.geo, eye, c, 1.5) && !treeBlocks(T, eye, c, canopy)) || (clear(S.geo, eye, top, 0.5) && !treeBlocks(T, eye, top, canopy)) }
+  return clear(S.geo, eye, c, 1.5) || clear(S.geo, eye, top, 0.5)
+}
+
+/** P-D-017 (--death-report): true when `m` would see `e` (range and wedge pass, a line clears the buildings) but trees
+ *  block every such line. Read-only, so turning the report on cannot change a match. */
+export function treeBlockedSight(S: Sim, m: Mech, e: any): boolean {
+  const T = S.geo.trees
+  if (!T) return false
+  const cfg = S.cfg.vision
+  const d = Math.hypot(e.pos[0] - m.pos[0], e.pos[1] - m.pos[1], e.pos[2] - m.pos[2])
+  const near = cfg.near_range + (m.stats.near_range_bonus ?? 0), far = cfg.range + (m.stats.vision_bonus ?? 0)
+  if (d > far) return false
+  if (d > near && Math.abs(angDiff(Math.atan2(e.pos[1] - m.pos[1], e.pos[0] - m.pos[0]), m.aim[0])) > (cfg.fov_deg * Math.PI) / 360) return false
+  const eye: Vec3 = [m.pos[0], m.pos[1], m.pos[2] + m.stats.eye_height]
+  const h = e.kind ? heightOf(e, S) : 1
+  const c: Vec3 = [e.pos[0], e.pos[1], e.pos[2] + h / 2], top: Vec3 = [e.pos[0], e.pos[1], e.pos[2] + h]
+  const cc = clear(S.geo, eye, c, 1.5), ct = clear(S.geo, eye, top, 0.5)
+  if (!cc && !ct) return false
+  const canopy = d > near
+  return (!cc || treeBlocks(T, eye, c, canopy)) && (!ct || treeBlocks(T, eye, top, canopy))
 }
 
 // ---------- damage ----------
@@ -170,11 +199,11 @@ export function hurt(S: Sim, tgt: any, amt: number, weapon: string, by: any, fro
     }
     if (weapon !== "zone") amt *= 1 - Math.min(0.9, tgt.stats.armor)
     tgt.hp -= amt; tgt.dmgTaken += amt; tgt.lastCombat = S.t
-    if (weapon === "zone") { if (tgt === me) S.zoneDmgAcc += amt }
-    else if (tgt === me) {
+    if (weapon === "zone") { if (tgt === me) S.zoneDmgAcc += amt; else if (tgt.player) tgt.zacc += amt }
+    else if (tgt === me || tgt.player) {
       const bearing = from ? r3(Math.atan2(from[1] - tgt.pos[1], from[0] - tgt.pos[0])) : null
-      S.events.push({ type: "damaged", amount: r2(amt), weapon, bearing, by: by ? by.id : null, ...(rear && { rear: true }) })
-      if (isHouse(by) && weapon === "gun") S.stats.houseHits++
+      pushEv(S, tgt, { type: "damaged", amount: r2(amt), weapon, bearing, by: by ? by.id : null, ...(rear && { rear: true }) })
+      if (tgt === me && isHouse(by) && weapon === "gun") S.stats.houseHits++
     }
     if (tgt.tier != null && by === me) tgt.ai.hitByMeT = S.t
     if (tgt.hp <= 0 && !tgt.dying) tgt.dying = { by, weapon }
@@ -193,9 +222,9 @@ export function hurt(S: Sim, tgt: any, amt: number, weapon: string, by: any, fro
   }
   if (by && by.kind === "mech") {
     by.dmgDealt += amt; by.lastCombat = S.t
-    if (by === me) {
-      S.events.push({ type: "hit", target: tgt.id, amount: r2(amt), weapon, ...(effect && { effect }), ...(rear && { rear: true }) })
-      if (tgt.kind === "mech" && weapon === "gun") S.stats.ourHits++
+    if (by === me || by.player) {
+      pushEv(S, by, { type: "hit", target: tgt.id, amount: r2(amt), weapon, ...(effect && { effect }), ...(rear && { rear: true }) })
+      if (by === me && tgt.kind === "mech" && weapon === "gun") S.stats.ourHits++
     }
   }
 }
@@ -278,7 +307,7 @@ function explode(S: Sim, p: any, at: number[], direct: any) {
       const a = Math.atan2(e.pos[1] - at[1], e.pos[0] - at[0])
       e.vel[0] += Math.cos(a) * st.knock * fall; e.vel[1] += Math.sin(a) * st.knock * fall; e.vel[2] = st.knock_up * fall; e.grounded = false
       e.energy = Math.max(0, e.energy - st.drain * fall)
-      if (e === S.me) S.events.push({ type: "effect", effect: "concuss", by: owner.id })
+      pushEv(S, e, { type: "effect", effect: "concuss", by: owner.id })
     }
   }
 }
@@ -297,9 +326,9 @@ function fireLaser(S: Sim, m: Mech, w: any, st: any) {
   for (const [e] of hits.slice(0, 1 + (st.pierce ?? 0))) {
     const cook = e.kind === "mech" && e.weapons.some((x: any) => x && x.kind === "mortar")
     hurt(S, e, dmg * (cook ? 1 + st.cookoff : 1), "laser", m, m.pos, cook ? "cookoff" : undefined)
-    if (cook && e === S.me) S.events.push({ type: "effect", effect: "cookoff", by: m.id })
+    if (cook) pushEv(S, e, { type: "effect", effect: "cookoff", by: m.id })
   }
-  if (m !== S.me) S.beams.push({ by: m.id, kind: "laser", path: [v3(o), v3(end)], t: S.t, src: m })
+  if (m !== S.me || S.vsBots) S.beams.push({ by: m.id, kind: "laser", path: [v3(o), v3(end)], t: S.t, src: m })
 }
 
 function fireLightning(S: Sim, m: Mech, st: any) {
@@ -329,12 +358,12 @@ function fireLightning(S: Sim, m: Mech, st: any) {
     if (short) {
       best.shortUntil = S.t + st.short_s
       for (const x of best.weapons) if (x && x.kind === "laser") { x.charge = 0; x.releasing = false }
-      if (best === S.me) S.events.push({ type: "effect", effect: "short", by: m.id })
+      pushEv(S, best, { type: "effect", effect: "short", by: m.id })
     }
     from = centerOf(best, S); path.push(v3(from)); dmg *= st.chain_falloff
   }
   if (!cur) { const reach = rayDist(S.geo, o, d, st.range); path.push(v3([o[0] + d[0] * reach, o[1] + d[1] * reach, o[2] + d[2] * reach])) }
-  if (m !== S.me) S.beams.push({ by: m.id, kind: "lightning", path, t: S.t, src: m })
+  if (m !== S.me || S.vsBots) S.beams.push({ by: m.id, kind: "lightning", path, t: S.t, src: m })
 }
 
 function weaponsTick(S: Sim, m: Mech) {
@@ -518,7 +547,7 @@ function applyUpgrade(S: Sim, m: Mech, i: number) {
   const ch = m.offer.choices[Math.max(0, Math.min(m.offer.choices.length - 1, i))]
   m.ups[ch.id] = (m.ups[ch.id] ?? 0) + 1; m.upList.push(ch.id); m.offer = null
   recompute(S, m)
-  if (m === S.me) S.events.push({ type: "upgrade", id: ch.id })
+  pushEv(S, m, { type: "upgrade", id: ch.id })
 }
 
 function dropWeapon(S: Sim, m: Mech, slot: number): boolean {
@@ -528,13 +557,13 @@ function dropWeapon(S: Sim, m: Mech, slot: number): boolean {
   const id = S.ids.pickup++
   S.pickups.push({ id, kind: w.kind, pos: m.pos.slice(), ammo: w.ammo, cooldown: w.cooldown, reload: w.reload })
   m.weapons[slot] = null
-  if (m === S.me) S.events.push({ type: "dropped", id, kind: w.kind, slot })
+  pushEv(S, m, { type: "dropped", id, kind: w.kind, slot })
   return true
 }
 
 /** One-shot parts of an action: take, drop, pick. Applied once per decision. */
 function oneShots(S: Sim, m: Mech) {
-  const a = m.once, ev = (e: any) => { if (m === S.me) S.events.push(e) }
+  const a = m.once, ev = (e: any) => pushEv(S, m, e)
   if (m.offer && a.pick != null) applyUpgrade(S, m, a.pick | 0)
   if (a.take != null) {
     const p = S.pickups.find((q: any) => q.id === a.take)
@@ -559,7 +588,7 @@ function oneShots(S: Sim, m: Mech) {
 function die(S: Sim, m: Mech, place: number) {
   m.alive = false; m.deathT = S.t; m.place = place; m.killer = m.dying.by; m.killWeapon = m.dying.weapon
   const k = m.dying.by
-  if (k && k.kind === "mech") { k.kills++; if (k === S.me) S.events.push({ type: "kill", target: m.id }) }
+  if (k && k.kind === "mech") { k.kills++; pushEv(S, k, { type: "kill", target: m.id }) }
   for (let i = 0; i < m.cubes + S.cfg.cubes.death_drop_extra; i++) S.cubes.push({ id: S.ids.cube++, pos: [m.pos[0] + (S.rng() - 0.5) * 4, m.pos[1] + (S.rng() - 0.5) * 4, m.pos[2]] })
   for (const w of m.weapons) if (w && w.kind !== "gun") S.pickups.push({ id: S.ids.pickup++, kind: w.kind, pos: [m.pos[0] + (S.rng() - 0.5) * 3, m.pos[1] + (S.rng() - 0.5) * 3, m.pos[2]] })
   sound(S, "death", m.pos, m.id)
@@ -602,7 +631,7 @@ export function tick(S: Sim, first: boolean) {
     for (const m of S.mechs) { if (!m.alive || Math.abs(m.pos[2] - c.pos[2]) > 4) continue; const d = hdist(m.pos, c.pos); if (d < bd) { bd = d; best = m } }
     if (!best) return true
     gainCubes(S, best, 1)
-    if (best === S.me) S.events.push({ type: "pickup", cubes: best.cubes })
+    pushEv(S, best, { type: "pickup", cubes: best.cubes })
     return false
   })
   // supply drops
@@ -622,7 +651,7 @@ export function tick(S: Sim, first: boolean) {
       if (d.progress >= cfg.drops.capture_s) {
         const m = inRing[0]
         gainCubes(S, m, cfg.drops.cubes); m.hp = m.maxHp; m.energy = m.stats.energy; d.taken = true
-        if (m === S.me) S.events.push({ type: "drop", id: d.id, cubes: m.cubes })
+        pushEv(S, m, { type: "drop", id: d.id, cubes: m.cubes })
       }
     } else if (inRing.length === 0) { d.holder = null; d.progress = 0 }
   }
@@ -637,28 +666,31 @@ export function tick(S: Sim, first: boolean) {
   }
 }
 
-/** The observation for our bot, per protocol §6 and §8. */
-export function buildObs(S: Sim): any {
-  const me = S.me, cfg = S.cfg
+/** The observation for our bot, per protocol §6 and §8. With --vs-champions, `viewer` is another player: build
+ *  every other player's obs first, then ours, because ours clears the shared beam list. */
+export function buildObs(S: Sim, viewer?: Mech): any {
+  const me = viewer ?? S.me, cfg = S.cfg, mine = me === S.me
+  const seenMap: Map<number, number> = mine ? S.seen : me.seen
   const mechs: any[] = []
   for (const e of [...S.mechs, ...S.npcs]) {
     if (e === me || !e.alive) continue
-    if (sees(S, me, e)) S.seen.set(e.id, S.t)
-    const last = S.seen.get(e.id)
+    if (sees(S, me, e)) seenMap.set(e.id, S.t)
+    const last = seenMap.get(e.id)
     if (last === undefined || S.t - last > cfg.vision.memory_s) continue
     if (e.kind === "mech") mechs.push({ id: e.id, kind: "mech", pos: v3(e.pos), vel: v3(e.vel), aim: [r3(e.aim[0]), r3(e.aim[1])], hp: Math.round(e.hp), max_hp: Math.round(e.maxHp), cubes: e.cubes, weapons: e.weapons.filter(Boolean).map((w: any) => w.kind), charging: !!e.charging })
     else mechs.push({ id: e.id, kind: "npc", pos: v3(e.pos), vel: v3(e.vel), aim: [r3(e.aim[0]), r3(e.aim[1])], hp: Math.round(e.hp), max_hp: e.maxHp })
   }
   const vis = (list: any[]) => list.filter((e) => sees(S, me, e))
   const hearing = ((cfg.sound.bearing_noise_deg * Math.PI) / 180) * (me.stats.hearing ?? 1)
-  const sounds = S.sounds.map((s: any) => {
+  const sounds = (mine ? S.sounds : me.sounds).map((s: any) => {
     const d = hdist(s.pos, me.pos)
     return { kind: s.kind, bearing: r3(angDiff(Math.atan2(s.pos[1] - me.pos[1], s.pos[0] - me.pos[0]) + S.gauss() * hearing, 0)), dist: d < cfg.sound.near ? "near" : d < cfg.sound.mid ? "mid" : "far", age: r2(S.t - s.t) }
   })
-  const beams = S.beams.filter((b: any) => sees(S, me, b.src) || hdist(b.path[b.path.length - 1], me.pos) < cfg.vision.near_range).map((b: any) => ({ by: b.by, kind: b.kind, path: b.path, age: r2(S.t - b.t) }))
-  const events = S.events
-  if (S.zoneDmgAcc > 0) events.push({ type: "damaged", amount: r2(S.zoneDmgAcc), weapon: "zone", bearing: null, by: null })
-  S.sounds = []; S.beams = []; S.events = []; S.zoneDmgAcc = 0
+  const beams = S.beams.filter((b: any) => b.by !== me.id && (sees(S, me, b.src) || hdist(b.path[b.path.length - 1], me.pos) < cfg.vision.near_range)).map((b: any) => ({ by: b.by, kind: b.kind, path: b.path, age: r2(S.t - b.t) }))
+  const events = mine ? S.events : me.events, zacc = mine ? S.zoneDmgAcc : me.zacc
+  if (zacc > 0) events.push({ type: "damaged", amount: r2(zacc), weapon: "zone", bearing: null, by: null })
+  if (mine) { S.sounds = []; S.beams = []; S.events = []; S.zoneDmgAcc = 0 }
+  else { me.sounds = []; me.events = []; me.zacc = 0 }
   const z = zoneAt(S, S.t)
   const weapons = me.weapons.map((w: any) => {
     if (!w) return null

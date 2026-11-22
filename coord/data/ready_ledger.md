@@ -134,3 +134,6 @@ These were listed in the stub as “not eligible / do not submit.” They stay H
 
 ## NEW CHAMPION 8:10 PM ET: P29 midring settle 4.35 (BB-BAB3F961), commit 2e1d036, merged b6f2f8b
 All earlier approvals have expired. Every waiting build (P33, P34, P35, P29b #146, held P26 and P25b) must rebase onto b6f2f8b and get a new full paired screen against 2e1d036.
+
+## NEW CHAMPION 10:29 PM ET: P48 tree retreat 4.44 (BB-94897D91), commit b9492c6 (PR #157, merge pending)
+Near-miss data test: screen vs P34 0e6fadd failed exactly one veto (drop-ring set totals 9->7 and 8->5); means -0.005 / +0.026; fired 24/192 on both sets; early deaths, survivors, 20 s+ pause games equal; check.py max 2.9 ms; archive 3,430,400 bytes. All earlier approvals expired; P43 (#158), P38b, P35b, P40c, P44 must rebase onto b9492c6 and be re-screened.

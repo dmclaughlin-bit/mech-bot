@@ -1,5 +1,10 @@
 # Grok → Diego's Claude: prompt inbox
 
+## NEW CHAMPION (10:30 PM ET): P48 tree retreat, 4.44 (BB-94897D91). Code b9492c6f122c549c705b69402157f078b4a57857, merged to main as edb729fc790c0bd583204fa2a0c6492cc8277ca8. Every build must now contain edb729f (rebase onto origin/main). All old screens and approvals are stale. Champion baselines must be re-run on P48 b9492c6 (trees-on, both sets), on each screening machine.
+
+Diego's Mac: before the cross-check, run the P48 b9492c6 champion baseline on the Mac (same sim 4b8663e, trees-on, bases 2000-5000). Cross-check builds are the REBASED P43 and P35b once Builder posts them. P-D-018 P50 must branch from current main (contains edb729f).
+
+
 > **Every build (Doug 7:12 PM ET):** before handing to Sim Tester, pass `coord/BUILD_CHECKLIST.md` (opening untouched, drops untouched, no new sticking, early deaths, hazard counts) and report it in the PR body.
 
 **Doug 6:46 PM ET (D2):** each new idea needs its `coord/data/ideas/<id>.json` record before a build starts. Chat is only a notification.
@@ -24,6 +29,14 @@ Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, f
 **While you were out (about 1:18 to 3:42 PM ET)** Grok's Claude built P-D-004 (Build 108 finish burst, PR #101, site 3.75 CLOSE) and P-D-006 (Build 109 cook-off bonus, PR #105, rebased as PR #114, reserve, not yet site-tested). Don't redo either. The drop family (P20 PR #121, P21 PR #122) and B117 matchup (PR #123) belong to Mech Builder: don't touch them.
 
 ---
+
+## P-D-015 DECISION (Doug 10:28 PM ET, exact wording): "Use Diego's Mac for screens with the build and champion on the same machine, cross-checking the first two builds on both stations"
+Match check result (PR #152, e121987): 350/384 games match Sim Tester; all 34 differences are deaths after 100 s; early deaths identical; Sim Tester's plain-bot rerun confirmed its wrapper is not the cause. Likely cause: the bot's wall-clock plan budget on a faster CPU. So:
+- SAME-MACHINE RULE: every Mac screen compares the build against the champion baseline run ON THE MAC (sim sim/trees-screen-patch-v1 4b8663e, plain P34 0e6fadd bot.ts, --trees, bases 2000-5000; your e121987 baseline rows are the Mac champion reference). Never mix Mac build rows with Sim Tester champion rows.
+- CROSS-CHECK FIRST 2: screen P43 #158 (884aedd) and P35b #159 (8ddd077) on the Mac NOW, both sets, same veto list as Sim Tester (crash, timing, flag-0 identical, drop-ring set totals, died <40 s, survivors/end-game, stall a/b/c, activations). Post per-set totals and the veto-by-veto decision on each PR tagged "station: diego-mac, mode: cross-check". During the cross-check, Sim Tester's verdict is the one that counts.
+- If both builds get the SAME veto decisions on both stations, the Mac joins the rotation: Sim Tester hands you builds and your verdict counts like Sim Tester's (tag "station: diego-mac, mode: official-screen", add a screens.csv row). If any decision differs, report the exact item and the Mac stays info-only until Doug decides.
+- Do not merge the sim patch into main or #148. You never submit.
+Then continue P-D-018 (P50).
 
 ## P-D-015 MATCH CHECK SPEC (Doug 10:08 PM ET, exact wording basis)
 Doug approved sharing Sim Tester's exact sim patch (SEED_BASE + PR #133 shortcut) with you for this check only; the repo merge is a separate decision, so do NOT merge it into main or #148.

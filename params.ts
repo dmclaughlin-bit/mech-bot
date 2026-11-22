@@ -175,6 +175,18 @@ export const LETHAL_RELEASE_MARGIN = 0.8
 export const LETHAL_RELEASE_MIN_T = 40
 
 /**
+ * P48 (tree retreat): in the champion's no-cover retreat (HP < retreatHp, hit in the last 2 s, no building hide spot
+ * from hideSpot), from t = TREE_RETREAT_MIN_T (40 s: before it, play and so every death before 40 s equal the champion's), when an enemy that sees us (building test) is not already hidden from us by
+ * trees + buildings: walk (boost above 30% energy, as today) to the nearest in-zone spot 1, 2 or 3 s away, no closer to
+ * any of those enemies, that trees + buildings hide from all of them, instead of backing straight away. Off while a drop
+ * is near AND reachable within DROP_RUN_M (the drop run's own candidate filter) or a drop run/hold is on. A spot with
+ * no progress for TREE_RETREAT_STUCK_S goes on a skip list. false = champion behavior exactly.
+ */
+export const TREE_RETREAT_ON = true
+export const TREE_RETREAT_MIN_T = 40
+export const TREE_RETREAT_STUCK_S = 3
+
+/**
  * P50 (P-D-018, ST-1 clear-shot laser charge): start a new laser charge only when the shot is clear and the torso is
  * already lined up on the target (`clear && beamOn`, the same test the release uses). While the torso is still turning,
  * keep aiming without charging, so we do not show `charging: true` or burn the laser on a shot that is not lined up.
@@ -182,6 +194,6 @@ export const LETHAL_RELEASE_MIN_T = 40
  * P34 dropOpen test). A charge already in progress, its release (full / P34 lethal) and every other decision are unchanged.
  * false = champion exactly.
  */
-export const CHARGE_LINED_ON = true
+export const CHARGE_LINED_ON = false
 /** Never hold back a charge before this match time (s): play before it, and so every death before 40 s, equals the champion's (as P34). */
 export const CHARGE_LINED_MIN_T = 40

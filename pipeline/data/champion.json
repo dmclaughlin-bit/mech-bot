@@ -1,12 +1,12 @@
 {
- "experiment_id": "P34",
- "commit": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
- "merge_commit": "8c130ad7f0c81acb03508c40f20c31867f29d358",
- "branch": "main",
- "score": 4.38,
- "submission_id": "BB-ABEB42BF",
+ "experiment_id": "P48",
+ "commit": "b9492c6f122c549c705b69402157f078b4a57857",
+ "merge_commit": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
+ "branch": "p48-tree-retreat",
+ "score": 4.44,
+ "submission_id": "BB-94897D91",
  "target_score": 6.0,
- "updated_at": "2026-11-21T21:10:00-05:00",
+ "updated_at": "2026-11-21T22:29:00-05:00",
  "history": [
   {
    "experiment_id": "EXP-0000",
@@ -121,6 +121,12 @@
    "commit": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
    "score": 4.35,
    "at": "2026-11-21T20:10:00-05:00"
+  },
+  {
+   "experiment_id": "P34",
+   "commit": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+   "score": 4.38,
+   "at": "2026-11-21T21:10:00-05:00"
   }
  ]
 }

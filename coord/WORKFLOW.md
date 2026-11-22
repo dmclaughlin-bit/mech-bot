@@ -156,3 +156,4 @@ Doug asked that a build beating the 15-champions sim (P-D-016, Diego's Mac) go t
 
 ## Doug 9:06 PM ET (Sat Nov 21): one-time exception, P34 to the site
 Doug approved ONE site test of P34 #147 (c281bf59e6276ffda376cc84a0c95f620331485e) despite its full-screen VETO, using an idle slot (6 of 6 open, nothing READY). It's submitted once by the coordinator on Doug's direct order. This is not a precedent: the "only fully passing builds" rule is otherwise unchanged.
+- UPDATE 9:09 PM ET (Doug): the 9:07 P34 submission was rejected for repo size, not scored. Doug approved ONE submission of the rebuilt P34, meaning the same single change as c281bf5 on top of main 00e9ff1, once it passes the archive size check. It's submitted by the coordinator on Doug's direct order, not by the loop.

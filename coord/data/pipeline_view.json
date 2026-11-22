@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 21:05 ET",
- "origin_main": "6a7a22fdfb4ba737cb6bcfa5dc90b80beadbc898",
+ "generated_at_et": "2026-11-21 21:14 ET",
+ "origin_main": "8f19db1066c2c71a836bfd90bd300bb847d42e56",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -16,18 +16,20 @@
  ],
  "header": {
   "champion": {
-   "build": "P29",
-   "score": 4.35,
-   "sha": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
-   "receipt": "BB-BAB3F961",
-   "scored_at": "2026-11-21T20:10:00-05:00"
+   "build": "P34",
+   "score": 4.38,
+   "sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+   "receipt": "BB-ABEB42BF",
+   "scored_at": "2026-11-21T21:10:00-05:00"
   },
-  "pending": [],
+  "pending": [
+   "P34"
+  ],
   "slots": {
    "limit": 6,
-   "used_rolling_60": 0,
-   "used_clock_hour": 0,
-   "last_submit": "2026-11-21 20:04 ET"
+   "used_rolling_60": 2,
+   "used_clock_hour": 2,
+   "last_submit": "2026-11-21 21:10 ET"
   },
   "ready_count": 0,
   "ready_items": [],
@@ -58,20 +60,21 @@
   ],
   "reserve_target": "2 fully screened + 1 researched (WORKFLOW.md, Doug 5:41 PM ET)",
   "since": "2026-11-21 12:00 ET",
-  "tests_since": 21,
-  "wins_since": 5,
-  "scored_since": 21,
+  "tests_since": 23,
+  "wins_since": 6,
+  "scored_since": 22,
   "wins_vs_champion_at_time": [
    "B103",
    "B105-PB001",
    "B107",
    "B113",
-   "P29"
+   "P29",
+   "P34"
   ],
-  "tests_vs_current_champion": 0,
-  "wins_vs_current_champion": 0,
-  "pre_click_screen_complete": 3,
-  "site_items_since": 21
+  "tests_vs_current_champion": 1,
+  "wins_vs_current_champion": 1,
+  "pre_click_screen_complete": 4,
+  "site_items_since": 23
  },
  "board": {
   "Idea": 0,
@@ -80,7 +83,7 @@
   "Built (PR)": 1,
   "Screened": 15,
   "READY": 0,
-  "Submitted": 0,
+  "Submitted": 1,
   "Scored": 0,
   "Merged": 5,
   "Retired": 44
@@ -1677,7 +1680,7 @@
     "outcome": "win",
     "receipt": "BB-BAB3F961",
     "verdict": "WIN",
-    "result_logged_et": "2026-11-21 20:10 ET",
+    "result_logged_et": null,
     "result_url": null
    },
    "screen": {
@@ -1766,12 +1769,160 @@
    "head": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
    "pr_closed": "2026-11-21 20:08 ET",
    "pr_merged": "2026-11-21 20:08 ET",
-   "contains_champion": true,
+   "contains_champion": false,
    "stage_idx": 7,
    "stage": "Merged",
    "outcome": "win",
    "blocker": "assigned as P-D-012; record exists; build and both-set screen not started. Must not overlap P28 (P29 is position choice after a shrink; P28 is when nothing to farm and no shrink context); keep the code paths separate.",
    "record_decision": "READY 7:58 PM ET by Doug's 7:55 PM ET ruling: drop-ring arrivals judged by set totals (6->8, 5->7); seed 4027's 1.3 s earlier death with same place does not count as worse under stall clause (b). Own check.py PASS max 2.6 ms; merge-base OK; q.py eligible OK; flag-0 identical (Sim Tester); fired 17/192 and 25/192. | SUBMITTED Sat 8:04 PM ET, receipt BB-BAB3F961 (not by this routine; reconciled 8:07 PM ET), scoring. | WIN 4.35 vs 4.17 (BB-BAB3F961, 8:04 PM ET); merged b6f2f8b; new champion.",
+   "from_idea_record": true
+  },
+  {
+   "id": "P34",
+   "title": "P34 lethal laser release (LETHAL_RELEASE_ON), one-time exception (Doug 9:06 PM ET) despite screen VETO",
+   "kind": "build",
+   "source": "unknown",
+   "owner": "unknown",
+   "decision": "P34 lethal laser release (LETHAL_RELEASE_ON), one-time exception (Doug 9:06 PM ET) despite screen VETO",
+   "changes": 1,
+   "changes_basis": "one behavior in the summary",
+   "multi": false,
+   "site": {
+    "submitted_et": "2026-11-21 21:07 ET",
+    "score": null,
+    "champion_then": 4.17,
+    "delta": null,
+    "outcome": "pending",
+    "receipt": "BB-FB8CB5AE",
+    "verdict": "REJECTED",
+    "result_logged_et": "2026-11-21 21:10 ET",
+    "result_url": null
+   },
+   "screen": {
+    "both": true,
+    "status": "both_before_click",
+    "sets": [
+     "A",
+     "B"
+    ],
+    "when_both": "2026-11-21 20:49 ET",
+    "events": [
+     {
+      "src": "PR #147 comment",
+      "sets": [
+       "A",
+       "B"
+      ],
+      "at": "2026-11-21 20:49 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/147#issuecomment-7072472836",
+      "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "PR #147 body table (time = PR opened; body may have been edited)",
+      "sets": [
+       "A",
+       "B"
+      ],
+      "at": "2026-11-21 20:35 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/147",
+      "after_click": false,
+      "exact_sha": false
+     },
+     {
+      "src": "screens.csv P34",
+      "sets": [
+       "A"
+      ],
+      "at": "2026-11-21 20:49 ET",
+      "url": null,
+      "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "screens.csv P34",
+      "sets": [
+       "B"
+      ],
+      "at": "2026-11-21 20:49 ET",
+      "url": null,
+      "after_click": false,
+      "exact_sha": true
+     }
+    ]
+   },
+   "screened_before_click": true,
+   "postmortems": [],
+   "first_mention": "2026-11-21 20:10 ET",
+   "sha": "c281bf59e6276ffda376cc84a0c95f620331485e",
+   "champion_sha_note": "b6f2f8be91abacbf9f31469ce8b5ad4576c289c9",
+   "research": [],
+   "prs": [
+    {
+     "n": 147,
+     "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/147",
+     "state": "open",
+     "head": "c281bf59e6276ffda376cc84a0c95f620331485e",
+     "title": "P34 lethal laser release (LETHAL_RELEASE_ON) on P29 champion"
+    }
+   ],
+   "pr_opened": "2026-11-21 20:35 ET",
+   "primary_pr": 147,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/147",
+   "pr_state": "open",
+   "head": "c281bf59e6276ffda376cc84a0c95f620331485e",
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": false,
+   "stage_idx": 6,
+   "stage": "Submitted",
+   "outcome": "pending",
+   "blocker": null
+  },
+  {
+   "id": "P34",
+   "title": "P34 lethal laser release (LETHAL_RELEASE_ON) rebuilt on main 00e9ff1, Doug 9:09 PM ET one-time order; screen had VETOed c281bf5 (drop-ring set total)",
+   "kind": "build",
+   "source": "unknown",
+   "owner": "Mech Builder",
+   "decision": "P34 lethal laser release (LETHAL_RELEASE_ON) rebuilt on main 00e9ff1, Doug 9:09 PM ET one-time order; screen had VETOed c281bf5 (drop-ring set total)",
+   "changes": 1,
+   "changes_basis": "one behavior in the summary",
+   "multi": false,
+   "site": {
+    "submitted_et": "2026-11-21 21:10 ET",
+    "score": 4.38,
+    "champion_then": 4.17,
+    "delta": 0.21,
+    "outcome": "win",
+    "receipt": "BB-ABEB42BF",
+    "verdict": "WIN",
+    "result_logged_et": "2026-11-21 21:10 ET",
+    "result_url": null
+   },
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": "2026-11-21 20:10 ET",
+   "sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+   "champion_sha_note": "00e9ff10343e70e46ba2a579779fc68900d2bfca",
+   "research": [],
+   "prs": [],
+   "pr_opened": null,
+   "stage_idx": 7,
+   "stage": "Retired",
+   "outcome": "win",
+   "blocker": "Drop-ring arrival totals lower on both sets. Every early release that changed a drop game killed its target before any drop was called (46-47 s); the lost arrivals are 150-235 s later in games that diverged. The behavior already never starts while a drop run/hold is possible. Closing the rest within this behavior means turning it off for most of the match. Needs a coordinator / Doug decision (the noise-calibration benchmark and the 7:55 PM ET set-total ruling are the context)",
+   "head": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+   "record_decision": "8:50 PM ET coordinator: VETO confirmed (own check of screen https://github.com/dmclaughlin-bit/mech-bot/pull/147#issuecomment-7072472836). 2000+3000 drop-arrival set total 8->5 (Doug 7:55 set-total rule; Doug 8:35 said the drop-ring rule decides) and survivors 6->2. 4000+5000 was positive (drops 7->15, survivors 5->7) but a lower set total on either set is a veto. Deaths <40 s unchanged; new pause 5079 meets no stall clause. | 9:06 PM ET: Doug approved a ONE-TIME site test of P34 c281bf5 despite the screen VETO (idle slot, sim weakly tracks site; 4000+5000 was +0.094, drops 7->15). Not a precedent. | 9:07 PM ET: c281bf5 REJECTED unscored (BB-FB8CB5AE, archive >20 MB from noise data on main). 9:09 PM ET: Doug approved ONE submission of a rebuilt P34 on 00e9ff1 after the size check (coordinator submits). | 9:13 PM ET: rebuilt head 0e6fadd scored 4.38 (BB-ABEB42BF) vs 4.35: WIN, new champion. All older approvals stale; queue must rebase on 0e6fadd.",
+   "primary_pr": 147,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/147",
    "from_idea_record": true
   },
   {
@@ -4626,45 +4777,6 @@
    "from_idea_record": true
   },
   {
-   "id": "P34",
-   "title": "Lethal release: fire a partially charged laser as soon as its damage is lethal on the current target, instead of waiting for full charge (LETHAL_RELEASE_ON)",
-   "kind": "build",
-   "source": "PR #145 research-doug-1941 ranked build 1 (brain.ts:1036-1046 on 6182d29; on the P29 champion the hook is brain.ts:1078-1093)",
-   "owner": "Mech Builder",
-   "decision": "8:50 PM ET coordinator: VETO confirmed (own check of screen https://github.com/dmclaughlin-bit/mech-bot/pull/147#issuecomment-7072472836). 2000+3000 drop-arrival set total 8->5 (Doug 7:55 set-total rule; Doug 8:35 said the drop-ring rule decides) and survivors 6->2. 4000+5000 was positive (drops 7->15, survivors 5->7) but a lower set total on either set is a veto. Deaths <40 s unchanged; new pause 5079 meets no stall clause.",
-   "changes": 1,
-   "changes_basis": "idea record flags",
-   "multi": false,
-   "site": null,
-   "screen": {
-    "both": false,
-    "status": "none",
-    "sets": [],
-    "when_both": null,
-    "events": []
-   },
-   "screened_before_click": false,
-   "postmortems": [],
-   "first_mention": null,
-   "sha": "c281bf59e6276ffda376cc84a0c95f620331485e",
-   "champion_sha_note": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
-   "research": [],
-   "prs": [],
-   "pr_opened": null,
-   "primary_pr": 147,
-   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/147",
-   "pr_state": null,
-   "head": "c281bf59e6276ffda376cc84a0c95f620331485e",
-   "pr_closed": null,
-   "pr_merged": null,
-   "contains_champion": null,
-   "stage_idx": null,
-   "stage": "Retired",
-   "outcome": null,
-   "blocker": "Drop-ring arrival totals lower on both sets. Every early release that changed a drop game killed its target before any drop was called (46-47 s); the lost arrivals are 150-235 s later in games that diverged. The behavior already never starts while a drop run/hold is possible. Closing the rest within this behavior means turning it off for most of the match. Needs a coordinator / Doug decision (the noise-calibration benchmark and the 7:55 PM ET set-total ruling are the context)",
-   "from_idea_record": true
-  },
-  {
    "id": "P37",
    "title": "While healing unseen, walk to a visible cube instead of standing still (HEAL_PICKUP_ON)",
    "kind": "build",
@@ -6569,6 +6681,58 @@
     "MIDRING_SETTLE_ON"
    ],
    "multi": false
+  },
+  {
+   "build": "P34",
+   "submitted_et": "2026-11-21 21:07 ET",
+   "sub_dt": "2026-11-21T21:07:00-05:00",
+   "sha": "c281bf59e6276ffda376cc84a0c95f620331485e",
+   "parent": "b6f2f8be91abacbf9f31469ce8b5ad4576c289c9",
+   "champion_then": 4.17,
+   "champion_recorded": 4.35,
+   "score": null,
+   "delta": null,
+   "outcome": "pending",
+   "receipt": "BB-FB8CB5AE",
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/147",
+   "pr": 147,
+   "summary": "P34 lethal laser release (LETHAL_RELEASE_ON), one-time exception (Doug 9:06 PM ET) despite screen VETO",
+   "family": "laser",
+   "verdict": "REJECTED",
+   "changes": 1,
+   "changes_basis": "one behavior in the summary",
+   "diff_bool_flags": 1,
+   "diff_knobs_changed": 0,
+   "diff_flag_names": [
+    "LETHAL_RELEASE_ON"
+   ],
+   "multi": false
+  },
+  {
+   "build": "P34",
+   "submitted_et": "2026-11-21 21:10 ET",
+   "sub_dt": "2026-11-21T21:10:00-05:00",
+   "sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+   "parent": "00e9ff10343e70e46ba2a579779fc68900d2bfca",
+   "champion_then": 4.17,
+   "champion_recorded": 4.35,
+   "score": 4.38,
+   "delta": 0.21,
+   "outcome": "win",
+   "receipt": "BB-ABEB42BF",
+   "pr_url": "",
+   "pr": null,
+   "summary": "P34 lethal laser release (LETHAL_RELEASE_ON) rebuilt on main 00e9ff1, Doug 9:09 PM ET one-time order; screen had VETOed c281bf5 (drop-ring set total)",
+   "family": "weapons",
+   "verdict": "WIN",
+   "changes": 1,
+   "changes_basis": "one behavior in the summary",
+   "diff_bool_flags": 1,
+   "diff_knobs_changed": 0,
+   "diff_flag_names": [
+    "LETHAL_RELEASE_ON"
+   ],
+   "multi": false
   }
  ],
  "change_audit": {
@@ -6709,10 +6873,10 @@
     "submitted_et": "2026-11-21 17:33 ET"
    }
   ],
-  "all_tests": 72,
+  "all_tests": 74,
   "single": {
-   "n": 56,
-   "wins": 12
+   "n": 57,
+   "wins": 13
   },
   "multi": {
    "n": 15,
@@ -6724,8 +6888,8 @@
    "B125"
   ],
   "since_noon_single": {
-   "n": 18,
-   "wins": 5
+   "n": 19,
+   "wins": 6
   },
   "since_noon_multi_rate": {
    "n": 3,
@@ -6751,32 +6915,32 @@
   {
    "id": "champion_at_time",
    "ok": false,
-   "text": "site_results.csv champion_score_at_time disagrees with the champion actually standing at click time for: B104 (recorded 3.79, champion then 3.92)"
+   "text": "site_results.csv champion_score_at_time disagrees with the champion actually standing at click time for: B104 (recorded 3.79, champion then 3.92), P34 (recorded 4.35, champion then 4.17), P34 (recorded 4.35, champion then 4.17)"
   },
   {
    "id": "champion_history",
    "ok": false,
-   "text": "pipeline/data/champion.json top says P29 but its history ends at B113"
+   "text": "pipeline/data/champion.json top says P34 but its history ends at P29"
   },
   {
    "id": "q_py_store",
    "ok": false,
-   "text": "pipeline/data/experiments.jsonl (what q.py eligible reads) has 13 records; coord/data/site_results.csv has 72"
+   "text": "pipeline/data/experiments.jsonl (what q.py eligible reads) has 13 records; coord/data/site_results.csv has 74"
   },
   {
    "id": "screens_csv",
    "ok": false,
-   "text": "16 of 21 site-tested builds since noon have no complete (both-set) screens.csv rows for their exact SHA: B105-PB001, B106, B108, P-D-002, B107, P-B-006, B113, B115, B118, P20, B117, P21, B110, B111, P24, B125"
+   "text": "17 of 23 site-tested builds since noon have no complete (both-set) screens.csv rows for their exact SHA: B105-PB001, B106, B108, P-D-002, B107, P-B-006, B113, B115, B118, P20, B117, P21, B110, B111, P24, B125, P34"
   },
   {
    "id": "ideas_md_families",
    "ok": false,
-   "text": "site_results families not named in ideas.md: loadout, movement, threat-forecast, zone"
+   "text": "site_results families not named in ideas.md: loadout, movement, threat-forecast, weapons, zone"
   },
   {
    "id": "status_stale",
    "ok": false,
-   "text": "coord/STATUS.md says 'Updated Sat Nov 21 2026, 3:44 PM ET'; the newest site result is 8:04 PM ET"
+   "text": "coord/STATUS.md says 'Updated Sat Nov 21 2026, 3:44 PM ET'; the newest site result is 9:10 PM ET"
   },
   {
    "id": "log_utc_as_et",

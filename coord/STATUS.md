@@ -77,3 +77,6 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 - Empty reserve: 0 READY. P26 #138 and P25b #136 screens are complete but HOLD on rule (6) new 20 s+ pins with the feature not active in the window (P26: 4018 22 s, 5053 20 s; P25b: 72, 4091, 5048, 5054). Owner: Doug (does a pin with the feature inactive veto?). P25b also has a D3 question (memory + no-progress drop under one flag).
 - Site banner (seen 6:50 PM ET): "New rule: excessive code reuse may result in disqualification." Counter 5 of 6 left; next frees 7:50 PM ET.
 - Next action: parent assigns a new non-drop build to Mech Builder (Diego's Claude backup) to refill the reserve.
+
+## Loop 9:13 PM ET (Sat Nov 21)
+- NEW CHAMPION: P34 lethal release, 0e6fadd, 4.38 (BB-ABEB42BF), +0.03 over P29 4.35. Submitted 9:10 PM ET on Doug's order. Branch p34-rebased is not merged to main yet (needs a PR; coordinator does not merge). All waiting builds are stale: rebase on 0e6fadd and re-screen. Banner now: 'Shopping Sessions is being rescored, please see the rules page!'. Counter 4 of 6 left, next frees 10:07 PM EST.

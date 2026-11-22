@@ -7,7 +7,7 @@
     "BODY_WIDTH_COVER_ON"
   ],
   "owner": "Mech Builder",
-  "stage": "building",
+  "stage": "built",
   "branch": "p65-body-width-cover",
   "base": "e7f6fdb062430d7830e55911b9561b0676fe6a52",
   "base_note": "origin/main e7f6fdb (contains 490515c and the P60 merge 32acd3d; bot code = afb6f26 exactly)",
@@ -32,17 +32,93 @@
     "vs_P60": "P60 (F16) added a far spot for back-away; P65 does not touch that branch (it may run more often when no body-reachable building spot exists).",
     "vs_P57": "P57 (N8) changed torso/aim; P65 is legs only."
   },
-  "positives": null,
-  "negatives": null,
-  "confidence": "Uncertain (no data yet)",
-  "reuse": null,
-  "outcome": "pending",
+  "positives": [
+    "Disproof not met on any clause. Building-cover freezes after 40 s fell on both bases: 96->64 (base 0) and 257->32 (base 6000); building-cover decisions 551->530 and 916->588. Paired +0.042 +/- 0.039 and +0.052 +/- 0.060 (both positive, within noise per N10); kills 298->302 and 365->371; deaths < 40 s 24->24 and 16->16; survivors 2->2 and 2->2; drop-ring arrivals 3->4 and 1->1; 0 activations before 10 s (gated at 40 s). Building-cover retreat deaths fell 17->12 and 26->15 (6000: a 8->5, c 6->1, d 12->9). Champion pin 6034 gone. Step A 43/192 and 62/192. Timing cost negligible (bot_ms_mean +0.002 / +0.005 ms; check.py max 4.3 ms flag-on)."
+  ],
+  "negatives": [
+    "1) Strongest evidence against: the width test does not see the blocker in P61's own case. On 6024 the candidate still freezes at (-41.1,-229.2) (HP 381->282) walking to a spot the body test passed: the wall there is 4.1-4.7 m tall, above step_up 1.2 m but below the 4.5 m mid-height of the 9 m mech, so the walk lines (all at mid-height) pass over it. Seed 84 (38->38) and 1 (6->6) also keep their freezes. 2) Retreat deaths shift to the fallback modes: tree a 8->10 and 7->8, back-away a 21->22 and 13->15 (the body test finds no spot in ~60% of fires, so the champion's tree / far-cover / back-away retreat runs). Total deaths unchanged 94->94 on both bases. 3) One NEW >= 20 s pin on base 0 (seed 46, 22 s, flag ticks 0, game better 13th->10th): the champion's heal-hiding / ambush hideSpot (a caller P65 doesn't touch) walks into an edge at a spot the champion never reached (it died at 52.85 s). Pin games 3->4 on base 0, 3->2 on 6000. 4) Paired deltas are within noise (N10)."
+  ],
+  "confidence": [
+    "Promising for the mechanism (freezes down on both practice bases, caused by the fire in every changed game); score effect Uncertain (sim only, within noise)"
+  ],
+  "reuse": [
+    "1) hideSpot's walk test runs at mid-height (height/2 = 4.5 m): walls between step_up (1.2 m) and 4.5 m block the body but not the line (6024 wall 4.1-4.7 m). A knee-height walk line (e.g. feet + step_up + 0.3 m) is the next single change for the remaining building-cover freezes (6024, 84, 1). 2) The same zero-width hideSpot is used by heal-hiding, lightning ambush and sneak; seed 46 shows a 22 s heal-hiding/ambush wedge at an edge. The body test there is a separate candidate (one change each). 3) The body test removes many building spots (no spot in ~60% of fires); the fallback retreats then carry those deaths."
+  ],
+  "outcome": "pending (built; checklist blocks pass; flag flipped for the screen)",
   "pr": null,
   "sha": null,
-  "screens": [],
+  "screens": [
+    {
+      "round": 1,
+      "sha": "290ecf7 (flag on in a /tmp copy + passive trace)",
+      "seed_set": "practice 0",
+      "fired": 22,
+      "fire_change_decisions": 241,
+      "fire_change_no_body_spot": 147,
+      "diff_behavior": 15,
+      "diff_score": 6,
+      "sim_delta": 0.042,
+      "sim_se": 0.039,
+      "better": 4,
+      "worse": 2,
+      "champ_mean": 3.458,
+      "cand_mean": 3.5,
+      "freezes_after_40s": "96/551 -> 64/530 decisions; games 7 -> 4 (17: 29->15, 12: 12->5, 42: 7->0, 10: 2->0; 84: 38->38 and 1: 6->6 unchanged)",
+      "survivors": "2->2",
+      "kills": "298->302",
+      "deaths_lt_40": "24->24",
+      "drop_ring_arrivals": "3->4",
+      "retreat_deaths": "80->80",
+      "deaths": "94->94",
+      "t_lt_10_activations": 0,
+      "pin20_games": "3->4: 41, 43, 79 = champion pins (same spots, flag ticks 0); NEW 46: 22 s t=50-72 at (14,152), flag ticks 0 in the window (last fire t=49.5), place 13->10, death 52.85->75.85 (champion died before reaching that spot); it is the champion's heal-hiding / lightning-ambush hideSpot (zero-width, a caller P65 does not touch) walking into an edge",
+      "buckets": {
+        "tree": "a 8->10 b 1->0 c 2->3 d 11->11",
+        "building": "a 6->6 b 1->0 c 1->1 d 9->5",
+        "back_away": "a 21->22 b 2->1 c 5->6 d 13->15"
+      },
+      "bot_ms_mean": "0.260->0.262; late_over_50ms 0->0",
+      "changed_score_seeds": "2 1->2, 10 7->6, 41 3->4, 46 3->6, 47 7->8, 84 7->6",
+      "verdict": "PASS items 2, 3, 5; item 4: one NEW pin (46) not active, game better (stall rule: not a block)"
+    },
+    {
+      "round": 1,
+      "sha": "290ecf7 (flag on in a /tmp copy + passive trace)",
+      "seed_set": "practice 6000",
+      "fired": 36,
+      "fire_change_decisions": 375,
+      "fire_change_no_body_spot": 241,
+      "diff_behavior": 26,
+      "diff_score": 11,
+      "sim_delta": 0.052,
+      "sim_se": 0.06,
+      "better": 6,
+      "worse": 5,
+      "champ_mean": 3.948,
+      "cand_mean": 4.0,
+      "freezes_after_40s": "257/916 -> 32/588 decisions; games 17 -> 5 (6017: 73->0, 6020: 41->0, 6048: 40->0, 6003: 18->0, 6034: 14->0, 6090: 14->0; up: 6024 7->13, 6039 4->9)",
+      "survivors": "2->2",
+      "kills": "365->371",
+      "deaths_lt_40": "16->16",
+      "drop_ring_arrivals": "1->1",
+      "retreat_deaths": "80->79",
+      "deaths": "94->94",
+      "t_lt_10_activations": 0,
+      "pin20_games": "3->2: 6011, 6082 = champion pins (same spots, flag ticks 0); champion pin 6034 gone; none new",
+      "buckets": {
+        "tree": "a 7->8 b 1->2 c 3->6 d 5->5",
+        "building": "a 8->5 b 0->0 c 6->1 d 12->9",
+        "back_away": "a 13->15 b 4->6 c 6->6 d 15->16"
+      },
+      "bot_ms_mean": "0.232->0.237; late_over_50ms 0->1",
+      "changed_score_seeds": "6003 1->2, 6010 3->2, 6017 4->3, 6020 8->11, 6024 6->7, 6044 6->8, 6048 3->1, 6059 2->5, 6065 2->1, 6084 11->10, 6085 3->4",
+      "verdict": "PASS items 2, 3, 4, 5"
+    }
+  ],
   "timestamps": {
     "recorded": "2026-11-22 ~03:25 ET (before Step A results)",
-    "step_a": "2026-11-22 ~03:35 ET"
+    "step_a": "2026-11-22 ~03:35 ET",
+    "built": "2026-11-22 ~03:50 ET"
   },
   "sources": [
     "origin/p61-building-cover-commit:coord/data/ideas/P61.json (reuse 2, fix_round)",
@@ -101,5 +177,13 @@
     },
     "verdict": "PASS (43/192 and 62/192 >= 10/192)",
     "note": "Building-cover death cells reproduce P61's P60 Step A exactly (a15 b3 c8 d9; a14 b3 c6 d21). The body test is strict: it changes 55% of gated building-cover decisions, two thirds of them by finding no body-reachable spot at all (the branch then falls through to the champion's tree / far-cover / back-away retreat). The freeze-denominator decisions here (1063, 1610) count only decisions with a sim position 0.5 s later at t >= 40 s."
-  }
+  },
+  "screens_note": "Champion baselines for 0 and 6000 are my own trees-on runs of a passive-trace copy of the flag-false build; every non-timing field equals P61's afb6f26 baselines (/tmp/p61/runs/champ-{0,6000}.csv) 96/96 and 96/96, and the freeze counts reproduce P61's 96/551 and 257/916. In all 23 games whose freeze count changed, the first decision that differs from the champion is the first P65 fire (the change caused the drop). Sim: /workspace/wt-tester-trees/tools/sim copied to /tmp/p65 plus P61's passive ground-truth trace, --jobs 1.",
+  "build": {
+    "flag_off_sha": "290ecf7",
+    "checklist_1": "eqdrive flag-off vs origin/main (b95ba9a; bot code = afb6f26): IDENTICAL 301/301 replies; flag-on also identical on the kit stream (the behavior does not fire there). check.py --map-dir arena PASS: default max 4.4 ms, flag-on max 4.3 ms",
+    "checklist_2": "t < 10 s activations: 0 (base 0) and 0 (base 6000)",
+    "contains_32acd3d": true
+  },
+  "next_action": "Coordinator: route the flag-on SHA to Sim Tester for the full paired trees-on screen vs P60 afb6f26. Note the base-0 NEW pin (seed 46, not active, game better) for the stall-rule check."
 }

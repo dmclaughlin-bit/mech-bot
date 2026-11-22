@@ -25,6 +25,13 @@ Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, f
 
 ---
 
+## P-D-015 MATCH CHECK SPEC (Doug 10:08 PM ET, exact wording basis)
+Doug approved sharing Sim Tester's exact sim patch (SEED_BASE + PR #133 shortcut) with you for this check only; the repo merge is a separate decision, so do NOT merge it into main or #148.
+- Setup: check out base commit 22f72a8 (#148 tools/sim), apply patch `trees-screen-v1.patch` from branch `sim/trees-screen-patch-v1` (coming shortly; the coordinator records its sha256 and base SHA here). Record in your PR: base SHA, patch sha256, machine, bun version, jobs.
+- Run: the P34 0e6fadd trees-on baseline (`--trees`) on the same two seed sets, 2000+3000 and 4000+5000 (bases 2000, 3000, 4000, 5000; 96 seeds each).
+- Compare against Sim Tester's per-seed rows (comment on PR #147; files /workspace/tester/runs/trees-0e6fadd-{2000..5000}.csv; set means 3.750 and 4.099). Report: how many of the 384 games match exactly (place, death time, kills, drops, pauses), any move-by-move differences that REPEAT (same seed differing on rerun with --jobs 1, or a pattern across seeds), and whether both stations reach the SAME screening decision on every veto item.
+- If they match under the approved checks: you join the screening rotation (Sim Tester hands you screens). If they differ: live screens stay on Sim Tester; trace the FIRST differing tick on the first differing seed and report it.
+
 ## CURRENT ORDER (Doug 10:06 PM ET, speed-up): P-D-015 second screening station FIRST, then P-D-018 (P50)
 Doug approved making Diego's Mac a second screening station NOW so two builds can be screened at once. Order: finish the P-D-016 run in progress, then P-D-015 (below; match check first), then P-D-018 P50. Update for P-D-015: screens are now TREES-ON. The match check uses Sim Tester's sim "#148 22f72a8 tools/sim + #133 item 1, --trees" and reproduces the P34 0e6fadd trees-on champion baseline rows in coord/data/screens.csv (2000+3000 mean 3.750, 4000+5000 mean 4.099) exactly, not the old trees-off P29 screen. Once it matches, take screens Sim Tester hands you (post them tagged "station: diego-mac, mode: official-screen" on the build's PR and in screens.csv). Sim Tester stays the primary screener. You never submit.
 

@@ -47,3 +47,36 @@ Bit-exact matching across stations would need a deterministic budget in sim mode
   - (a) Accept Mac screens as statistically comparable, not bit-exact. Always screen build and champion on the same station.
   - (b) Keep the Mac for info runs only (P-D-016).
 - P-D-016 vs-15-champions (baseline 2e1d036, then P34 c281bf5) runs on the Mac now. P37 was skipped because it's retired.
+
+## v2: trees-on match check (Doug 10:08 PM spec), Sat 2026-11-21 ~10:15 PM ET
+
+**Result: NOT exact. 350 of 384 games match.** Station: diego-mac. No screens run.
+
+Setup
+- Sim: sim/trees-screen-patch-v1 at 4b8663e (base 22f72a88d071bc949ccec6dbc9bd535b74844e3b). Patch sha256 7b0e3366bcf183fc4db87b205a2b262092a39ecd9b366cab88662df540d1db64 (matches). Kit world.json sha256 e0302dd4…2445 (matches).
+- Bot: plain P34 0e6fadd, no wrapper. `--trees --jobs 4`, 96 seeds per base, bases 2000–5000.
+- Machine: Apple M4 Pro, 14 cores (10P+4E), 24 GB, macOS 26.6.2, bun 1.4.5. About 9 s per base. 0 missed answers, 0 answers over 50 ms.
+
+Set totals (Mac vs Sim Tester, PR #147 comment 7073394832)
+
+| | mean | kills | died<40 | survivors |
+|---|---|---|---|---|
+| 2000+3000 | 3.724 vs 3.750 | 673 vs 678 | 48 = 48 | 2 = 2 |
+| 4000+5000 | 4.094 vs 4.099 | 739 = 739 | 38 = 38 | 3 = 3 |
+
+Drop arrivals and 20 s+ pauses were not computed (they need Sim Tester's hazard wrapper).
+
+Per seed: 34 of 384 differ on place / death_t / kills:
+2020 2021 2032 2035 2038 2047 2068 2077 3000 3028 3037 3043 3066 3067 3074 3095 4023 4030 4067 4074 4075 4078 4084 5003 5017 5023 5048 5052 5053 5055 5077 5088 5092 5093
+- All differences are late: every differing Sim Tester death is at t ≥ 107 s; every death before 100 s matches exactly.
+- Examples (Sim Tester → Mac, place/death_t/kills): 2020 9/161.85/7 → 11/239.40/4; 5003 1st/11 → 5/172.30/8; 5017 2/185.30/13 → 1st/14; 2047 182.25 → 181.80.
+
+Repeatability: the 34 seeds rerun with `--jobs 1` gave 34/34 identical to the Mac's `--jobs 4` run and 0/34 matching Sim Tester. The Mac is deterministic; the gap is systematic between stations.
+
+Suspects, in order:
+1. Sim Tester's hazard-logging wrapper adds per-tick work inside the bot's 30 ms wall-clock plan budget (brain.ts DEADLINE_MS 30 / PLAN_RESERVE_MS 10).
+2. The same wall-clock budget on machines of different speed. Late-only divergence (more path planning) fits both.
+
+Quickest test: Sim Tester runs one base (e.g. 2000) with the plain bot, no wrapper. If it matches the Mac, the wrapper is the cause. A 5 s trace of seed 2020 is saved on the Mac for a side-by-side.
+
+Status: live screens stay on Sim Tester. The Mac is idle and ready.

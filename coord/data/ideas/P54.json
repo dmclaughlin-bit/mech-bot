@@ -2,18 +2,22 @@
   "id": "P54",
   "title": "EARLY_SPACING: in the first 30 s, when a known enemy is within 120 m and we are not engaging, pick the farm / arm-up / zone target that keeps us >= 120 m from it (EARLY_SPACING_ON)",
   "family": "movement (early-game spacing)",
-  "flags": ["EARLY_SPACING_ON"],
+  "flags": [
+    "EARLY_SPACING_ON"
+  ],
   "flag": "EARLY_SPACING_ON",
   "behaviors": [
     "t < EARLY_SPACING_T (30 s), a known enemy within EARLY_SPACING_M (120 m), not engaging, not in laser rush, drop gate open: among the farm / arm-up / zone targets the champion would consider, pick one that keeps us >= 120 m from that enemy when one exists, else the champion's choice"
   ],
   "owner": "Mech Builder",
-  "stage": "step_a",
+  "stage": "building",
   "base": "c2b3e1d",
   "champion": "P48 b9492c6 (merge edb729f)",
   "champion_sha_tested_against": "b9492c6",
   "champion_sha": "b9492c6",
-  "builds_on": ["F10"],
+  "builds_on": [
+    "F10"
+  ],
   "evidence": {
     "source": "Mech Watcher ladder (coord/data/findings.md F10): nearest enemy in the first 30 s is 145 m for winners vs 117 m for losers",
     "confidence": "medium"
@@ -29,9 +33,58 @@
   "site_score": null,
   "decision": null,
   "blocker": null,
-  "next_action": "Mech Builder: Step A on P48 trees on (2000-5000).",
+  "next_action": "Mech Builder: build behind EARLY_SPACING_ON (default false), FASTER checklist on bases 0 and 6000.",
   "doug_waiver": false,
   "branch": "p54-early-spacing",
-  "timestamps": { "created": "2026-11-22 00:47 ET" },
-  "sources": ["coord/data/findings.md F10", "coord/BUILD_CHECKLIST.md (aee5017)", "/workspace/drop-gate-rule.txt"]
+  "timestamps": {
+    "created": "2026-11-22 00:47 ET",
+    "updated": "2026-11-22 01:05 ET"
+  },
+  "sources": [
+    "coord/data/findings.md F10",
+    "coord/BUILD_CHECKLIST.md (aee5017)",
+    "/workspace/drop-gate-rule.txt"
+  ],
+  "step_a_result": {
+    "champion": "P48 b9492c6 (merge edb729f; bot files identical on main c2b3e1d), TREE_RETREAT_ON=true",
+    "trees": true,
+    "seeds_per_set": 192,
+    "trigger_as_counted": "10 <= t < 30 (opening excluded, checklist item 2), champion's final mode 'hold' or 'heal' (so not engaging, not laser rush, no retreat/zone travel/drop run/hold), an enemy mech in view or seen in the last 10 s within 120 m, drop gate open (no drop passes the drop run's candidate filter: not skipped, holder null or us, within DROP_RUN_M 200 m, zone-safe for lands_in + capture), and an alternative among the champion's targets (rushable laser/lightning per the Build 17 filter with a free slot, zone-safe cube within FARM_PICKUP_M, next-circle entry point when outside it) that is >= 120 m from every such enemy and not toward the nearest one (strict). Champion's pick in hold/heal is no target, so every such alternative differs.",
+    "2000+3000": {
+      "fired_games": 29
+    },
+    "4000+5000": {
+      "fired_games": 21
+    },
+    "per_base_games": {
+      "2000": 20,
+      "3000": 9,
+      "4000": 9,
+      "5000": 12
+    },
+    "variants_games": {
+      "t<30 (brief literal), hold+heal, strict": {
+        "2000+3000": 37,
+        "4000+5000": 25
+      },
+      "10<=t<30, hold+heal, loose (no 'not toward' test)": {
+        "2000+3000": 32,
+        "4000+5000": 37
+      },
+      "10<=t<30, hold only, strict": {
+        "2000+3000": 5,
+        "4000+5000": 6
+      },
+      "10<=t<30, any non-combat mode incl. hide/heal hiding, strict": {
+        "2000+3000": 30,
+        "4000+5000": 22
+      }
+    },
+    "champion_early_spacing": "Mean nearest known enemy (in view or seen <= 10 s, bot's own view) over decisions with t < 30, averaged per game: 75.6 / 81.6 / 80.3 / 73.8 m on bases 2000/3000/4000/5000 (about 78.6 m on 2000+3000, 77.0 m on 4000+5000); mean per-game minimum 45.0 / 49.5 / 47.2 / 45.0 m. Not the Watcher's site measure (145 vs 117 m).",
+    "passivity": "IDENTICAL: every non-timing column (all but late_over_50ms, bot_ms_mean) equals /workspace/tester/runs/trees-b9492c6-<b>.csv on 96/96 games per base (384/384); 0 probe exceptions; log-to-seed order checked on decisions of all games that died before 29.5 s (28/28).",
+    "method": "Passive probe (try/catch, read-only, appended just before act.move) in a /tmp copy of the champion bot; sim = copy of /workspace/builder-sim/tools/sim; `STEPA_DIR=<dir> SEED_BASE=<b> bun sim/run.ts --bot /tmp/p54/stepa/bot/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees`, b = 2000..5000. Logs in /tmp (not committed).",
+    "rule": "coord/BUILD_CHECKLIST.md Step A: fewer than 10/192 on either set retires the idea.",
+    "verdict": "step_a_pass",
+    "run": "2026-11-22 01:05 ET"
+  }
 }

@@ -42,3 +42,5 @@ flowchart TD
 - Doug 7:35 PM ET: full paired screens run on the #133 faster sim (identical results, about 2.6x faster).
 
 - Doug 7:55 PM ET: drop-arrival veto judged by set totals; a ~1.3 s earlier death at the same place is not "worse" under stall clause (b).
+
+- Doug 8:32-8:33 PM ET: Diego's Mac is a second screening station (after the P-D-014 trees work), once it matches Sim Tester's P29 screen exactly. The coordinator assigns each build to one station.

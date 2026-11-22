@@ -137,3 +137,6 @@ Doug: "Yes, adopt the #133 faster sim for all screens from now on." Basis: clean
 Doug, exact words: "Pass P29: judge drop-ring arrivals by set totals, and a 1.3 s earlier death with the same place doesn't count as worse under stall clause (b). Let it take the next slot."
 - Drop-ring arrival veto = the set TOTAL is lower than the champion's on either seed set (not a single seed losing an arrival while the set total holds or rises).
 - Stall clause (b): a death about 1.3 s earlier at the same place is not "worse". Anything less clear-cut goes to Doug.
+
+## Doug 8:32-8:33 PM ET (Sat Nov 21): second screening station
+Diego's Mac becomes a second screening station after its tree-sim work (P-D-014), and before that only P29b. Its screens count only after it reproduces Sim Tester's recorded P29 screen exactly on the same sim. The coordinator assigns each build to one station; the eligibility rules don't change.

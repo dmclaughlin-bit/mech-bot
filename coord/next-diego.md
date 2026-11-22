@@ -166,3 +166,20 @@ H07 sound-guided late hunt: PARKED. Wild Sim: a usable sound while idle late sho
 - Do not touch bot code (brain.ts, params.ts, nav.ts, map.ts).
 - Report: the champion (2e1d036) on both seed sets with trees off vs on (placements, drop arrivals, early deaths, survivors, kills), the runtime cost, and every assumption added to ASSUMPTIONS.md.
 - The coordinator and Doug decide on adopting it for screens after seeing that comparison.
+
+---
+## NEXT PROMPT P-D-015 (after P-D-014 trees): Diego's Mac becomes a second screening station (Doug approved 8:32-8:33 PM ET)
+
+**Goal.** Run official paired screens on Diego's Mac (M4 Pro, 24 GB) alongside Mech Sim Tester, so finished builds don't wait in one queue. The sim uses CPU, not Claude usage: Claude starts the runs and reports totals, and does not read individual games unless asked.
+
+**Step 1: match check (required before any screen counts).**
+- Use the same sim as Sim Tester: tools/sim at d548479 plus #133 item 1 (shortcut-geom.diff from P-D-011-local e07ed31), trees OFF.
+- Re-run Sim Tester's recorded P29 screen: build 2e1d036 vs champion 6182d29, both 2000+3000 and 4000+5000.
+- Every per-set number has to match its rows in coord/data/screens.csv exactly (games changed, better/worse, delta, kills, died <40 s, drop arrivals, 20 s+ pause games). If anything differs (for example Apple-chip floating point), stop and report the differing seeds. Don't screen anything until the coordinator clears it.
+- Also report the speed: jobs used and minutes per 384-game screen.
+
+**Step 2: screening.**
+- Screen ONLY builds the coordinator assigns to you in this file (each with its exact flag-ON SHA and the champion SHA).
+- Use the same seeds, metrics and veto evidence as Sim Tester: activation fired/behavior/score, drop-arrival set totals, deaths before 40 s, survivors, 20 s+ pauses with clause-by-clause stall evidence.
+- Post the result as a PR comment and add the rows to coord/data/screens.csv, with `source` ending in "station: diego-mac".
+- Don't label anything as eligible; the coordinator decides.

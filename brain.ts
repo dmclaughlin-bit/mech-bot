@@ -82,8 +82,10 @@ const HIDE_BEARINGS = 12
 const HIDE_STEPS_S = [1, 2, 3]
 /** P48: give-up list key for a tree spot (4 m cells). */
 const treeKey = (x: number, y: number) => `${Math.round(x / 4)},${Math.round(y / 4)}`
-/** P61: a building cover spot with no progress (COVER_PROGRESS_M) for this long (s) goes on the retreat's skip list. */
-const COVER_STUCK_S = 3
+/** P61: a building cover spot with no progress (COVER_PROGRESS_M) for this long (s) goes on the retreat's skip list. Fix
+ * round: 0.6 s, not 3 s (a latched spot can be body-blocked at an edge the zero-radius line test passes; at ~11.7 m/s
+ * walk, 3 s pinned under fire was lethal, e.g. practice seed 6024). */
+const COVER_STUCK_S = 0.6
 const COVER_PROGRESS_M = 0.5
 /** P61: hideSpot candidates within this many m of a skipped spot are skipped. */
 const COVER_SKIP_M = 3

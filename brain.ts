@@ -28,7 +28,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
+  CHARGE_LINED_MIN_T, CHARGE_LINED_ON, LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -1091,7 +1091,13 @@ function buildBot(hello: Hello): Bot {
               lethal = LETHAL_RELEASE_MARGIN * dmg >= m.hp
             }
             fire[laser] = !((full || lethal) && lined)
-          } else if (leading === "laser") fire[laser] = true
+          } else if (leading === "laser") {
+            // P50 (CHARGE_LINED_ON): wait to start the charge until the shot is clear and lined up. Not in the opening, and
+            // not while a drop run/hold is possible (the same read-only drop test as P34), so both play as the champion.
+            const waitLine = CHARGE_LINED_ON && !(clear && beamOn) && obs.t >= CHARGE_LINED_MIN_T &&
+              !(dropRun !== null || (obs.drops ?? []).some((x) => (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M))
+            if (!waitLine) fire[laser] = true
+          }
           if (LASER_RUSH_ON && leading === "laser") beamAt = c
         }
         if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true

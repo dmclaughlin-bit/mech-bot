@@ -173,3 +173,15 @@ export const LETHAL_RELEASE_ON = true
 export const LETHAL_RELEASE_MARGIN = 0.8
 /** Never release early before this match time (s): play before it, and so every death before 40 s, equals the champion's. */
 export const LETHAL_RELEASE_MIN_T = 40
+
+/**
+ * P50 (P-D-018, ST-1 clear-shot laser charge): start a new laser charge only when the shot is clear and the torso is
+ * already lined up on the target (`clear && beamOn`, the same test the release uses). While the torso is still turning,
+ * keep aiming without charging, so we do not show `charging: true` or burn the laser on a shot that is not lined up.
+ * Never before CHARGE_LINED_MIN_T (the opening plays as the champion) and never while a drop run/hold is possible (the
+ * P34 dropOpen test). A charge already in progress, its release (full / P34 lethal) and every other decision are unchanged.
+ * false = champion exactly.
+ */
+export const CHARGE_LINED_ON = false
+/** Never hold back a charge before this match time (s), so the opening (first ~10 s) equals the champion's. */
+export const CHARGE_LINED_MIN_T = 10

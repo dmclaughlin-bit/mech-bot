@@ -28,7 +28,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_DROP_GATE_ON, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -723,6 +723,7 @@ function buildBot(hello: Hello): Bot {
       // P-D-003 (DROP_RUN_M): walk to a called supply drop, timed to arrive as it lands, then hold the ring.
       let dropMove: [number, number] | null = null
       let dropHold = false
+      let lethalDropGate = false
       if (DROP_RUN_M > 0) {
         const pace = ZONE_WALK * walkSpeed
         const safe = (p: number[], stay: number) =>
@@ -743,6 +744,9 @@ function buildBot(hello: Hello): Bot {
           else if (dist / walkSpeed + 5 >= d.lands_in) dropMove = travel(me.pos, d.pos, obs.t, canPlan()).move
           else dropRun = null
         }
+        // P34b (LETHAL_DROP_GATE_ON): a drop near and reachable (the run's own distance and zone-safe ETA test), or a run/hold/capture on.
+        if (LETHAL_DROP_GATE_ON) lethalDropGate = dropRun !== null || dropHold || farmHold || (obs.drops ?? []).some((x) =>
+          (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M && safe(x.pos, x.lands_in + x.capture_s - x.progress))
       }
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
@@ -1080,7 +1084,7 @@ function buildBot(hello: Hello): Bot {
             let lethal = false
             // Read-only drop test (same as the midring settle's dropNear): no early release while a drop run/hold is possible.
             const dropOpen = () => dropRun !== null || (obs.drops ?? []).some((x) => (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M)
-            if (LETHAL_RELEASE_ON && !full && lined && !other && !farmShot && m.kind === "mech" && m.hp != null && obs.t >= LETHAL_RELEASE_MIN_T && !dropOpen()) {
+            if (LETHAL_RELEASE_ON && !full && lined && !other && !farmShot && m.kind === "mech" && m.hp != null && obs.t >= LETHAL_RELEASE_MIN_T && !dropOpen() && !lethalDropGate) {
               const L = cfg.weapons.laser
               const st = l.stats
               const fullS = st.charge ?? L.charge

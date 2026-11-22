@@ -173,3 +173,11 @@ export const LETHAL_RELEASE_ON = true
 export const LETHAL_RELEASE_MARGIN = 0.8
 /** Never release early before this match time (s): play before it, and so every death before 40 s, equals the champion's. */
 export const LETHAL_RELEASE_MIN_T = 40
+
+/**
+ * P34b (drop gate on the lethal release): inside the LETHAL_RELEASE logic only, do not take the early release while a
+ * called drop not held by another mech is within DROP_RUN_M and reachable by the drop run's zone-safe ETA test (arrive,
+ * wait for landing and finish the capture before the shrink), or while a drop run, a ring hold or a drop capture
+ * (farmHold) is on. Never gates on "any drop exists". false = champion exactly.
+ */
+export const LETHAL_DROP_GATE_ON = false

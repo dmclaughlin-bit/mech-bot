@@ -1,0 +1,65 @@
+{
+  "id": "P67",
+  "title": "FAR_COVER_LATCH_HOLD_ON: while P60's far-cover target is latched and still valid, the building-cover, tree-cover and plain back-away retreat modes cannot preempt the walk",
+  "family": "retreat / movement",
+  "flag": "FAR_COVER_LATCH_HOLD_ON",
+  "flags": [
+    "FAR_COVER_LATCH_HOLD_ON"
+  ],
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "branch": "p67-far-cover-latch-hold",
+  "base": "0da4ec60108c28e530516c84a1a01e7fa4d771f6",
+  "champion": "P60 BACKAWAY_FAR_COVER_ON (bot code afb6f26, main merge 32acd3d, site 3.88 builders-4)",
+  "champion_sha_tested_against": "afb6f263972480e03d381d5dbb32f56954e8ae73",
+  "champion_main": "32acd3dfd643c3bc46d7f2d96e8db2431d207ba0",
+  "builds_on": [
+    "F16",
+    "F18",
+    "synergy_research opp 2 (158/192 episodes < 1 s, median 2.2 m vs 47-70 m)",
+    "P63 note 92/142 < 1 s"
+  ],
+  "interacts_with": [
+    {
+      "mechanics": ["P60 far-cover walk (mode 'retreat, far cover')", "building-cover retreat (mode 'retreat to cover')"],
+      "interaction": "interference: building cover is checked first in the retreat chain, so a 1-3 s building spot that appears mid-walk ends the far-cover walk; far-cover is within 1 s of building-cover in 34 official walk games",
+      "source": "coord/data/synergy_research.md opportunity 2 (official P60 traces, 384 games)"
+    },
+    {
+      "mechanics": ["P60 far-cover walk", "P48 tree retreat (mode 'retreat, trees')"],
+      "interaction": "interference: tree retreat is checked before far cover, so a 1-3 s tree spot ends the walk; within 1 s of each other in 43 official walk games",
+      "source": "coord/data/synergy_research.md opportunity 2"
+    },
+    {
+      "mechanics": ["P60 far-cover walk", "plain back-away (mode 'retreat')"],
+      "interaction": "interference: P60's farRetreat drops the latch and falls to plain back-away when no seer is in view or trees already hide us from the seers at our current position; within 1 s of each other in 62 official walk games",
+      "source": "coord/data/synergy_research.md opportunity 2; brain.ts farRetreat (afb6f26)"
+    }
+  ],
+  "hypothesis": "P60's far-cover walk (4-6 s, 47-70 m) won on the site (F18) but is almost never delivered: 158/192 official episodes last < 1 s (median 2.2 m traveled) because the three other retreat modes preempt it on a sub-second scale (synergy_research opp 2; P63 92/142 < 1 s). Holding a still-valid latched far spot through those preemptions lets the walk reach cover from the shooters, which is how the documented saves (2073, 4093) worked, so fewer retreats end in death.",
+  "mechanism": "One flag FAR_COVER_LATCH_HOLD_ON (default false). In the retreat condition only (hit in the last 2 s and HP < RETREAT_HP, unchanged), ahead of the building-cover branch: if P60's far-cover run is latched (farRun exists, refreshed within 0.5 s) and P60's own gates pass (t >= 40 s, no drop run/hold, no drop near AND reachable within DROP_RUN_M), apply P60's latch rules unchanged (progress update; no progress for TREE_RETREAT_STUCK_S or arrived within 1.5 m -> skip list and drop; spot outside the circle we keep to or no longer hidden from the seers (shooters, else all seers) -> drop). If still valid, keep walking to it (mode 'retreat, far cover', same boost rule). Otherwise the champion chain runs unchanged. Movement/mode precedence only: torso/aim untouched (N8), retreat trigger/timing untouched, no new search.",
+  "activation": "Decision-level: retreat condition holds, P60's mode is building cover, tree retreat or plain back-away, the far latch would still be held by the rules above, and the latched heading differs from the move actually taken by > 20 deg. Game-level Step A count = games where this happens at least once (per set of 192: 2000+3000, 4000+5000).",
+  "disproof": "Fails if Step A < 10/192 on either set, OR the paired mean vs P60 is lower on BOTH practice bases, OR deaths <40 s rise on either base, OR a NEW >=20 s pin appears, OR the saves 2073/4093 are lost.",
+  "positives": null,
+  "negatives": null,
+  "confidence": "Uncertain (not yet measured)",
+  "reuse": null,
+  "outcome": "pending",
+  "source": "Coordinator brief 2026-11-22 03:36 AM ET (P67 FAR COVER LATCH HOLD); coord/data/synergy_research.md opportunity 2",
+  "novelty": {
+    "vs_P61": "P61 latched building-cover re-picks (outcome C). P67 does not change building cover; it only stops building cover from interrupting a latched far-cover walk.",
+    "vs_P63": "P63 filters which far spot is legal (may cut walks). P67 keeps P60's spot choice and lengthens the walk.",
+    "vs_P64": "P64 acts only when no far spot exists. P67 acts only when one is latched.",
+    "vs_P33": "P33 kept any retreat going until the nearest enemy was ~120 m away (retired, barely fired). P67 adds no retreat time; it only changes which retreat mode moves the legs inside the champion's existing retreat window."
+  },
+  "timestamps": {
+    "recorded": "2026-11-22 03:45 ET"
+  },
+  "sources": [
+    "coord/data/synergy_research.md opportunity 2",
+    "coord/data/findings.md F3, F16, F18, N8, N9, N10",
+    "coord/data/ideas/P60.json",
+    "/workspace/wt-p63/coord/data/ideas/P63.json (read-only)",
+    "brain.ts farRetreat / retreat chain at afb6f26"
+  ]
+}

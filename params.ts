@@ -168,7 +168,7 @@ export const MIDRING_STUCK_S = 3
  * another mech within DROP_RUN_M, the midring settle's dropNear test). Target choice, aim, movement and every other
  * decision are unchanged. false = champion exactly.
  */
-export const LETHAL_RELEASE_ON = false
+export const LETHAL_RELEASE_ON = true
 /** Share of the computed partial-charge damage that must cover the target's hp (top-16 public bot: 0.8). */
 export const LETHAL_RELEASE_MARGIN = 0.8
 /** Never release early before this match time (s): play before it, and so every death before 40 s, equals the champion's. */

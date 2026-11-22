@@ -193,4 +193,4 @@ export const TREE_RETREAT_STUCK_S = 3
  * laser in the lead and is released by the champion's rules. Path, boost and every other decision are unchanged. Zone
  * travel ranks above the drop run/hold, so this never runs on a drop tick. false = champion behavior exactly.
  */
-export const ZONE_TRIP_NO_CHARGE_ON = false
+export const ZONE_TRIP_NO_CHARGE_ON = true

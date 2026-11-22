@@ -14,7 +14,7 @@ Rules:
 - F3 Tree-cover retreat under fire (P48): site 4.44, +0.06 over P34. Current champion.
 
 ## Sim positives from builds that didn't make it (reuse the good part)
-- F4 Tree heal raises end-game survival (P49 #172, 38aa957): survivors 2 to 3 and 3 to 5; means +0.000 and +0.089; deaths before 40 s flat. It was killed by heal-hold pins (29 s on 3086; pause games 2 to 5). Follow-up: P49b, which caps each heal at 8 s. (P49 was also site-tested on Doug's order at 12:33 AM ET; the score gets added here.)
+- F4 Tree heal raises end-game survival (P49 #172, 38aa957): survivors 2 to 3 and 3 to 5; means +0.000 and +0.089; deaths before 40 s flat. It was killed by heal-hold pins (29 s on 3086; pause games 2 to 5). Follow-up: P49b, which caps each heal at 8 s. Site test on Doug's order 12:34 AM ET: 4.02 vs 4.44 (BB-A82B6F7A), a big loss. That confirms the heal-hold pins cost real placement, so the uncapped heal is a NEGATIVE finding. P49b must show the pins gone (2022, 3066, 3086) and no rise in pause games before it gets a slot.
 - F5 Listening/look-around doesn't hurt early survival (P41 #173, c21d23b): deaths before 40 s 48 to 47 and 38 to 38; drops held 7 and 5; sim +0.052 and +0.042 (info only). It was killed by downstream stalls (2021, 5036) that happened while the look wasn't active. Useful only together with a stall guard.
 - F6 Upgrade DPS tier (P43b): site 4.35, a loss. Treat it as a negative finding: don't build on it.
 - F7 Rooftop jet route (P40d, P40b): site 4.35 and 4.29, losses. Negative finding: don't build on it.

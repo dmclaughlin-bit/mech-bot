@@ -131,3 +131,9 @@ All other vetoes are unchanged (crash, drop-ring arrival loss on either set, mor
 ## Doug 7:35 PM ET (Sat Nov 21): faster sim for screens (#133)
 
 Doug: "Yes, adopt the #133 faster sim for all screens from now on." Basis: clean A/B on champion 6182d29, finals 384/384 and per-tick traces 384/384 identical; full screen 207.1 s vs 79.9 s (2.59x). Results: PR #139 comment, raw files in coord/data/benchmarks/P-D-011-local/ (e07ed31). Every screen row names the sim version it used. This changes only the test tool, never the submitted bot; #133 is not merged to main by this decision.
+
+## Doug 7:55 PM ET (Sat Nov 21): veto clarifications (from the P29 ruling)
+
+Doug, exact words: "Pass P29: judge drop-ring arrivals by set totals, and a 1.3 s earlier death with the same place doesn't count as worse under stall clause (b). Let it take the next slot."
+- Drop-ring arrival veto = the set TOTAL is lower than the champion's on either seed set (not a single seed losing an arrival while the set total holds or rises).
+- Stall clause (b): a death about 1.3 s earlier at the same place is not "worse". Anything less clear-cut goes to Doug.

@@ -168,3 +168,10 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 ## Loop 2:15 AM ET Sun
 - P53b BB-9617EF60 scored 3.63 builders-4: LOSS (-0.12 vs 3.75). 96-game had predicted +0.000 (neutral); site came in lower, consistent with N2 (hypothesis).
 - Submitted P41 c21d23b as near-miss data test (BB-0AAB8ADB, queued #14). Reason: no READY build; P60 (positive F16, near-miss candidate) still needs the official screen + 96-game estimate. Site tests last 60 min: 3 (P48 1:44, P53b 1:58, P41 2:13). P60 is next once screened.
+
+## Loop 2:20 AM ET Sun
+- P41 BB-0AAB8ADB scored 3.84 builders-4: WIN (+0.09 vs P48 3.75). NEW CHAMPION P41 c21d23b (PR #173, not yet merged to main). Site marks BB-0AAB8ADB Entered in the final.
+- Submitted P60 afb6f26 (BB-6F449E11, queued #16 of 21) in the same browser session: it was READY vs P48 (Sim Tester PASS 0 vetoes; 96-game +0.000 +/- 0.086; loop check.py max 5.3 ms; archive 3,747,840). Now a data test vs 3.84 (it lacks P41's change).
+- Site tests last 60 min: 4 (P48 1:44, P53b 1:58, P41 2:13, P60 2:23). Cap reached until 2:44 AM ET.
+- Queue is stale: P61 and any new build must be rebuilt on P41 c21d23b and re-screened; Sim Tester needs a P41 trees-on baseline.
+- Learning: F17 (P41 won despite local -0.031) and N10 (96-game estimate missed the sign twice). Because we learned the 96-game estimate does not predict small site effects, we moved one-veto near misses up for site tests and kept the estimate advisory only.

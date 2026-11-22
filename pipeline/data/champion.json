@@ -1,12 +1,12 @@
 {
- "experiment_id": "P48",
- "commit": "b9492c6f122c549c705b69402157f078b4a57857",
- "merge_commit": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
- "branch": "p48-tree-retreat",
- "score": 3.75,
- "submission_id": "BB-5727119F",
+ "experiment_id": "P41",
+ "commit": "c21d23b0c487f2de3acf030f27118520dd0ff07a",
+ "merge_commit": null,
+ "branch": "PR #173 (EARS_LOOK_ON on P48)",
+ "score": 3.84,
+ "submission_id": "BB-0AAB8ADB",
  "target_score": 6.0,
- "updated_at": "2026-11-22T01:55:00-05:00",
+ "updated_at": "2026-11-22T02:23:00-05:00",
  "history": [
   {
    "experiment_id": "EXP-0000",
@@ -136,6 +136,15 @@
    "scorer_version": "builders-3",
    "submission_id": "BB-94897D91",
    "note": "builders-3 official win; kept as history only. Official gains are not compared to this score after the builders-4 cutover."
+  },
+  {
+   "experiment_id": "P48",
+   "commit": "b9492c6f122c549c705b69402157f078b4a57857",
+   "score": 3.75,
+   "at": "2026-11-22T01:55:00-05:00",
+   "scorer_version": "builders-4",
+   "submission_id": "BB-5727119F",
+   "note": "builders-4 bar until P41 scored 3.84"
   }
  ],
  "scorer_version": "builders-4",
@@ -146,10 +155,11 @@
    "at": "2026-11-21T22:29:00-05:00"
   },
   "builders-4": {
-   "score": 3.75,
-   "submission_id": "BB-5727119F",
-   "at": "2026-11-22T01:55:00-05:00",
-   "site_status": "Entered in the final"
+   "score": 3.84,
+   "submission_id": "BB-0AAB8ADB",
+   "at": "2026-11-22T02:23:00-05:00",
+   "site_status": "Entered in the final (your best score)"
   }
- }
+ },
+ "merge_status": "NOT YET MERGED to main; PR #173 head c21d23b contains edb729f"
 }

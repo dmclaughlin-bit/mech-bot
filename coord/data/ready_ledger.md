@@ -157,3 +157,5 @@ Same code as the builders-3 win 4.44 (BB-94897D91). Official gains are judged on
 
 - P49b #177 0c6b134, BB-7C26BD16, scored 3.49 under builders-4: LOSS (3.49 < 3.75). Champion stays P48.
 - P53b #178 52c28624bac2ecf6a80edc1d9c6fcd8a6599b5d4, submitted 1:59 AM ET, receipt BB-9617EF60, queued. Ready-ledger entry above still describes the screen; it is no longer waiting on P49b. Check.py rerun (this audit) PASS, max 2.9 ms; archive 3,727,360 bytes; contains edb729f. Next after it scores: P41 near miss #173 c21d23b, subject to the site rule of one queued submission per team and the loop cap.
+
+- 2:23 AM ET: P41 c21d23b scored 3.84 (BB-0AAB8ADB) = NEW CHAMPION (builders-4). Every waiting build is HOLD (stale: built on P48, must rebuild on P41 + re-screen). P60 afb6f26 was READY vs P48 and was submitted 2:23 (BB-6F449E11) in the same session the win was seen; it is now a data test vs 3.84. P61 must be rebased on c21d23b.

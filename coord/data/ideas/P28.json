@@ -4,26 +4,32 @@
  "family": "farm",
  "flag": "MIDRING_PATROL_ON",
  "owner": "Mech Builder",
- "stage": "built (smoke/hazard only; needs Sim Tester full screen)",
- "pr": null,
- "sha": null,
+ "stage": "built P28b (smoke/hazard only; GATE A fails: drop-ring arrivals not held)",
+ "pr": 141,
+ "sha": "82553c57a93922e32c2b87b16292b15c859988fb",
  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
  "single_decision": "Where the champion would stand in mode 'hold' with farmOk true, not hurt (noSneak), and no B12/B13 cube, drop, drone or crate to walk to, walk a short zone-safe nav leg to the next waypoint of a zig-zag patrol at zone ratio ~0.45-0.65 of the circle we keep to (the next circle once inside its inner ring, else the current one with the farm zone-safety test). No boost. Every existing branch (zone escape, leave for the next circle, engage, retreat, collect, laser walk, crossfire, ambush, drop hold/run, heal, loot, farm capture/pickup/hunt, standoff break) stays above it, so any of them breaks the patrol at once. Own no-progress guard: a leg that is not found, too long, or not closing for 2 s is dropped and the direction flips; 3 failed legs in a row, or 6 s of patrol with under 4 m of movement, rest the patrol (hold) for 10 s. Off when the circle is under 70 m. MIDRING_PATROL_ON=false (default) = champion byte-identical.",
  "evidence": "coord/data/watcher/SKILLS.md (93 showdown matches, T01-T04 vs T13-T16): hold 24.6% vs 40.1% of ticks (d=-0.34), mid-phase hold 28.5% vs 48.2% (d=-0.42; 6231/5574 ticks, 54/56 matches); speed while healthy and not engaged 7.21 vs 4.35 m/s (d=0.55); idle cube rate 3.94 vs 2.27 /min, mid-phase 5.11 vs 3.12; most high-team cubes are gained in the midring (909) not the center (638); best place/cubes in the 20-40% center-share bin. Champion gap 2 in SKILLS.md: the champion holds when nothing is in the 80 m cube / 150 m hunt window. Correlation in exhibition FFA, not house-bot proof. ideas_queue.md item 3 (Medium) and item 5.",
  "closest_prior": "No official receipt for a midring patrol. P23 late idle torso sweep (76c3fa8, VETO: new 64 s in-zone pin on base-0 seed 90, vision-flicker loop) and P23b sweep + 3 s farm-walk abort (cf96cf5, official 4.00, BB-AEFC0FA8, CLOSE): standing torso sweep / abort, not a foot patrol; P28 adds no sweep and does not touch B12/B13 give-up. B122 mid-game unstuck (4296b43, VETO, do not site-test): sidestep+hop on stalled travel moves; P28 has no sidestep, no hop, no jet and does not change nav.stuck outside patrol mode. P25 cube memory (PR #136, HOLD): different target (remembered cubes); P28 does not depend on it.",
  "disprove": "Full paired screen (2000+3000 and 4000+5000) fires in under ~10/192 games, adds new 20 s+ in-zone pins with patrol active in the window, loses drop-ring arrivals, or raises deaths before 40 s by more than 3/192; or an official site score at or below 4.17.",
  "screens": {
-  "base-0 hazard (builder smoke, 96 games, flag ON copy vs origin/main fec28ee = bot code 6182d29)": "fired 45 / diff behavior 45 / diff score 37; paired +0.094 +/- 0.264 (24 better / 59 tied / 13 worse, info only); pin windows 190->171, longest 49->51 s; 20 s+ pin seeds main 16,41,43,78,79,92 vs P28 41,42,43,63,79: NEW 42 (51 s, t=187-238, starts as champion zone travel + B12 pickup stuck at (160,21), patrol 3 s at 225-228 then guard rest, 7.4% of window) and 63 (36 s, champion drop run stuck 44 m from the drop, patrol 0%), neither patrol-caused; gone 16,78,92. Drop-ring arrivals 3 games/5 -> 0/0 (seeds 63, 89, 94: divergence, patrol never active near the drop run; 89/94 diverge from patrol ticks at t=0-6 s, 94 dies at 57.8 s before the drop) - HAZARD FLAG. Died<40 s 33->34. Hold share of ticks 31.7%->23.5%. Cubes at end 229 (2.39)->223 (2.32). Kills 303->323. In-bot answer max 11.6 / 18.7 ms, none over 50 ms; sim CSV late_over_50ms 3 / 1 (load)."
+  "base-0 hazard (builder smoke, 96 games, flag ON copy vs origin/main fec28ee = bot code 6182d29)": "fired 45 / diff behavior 45 / diff score 37; paired +0.094 +/- 0.264 (24 better / 59 tied / 13 worse, info only); pin windows 190->171, longest 49->51 s; 20 s+ pin seeds main 16,41,43,78,79,92 vs P28 41,42,43,63,79: NEW 42 (51 s, t=187-238, starts as champion zone travel + B12 pickup stuck at (160,21), patrol 3 s at 225-228 then guard rest, 7.4% of window) and 63 (36 s, champion drop run stuck 44 m from the drop, patrol 0%), neither patrol-caused; gone 16,78,92. Drop-ring arrivals 3 games/5 -> 0/0 (seeds 63, 89, 94: divergence, patrol never active near the drop run; 89/94 diverge from patrol ticks at t=0-6 s, 94 dies at 57.8 s before the drop) - HAZARD FLAG. Died<40 s 33->34. Hold share of ticks 31.7%->23.5%. Cubes at end 229 (2.39)->223 (2.32). Kills 303->323. In-bot answer max 11.6 / 18.7 ms, none over 50 ms; sim CSV late_over_50ms 3 / 1 (load).",
+  "base-0 hazard P28b (builder smoke, 96 games, flag ON copy of 82553c5 vs origin/main b7700eb, same bot code as 6182d29)": "fired 23 / diff behavior 23 / diff score 15; paired -0.042 +/- 0.107 (7 better / 81 tied / 8 worse, info only); pin windows 190->205, longest 49->49 s; 20 s+ pin seeds main 16,41,43,78,79,92 vs P28b 16,41,63,78,79,92: NEW seed 63 (36 s, t=126-162 at (-170,122), patrol 0 ticks in window; champion drop run stuck after patrol at t=39-42 moved the pre-call hold spot ~35 m); seed 42 no pin (was 51 s); gone 43; seed 92 main pin 42-63 gone but a 32 s pin at t=197-229 (patrol 0 ticks, last patrol t=39); seed 79 window 18-40 -> 18-46 (2 patrol ticks at 29.9/45.1). Drop-ring arrivals 3 games/5 -> 1/3: seed 63 1->0, 89 1->0 (patrol at t=52.6-69.9 right before the t=70 call; drop run starts from a different spot and does not arrive), 94 3->3 restored. Residual loss is from patrol moving the champion's pre-call hold spot, not from patrol during a live drop - HAZARD FLAG. Died<40 s 33->33. Hold share 31.7%->30.5%. Cubes at end 229 (2.39)->235 (2.45). Kills 303->298. In-bot answers >50 ms 0 / 1 (seed 55, 114 ms, patrol never fired, actions hash-identical to main: load); sim CSV late_over_50ms 1 / 5 (seeds 7,46,55,56,59, none with patrol: load)."
  },
  "checks": {
   "contains_champion": "PASS (merge-base --is-ancestor 6182d29)",
-  "check_py": "PASS 300/300: flag ON copy p99 1.0 / max 3.9 ms; committed default p99 0.9 / max 3.4 ms",
-  "flag0_identical": "PASS (eqdrive cmp identical vs origin/main fec28ee)",
-  "single_change": "brain.ts one gated block after the mode chain + no jet on nav.stuck in patrol mode; params.ts one flag (default false) + patrol knobs"
+  "check_py": "PASS 300/300: P28b flag ON copy p99 1.6 / max 3.5 ms; committed default p99 2.1 / max 3.4 ms (P28: ON 1.0/3.9, default 0.9/3.4)",
+  "flag0_identical": "PASS (P28b: eqdrive cmp identical vs origin/main b7700eb; P28: vs fec28ee)",
+  "single_change": "brain.ts one gated block after the mode chain (P28b adds opening/drop/sticky gates inside it) + no jet on nav.stuck in patrol mode; params.ts one flag (default false) + patrol knobs (P28b: PATROL_START_S, PATROL_STICKY_M, PATROL_STALL_S 2->3)"
  },
  "receipt": null,
  "score": null,
- "decision": "not ready: drop-ring arrivals 5->0 in the 96-game hazard needs the full 2000+3000 / 4000+5000 screen before any slot",
- "updated": "2026-11-21 19:03 ET",
- "branch": "p28-midring-patrol"
+ "decision": "not ready: GATE A fails (drop-ring arrivals 5->3, seeds 63/89 lost via pre-call position). Next candidate fix would keep the patrol from moving the hold spot before a scheduled drop call (e.g. no patrol / walk back to the start spot in the last N s before cfg.drops.times) - not built.",
+ "updated": "2026-11-22 ET (P28b)",
+ "branch": "p28-midring-patrol",
+ "p28b_fix": "On top of c7e5778 (P28b code commit 82553c5): (1) no patrol before PATROL_START_S=10 s (time gate chosen over 'first laser decision', which has no single event; laser trips rank above patrol anyway); (2) no patrol, leg dropped, while any drop passes the drop run's own dropSkip/holder filter (any range, called or landed) or dropRun/dropMove/dropHold is set - drop logic untouched; (3) a leg with no progress for PATROL_STALL_S=3 s (or overtime, or the pin guard) marks its waypoint and our spot sticky for the game; waypoints within PATROL_STICKY_M=15 m are skipped and no leg starts from a sticky spot.",
+ "gates": {
+  "A_drop_ring_arrivals_held": "no (3 games/5 -> 1/3)",
+  "B_no_new_20s_pin_with_patrol_in_window": "yes (only new seed 63, 0 patrol ticks)"
+ }
 }

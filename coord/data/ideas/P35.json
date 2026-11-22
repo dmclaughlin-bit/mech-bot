@@ -1,0 +1,11 @@
+{
+  "id": "P35",
+  "title": "Unseen target first: target-pick bonus for a visible enemy facing away from us and beyond 45 m (UNSEEN_TARGET_ON)",
+  "family": "targeting",
+  "flag": "UNSEEN_TARGET_ON",
+  "owner": "Mech Builder",
+  "stage": "assigned",
+  "source": "PR #145 research-doug-1941 ranked build 2 (target.ts); first hit decides first fights (KILL/DIED 309/171 vs 129/297)",
+  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "created_et": "2026-11-21 19:57"
+}

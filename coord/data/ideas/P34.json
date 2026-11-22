@@ -1,0 +1,11 @@
+{
+  "id": "P34",
+  "title": "Lethal release: fire a partially charged laser as soon as its damage is lethal on the current target, instead of waiting for full charge (LETHAL_RELEASE_ON)",
+  "family": "weapons",
+  "flag": "LETHAL_RELEASE_ON",
+  "owner": "Mech Builder",
+  "stage": "assigned",
+  "source": "PR #145 research-doug-1941 ranked build 1 (brain.ts:1036-1046)",
+  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "created_et": "2026-11-21 19:57"
+}

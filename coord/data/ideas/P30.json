@@ -10,7 +10,7 @@
     "on a non-firing tick after t >= 10 s, with no drop called and in retreat / heal / hide mode, when a mech that damaged us in the last 2 s is in view and outside 45 deg of the torso aim we would command, turn the torso just enough to put it within 45 deg; legs, path, retreat/heal thresholds and targets unchanged"
   ],
   "owner": "Mech Builder",
-  "stage": "hold",
+  "stage": "retired",
   "pr": 144,
   "sha": "32c50e75327fe474577138a81507a721fe568ae4",
   "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
@@ -36,7 +36,7 @@
   "receipt": null,
   "site_score": null,
   "score": null,
-  "decision": "HOLD: screen VETO on both sets (screened on 9906286 with flag on; 32c50e7 only ships flag true). 2000+3000: drop arrivals 6->4 (seed 2078 lost both drops, place 1->7), deaths<40s 56->59. 4000+5000: deaths<40s 54->57. Activation 62/50 games. Needs fix + re-screen.",
+  "decision": "RETIRED 7:57 PM ET: full screen VETO on both sets (drop arrivals 6->4 on 2000+3000, deaths before 40 s 56->59 and 54->57); effect was tiny (rear damage share 21.3%->20.4%).",
   "blocker": "needs a complete both-set Sim Tester screen of this exact SHA vs champion 6182d29 before any site test",
   "next_action": "Sim Tester screens 2000+3000 and 4000+5000 with FACE_ATTACKER_ON true (temp copy) vs 6182d29",
   "doug_waiver": false,

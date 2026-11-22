@@ -8,5 +8,61 @@
   "source": "coord/data/watcher/SKILLS.md idea 4 (radial speed -1.12 vs +0.53 m/s while engaged); was SKILLS-4",
   "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
   "created_et": "2026-11-21 19:35",
-  "decision": "7:45 PM ET re-brief (a): first probe found no hook outside excluded close-ins (HOOK: NONE); finish-walk clear-shot ticks 719 in 28/96 base-0 games. Laser rush and cube-collect walks stay untouched."
+  "decision": "7:45 PM ET re-brief (a): first probe found no hook outside excluded close-ins (HOOK: NONE); finish-walk clear-shot ticks 719 in 28/96 base-0 games. Laser rush and cube-collect walks stay untouched.",
+  "flags": [
+    "FIGHT_FADE_ON"
+  ],
+  "behaviors": [
+    "On the engage finish walk toward a visible target with a clear gun or ready-laser shot in range, step sideways with a slight backward fade instead of walking straight in; target and fire unchanged; normal walk resumes the same tick the shot is lost or out of range"
+  ],
+  "sha_flag_off": "fc5c00988e9122278fcbe33fc92b38de296123b9",
+  "sha": null,
+  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "builder_hazard": {
+    "note": "Builder's base-0 96-game hazard run (smoke check, not a screen). Flag-on copy /tmp/p32-on, passive wrapper outside the repo, /tmp/wild-sim run.ts --jobs 1, vs origin/main 8f0bcb8 (bot code = 6182d29) run the same way.",
+    "gates": "fade not before 10 s; not while any drop is called or down; not for a lightning holder; only the finish rule with a clear line; step must stay inside the circle we keep to with a clear line; 3 s / 2 m no-progress give-up with per-target skip list; fix commit fc5c009: only when no other enemy was seen for 5 s",
+    "first_run_ad7b865": {
+      "fired": 17,
+      "fade_ticks": 602,
+      "diff_behavior": 17,
+      "diff_score": 13,
+      "died_before_40s": "33 -> 35",
+      "paired_delta": 0.031,
+      "paired_se": 0.079,
+      "finish_done": "134 -> 131",
+      "finish_escaped": "67 -> 78",
+      "kills": "303 -> 306"
+    },
+    "fired": 13,
+    "fade_ticks": 383,
+    "diff_behavior": 13,
+    "diff_score": 11,
+    "t_lt_10s_activations": 0,
+    "drop_ring_arrivals": "5 in 3 games, equal to main (seeds 63, 89, 94)",
+    "pins_ge_20s": "6 games main, 6 P32, same seeds and spots (16, 41, 43, 78, 79, 92); 0 flag ticks in any P32 pin window; no new pins",
+    "died_before_40s": "33 main -> 35 P32 (new: seeds 0 and 36; none removed) FAIL",
+    "paired_delta": 0.0,
+    "paired_se": 0.076,
+    "better": 3,
+    "tied": 85,
+    "worse": 8,
+    "finish_episodes": "202 -> 200",
+    "finish_done": "134 -> 131",
+    "finish_escaped": "67 -> 68",
+    "kills": "303 -> 303",
+    "check_py_max_ms": {
+      "flag_off": 2.9,
+      "flag_on": 2.9
+    },
+    "eqdrive_flag_off_vs_main": "IDENTICAL"
+  },
+  "blocker": "BUILD_CHECKLIST item 5 FAIL after the one allowed fix: deaths before 40 s 33 -> 35 on base 0 (seeds 0, 36). Both new early deaths follow early fades (10.9 s and 12.3 s) that still killed their target on time; the games split afterwards (second enemy, different position).",
+  "next_action": "Grok: decide close/hold or a different variant (a second fix would be a new gate, e.g. no fade before 45 s, which leaves 1-4/96 games firing). Not ready for Sim Tester as built.",
+  "timestamps": {
+    "updated": "2026-11-21 19:58 ET"
+  },
+  "sources": [
+    "builder base-0 hazard run, /tmp/p32-main-0.csv vs /tmp/p32-on-0.csv, logs /tmp/p32-logs-{main,on}",
+    "check.py, /tmp/eqdrive.py"
+  ]
 }

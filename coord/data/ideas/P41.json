@@ -10,7 +10,7 @@
     "with obs.alive <= 12, t >= 10, no target (no enemy and no farm mark), not hit in the last 2 s, no laser charge in progress, no drop run/hold and no claimable drop within DROP_RUN_M: aim the torso (yaw only, pitch 0) at the bearing of the most recent mech-made sound heard in the last 2 s when that bearing is more than 30 deg off the aim the champion would use"
   ],
   "owner": "Mech Builder",
-  "stage": "building",
+  "stage": "built",
   "pr": null,
   "sha": null,
   "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
@@ -21,7 +21,7 @@
   "score": null,
   "decision": null,
   "blocker": null,
-  "next_action": "Mech Builder: build EARS_LOOK_ON on branch p41-ears-look (FASTER checklist aee5017, bases 0 and 6000; Step A already done on P48).",
+  "next_action": "Grok: hand the flag-ON head of branch p41-ears-look (the commit after this record, which only flips EARS_LOOK_ON to true) to Mech Sim Tester for the full trees-on paired screen (2000+3000, 4000+5000) vs P48 b9492c6.",
   "doug_waiver": false,
   "single_decision": "Where the torso points when the champion has no target. Today (brain.ts:913, :1102-1115) it points along the move direction, or at the next circle's center when standing, and at the last hit's bearing for 2 s after a hit. The bot never reads obs.sounds (no reference in brain.ts/target.ts/nav.ts). The flag adds one more aim source after the lastHit line: the newest heard mech sound. Legs, path, fire rules and target pick are unchanged.",
   "trigger": "EARS_LOOK_ON AND obs.t >= 10 AND obs.alive <= 12 AND no target after the target/farm pick (`!target`, brain.ts:1004) AND NOT (lastHit && obs.t - lastHit.t < 2) AND laser charge <= 0 (beamCharge, brain.ts:935) AND NOT dropMove AND NOT dropHold AND NOT dropNear (same test as brain.ts:853) AND the newest sound of kind step/boost/jet/gun/laser/laser_charge/lightning/reload/mortar has (obs.t - heard_at) <= 2 s AND |wrap(sound.bearing - aim[0])| > 30 deg. Not counted: npc_gun, crate, explosion, death, drop (not a mech, or no shooter position).",
@@ -81,7 +81,7 @@
   "source": "Research P41-44 (this run): Watcher STATES/aggression slices, PR #145 first-fight table, passive sim log of the P29 champion.",
   "timestamps": {
     "created": "2026-11-21 21:30 ET",
-    "updated": "2026-11-22 00:20 ET"
+    "updated": "2026-11-22 00:35 ET"
   },
   "sources": [
     "coord/data/watcher/STATES.md",
@@ -96,7 +96,8 @@
     "Trees-on recheck (Doug 8:58 PM ET, coord/WORKFLOW.md 475eb09): copies of the current champion bot files from origin/main 8c130ad (P34 merge; bot code identical to 0e6fadd) under /tmp/p4144t/bot and /tmp/p4144t/bot2 with passive per-decision CSV logging before act.move (no action changed; the tree sight model is copied read-only from /tmp/builder-sim-trees/geom.ts treeBlocks and loaded from the kit's arena/v2/world.json). Run: `cd /tmp/builder-sim-trees && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144t/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column equals /workspace/tester/runs/trees-0e6fadd-<s>.csv on 96/96 games per base for both runs (768 games). Logs in /tmp (not committed).",
     "git show 8e623eb:coord/data/ideas/P41.json (research record)",
     "/workspace/tester/runs/trees-b9492c6-{2000,3000,4000,5000}.csv (Sim Tester reference rows)",
-    "Step A on P48: /tmp/stepa2 (instrumented bot, sim copy, logs; not committed)"
+    "Step A on P48: /tmp/stepa2 (instrumented bot, sim copy, logs; not committed)",
+    "Build P41 (Mech Builder, 2026-11-22): /tmp/p41 (eqdrive wrapper, trace wrappers from /workspace/tester/harness/mkwrap.sh template, analysis an.py with a copy of /workspace/tester/hzlib.py); not committed"
   ],
   "priority_rank": 4,
   "research_note": "Research P41-44 also measured and dropped (fewer than 10/192 games on a set, or a tested family): late farm-shot silence with <= 8 alive (2/192 and 5/192); P29 settle extended to r <= 70 (0/192 and 0/192: the bot is alive at r <= 70 in 1-2 games per 192); zone-entry choice with <= 8 alive (zone travel at <= 8 alive in only 8/192 games on 2000+3000); gun+lightning late walk to a laser (2/192 and 0/192 after gates; also B90 KEEP_LIGHT_ON lost 3.73); sensors over nanites while holding a laser (4/192). The sound-cued look at <= 8 alive fired 7/192 and 5/192, so P41 uses <= 12.",
@@ -155,5 +156,61 @@
     }
   },
   "base": "aee5017 (branch p41-ears-look off origin/main 5b49b55; bot code identical to aee5017)",
-  "champion": "P48 b9492c6f122c549c705b69402157f078b4a57857 / merge edb729f"
+  "champion": "P48 b9492c6f122c549c705b69402157f078b4a57857 / merge edb729f",
+  "flag_off_sha": "99f79c10e7f8b3aea05b715af3077658b153734d",
+  "build_checklist": {
+    "checklist": "coord/BUILD_CHECKLIST.md FASTER (aee5017): bases 0 and 6000, trees on, vs champion P48 b9492c6",
+    "step_a": "done on P48 (cfc2508): 29/192 (2000+3000), 25/192 (4000+5000), worst check 0.79 ms",
+    "one_change": "brain.ts + params.ts only: EARS_LOOK_ON (default false), EARS_ALIVE 12, EARS_AGE_S 2, EARS_MIN_DEG 30; drop gate = no dropMove/dropHold and no drop near AND reachable within DROP_RUN_M (drop run candidate filter, as Step A counted)",
+    "eqdrive": "IDENTICAL: flag-off 99f79c1 vs origin/main 233e830 (bot files = b9492c6), both bots fed the same observation every tick, base 0 trees on 96 games, 77,747 ticks, 0 action mismatches, 0 errors",
+    "check_py": "PASS both: flag off max 3.0 ms p99 0.9; flag on max 3.0 ms p99 0.9 (python3 check/check.py --map-dir arena)",
+    "sim": "copy of /workspace/builder-sim/tools/sim (tools/sim identical to /workspace/wt-tester-trees except ASSUMPTIONS.md), --trees --jobs 1, 96 seeds per base",
+    "champion_side": "flag-off copy with a passive would-fire label; its CSV equals /workspace/champ-p48/trees-b9492c6-<b>.csv on every non-timing column, 96/96 on both bases",
+    "per_base": {
+      "0": {
+        "activations_t_lt_10": 0,
+        "fired_games": 12,
+        "episodes": 22,
+        "look_ticks": 229,
+        "diff_behavior": 6,
+        "diff_score": 2,
+        "paired_delta": 0.0,
+        "paired_se": 0.03,
+        "better": 1,
+        "worse": 1,
+        "mean_champ": 3.406,
+        "mean_head": 3.406,
+        "drop_ring_arrivals": "5 -> 3 (reported, not blocking: seed 44 only, champion entered 2 rings after t 247 s, same place 1, same 12 kills, both survive)",
+        "deaths_lt_40": "24 -> 24",
+        "pins_20s": "champion [41, 43, 79], head [41, 43, 79], none new, 0 look ticks in any window",
+        "survivors": "2 -> 2",
+        "kills": "293 -> 293",
+        "spot_within_3s": "champion would-look 10 games 11/19 episodes, head 10 games 16/22 episodes",
+        "first_hit_in_those_fights": "champion ours 9 / theirs 2; head ours 12.5 / theirs 2.5 / none 1"
+      },
+      "6000": {
+        "activations_t_lt_10": 0,
+        "fired_games": 11,
+        "episodes": 16,
+        "look_ticks": 185,
+        "diff_behavior": 7,
+        "diff_score": 3,
+        "paired_delta": 0.073,
+        "paired_se": 0.047,
+        "better": 3,
+        "worse": 0,
+        "mean_champ": 3.865,
+        "mean_head": 3.938,
+        "drop_ring_arrivals": "1 -> 1",
+        "deaths_lt_40": "16 -> 16",
+        "pins_20s": "champion [6011, 6082], head [6011, 6082], none new, 0 look ticks in any window",
+        "survivors": "0 -> 0",
+        "kills": "358 -> 365",
+        "spot_within_3s": "champion would-look 9 games 9/14 episodes, head 10 games 11/16 episodes",
+        "first_hit_in_those_fights": "champion ours 7 / theirs 2; head ours 10 / theirs 1"
+      }
+    },
+    "verdict": "PASS (items 2, 4, 5 pass on both bases; drop dip on base 0 reported)",
+    "notes": "spot = an enemy mech in obs.mechs within 3 s of a look episode start (episode = look ticks with gaps <= 1 s); first hit = our first hit on a mech vs a mech's first hit on us within 10 s of the spot (tie counts 0.5 each). Traces and logs in /tmp/p41 (not committed)."
+  }
 }

@@ -131,3 +131,6 @@ These were listed in the stub as “not eligible / do not submit.” They stay H
 - Activation: 17/16/8 (2000+3000), 25/25/11 (4000+5000). Sim +0.031 ± 0.037, +0.021 ± 0.028 (information only).
 - Hazards: drops 6->8 and 5->7; died <40 s 56->56, 54->54; 20 s+ pause games 4->4, 5->5; survivors equal.
 - Decision: READY by Doug's 7:55 PM ET ruling (set-total drop arrivals; seed 4027 1.3 s earlier death at same place is not "worse").
+
+## NEW CHAMPION 8:10 PM ET: P29 midring settle 4.35 (BB-BAB3F961), commit 2e1d036, merged b6f2f8b
+All earlier approvals have expired. Every waiting build (P33, P34, P35, P29b #146, held P26 and P25b) must rebase onto b6f2f8b and get a new full paired screen against 2e1d036.

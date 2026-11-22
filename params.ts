@@ -173,3 +173,16 @@ export const LETHAL_RELEASE_ON = true
 export const LETHAL_RELEASE_MARGIN = 0.8
 /** Never release early before this match time (s): play before it, and so every death before 40 s, equals the champion's. */
 export const LETHAL_RELEASE_MIN_T = 40
+
+/**
+ * P43 (upgrade DPS tier): when an upgrade offer has no defensive choice (no plating/armor/nanites/sensors, so the
+ * champion's best rank is the weapon/gyros tier, which today ties and takes the first listed), pick the tier-4 choice
+ * with the largest sustained-DPS gain (weaponDps before/after the choice's hello.config.upgrades effects, on the
+ * current stats of each weapon kind we hold now). The champion's pick stays on a tie (strictly larger gain only),
+ * before UPGRADE_DPS_TIER_MIN_T, and while a drop run/hold is possible (a run in progress, dropMove/dropHold, or a
+ * drop that passes the drop run's own candidate filter: near AND reachable within DROP_RUN_M). Movement, aim and
+ * fire are unchanged. false = champion exactly.
+ */
+export const UPGRADE_DPS_TIER_ON = false
+/** Never change a pick before this match time (s): the opening stays the champion's. */
+export const UPGRADE_DPS_TIER_MIN_T = 10

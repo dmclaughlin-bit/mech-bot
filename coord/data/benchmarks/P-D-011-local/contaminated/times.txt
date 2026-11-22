@@ -1,0 +1,10 @@
+time time-current 2000 39.959330320
+time time-current 3000 66.793651819
+time time-current 4000 62.040493727
+time time-current 5000 45.256894588
+wall time-current-384 214.135856628
+time time-shortcut 2000 18.929693937
+time time-shortcut 3000 19.134674311
+time time-shortcut 4000 20.327853918
+time time-shortcut 5000 42.187980890
+wall time-shortcut-384 100.686494350

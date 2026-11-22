@@ -8,13 +8,15 @@
   python3 pipeline/q.py set-check EXP-0010 pass --p99 0.9
   bash    pipeline/codex_review.sh <base> <cand> HYP-008 EXP-0010   (stores review)
   python3 pipeline/q.py eligible EXP-0010     kit PASS + no blocking review + free slot + not a repeat
+  python3 pipeline/q.py eligible --pr 137      single-change, contains champion, both-set screen, no pending score
+  python3 pipeline/q.py eligible --idea P27    same checks, resolved from coord/data/ideas/<id>.json
   python3 pipeline/q.py mark-submitted EXP-0010 --submission-id BB-XXXX
   python3 pipeline/q.py record-score EXP-0010 --score 2.51 --lesson "..." --next "..."
   python3 pipeline/q.py promote EXP-0010      updates champion.json only if score beats champion
   python3 pipeline/q.py slots | ingest-research | ingest-watch | add-hyp FILE | set-hyp | validate
 All writes go through a file lock; data lives in pipeline/data/*.jsonl (PIPELINE_DATA_DIR overrides).
 """
-import argparse, datetime as dt, json, os, re, sys
+import argparse, datetime as dt, json, os, re, subprocess, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -113,6 +115,161 @@ def eligibility(e, exps, cfg):
     used, nxt = slots_used(exps, cfg)
     if used >= cfg["max_submissions_per_hour"]:
         reasons.append(f"no free slot: {used}/{cfg['max_submissions_per_hour']} used; next free {nxt.strftime('%-I:%M %p')} ET")
+    return reasons
+
+
+
+def _idea_records():
+    folder = lib.REPO / "coord/data/ideas"
+    out = []
+    if not folder.exists():
+        return out
+    for p in sorted(folder.glob("*.json")):
+        try:
+            rec = json.loads(p.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        if rec.get("id"):
+            out.append(rec)
+    return out
+
+
+def _idea_by_pr(n):
+    recs = [r for r in _idea_records() if r.get("pr") == n]
+    if not recs:
+        return None
+    live = [r for r in recs if (r.get("stage") or "").lower() not in ("retired", "scored")]
+    return (live or recs)[-1]
+
+
+def _idea_by_id(i):
+    for r in _idea_records():
+        if r.get("id") == i:
+            return r
+    return None
+
+
+def _idea_by_sha(sha):
+    if not sha:
+        return None
+    for r in _idea_records():
+        if r.get("sha") and (r["sha"] == sha or r["sha"].startswith(sha[:12]) or sha.startswith(r["sha"][:12])):
+            return r
+        for s in r.get("screens") or []:
+            if s.get("sha") and (s["sha"] == sha or s["sha"].startswith(sha[:12])):
+                return r
+    return None
+
+
+def _current_champion_sha():
+    path = lib.REPO / "coord/data/site_results.csv"
+    champ = None
+    if path.exists():
+        import csv
+        rows = list(csv.DictReader(path.open()))
+        for r in rows:
+            if (r.get("verdict") or "").upper() == "KEEP" and r.get("commit_sha"):
+                champ = r["commit_sha"]
+    if champ:
+        return champ
+    c = lib.read_json(CHAMP) or {}
+    return c.get("commit")
+
+
+def _pr_body(n):
+    if not n:
+        return ""
+    r = subprocess.run(["gh", "pr", "view", str(n), "--json", "body,title,headRefOid"],
+                       cwd=lib.REPO, capture_output=True, text=True)
+    if r.returncode != 0 or not r.stdout.strip():
+        return ""
+    try:
+        return json.loads(r.stdout)
+    except json.JSONDecodeError:
+        return ""
+
+
+def _template_field(body, label):
+    if not body:
+        return None
+    m = re.search(r"\*\*" + re.escape(label) + r"\*\*\s*:?[ 	]*(.*)", body, re.I)
+    if not m:
+        return None
+    v = m.group(1).strip()
+    if not v or v.startswith("**") or v in ("_", "__", "n/a", "N/A"):
+        return None
+    return v
+
+
+def _flags_behaviors(rec, pr_info=None):
+    rec = rec or {}
+    flags = list(rec.get("flags") or [])
+    if rec.get("flag") and isinstance(rec["flag"], str) and rec["flag"] not in flags:
+        flags = [rec["flag"]] + flags
+    behaviors = list(rec.get("behaviors") or [])
+    body = ""
+    title = ""
+    if isinstance(pr_info, dict):
+        body = pr_info.get("body") or ""
+        title = pr_info.get("title") or ""
+    elif isinstance(pr_info, str):
+        body = pr_info
+    fl = _template_field(body, "The single flag") or _template_field(body, "The single flag:")
+    beh = _template_field(body, "The ONE behavior changed")
+    if fl and fl not in flags:
+        # a filled template is a source; do not append passing mentions from the body
+        if not flags:
+            flags = [fl.split()[0].strip("`'\"")]
+    if beh and not behaviors:
+        behaviors = [beh]
+    return flags, behaviors
+
+
+def site_eligibility_reasons(sha, rec=None, pr_info=None):
+    """Single-change, contains-champion, both-set screen on this SHA, no pending score (D3, Doug 6:46 PM ET)."""
+    reasons = []
+    rec = rec or {}
+    flags, behaviors = _flags_behaviors(rec, pr_info)
+    waiver = rec.get("doug_waiver") in (True, "true", "yes", "YES")
+    if not waiver and (len(flags) > 1 or len(behaviors) > 1):
+        reasons.append(
+            f"single-change: idea record or PR lists {len(flags)} flag(s) {flags or '[]'} "
+            f"and {len(behaviors)} behavior(s); needs doug_waiver"
+        )
+    champ = _current_champion_sha()
+    if not sha:
+        reasons.append("no SHA to check")
+    else:
+        if champ:
+            r = subprocess.run(["git", "merge-base", "--is-ancestor", champ, sha],
+                               cwd=lib.REPO, capture_output=True, text=True)
+            if r.returncode != 0:
+                reasons.append(f"head does not contain champion {champ[:12]} (git merge-base --is-ancestor)")
+        path = lib.REPO / "coord/data/screens.csv"
+        sets = set()
+        if path.exists():
+            import csv
+            for row in csv.DictReader(path.open()):
+                cs = row.get("commit_sha") or ""
+                if cs == sha or (len(sha) >= 7 and cs.startswith(sha[:40])):
+                    ss = row.get("seed_set") or ""
+                    if "2000" in ss and "3000" in ss:
+                        sets.add("A")
+                    if "4000" in ss and "5000" in ss:
+                        sets.add("B")
+        if sets < {"A", "B"}:
+            reasons.append(f"no complete both-set screen in screens.csv for exact SHA {sha[:12]}")
+    site = lib.REPO / "coord/data/site_results.csv"
+    if site.exists():
+        import csv
+        for row in csv.DictReader(site.open()):
+            v = (row.get("verdict") or "").upper()
+            sc = (row.get("site_score") or "").strip()
+            if v == "PENDING" or (not sc and v not in ("KEEP", "CLOSE", "LOSS", "TIE", "")):
+                reasons.append(f"pending official score: {row.get('build_id')} {row.get('receipt_id') or ''}".strip())
+                break
+            if sha and (row.get("commit_sha") or "").startswith(sha[:12]) and v in ("KEEP", "CLOSE", "LOSS", "TIE") and sc:
+                reasons.append(f"already submitted and scored as {row.get('build_id')} ({v} {sc}, {row.get('receipt_id')})")
     return reasons
 
 
@@ -318,6 +475,28 @@ def cmd_set_review(a):
 
 
 def cmd_eligible(a):
+    pr, idea, sha = getattr(a, "pr", None), getattr(a, "idea", None), getattr(a, "sha", None)
+    if pr or idea or sha:
+        rec = _idea_by_pr(pr) if pr else _idea_by_id(idea) if idea else _idea_by_sha(sha)
+        if idea and not rec:
+            rec = _idea_by_id(idea)
+        pr_info = _pr_body(pr) if pr else None
+        if not sha:
+            if rec and rec.get("sha"):
+                sha = rec["sha"]
+            elif isinstance(pr_info, dict) and pr_info.get("headRefOid"):
+                sha = pr_info["headRefOid"]
+        if not rec and sha:
+            rec = _idea_by_sha(sha)
+        label = (f"PR #{pr}" if pr else idea or (sha[:12] if sha else "candidate"))
+        if rec:
+            label = f"{rec.get('id', label)} ({label})" if rec.get("id") and rec.get("id") not in label else label
+        r = site_eligibility_reasons(sha, rec, pr_info)
+        if r:
+            print(f"NOT ELIGIBLE {label}: " + "; ".join(r))
+            sys.exit(1)
+        print(f"ELIGIBLE {label} commit {sha} (single-change, contains champion, both-set screen, no pending score)")
+        return
     exps, cfg = lib.read_jsonl(EXP), lib.config()
     e = get(exps, a.exp)
     r = eligibility(e, exps, cfg)
@@ -595,7 +774,11 @@ def main():
     p = sp.add_parser("set-check"); p.add_argument("exp"); p.add_argument("status", choices=["pass", "fail", "pending", "not_run"])
     p.add_argument("--p99", type=float); p.add_argument("--note"); p.set_defaults(fn=cmd_set_check)
     p = sp.add_parser("set-review"); p.add_argument("exp"); p.add_argument("--file", required=True); p.set_defaults(fn=cmd_set_review)
-    p = sp.add_parser("eligible"); p.add_argument("exp"); p.set_defaults(fn=cmd_eligible)
+    p = sp.add_parser("eligible"); p.add_argument("exp", nargs="?")
+    p.add_argument("--pr", type=int, help="check a GitHub PR against idea records, screens.csv, and the champion")
+    p.add_argument("--idea", help="check coord/data/ideas/<id>.json")
+    p.add_argument("--sha", help="check a commit SHA")
+    p.set_defaults(fn=cmd_eligible)
     p = sp.add_parser("mark-submitted"); p.add_argument("exp"); p.add_argument("--submission-id", required=True)
     p.add_argument("--at"); p.add_argument("--force", action="store_true"); p.set_defaults(fn=cmd_mark_submitted)
     p = sp.add_parser("record-score"); p.add_argument("exp"); p.add_argument("--score", type=float, required=True)

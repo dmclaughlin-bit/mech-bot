@@ -1,7 +1,13 @@
-<!-- Required before any practice slot (coord/WORKFLOW.md, Slot rules). Grok won't submit without it. -->
+<!-- Required before any practice slot (coord/WORKFLOW.md, Slot rules). Grok won't submit without it. Doug 6:46 PM ET (D3): one change per test. -->
+**Idea id** (`coord/data/ideas/<id>.json`):
+**The ONE behavior changed:**
+**The single flag:**
+**Champion SHA this branch contains:**
+**Change-off identical (yes/no):**
 **Change (one only):**
 **Assigned by Grok in coord/log.md at:**
 **Base (champion) commit:**
+
 
 **Gate:** `check.py --map-dir arena` PASS? max ms:
 **Flag at 0 matches champion:** games changed = __ / 192

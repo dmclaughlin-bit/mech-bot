@@ -200,3 +200,12 @@ export const TREE_HEAL_ON = false
 export const TREE_HEAL_MIN_T = 40
 export const TREE_HEAL_STUCK_S = 3
 export const TREE_HEAL_PROGRESS_M = 1
+/**
+ * P49b (guard inside TREE_HEAL_ON, no new flag): a heal phase (one stretch below 90% HP within one zone phase) gets ONE
+ * tree-heal attempt, walk + hold hard-capped at TREE_HEAL_MAX_S seconds from its first walk tick regardless of progress
+ * or HP gained. The attempt also ends at once when the zone or drop clock needs moving (outside the zone, leaving for
+ * the next circle, a drop near AND reachable within DROP_RUN_M, a drop run/hold) or its spot leaves the circle. After
+ * that its spot is skip-listed and the champion's own logic runs until the next heal phase. Fix round: tree heal is also
+ * off while the champion's weapon walk could start (no laser held, a free slot, before LASER_RUSH_S or gun-only after).
+ */
+export const TREE_HEAL_MAX_S = 8

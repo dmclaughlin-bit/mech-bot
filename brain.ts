@@ -29,7 +29,7 @@ import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
-  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_HEAL_MIN_T, TREE_HEAL_ON, TREE_HEAL_PROGRESS_M, TREE_HEAL_STUCK_S, TREE_RETREAT_MIN_T, TREE_RETREAT_ON,
+  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_HEAL_MAX_S, TREE_HEAL_MIN_T, TREE_HEAL_ON, TREE_HEAL_PROGRESS_M, TREE_HEAL_STUCK_S, TREE_RETREAT_MIN_T, TREE_RETREAT_ON,
   TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -301,6 +301,9 @@ function buildBot(hello: Hello): Bot {
   let healRun: { spot: Vec3; key: string; best: number; bestAt: number; used: number } | null = null
   const healSkip = new Set<string>()
   let healPhase = NaN
+  /** P49b: the current tree-heal attempt (start time, last spot) and whether this heal phase's one attempt is spent. */
+  let healTry: { start: number; key: string } | null = null
+  let healUsed = false
   /** Build 14 (engage): each weapon's DPS and reach from hello.config, read once here. */
   const baseDps = {} as Record<WeaponKind, number>
   const baseReach = {} as Record<WeaponKind, number>
@@ -823,15 +826,40 @@ function buildBot(hello: Hello): Bot {
       // branch when it found no building hide spot. Off before TREE_HEAL_MIN_T, while a drop run/hold is on, and while a
       // drop is near AND reachable (treeRetreat's dropReach test); off when no enemy sees us (the heal's cone test) or
       // trees + buildings already hide us from every one that does (then we heal where we stand).
+      const healDropSafe = (p: number[], stay: number) =>
+        flat(p, z.center) < Math.max(0, z.radius - margin) &&
+        (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + stay < timeLeft
+      const healDropReach = () => DROP_RUN_M > 0 && (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
+        flat(x.pos, me.pos) <= DROP_RUN_M && healDropSafe(x.pos, x.lands_in + x.capture_s - x.progress))
+      // P49b (inside TREE_HEAL_ON): a heal phase is one stretch below HEAL_HP within one zone phase. Each heal phase gets
+      // ONE tree-heal attempt (walk + hold), hard-capped at TREE_HEAL_MAX_S from its first walk tick regardless of progress
+      // or HP; it also ends at once when the zone or a drop needs moving (outside the zone, leaving for the next circle, a
+      // drop near AND reachable within DROP_RUN_M, a drop run/hold) or its spot leaves the circle we keep to. Once ended,
+      // its spot is skip-listed and the champion's own logic runs until the next heal phase. Runs every decision.
+      if (TREE_HEAL_ON) {
+        if (healPhase !== z.shrink_start || me.hp >= HEAL_HP * me.max_hp) {
+          healPhase = z.shrink_start
+          healSkip.clear()
+          healRun = null
+          healTry = null
+          healUsed = false
+        } else if (healTry) {
+          const exit = !me.in_zone || leaveNow || !!dropMove || dropHold || (!!healRun && flat(healRun.spot, zoneKeep[0]) > zoneKeep[1]) || healDropReach()
+          if (exit || obs.t - healTry.start >= TREE_HEAL_MAX_S) {
+            healSkip.add(healRun?.key ?? healTry.key)
+            healRun = null
+            healTry = null
+            healUsed = true
+          }
+        }
+      }
+      // P49b fix round: tree heal also yields to the champion's weapon walk (Build 17/80 laser rush eligibility without its
+      // per-tick gates): we hold no laser, have a slot for one, and a walk may start (before LASER_RUSH_S, or gun-only after).
+      // Base 6000 seed 6082 and screen seed 3066: a short tree walk moved a gun-only bot off its weapon route and the later
+      // laser rush stuck at the new spot until its LASER_CHASE_S give-up (20 s+ pauses).
+      const weaponWalk = LASER_RUSH_ON && !holdsLaser && rushSlot && (obs.t < LASER_RUSH_S || lateLight)
       const treeHeal = (): Vec3 | null => {
-        const pace = ZONE_WALK * walkSpeed
-        const dropSafe = (p: number[], stay: number) =>
-          flat(p, z.center) < Math.max(0, z.radius - margin) &&
-          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
-        const dropReach = () => DROP_RUN_M > 0 && (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
-          flat(x.pos, me.pos) <= DROP_RUN_M && dropSafe(x.pos, x.lands_in + x.capture_s - x.progress))
-        if (!TREE_HEAL_ON || !trees || obs.t < TREE_HEAL_MIN_T || dropMove || dropHold || dropReach()) return (healRun = null)
-        if (healPhase !== z.shrink_start) { healPhase = z.shrink_start; healSkip.clear() }
+        if (!TREE_HEAL_ON || !trees || healUsed || obs.t < TREE_HEAL_MIN_T || weaponWalk || dropMove || dropHold || healDropReach()) return (healRun = null)
         const seers = threats.filter((e) => seenAt(me.pos, myHeight, [e], true))
         if (!seers.length || seers.every((e) => treeHidden(me.pos, myHeight, e))) return (healRun = null)
         if (healRun && obs.t - healRun.used > 0.5) healRun = null
@@ -846,7 +874,10 @@ function buildBot(hello: Hello): Bot {
           healRun = null
         }
         const p = treeSpot(me, myHeight, walkSpeed, seers, zoneKeep, canPlan, healSkip)
-        if (p) healRun = { spot: p, key: treeKey(p[0], p[1]), best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
+        if (p) {
+          healRun = { spot: p, key: treeKey(p[0], p[1]), best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
+          healTry = { start: healTry?.start ?? obs.t, key: healRun.key }
+        }
         return p
       }
       let spot: Vec3 | null = null

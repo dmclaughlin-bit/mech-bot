@@ -140,3 +140,22 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P25c (cube memory only; split from P25/P25b, PR #136): top teams pick up 3.94 cubes/min while idle vs our 2.27
+ * (coord/data/watcher/SKILLS.md), and the champion only walks to cubes in view within FARM_PICKUP_M. Cubes are listed only
+ * while in view, so remember every cube seen (id, position, last seen). When the Build 12 farm gate is open (same farmOk:
+ * in the zone, not leaving, no enemy in view or known within FARM_ENEMY_M, no mech hit for 3 s) and B12/B13 have nothing
+ * to walk to, walk along a path to the nearest remembered (or visible) zone-safe ground cube within CUBE_MEMORY_M. The
+ * target is sticky: kept until it is taken, expires, or is no longer eligible. A remembered cube is forgotten once we stand
+ * within CUBE_GONE_M with a clear line and it is not listed (taken), or CUBE_MEMORY_TTL_S after it was last seen. Cubes B12
+ * already gave up on are not remembered. No give-up of its own (P25's per-cube time budget and P25b's no-progress drop
+ * are not in this build). false = the champion (B113) exactly.
+ */
+export const CUBE_MEMORY_ON = false
+/** P25c: walk to remembered or visible cubes at most this far (m). */
+export const CUBE_MEMORY_M = 150
+/** P25c: forget a cube this long (s) after we last saw it. */
+export const CUBE_MEMORY_TTL_S = 90
+/** P25c: a remembered cube we stand this close to (m) with a clear line, and no longer see, has been taken. */
+export const CUBE_GONE_M = 20

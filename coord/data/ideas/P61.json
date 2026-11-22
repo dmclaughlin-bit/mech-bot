@@ -1,0 +1,51 @@
+{
+  "id": "P61",
+  "title": "BUILDING_COVER_COMMIT_ON: in the champion's building-cover retreat ('retreat to cover'), keep walking to the same cover spot once chosen instead of re-picking the nearest spot every decision; 3 s no-progress give-up + skip list for that retreat",
+  "family": "retreat / movement",
+  "flag": "BUILDING_COVER_COMMIT_ON",
+  "flags": [
+    "BUILDING_COVER_COMMIT_ON"
+  ],
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "branch": "p61-building-cover-commit",
+  "base": "3dd3a0e1ce7853b0bf7e3459659dae5345571888",
+  "base_note": "branch point on origin/main; origin/main later moved to fce266d (site_results.csv only, no bot code change). Bot code identical to b9492c6.",
+  "champion": "P48 b9492c6 (main merge edb729f, builders-3 4.44, builders-4 bar 3.75)",
+  "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_main": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
+  "builds_on": [
+    "F15",
+    "N8",
+    "N9",
+    "NEW: P60 Step 1 counts building x a 28/337"
+  ],
+  "builds_on_detail": "P60 Step 1 (coord/data/ideas/P60.json on origin/p60-retreat-death-buckets): of 337 retreat deaths in 384 trees-on champion games, building-cover mode x bucket a (never covered from attackers, died on the way) = 28 (16 on 2000+3000, 12 on 4000+5000; 8%); building runs die a median 11.7 m short of the spot (26/28 >= 10 m). F15/N8: retreat deaths are most deaths and must be fixed through movement, not aim. N9: tree choice rarely changes the spot; the remaining retreat deaths are in building-cover and back-away modes.",
+  "source": "Coordinator brief 2026-11-22 02:14 AM ET (P61 BUILDING COVER COMMIT), from P60 next_idea",
+  "hypothesis": "In 'retreat to cover' the champion calls hideSpot every decision: the nearest in-zone spot 1-3 s of straight walk away (12 bearings) that no visible threat sees and that is no closer to any threat. The spot is re-picked relative to our new position and the threats' new positions each decision, so the legs can swing between spots (dithering) and the bot dies short of all of them. Keeping the first chosen spot while it still hides us gets the bot behind the building sooner, so fewer building-cover retreats end in death without ever being covered (building x a).",
+  "mechanism": "Only inside the champion's building-cover branch (its entry condition is unchanged: hit in the last 2 s, HP below the retreat line, seen by a threat, hideSpot finds a spot), from t >= TREE_RETREAT_MIN_T (40 s), never in a drop run/hold and never while a drop is near AND reachable within DROP_RUN_M (P48's dropReach test). Latch the chosen spot. On later decisions in the same branch (latch used within the last 0.5 s), keep walking to the latched spot while it is still valid: inside the circle we keep to, no closer to any threat than we are, not seen by any threat (the same seenAt test as hideSpot), not yet reached (> 1.5 m), and making progress (distance shrank by >= 0.5 m within the last 3 s). No progress for 3 s: put the spot on a skip list for this retreat (spots within 3 m of a skipped spot are skipped) and pick the next spot (hideSpot order, skipping the list; none left: the champion's spot). Other invalidity (seen, closer, out of the circle, reached): drop the latch and take the champion's new spot. The skip list is cleared when a new retreat starts (no building-cover decision for > 2 s). Same boost rule, torso/aim untouched (N8). Flag false = champion byte-identical.",
+  "activation": "Decision-level: a building-cover decision at t >= 40 s with the drop gates open, a latched spot from the previous building-cover decision (<= 0.5 s ago) that is still valid (as above), and the heading to the latched spot differs from the heading to the champion's newly picked spot by > 20 deg (the change fires and alters the move). Game-level Step A count = games where this happens at least once.",
+  "disproof": "Fails if Step A < 10/192 on either set, or building x a deaths don't fall on both practice bases, or deaths <40 s rise on either base, or a NEW >=20 s pin appears.",
+  "novelty": {
+    "vs_P57": "P57 (N8) changed the torso/aim target during retreat; P61 changes only the legs (which cover spot), aim untouched.",
+    "vs_P59": "P59 (N9) changed which tree spot the 'retreat, trees' branch picks; P61 acts only in the building-cover branch and does not change which spot is picked first, only whether it is kept.",
+    "vs_P54": "P54 changed opening (t < 30 s) target choice for spacing from enemies; P61 is a retreat movement change from t >= 40 s.",
+    "vs_P60": "P60 (F16) added a farther (4-6 s) cover search in the back-away branch where the champion found no spot; P61 keeps the champion's own 1-3 s building spot search and only stops it re-picking mid-retreat."
+  },
+  "positives": null,
+  "negatives": null,
+  "confidence": "Uncertain (hypothesis only; no results yet)",
+  "reuse": null,
+  "outcome": "pending",
+  "pr": null,
+  "sha": null,
+  "screens": [],
+  "timestamps": {
+    "recorded": "2026-11-22 02:15 ET (before Step A results)"
+  },
+  "sources": [
+    "coord/data/findings.md (F3, F15 via N8 text, N8, N9, F16) on 3dd3a0e",
+    "origin/p60-retreat-death-buckets:coord/data/ideas/P60.json (Step 1 counts, next_idea)",
+    "brain.ts hideSpot and the 'retreat to cover' branch on 3dd3a0e"
+  ]
+}

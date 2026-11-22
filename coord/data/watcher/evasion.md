@@ -1,38 +1,38 @@
 # Evasion and disengage
 
-> **Caveats (every file):** Showdowns are Top-16 teams in free-for-all exhibition matches, not the house hunting squad our practice site score is measured against. A behavior that lines up with high placement here is a correlation, not proof it causes the win, and it still has to pass the sim and then beat 4.17 on the site. Watcher ticks see every mech every frame; our bot does not (see STATES.md for what the protocol actually exposes). Numbers are counted from recordings; blank cells mean the value was not measurable or the bucket was too small.
+> **Caveats (every file):** Showdowns are Top-16 teams in free-for-all exhibition matches, not the house hunting squad our practice site score is measured against. A behavior that lines up with high placement here is a correlation, not proof it causes the win, and it still has to pass the sim and then beat 4.38 on the site. Watcher ticks see every mech every frame; our bot does not (see STATES.md for what the protocol actually exposes). Numbers are counted from recordings; blank cells mean the value was not measurable or the bucket was too small.
 
-Generated 2026-11-21 15:43 ET. Corpus: 93 complete showdown matches, 1 Hz samples. Labeled teams T01–T16: 868 mech-rows, 115655 tick-rows in this file's scope. T01–T16 are the 16 teams with at least 20 complete showdown games, ranked by mean placement (T01 best). High = T01–T04, low = T13–T16. A bucket is used for a conclusion only when it has at least 8 matches and 200 ticks (see STATES.md).
+Generated 2026-11-21 21:29 ET. Corpus: 128 complete showdown matches, 1 Hz samples. Labeled teams T01–T16: 975 mech-rows, 138607 tick-rows in this file's scope. T01–T16 are the 16 teams with at least 20 complete showdown games, ranked by mean placement (T01 best). High = T01–T04, low = T13–T16. A bucket is used for a conclusion only when it has at least 8 matches and 200 ticks (see STATES.md).
 How T01–T16 retreat, strafe, face threats, and use cover when HP, attacker count, or enemy weapons change.
 
 ## Per-team overall
 
 | label | n_games | mean_place | face_atk_deg | cover_pct |
 | --- | ---: | ---: | ---: | ---: |
-| T01 | 67 | 7.10 | 7.42 | 50.7% |
+| T01 | 98 | 6.69 | 7.23 | 50.5% |
 | T02 | 65 | 7.20 | 5.41 | 67.4% |
 | T03 | 32 | 7.25 | 8.54 | 40.2% |
 | T04 | 26 | 7.46 | 6.83 | 52.7% |
-| T05 | 21 | 7.62 | 6.18 | 59.9% |
-| T06 | 64 | 7.78 | 5.41 | 59.6% |
-| T07 | 78 | 7.83 | 5.77 | 53.0% |
-| T08 | 68 | 7.94 | 6.65 | 52.8% |
-| T09 | 54 | 7.94 | 5.30 | 57.9% |
-| T10 | 58 | 8.19 | 5.16 | 55.1% |
-| T11 | 76 | 8.25 | 5.09 | 51.9% |
-| T12 | 56 | 8.25 | 4.91 | 72.3% |
-| T13 | 50 | 8.40 | 7.39 | 72.9% |
-| T14 | 53 | 8.60 | 4.46 | 42.5% |
-| T15 | 39 | 8.62 | 6.68 | 64.8% |
-| T16 | 61 | 8.67 | 8.39 | 58.1% |
+| T05 | 43 | 7.70 | 6.51 | 59.0% |
+| T06 | 80 | 7.76 | 5.72 | 53.8% |
+| T07 | 87 | 7.79 | 4.27 | 70.3% |
+| T08 | 43 | 7.81 | 5.74 | 63.1% |
+| T09 | 101 | 7.85 | 6.30 | 51.3% |
+| T10 | 71 | 7.86 | 10.06 | 72.9% |
+| T11 | 24 | 7.92 | 3.83 | 59.2% |
+| T12 | 36 | 8.14 | 4.86 | 56.9% |
+| T13 | 58 | 8.19 | 5.16 | 55.1% |
+| T14 | 76 | 8.25 | 5.09 | 51.9% |
+| T15 | 41 | 8.49 | 6.12 | 61.0% |
+| T16 | 94 | 8.49 | 7.01 | 55.3% |
 
 ## Rear exposure
 
-Share of mech-hits taken from outside the 180° front arc (protocol rear armor, ×1.5). High: 5.8% (n=6146 hits with a measurable bearing). Low: 5.4% (n=5568). Implementable: `damaged.rear` and `damaged.bearing` are in our events, and visible attackers' positions are in `obs.mechs`. The champion aims to shoot; it has no separate 'face the biggest attacker' rule when not firing.
+Share of mech-hits taken from outside the 180° front arc (protocol rear armor, ×1.5). High: 5.9% (n=7098 hits with a measurable bearing). Low: 6.5% (n=8322). Implementable: `damaged.rear` and `damaged.bearing` are in our events, and visible attackers' positions are in `obs.mechs`. P30 (FACE_ATTACKER_ON) tried a front-arc rule while retreating/healing and was retired (screen VETO). Do not resubmit it.
 
 ## 2v1 survival proxy
 
-Among labeled mech-matches that had at least one tick with two or more recent exchangers of fire: high died within 8 s of the last such tick in 40/60 cases; low in 43/61. This is a proxy, not a formal 2v1 outcome table. Champion: CROSSFIRE_ON already leaves a 2-LOS fight for cover; there is no HP-vs-N policy for 3v1, and a multi-threat 'fight if the race looks winning' build (B26) lost on the site.
+Among labeled mech-matches that had at least one tick with two or more recent exchangers of fire: high died within 8 s of the last such tick in 47/69 cases; low in 60/96. This is a proxy, not a formal 2v1 outcome table. Champion: CROSSFIRE_ON already leaves a 2-LOS fight for cover; there is no HP-vs-N policy for 3v1, and a multi-threat 'fight if the race looks winning' build (B26) lost on the site.
 
 ## What could not be measured
 
@@ -44,141 +44,141 @@ Among labeled mech-matches that had at least one tick with two or more recent ex
 
 ### speed while HP < 35% (m/s)
 
-Overall high (T01–T04) vs low (T13–T16): **8.82** vs **7.46** (diff +1.36, Cohen's d=0.22, 1746/1385 ticks, 87/86 matches, ok).
+Overall high (T01–T04) vs low (T13–T16): **9.12** vs **5.91** (diff +3.21, Cohen's d=0.52, 2031/2170 ticks, 120/128 matches, ok).
 
-Champion B113 in this situation: Champion retreats when HP < 0.3 and under fire, unless the 1v1 TTK rule keeps it in the fight; heal at ≤5 m/s until HP > 0.9, and standing still to heal under 90% is unchanged by NO_SNEAK_ON.
+Champion P34 in this situation: Champion retreats when HP < 0.3 and under fire, unless the 1v1 TTK rule keeps it in the fight; heal at ≤5 m/s until HP > 0.9, and standing still to heal under 90% is unchanged by NO_SNEAK_ON.
 
 Observability: Implementable: uses only our own obs (hp, energy, loadout, pos, zone, alive count).
 
 | bucket | high | low | diff | d | n (high/low) | enough? |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| eng=eng_0 | 7.14 | 5.02 | +2.13 | 0.37 | 872/606 ticks, 59/59 matches | ok |
-| eng=eng_1 | 10.61 | 9.26 | +1.35 | 0.24 | 807/715 ticks, 84/83 matches | ok |
-| eng=eng_2plus | 9.17 | 10.50 | -1.33 | -0.22 | 67/64 ticks, 33/33 matches | small n — no conclusion |
-| phase=early | 8.82 | 7.37 | +1.45 | 0.24 | 1227/1029 ticks, 77/78 matches | ok |
-| phase=mid | 8.84 | 7.72 | +1.12 | 0.20 | 488/333 ticks, 40/46 matches | ok |
-| phase=late | 8.34 | 9.24 | -0.90 | -0.16 | 25/12 ticks, 6/7 matches | small n — no conclusion |
-| phase=final | 9.34 | 6.40 | +2.94 | 0.43 | 6/11 ticks, 3/3 matches | small n — no conclusion |
-| near=near80_0 | 9.02 | 7.21 | +1.81 | 0.30 | 1209/944 ticks, 75/74 matches | ok |
-| near=near80_1 | 8.48 | 7.82 | +0.66 | 0.11 | 470/401 ticks, 68/69 matches | ok |
-| near=near80_2plus | 7.68 | 9.89 | -2.21 | -0.36 | 67/40 ticks, 22/15 matches | small n — no conclusion |
-| alive=alive_13_16 | 9.01 | 9.60 | -0.60 | -0.10 | 232/334 ticks, 38/49 matches | ok |
-| alive=alive_9_12 | 8.77 | 6.13 | +2.64 | 0.44 | 509/490 ticks, 48/50 matches | ok |
-| alive=alive_5_8 | 8.71 | 7.68 | +1.03 | 0.17 | 558/312 ticks, 55/45 matches | ok |
-| alive=alive_2_4 | 8.94 | 6.95 | +2.00 | 0.35 | 447/249 ticks, 43/43 matches | ok |
+| eng=eng_0 | 7.37 | 3.35 | +4.02 | 0.73 | 1020/1018 ticks, 73/87 matches | ok |
+| eng=eng_1 | 10.97 | 8.01 | +2.96 | 0.50 | 931/1064 ticks, 114/125 matches | ok |
+| eng=eng_2plus | 10.09 | 10.17 | -0.08 | -0.01 | 80/88 ticks, 40/42 matches | small n — no conclusion |
+| phase=early | 9.07 | 6.18 | +2.89 | 0.46 | 1333/1547 ticks, 94/118 matches | ok |
+| phase=mid | 9.26 | 5.17 | +4.09 | 0.70 | 667/603 ticks, 62/68 matches | ok |
+| phase=late | 8.34 | 6.71 | +1.63 | 0.28 | 25/9 ticks, 6/3 matches | small n — no conclusion |
+| phase=final | 9.34 | 8.45 | +0.89 | 0.15 | 6/11 ticks, 3/3 matches | small n — no conclusion |
+| near=near80_0 | 9.33 | 5.56 | +3.77 | 0.63 | 1446/1366 ticks, 105/104 matches | ok |
+| near=near80_1 | 8.70 | 6.40 | +2.30 | 0.36 | 514/679 ticks, 82/108 matches | ok |
+| near=near80_2plus | 7.99 | 7.10 | +0.89 | 0.14 | 71/125 ticks, 25/35 matches | small n — no conclusion |
+| alive=alive_13_16 | 9.44 | 7.06 | +2.38 | 0.37 | 249/531 ticks, 44/76 matches | ok |
+| alive=alive_9_12 | 9.01 | 6.45 | +2.57 | 0.42 | 558/537 ticks, 56/77 matches | ok |
+| alive=alive_5_8 | 9.05 | 4.95 | +4.10 | 0.68 | 673/685 ticks, 70/76 matches | ok |
+| alive=alive_2_4 | 9.18 | 5.32 | +3.86 | 0.66 | 551/417 ticks, 54/56 matches | ok |
 
 ### boost while HP < 35%
 
-Overall high (T01–T04) vs low (T13–T16): **28.4%** vs **26.7%** (diff +1.6 pp, Cohen's d=0.04, 1746/1385 ticks, 87/86 matches, ok).
+Overall high (T01–T04) vs low (T13–T16): **29.7%** vs **23.6%** (diff +6.1 pp, Cohen's d=0.14, 2031/2170 ticks, 120/128 matches, ok).
 
-Champion B113 in this situation: No dedicated 'boost away when low' flag; hurt movement is the silent cap and hide/heal.
+Champion P34 in this situation: No dedicated 'boost away when low' flag; hurt movement is the silent cap and hide/heal.
 
 Observability: Implementable: uses only our own obs (hp, energy, loadout, pos, zone, alive count).
 
 | bucket | high | low | diff | d | n (high/low) | enough? |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| eng=eng_0 | 11.1% | 8.7% | +2.4 pp | 0.08 | 872/606 ticks, 59/59 matches | ok |
-| eng=eng_1 | 45.6% | 39.2% | +6.4 pp | 0.13 | 807/715 ticks, 84/83 matches | ok |
-| eng=eng_2plus | 44.8% | 57.8% | -13.0 pp | -0.26 | 67/64 ticks, 33/33 matches | small n — no conclusion |
-| en=en_ge_80 | 16.7% | 12.1% | +4.5 pp | 0.13 | 684/593 ticks, 67/72 matches | ok |
-| en=en_30_80 | 42.8% | 44.5% | -1.6 pp | -0.03 | 635/470 ticks, 69/74 matches | ok |
-| en=en_lt_30 | 25.5% | 27.6% | -2.1 pp | -0.05 | 427/322 ticks, 65/53 matches | ok |
-| phase=early | 28.9% | 25.8% | +3.2 pp | 0.07 | 1227/1029 ticks, 77/78 matches | ok |
-| phase=mid | 26.6% | 29.7% | -3.1 pp | -0.07 | 488/333 ticks, 40/46 matches | ok |
-| phase=late | 32.0% | 25.0% | +7.0 pp | 0.15 | 25/12 ticks, 6/7 matches | small n — no conclusion |
-| phase=final | 33.3% | 27.3% | +6.1 pp | 0.13 | 6/11 ticks, 3/3 matches | small n — no conclusion |
+| eng=eng_0 | 11.0% | 7.2% | +3.8 pp | 0.13 | 1020/1018 ticks, 73/87 matches | ok |
+| eng=eng_1 | 48.3% | 36.5% | +11.9 pp | 0.24 | 931/1064 ticks, 114/125 matches | ok |
+| eng=eng_2plus | 52.5% | 58.0% | -5.5 pp | -0.11 | 80/88 ticks, 40/42 matches | small n — no conclusion |
+| en=en_ge_80 | 16.5% | 11.8% | +4.6 pp | 0.14 | 765/1328 ticks, 79/109 matches | ok |
+| en=en_30_80 | 44.4% | 48.7% | -4.3 pp | -0.09 | 736/618 ticks, 94/108 matches | ok |
+| en=en_lt_30 | 28.5% | 24.1% | +4.4 pp | 0.10 | 530/224 ticks, 91/55 matches | ok |
+| phase=early | 29.4% | 23.8% | +5.6 pp | 0.13 | 1333/1547 ticks, 94/118 matches | ok |
+| phase=mid | 30.3% | 23.5% | +6.7 pp | 0.15 | 667/603 ticks, 62/68 matches | ok |
+| phase=late | 32.0% | 11.1% | +20.9 pp | 0.48 | 25/9 ticks, 6/3 matches | small n — no conclusion |
+| phase=final | 33.3% | 9.1% | +24.2 pp | 0.67 | 6/11 ticks, 3/3 matches | small n — no conclusion |
 
 ### nearest enemy (m) while HP < 35%
 
-Overall high (T01–T04) vs low (T13–T16): **114.35** vs **104.50** (diff +9.85, Cohen's d=0.18, 1746/1385 ticks, 87/86 matches, ok).
+Overall high (T01–T04) vs low (T13–T16): **115.36** vs **103.74** (diff +11.62, Cohen's d=0.21, 2031/2170 ticks, 120/128 matches, ok).
 
-Champion B113 in this situation: Hurt hide/retreat should increase spacing; not a fixed meter target.
+Champion P34 in this situation: Hurt hide/retreat should increase spacing; not a fixed meter target.
 
 Observability: Not directly implementable as measured: the Watcher sees this for every mech, including ones we cannot see. Use only with a visible/sound proxy, or flag as research-only. Restrict to visible enemies in a later test if we implement this.
 
 | bucket | high | low | diff | d | n (high/low) | enough? |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| eng=eng_0 | 130.76 | 122.51 | +8.25 | 0.14 | 872/606 ticks, 59/59 matches | ok |
-| eng=eng_1 | 99.56 | 91.44 | +8.13 | 0.18 | 807/715 ticks, 84/83 matches | ok |
-| eng=eng_2plus | 78.97 | 79.87 | -0.90 | -0.03 | 67/64 ticks, 33/33 matches | small n — no conclusion |
-| phase=early | 113.52 | 108.51 | +5.01 | 0.09 | 1227/1029 ticks, 77/78 matches | ok |
-| phase=mid | 119.17 | 94.61 | +24.56 | 0.48 | 488/333 ticks, 40/46 matches | ok |
-| phase=late | 78.06 | 63.83 | +14.23 | 1.00 | 25/12 ticks, 6/7 matches | small n — no conclusion |
-| phase=final | 44.58 | 73.04 | -28.46 | -1.10 | 6/11 ticks, 3/3 matches | small n — no conclusion |
-| alive=alive_13_16 | 97.02 | 100.36 | -3.34 | -0.07 | 232/334 ticks, 38/49 matches | ok |
-| alive=alive_9_12 | 113.37 | 110.13 | +3.23 | 0.06 | 509/490 ticks, 48/50 matches | ok |
-| alive=alive_5_8 | 112.93 | 111.79 | +1.14 | 0.02 | 558/312 ticks, 55/45 matches | ok |
-| alive=alive_2_4 | 126.25 | 89.83 | +36.42 | 0.71 | 447/249 ticks, 43/43 matches | ok |
+| eng=eng_0 | 131.34 | 118.03 | +13.31 | 0.22 | 1020/1018 ticks, 73/87 matches | ok |
+| eng=eng_1 | 100.82 | 92.32 | +8.50 | 0.18 | 931/1064 ticks, 114/125 matches | ok |
+| eng=eng_2plus | 80.69 | 76.40 | +4.29 | 0.14 | 80/88 ticks, 40/42 matches | small n — no conclusion |
+| phase=early | 114.64 | 104.40 | +10.25 | 0.18 | 1333/1547 ticks, 94/118 matches | ok |
+| phase=mid | 118.82 | 103.23 | +15.59 | 0.28 | 667/603 ticks, 62/68 matches | ok |
+| phase=late | 78.06 | 66.57 | +11.49 | 0.57 | 25/9 ticks, 6/3 matches | small n — no conclusion |
+| phase=final | 44.58 | 68.83 | -24.25 | -1.17 | 6/11 ticks, 3/3 matches | small n — no conclusion |
+| alive=alive_13_16 | 96.38 | 105.35 | -8.96 | -0.16 | 249/531 ticks, 44/76 matches | ok |
+| alive=alive_9_12 | 117.06 | 105.07 | +11.99 | 0.21 | 558/537 ticks, 56/77 matches | ok |
+| alive=alive_5_8 | 111.82 | 95.09 | +16.73 | 0.35 | 673/685 ticks, 70/76 matches | ok |
+| alive=alive_2_4 | 126.53 | 114.18 | +12.36 | 0.20 | 551/417 ticks, 54/56 matches | ok |
 
 ### strafe vs aim while engaged
 
-Overall high (T01–T04) vs low (T13–T16): **25.7%** vs **25.3%** (diff +0.4 pp, Cohen's d=0.01, 4846/3898 ticks, 88/86 matches, ok).
+Overall high (T01–T04) vs low (T13–T16): **25.2%** vs **25.8%** (diff -0.6 pp, Cohen's d=-0.01, 5546/6106 ticks, 122/128 matches, ok).
 
-Champion B113 in this situation: No champion strafe-under-fire policy. Sim-only strafe work is still research, not a site candidate.
+Champion P34 in this situation: No champion strafe-under-fire policy. Sim-only strafe work is still research, not a site candidate.
 
 Observability: Implementable: uses only our own obs (hp, energy, loadout, pos, zone, alive count).
 
 | bucket | high | low | diff | d | n (high/low) | enough? |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| hp=hp_ge_90 | 26.1% | 24.8% | +1.3 pp | 0.03 | 1148/923 ticks, 81/81 matches | ok |
-| hp=hp_50_90 | 26.3% | 25.5% | +0.9 pp | 0.02 | 2195/1713 ticks, 88/84 matches | ok |
-| hp=hp_30_50 | 23.1% | 26.4% | -3.3 pp | -0.08 | 791/625 ticks, 86/78 matches | ok |
-| hp=hp_lt_30 | 26.0% | 24.5% | +1.5 pp | 0.03 | 712/637 ticks, 85/84 matches | ok |
-| eng=eng_1 | 25.6% | 25.4% | +0.2 pp | 0.00 | 4682/3745 ticks, 88/86 matches | ok |
-| eng=eng_2plus | 28.0% | 21.6% | +6.5 pp | 0.15 | 164/153 ticks, 45/46 matches | small n — no conclusion |
-| ndist=d_lt_45 | 28.5% | 24.9% | +3.6 pp | 0.08 | 376/390 ticks, 64/61 matches | ok |
-| ndist=d_45_90 | 24.6% | 23.0% | +1.6 pp | 0.04 | 1982/1834 ticks, 87/83 matches | ok |
-| ndist=d_90_160 | 26.0% | 28.4% | -2.4 pp | -0.05 | 2040/1437 ticks, 82/80 matches | ok |
-| ndist=d_160_200 | 28.6% | 28.2% | +0.3 pp | 0.01 | 287/177 ticks, 49/45 matches | small n — no conclusion |
-| ndist=d_ge_200 | 24.2% | 16.7% | +7.6 pp | 0.18 | 161/60 ticks, 36/23 matches | small n — no conclusion |
-| phase=early | 25.4% | 24.7% | +0.6 pp | 0.01 | 3675/3103 ticks, 87/82 matches | ok |
-| phase=mid | 26.4% | 27.4% | -1.0 pp | -0.02 | 1076/742 ticks, 54/53 matches | ok |
-| phase=late | 33.8% | 25.6% | +8.1 pp | 0.18 | 80/39 ticks, 12/8 matches | small n — no conclusion |
-| phase=final | 20.0% | 42.9% | -22.9 pp | -0.51 | 15/14 ticks, 4/2 matches | small n — no conclusion |
+| hp=hp_ge_90 | 25.2% | 26.3% | -1.1 pp | -0.03 | 1326/1456 ticks, 109/122 matches | ok |
+| hp=hp_50_90 | 25.5% | 26.5% | -1.0 pp | -0.02 | 2483/2724 ticks, 120/128 matches | ok |
+| hp=hp_30_50 | 23.4% | 24.2% | -0.8 pp | -0.02 | 905/1008 ticks, 116/124 matches | ok |
+| hp=hp_lt_30 | 26.2% | 24.5% | +1.7 pp | 0.04 | 832/918 ticks, 117/127 matches | ok |
+| eng=eng_1 | 25.1% | 25.7% | -0.5 pp | -0.01 | 5349/5827 ticks, 122/128 matches | ok |
+| eng=eng_2plus | 26.9% | 28.3% | -1.4 pp | -0.03 | 197/279 ticks, 54/69 matches | small n — no conclusion |
+| ndist=d_lt_45 | 28.6% | 20.4% | +8.2 pp | 0.19 | 399/579 ticks, 73/96 matches | ok |
+| ndist=d_45_90 | 23.9% | 27.6% | -3.7 pp | -0.08 | 2278/2767 ticks, 119/126 matches | ok |
+| ndist=d_90_160 | 25.7% | 25.2% | +0.5 pp | 0.01 | 2369/2239 ticks, 112/121 matches | ok |
+| ndist=d_160_200 | 26.6% | 26.5% | +0.1 pp | 0.00 | 331/392 ticks, 57/66 matches | ok |
+| ndist=d_ge_200 | 24.9% | 19.4% | +5.5 pp | 0.13 | 169/129 ticks, 40/35 matches | small n — no conclusion |
+| phase=early | 25.2% | 24.9% | +0.3 pp | 0.01 | 4003/4698 ticks, 114/126 matches | ok |
+| phase=mid | 24.7% | 28.5% | -3.8 pp | -0.09 | 1448/1352 ticks, 77/71 matches | ok |
+| phase=late | 33.8% | 34.5% | -0.7 pp | -0.02 | 80/29 ticks, 12/6 matches | small n — no conclusion |
+| phase=final | 20.0% | 33.3% | -13.3 pp | -0.30 | 15/27 ticks, 4/3 matches | small n — no conclusion |
 
 ### cover while engaged
 
-Overall high (T01–T04) vs low (T13–T16): **49.4%** vs **49.6%** (diff -0.3 pp, Cohen's d=-0.01, 4846/3898 ticks, 88/86 matches, ok).
+Overall high (T01–T04) vs low (T13–T16): **48.8%** vs **45.5%** (diff +3.3 pp, Cohen's d=0.07, 5546/6106 ticks, 122/128 matches, ok).
 
-Champion B113 in this situation: B5b heal-and-fire and B60 crossfire-to-cover are in the stack. Later hold-behind-cover / late-cover variants lost on the site (cover family).
+Champion P34 in this situation: B5b heal-and-fire and B60 crossfire-to-cover are in the stack. Later hold-behind-cover / late-cover variants lost on the site (cover family).
 
 Observability: Implementable: uses only our own obs (hp, energy, loadout, pos, zone, alive count). Cover is from the official world.json buildings (same proxy as findings.md).
 
 | bucket | high | low | diff | d | n (high/low) | enough? |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| hp=hp_ge_90 | 42.9% | 44.6% | -1.8 pp | -0.04 | 1148/923 ticks, 81/81 matches | ok |
-| hp=hp_50_90 | 49.3% | 49.0% | +0.3 pp | 0.01 | 2195/1713 ticks, 88/84 matches | ok |
-| hp=hp_30_50 | 52.0% | 53.0% | -1.0 pp | -0.02 | 791/625 ticks, 86/78 matches | ok |
-| hp=hp_lt_30 | 57.2% | 55.4% | +1.7 pp | 0.04 | 712/637 ticks, 85/84 matches | ok |
-| eng=eng_1 | 49.9% | 50.1% | -0.2 pp | -0.00 | 4682/3745 ticks, 88/86 matches | ok |
-| eng=eng_2plus | 33.5% | 37.3% | -3.7 pp | -0.08 | 164/153 ticks, 45/46 matches | small n — no conclusion |
-| phase=early | 45.3% | 46.7% | -1.4 pp | -0.03 | 3675/3103 ticks, 87/82 matches | ok |
-| phase=mid | 63.0% | 59.4% | +3.6 pp | 0.07 | 1076/742 ticks, 54/53 matches | ok |
-| phase=late | 51.2% | 82.1% | -30.8 pp | -0.66 | 80/39 ticks, 12/8 matches | small n — no conclusion |
-| phase=final | 66.7% | 100.0% | -33.3 pp | -0.98 | 15/14 ticks, 4/2 matches | small n — no conclusion |
-| alive=alive_13_16 | 30.6% | 37.7% | -7.1 pp | -0.15 | 1348/1394 ticks, 76/75 matches | ok |
-| alive=alive_9_12 | 48.0% | 54.4% | -6.4 pp | -0.13 | 1122/1095 ticks, 72/69 matches | ok |
-| alive=alive_5_8 | 60.2% | 55.3% | +4.9 pp | 0.10 | 1413/880 ticks, 71/62 matches | ok |
-| alive=alive_2_4 | 61.3% | 61.8% | -0.5 pp | -0.01 | 963/529 ticks, 51/46 matches | ok |
+| hp=hp_ge_90 | 42.2% | 42.4% | -0.3 pp | -0.01 | 1326/1456 ticks, 109/122 matches | ok |
+| hp=hp_50_90 | 49.2% | 45.0% | +4.1 pp | 0.08 | 2483/2724 ticks, 120/128 matches | ok |
+| hp=hp_30_50 | 51.2% | 43.3% | +7.9 pp | 0.16 | 905/1008 ticks, 116/124 matches | ok |
+| hp=hp_lt_30 | 55.8% | 53.9% | +1.8 pp | 0.04 | 832/918 ticks, 117/127 matches | ok |
+| eng=eng_1 | 49.3% | 45.8% | +3.6 pp | 0.07 | 5349/5827 ticks, 122/128 matches | ok |
+| eng=eng_2plus | 35.0% | 39.4% | -4.4 pp | -0.09 | 197/279 ticks, 54/69 matches | small n — no conclusion |
+| phase=early | 45.3% | 41.5% | +3.9 pp | 0.08 | 4003/4698 ticks, 114/126 matches | ok |
+| phase=mid | 58.1% | 58.1% | +0.1 pp | 0.00 | 1448/1352 ticks, 77/71 matches | ok |
+| phase=late | 51.2% | 86.2% | -35.0 pp | -0.75 | 80/29 ticks, 12/6 matches | small n — no conclusion |
+| phase=final | 66.7% | 66.7% | +0.0 pp | 0.00 | 15/27 ticks, 4/3 matches | small n — no conclusion |
+| alive=alive_13_16 | 31.4% | 30.4% | +1.1 pp | 0.02 | 1469/2220 ticks, 88/120 matches | ok |
+| alive=alive_9_12 | 48.8% | 53.0% | -4.3 pp | -0.09 | 1267/1431 ticks, 89/109 matches | ok |
+| alive=alive_5_8 | 56.9% | 51.9% | +5.0 pp | 0.10 | 1678/1664 ticks, 92/91 matches | ok |
+| alive=alive_2_4 | 59.5% | 60.7% | -1.2 pp | -0.03 | 1132/791 ticks, 64/58 matches | ok |
 
 ### LOS to nearest blocked while engaged
 
-Overall high (T01–T04) vs low (T13–T16): **45.5%** vs **43.4%** (diff +2.1 pp, Cohen's d=0.04, 4846/3898 ticks, 88/86 matches, ok).
+Overall high (T01–T04) vs low (T13–T16): **45.7%** vs **43.8%** (diff +1.8 pp, Cohen's d=0.04, 5546/6106 ticks, 122/128 matches, ok).
 
-Champion B113 in this situation: CROSSFIRE_ON already walks to a hideSpot when two or more enemies have LOS.
+Champion P34 in this situation: CROSSFIRE_ON already walks to a hideSpot when two or more enemies have LOS.
 
 Observability: Implementable: uses only our own obs (hp, energy, loadout, pos, zone, alive count). The bot can test LOS with the map and a visible or remembered enemy position.
 
 | bucket | high | low | diff | d | n (high/low) | enough? |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| hp=hp_ge_90 | 47.7% | 41.5% | +6.2 pp | 0.13 | 1148/923 ticks, 81/81 matches | ok |
-| hp=hp_50_90 | 43.6% | 42.6% | +0.9 pp | 0.02 | 2195/1713 ticks, 88/84 matches | ok |
-| hp=hp_30_50 | 44.6% | 47.5% | -2.9 pp | -0.06 | 791/625 ticks, 86/78 matches | ok |
-| hp=hp_lt_30 | 48.9% | 44.0% | +4.9 pp | 0.10 | 712/637 ticks, 85/84 matches | ok |
-| eng=eng_1 | 46.0% | 43.8% | +2.2 pp | 0.04 | 4682/3745 ticks, 88/86 matches | ok |
-| eng=eng_2plus | 30.5% | 32.0% | -1.5 pp | -0.03 | 164/153 ticks, 45/46 matches | small n — no conclusion |
-| phase=early | 41.1% | 41.1% | +0.0 pp | 0.00 | 3675/3103 ticks, 87/82 matches | ok |
-| phase=mid | 60.8% | 52.3% | +8.5 pp | 0.17 | 1076/742 ticks, 54/53 matches | ok |
-| phase=late | 48.8% | 51.3% | -2.5 pp | -0.05 | 80/39 ticks, 12/8 matches | small n — no conclusion |
-| phase=final | 13.3% | 57.1% | -43.8 pp | -1.04 | 15/14 ticks, 4/2 matches | small n — no conclusion |
+| hp=hp_ge_90 | 48.0% | 43.8% | +4.2 pp | 0.08 | 1326/1456 ticks, 109/122 matches | ok |
+| hp=hp_50_90 | 43.2% | 43.9% | -0.8 pp | -0.02 | 2483/2724 ticks, 120/128 matches | ok |
+| hp=hp_30_50 | 44.6% | 43.8% | +0.9 pp | 0.02 | 905/1008 ticks, 116/124 matches | ok |
+| hp=hp_lt_30 | 50.4% | 43.7% | +6.7 pp | 0.13 | 832/918 ticks, 117/127 matches | ok |
+| eng=eng_1 | 46.3% | 44.5% | +1.8 pp | 0.04 | 5349/5827 ticks, 122/128 matches | ok |
+| eng=eng_2plus | 27.4% | 30.1% | -2.7 pp | -0.06 | 197/279 ticks, 54/69 matches | small n — no conclusion |
+| phase=early | 40.4% | 39.7% | +0.7 pp | 0.01 | 4003/4698 ticks, 114/126 matches | ok |
+| phase=mid | 60.4% | 58.1% | +2.3 pp | 0.05 | 1448/1352 ticks, 77/71 matches | ok |
+| phase=late | 48.8% | 51.7% | -3.0 pp | -0.06 | 80/29 ticks, 12/6 matches | small n — no conclusion |
+| phase=final | 13.3% | 44.4% | -31.1 pp | -0.69 | 15/27 ticks, 4/3 matches | small n — no conclusion |
 

@@ -1,6 +1,6 @@
 # Watcher per-mechanic Top-16 analysis
 
-> **Caveats (every file):** Showdowns are Top-16 teams in free-for-all exhibition matches, not the house hunting squad our practice site score is measured against. A behavior that lines up with high placement here is a correlation, not proof it causes the win, and it still has to pass the sim and then beat 4.17 on the site. Watcher ticks see every mech every frame; our bot does not (see STATES.md for what the protocol actually exposes). Numbers are counted from recordings; blank cells mean the value was not measurable or the bucket was too small.
+> **Caveats (every file):** Showdowns are Top-16 teams in free-for-all exhibition matches, not the house hunting squad our practice site score is measured against. A behavior that lines up with high placement here is a correlation, not proof it causes the win, and it still has to pass the sim and then beat 4.38 on the site. Watcher ticks see every mech every frame; our bot does not (see STATES.md for what the protocol actually exposes). Numbers are counted from recordings; blank cells mean the value was not measurable or the bucket was too small.
 
 
 This folder is the research input added to the locked workflow chart on Sat Nov 21, 3:27 PM ET (Doug confirmed), with situational slices (3:29 PM ET) and opponent-state plus protocol observability (3:31 PM ET).
@@ -22,6 +22,7 @@ It does **not** submit to the site, change bot code, or open PRs. Ranked behavio
 | `final_circle.md` / `.csv` | r ≤ 70 entry and play |
 | `*_slices.csv` | The situational high-vs-low numbers behind the markdown tables |
 | `RANKED.md` | State-conditioned IF-THEN rules, ranked for *our* site score, with observability and family overlap |
+| `SKILLS.md` | Opponent-independent skill patterns (movement, aim, pickups, position); refreshed with the same cache |
 | `teams.csv` | T01–T16 means and sample sizes (no real team names) |
 
 Raw `live.jsonl` / `state.jsonl` recordings are **not** in this repo. They live on the box under `/workspace/watch/stream/` and `/workspace/watch/recordings/`.
@@ -52,4 +53,4 @@ nice -n 10 /workspace/watch/mechanics/refresh.sh --repo-out /path/to/mech-bot/co
 - Engagement: a hit given or received between two mechs in the last 2 s.
 - Aim convention: `atan2(dy, dx)` vs stream `aim_yaw`. A median residual is stored in the cache meta; front/rear uses the protocol's 180° torso front arc.
 
-Champion behavior cited here is from B113 (`6182d29c673d99f5186d742a5f019c0b007234f2`), site 4.17, as read from `params.ts` and `brain.ts` on that commit. We do not invent site deltas; expected impact is a reasoned direction only, and the sim + site decide.
+Champion behavior cited here is from P34 lethal laser release (`0e6fadd1a30db4ee30c26114b8198f63d782b7c9`, merged `8c130ad7f0c81acb03508c40f20c31867f29d358`, champion.json `588557e`), site 4.38 (`BB-ABEB42BF`), built on P29 midring settle (`2e1d03615f6e8faa7097ffcbd441be43b234c5b9`, site 4.35), as read from `params.ts` and `brain.ts` on that commit. We do not invent site deltas; expected impact is a reasoned direction only, and the sim + site decide.

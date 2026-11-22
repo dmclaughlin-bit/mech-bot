@@ -1,9 +1,9 @@
 # Situational state buckets
 
-> **Caveats (every file):** Showdowns are Top-16 teams in free-for-all exhibition matches, not the house hunting squad our practice site score is measured against. A behavior that lines up with high placement here is a correlation, not proof it causes the win, and it still has to pass the sim and then beat 4.17 on the site. Watcher ticks see every mech every frame; our bot does not (see STATES.md for what the protocol actually exposes). Numbers are counted from recordings; blank cells mean the value was not measurable or the bucket was too small.
+> **Caveats (every file):** Showdowns are Top-16 teams in free-for-all exhibition matches, not the house hunting squad our practice site score is measured against. A behavior that lines up with high placement here is a correlation, not proof it causes the win, and it still has to pass the sim and then beat 4.38 on the site. Watcher ticks see every mech every frame; our bot does not (see STATES.md for what the protocol actually exposes). Numbers are counted from recordings; blank cells mean the value was not measurable or the bucket was too small.
 
 
-Generated 2026-11-21 15:43 ET. These buckets are applied at every 1 Hz sample for every labeled mech that is still alive. Conclusions require at least 8 matches and 200 ticks in the bucket (and at least 12 mech-matches). Smaller buckets are still printed, marked `small n — no conclusion`.
+Generated 2026-11-21 21:29 ET. These buckets are applied at every 1 Hz sample for every labeled mech that is still alive. Conclusions require at least 8 matches and 200 ticks in the bucket (and at least 12 mech-matches). Smaller buckets are still printed, marked `small n — no conclusion`.
 
 T01–T16 are the 16 teams with at least 20 complete showdown games, ranked by mean placement. Teams with fewer games are omitted from the labels because their means are too noisy; they are not named in this repo.
 

@@ -192,6 +192,6 @@ export const TREE_RETREAT_STUCK_S = 3
  * the unstick jet keep their boost; off on a drop run/hold and while a drop is near AND reachable), gated to fire only
  * while no visible enemy is within gun range (params.gunRange). false = champion behavior exactly.
  */
-export const LOW_HP_BOOST_SAVE_SAFE_ON = false
+export const LOW_HP_BOOST_SAVE_SAFE_ON = true
 export const LOW_HP_BOOST_FRAC = 0.35
 export const LOW_HP_BOOST_MIN_T = 40

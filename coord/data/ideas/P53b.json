@@ -3,17 +3,24 @@
   "title": "LOW_HP_BOOST_SAVE_SAFE: P53's low-HP boost save, only while no visible enemy is within gun range",
   "family": "movement / energy (boost discipline)",
   "flag": "LOW_HP_BOOST_SAVE_SAFE_ON",
-  "params": { "LOW_HP_BOOST_FRAC": 0.35, "LOW_HP_BOOST_MIN_T": 40, "gate_m": "params.gunRange (100)" },
+  "params": {
+    "LOW_HP_BOOST_FRAC": 0.35,
+    "LOW_HP_BOOST_MIN_T": 40,
+    "gate_m": "params.gunRange (100)"
+  },
   "owner": "Diego's Claude",
   "prompt": "P-D-026",
   "branch": "diego/p53b-boost-save-safe",
   "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
   "champion_main": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
-  "builds_on": ["F9", "F14"],
+  "builds_on": [
+    "F9",
+    "F14"
+  ],
   "weakness_fixed": "N5",
   "hypothesis": "P53's late low-HP survivals came from keeping boost for later escapes; its mid-game early deaths came from withholding boost while still under gun fire. Saving boost only when no visible enemy is within gun range keeps the first and removes the second.",
   "mechanism": "Same as P53 (withhold only the boost flag, after the silent cap; zone escape, to next circle, retreat-trees and the unstick jet keep boost; off on drop run/hold or a near reachable drop), plus the gate: no obs.mechs enemy within params.gunRange of us.",
-  "activation": null,
+  "activation": "34/192 and 37/192 games (Step A)",
   "strength_kept": "P53's late-game survivals (2090, 4064, 5065; 4001 7->3, 4007 8->3).",
   "differs_from_failed": "P53 withheld boost even with an enemy in gun range; P53b never does.",
   "success": "Mac paired screen: no earlier mid-game deaths (games worse <= games better on both sets), died<40 not up, kills not down on both sets, no new pause20 game, survivors kept.",
@@ -23,6 +30,28 @@
   "confidence": "Uncertain",
   "reuse": null,
   "outcome": null,
-  "stage": "step_a_running",
-  "step_a_result": null
+  "stage": "checklist_running",
+  "step_a_result": {
+    "verdict": "PASS",
+    "sim": "cloud hazard sim (trees on, --jobs 4), 96 seeds per base",
+    "trigger": "P53's trigger plus no visible enemy within params.gunRange",
+    "games_fired": {
+      "2000": 13,
+      "3000": 21,
+      "4000": 20,
+      "5000": 17
+    },
+    "sets": {
+      "2000+3000": "34/192",
+      "4000+5000": "37/192"
+    },
+    "trigger_ticks": {
+      "2000": 241,
+      "3000": 388,
+      "4000": 480,
+      "5000": 282
+    },
+    "passivity": "log-only copy: 384/384 games with place, death_t and kills identical to the official P48 rows",
+    "p53_for_reference": "171/192 and 164/192"
+  }
 }

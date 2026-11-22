@@ -13,15 +13,68 @@
   "stage": "idea",
   "pr": null,
   "sha": null,
-  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
-  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
-  "screens": [],
+  "champion_sha_tested_against": "b6f2f8be91abacbf9f31469ce8b5ad4576c289c9",
+  "champion_sha": "b6f2f8be91abacbf9f31469ce8b5ad4576c289c9",
+  "screens": [
+    {
+      "sha": "flag-on head of p37-heal-pickup (see sha_note); flag-off a214f12fad66b389901da577b04b51b047ee7c3c",
+      "seed_set": "0+1000 (builder hazard, 96+96, --jobs 1, /tmp/wild-sim)",
+      "fired": 17,
+      "diff_behavior": 17,
+      "diff_score": 12,
+      "pins": "games with a >=20 s pin: base 0 main 6 / P37 6 (same seeds 16,41,43,78,79,92, same windows, 0 flag ticks); base 1000 main 2 / P37 2 (1005 x2, 1018, 0 flag ticks). No new pin.",
+      "verdict": "BUILD_CHECKLIST PASS (builder smoke, not a full screen)",
+      "source": "builder run, logs /tmp/p37-haz (not committed)",
+      "sim_delta": null,
+      "sim_se": null,
+      "per_set": {
+        "0": {
+          "fired": 9,
+          "diff_behavior": 9,
+          "diff_score": 5,
+          "paired": "+0.177 +/- 0.086 (better 5, worse 0)",
+          "mean_main": 3.531,
+          "mean_p37": 3.708,
+          "died_lt40": "33 -> 33",
+          "drop_ring_arrivals": "5 in 3 games -> 7 in 4 games",
+          "kills": "307 -> 324",
+          "cubes_at_end": "226 -> 241",
+          "t_lt_10_activations": 0
+        },
+        "1000": {
+          "fired": 8,
+          "diff_behavior": 8,
+          "diff_score": 7,
+          "paired": "+0.021 +/- 0.081 (better 5, worse 2)",
+          "mean_main": 3.354,
+          "mean_p37": 3.375,
+          "died_lt40": "30 -> 30",
+          "drop_ring_arrivals": "3 in 2 games -> 3 in 2 games",
+          "kills": "309 -> 310",
+          "cubes_at_end": "195 -> 206",
+          "t_lt_10_activations": 0
+        }
+      },
+      "heal_metrics": {
+        "cubes_collected_during_heal": "base 0: 5 -> 20; base 1000: 3 -> 19 (cube gains on ticks whose previous mode was heal / heal, pickup / heal, hiding)",
+        "hp_at_next_contact": "first enemy-in-view tick (t >= 10) after a heal tick, mean HP fraction: base 0 all games 0.586 (n=127) -> 0.584 (n=130), fired games 0.760 (n=17) -> 0.696 (n=21); base 1000 all 0.574 (n=119) -> 0.616 (n=126), fired games 0.628 (n=25) -> 0.783 (n=32)",
+        "heal_time_s": "base 0: 1856 -> 1903; base 1000: 1985 -> 2010 (P37 games live longer)",
+        "give_ups": "heal-pickup 3 s give-ups: 0 (base 0) / 0 (base 1000); farm give-ups (farmGiveUp size at end, summed) main 8 -> 7, 8 -> 7"
+      },
+      "gate": {
+        "check_py": "PASS default max 2.8 ms; PASS flag-on max 3.3 ms",
+        "eqdrive": "flag-off vs origin/main (b6f2f8b bot code) IDENTICAL (cmp, 302 lines)",
+        "merge_base": "b6f2f8b is ancestor of HEAD",
+        "passivity": "instrumented vs plain runs: non-timing CSV identical except base-0 flag-on seed 42 (instrumented copy had a 91 ms decision spike under shared load; plain flag-on seed 42 equals main). Plain-run behavior diff = exactly the fired games."
+      }
+    }
+  ],
   "receipt": null,
   "site_score": null,
   "score": null,
   "decision": null,
   "blocker": null,
-  "next_action": "Grok: assign or park. If built: one flag HEAL_PICKUP_ON default false; base-0 hazard with fired/diff/score, HP at next contact, cubes at end, pins.",
+  "next_action": "Grok: assign Mech Sim Tester full paired screen (2000+3000 and 4000+5000) of the flag-on head vs champion b6f2f8b.",
   "doug_waiver": false,
   "single_decision": "Move the existing Build 12 cube pickup (farmGoal, cubes only) above the stand-still heal branch, only while farmOk, t >= 10 s and no drop is listed. Nothing else changes: no new target list, no memory, no hunt, no hiding change.",
   "trigger": "mode would be 'heal' (me.hp < HEAL_HP 0.9 * max, all higher branches declined) AND farmOk AND farmGoal is a cube (not a drop, not a hunt target) AND obs.t >= 10 AND obs.drops.length === 0",
@@ -44,14 +97,15 @@
     "watcher": "Idle (not engaged) pickup rate 3.94 vs 2.27 cubes/min and mid-phase 5.11 vs 3.12 (SKILLS.md, 21029/21109 s idle, 88/86 matches); high teams move more when hurt and not engaged: speed at HP < 35% eng_0 7.14 vs 5.02 m/s (evasion.md, 872/606 ticks, 59/59 matches).",
     "showdown_first_fights": "PR #145 coord/research-doug-1941.md: 'I am already under 70% HP' at first hit KILL/DIED 2/20 (n=40); more cubes 166/74 vs fewer 100/220."
   },
-  "estimated_activation": "~22/192 games on 2000+3000 (33 episodes; champion code + passive sim log). Held-out set not measured. Lowest-frequency of the four but above the 10/192 bar.",
+  "estimated_activation": "Re-counted on P29 champion code: 17/192 games (base 0: 9/96, 905 ticks total across both sets; base 1000: 8/96). Narrow gate would be 20/192. Official 2000+3000 / 4000+5000 not run by the builder (Sim Tester full screen is due).",
   "closest_prior_test": "P24 HEAL_COVER=2 (3.79, -0.38): walked while hurt, but toward a hide spot and only when SEEN; P37 runs only when nobody is in view or known within 160 m, and walks to an item the champion already targets at HP >= 90%. Farm family: B12/B13 KEEP; P23b late idle sweep (4.00) and P25/P25b cube memory (retired/hold) are different decisions (torso sweep; remembered cubes to 150 m). P25c is still building on cube memory; if both are built they must stay separate flags and separate screens.",
   "what_would_disprove": "Paired screen: HP at the next enemy contact and cubes at death/end not higher than the champion in fired games; or deaths < 40 s / damage taken during the walk higher (drone aggro at 45 m, protocol.md:325); or fired < 10/192.",
-  "risks": "Pins: uses the existing farm walk and its FARM_CHASE_S 15 s give-up + farmGiveUp skip list (brain.ts:599-602), not the checklist's ~3 s no-progress give-up; builder must list every 20 s+ pin vs main with the flag state in the window, and add a 3 s no-progress give-up only if a new pin appears (that would be a scope question for the coordinator). Drops: gated on obs.drops empty, never runs while a drop is listed. Noise: hurt-and-recently-damaged moves stay silent-capped by the champion (brain.ts:873); steps carry 40 m (protocol.md:397). Drones: cubes from a destroyed drone lie near other drones' homes; a walk inside 45 m of a drone draws fire and resets regen.",
+  "risks": "Pins: as built, the walk has its own checklist give-up (no 1 m of progress for 3 s -> cube on healSkip for the match), not the farm's 15 s FARM_CHASE_S; builder hazard 0+1000 found no new 20 s+ pin and 0 flag ticks in any pin window. Drops: gated on obs.drops empty, never runs while a drop is listed. Noise: hurt-and-recently-damaged moves stay silent-capped by the champion (brain.ts:873); steps carry 40 m (protocol.md:397). Drones: cubes from a destroyed drone lie near other drones' homes; a walk inside 45 m of a drone draws fire and resets regen.",
   "source": "Research P34-37 (this run): heal-vs-farm priority in brain.ts:821/833 + passive sim log; heal-positioning.md; SKILLS.md cube rate",
   "timestamps": {
     "created": "2026-11-21 19:55 ET",
-    "updated": "2026-11-21 19:55 ET"
+    "updated": "2026-11-21 20:40 ET",
+    "built": "2026-11-21 20:40 ET"
   },
   "sources": [
     "brain.ts (origin/main d7fca14 = 6182d29 bot code)",
@@ -60,8 +114,14 @@
     "coord/data/watcher/SKILLS.md",
     "coord/data/watcher/evasion.md",
     "https://github.com/dmclaughlin-bit/mech-bot/pull/145 (coord/research-doug-1941.md)",
-    "Instrumented champion sim (this research run): a copy of the champion bot files from origin/main d7fca14 (bot code identical to 6182d29: git diff 6182d29 HEAD on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p3437/bot, with passive per-decision CSV logging appended before act.move (no action changed). Run: bun tools/sim/run.ts --worker --seed-list 2000-2095,3000-3095 (one job, 192 games, ~5 min). Sanity: mean 16-place 3.531 vs 3.542 for the same seeds in coord/data/research/heal-positioning.md; deaths < 40 s 56/192. Logs are in /tmp (not committed). Held-out 4000+5000 not run (kept light)."
+    "Instrumented champion sim (this research run): a copy of the champion bot files from origin/main d7fca14 (bot code identical to 6182d29: git diff 6182d29 HEAD on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p3437/bot, with passive per-decision CSV logging appended before act.move (no action changed). Run: bun tools/sim/run.ts --worker --seed-list 2000-2095,3000-3095 (one job, 192 games, ~5 min). Sanity: mean 16-place 3.531 vs 3.542 for the same seeds in coord/data/research/heal-positioning.md; deaths < 40 s 56/192. Logs are in /tmp (not committed). Held-out 4000+5000 not run (kept light).",
+    "Builder hazard runs 2026-11-21 20:15-20:40 ET: /tmp/p37-haz (inst-main/inst-on passive wrappers, plain main/on CSVs, an.py), SEED_BASE 0 and 1000, 96 games each, --jobs 1, /tmp/wild-sim run.ts"
   ],
   "priority_rank": 2,
-  "coordinator_note": "Ranked 2 at 8:13 PM ET: queued. Champion is now P29 2e1d036 / main b6f2f8b; trigger counts came from the old champion, so re-count them."
+  "coordinator_note": "Ranked 2 at 8:13 PM ET: queued. Champion is now P29 2e1d036 / main b6f2f8b; trigger counts came from the old champion, so re-count them.",
+  "branch": "p37-heal-pickup",
+  "sha_flag_off": "a214f12fad66b389901da577b04b51b047ee7c3c",
+  "sha_note": "Flag-on head = the commit directly after the one that updates this record; it flips HEAL_PICKUP_ON false -> true and nothing else (byte-identical to the screened /tmp/p37-on copy). Exact 40-char head is in the builder report / push output.",
+  "drop_gate": "PLAIN gate kept: no supply drop listed in obs.drops (announced, falling or landed), plus never in a drop run or ring hold (dropRun/dropHold/dropMove), and the branch sits below drop hold/run so drop wins on the same tick. First activation run: plain gate fired 17/192 (9 base 0 + 8 base 1000) >= 10, so the narrow gate (no drop announced/falling within DROP_RUN_M, never in drop run/hold) was NOT needed; it would have fired 20/192 (11 + 9).",
+  "implementation": "brain.ts: one guarded branch `} else if (healCube) {` immediately before the stand-still heal branch (`} else if (me.hp < HEAL_HP * me.max_hp) {`, now brain.ts:847 on the P29 code), after drop hold and drop run. healCube = farmGoal.pos only when HEAL_PICKUP_ON, obs.t >= HEAL_PICKUP_T (10), farmOk, farmGoal is a cube object from obs.cubes (not a drop, not a hunt target), !farmHold, HP < 90%, no drop listed, no drop run/hold, and the cube is not in healSkip. Own no-progress give-up: if the distance to the cube has not dropped by 1 m for HEAL_PICKUP_STUCK_S (3 s) the cube goes on healSkip for the match (heal pickup only; the Build 12 farm choice is unchanged). Move = travel() to the cube (same walk as farm pickup), mode \"heal, pickup\". params.ts: HEAL_PICKUP_ON (default false), HEAL_PICKUP_T = 10, HEAL_PICKUP_STUCK_S = 3."
 }

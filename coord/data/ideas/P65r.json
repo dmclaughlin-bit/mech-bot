@@ -31,10 +31,19 @@
     "vs_P57": "P57 (N8) changed torso/aim; P65 is legs only."
   },
   "disproof_p65r": "Safety screen on cloud x86 vs the P64 baseline on 2000+3000 and 4000+5000: building-cover freezes after 40 s (or deaths) not down on both sets, OR deaths < 40 s up, OR mean lower on both sets (Grok, 4:18 AM ET).",
-  "positives": "From P65 on P60 (practice bases 0/6000): building-cover freezes after 40 s 96->64 and 257->32; paired +0.042/+0.052; kills 298->302, 365->371; deaths < 40 s flat.",
-  "negatives": "From P65: width test misses 4.1-4.7 m walls (seed 6024 still freezes); retreat deaths shift to fallback modes; one new pin on base 0.",
+  "positives": "No new pins, early deaths and survivors flat, flag-off identical, check.py 6.6 ms. (P65 on P60 reduced building-cover freezes 96->64 and 257->32 on practice bases; not remeasured here.)",
+  "negatives": "Mean lower on BOTH sets (-0.021, -0.062) and kills down on both (684->679, 727->714): the disproof clause 'mean lower on both sets' is met. Freeze counts after 40 s were not remeasured.",
   "confidence": "Uncertain",
-  "outcome": null,
-  "stage": "record_written",
-  "step_a_result": "inherited from P65: 43/192 and 62/192 on P60; not rerun (rebuild of an idea that already fired 10/192+ on both sets)"
+  "outcome": "C (disproved by the stated disproof: mean lower on both sets on the P64 baseline)",
+  "stage": "screened_disproved",
+  "step_a_result": "inherited from P65: 43/192 and 62/192 on P60; not rerun (rebuild of an idea that already fired 10/192+ on both sets)",
+  "sha_flag_off": "b08d0e58bd758075eb7370d3ecf0713eed5ac116",
+  "safety_screen": {
+    "station": "Diego's cloud x86 (matches Sim Tester), hazard sim 39c7894 trees on, --jobs 4, 96 seeds per base",
+    "baseline": "main bc640a6 = P64 8ada6a4",
+    "flag_off": "base 2000: 96/96 rows identical to main; kit actions identical (KIT_IDENTICAL)",
+    "check_py": "PASS, max 6.6 ms",
+    "2000+3000": "-0.021+/-0.022 (3 better/4 worse), changed 31, kills 684->679, rings 7->7, pause20 2->2 none new, died<40 48->48, surv 2->2",
+    "4000+5000": "-0.062+/-0.056 (8/11), changed 48, kills 727->714, rings 6->5, pause20 2->2 none new, died<40 38->38, surv 3->3"
+  }
 }

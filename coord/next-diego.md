@@ -183,3 +183,7 @@ H07 sound-guided late hunt: PARKED. Wild Sim: a usable sound while idle late sho
 - Use the same seeds, metrics and veto evidence as Sim Tester: activation fired/behavior/score, drop-arrival set totals, deaths before 40 s, survivors, 20 s+ pauses with clause-by-clause stall evidence.
 - Post the result as a PR comment and add the rows to coord/data/screens.csv, with `source` ending in "station: diego-mac".
 - Don't label anything as eligible; the coordinator decides.
+
+
+---
+**UPDATE 8:39 PM ET: P29b is RETIRED.** #146 6ff499b was vetoed: the dropNear gate is always true because uncaptured drops stay in obs.drops, so the settle fired 0/384 and P29 was effectively removed. Don't work on P29b any more, and leave #146 as is. **Start P-D-014 (trees in the sim) now**, then P-D-015 (second screening station). Lesson for any gate: test "a drop is near AND reachable within DROP_RUN_M", never "any drop exists".

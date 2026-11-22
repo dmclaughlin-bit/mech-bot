@@ -1,0 +1,9 @@
+{
+  "id": "P29b",
+  "title": "Midring settle fix (drop yield + no-progress give-up)",
+  "owner": "Diego's Claude",
+  "pr": 146,
+  "stage": "retired",
+  "sha": "6ff499b8cc58",
+  "decision": "RETIRED 8:39 PM ET by coordinator: Sim Tester VETO (#146 comment 7072301136). The new dropNear gate is true whenever any drop is announced or on the ground (drops stay in obs.drops), so the settle fired 0/384 and the build effectively removes the P29 champion behavior. Drop-arrival set totals 8->6 and 7->5. Same drop-on-map gate trap as P26b/P33."
+}

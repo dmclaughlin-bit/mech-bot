@@ -153,3 +153,6 @@ Doug asked that a build beating the 15-champions sim (P-D-016, Diego's Mac) go t
 - Before the switch: verify the sim's map (trees from the kit's arena/world.json via `--trees`, PR #148, plus buildings) matches what actually appears in site games. Compare tree and building counts and positions against Mech Watcher's recorded site footage and the site's map. Report any mismatch to Doug with numbers.
 - Once verified: re-run the champion P29 (2e1d036) baseline with `--trees` on both 2000+3000 and 4000+5000. From then on, every full paired screen uses `--trees`. Screens already started stay trees-off. A build counts as READY only on a trees-on screen once the switch is live.
 - All vetoes and rules are otherwise unchanged.
+
+## Doug 9:06 PM ET (Sat Nov 21): one-time exception, P34 to the site
+Doug approved ONE site test of P34 #147 (c281bf59e6276ffda376cc84a0c95f620331485e) despite its full-screen VETO, using an idle slot (6 of 6 open, nothing READY). It's submitted once by the coordinator on Doug's direct order. This is not a precedent: the "only fully passing builds" rule is otherwise unchanged.

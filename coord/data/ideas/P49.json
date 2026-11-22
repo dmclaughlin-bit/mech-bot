@@ -212,21 +212,76 @@
     "id": "P49b",
     "title": "P49 TREE_HEAL with a hard 8 s cap per heal attempt (same flag TREE_HEAL_ON)",
     "owner": "Mech Builder",
-    "stage": "building",
+    "stage": "built",
     "branch": "p49b-tree-heal-cap",
     "base": "27b945b (p49-tree-heal record head; bot code = P49 flag-off 131a852156ef6926d0859b608fc7978774aa9e03)",
     "champion": "P48 b9492c6 (merge edb729f)",
     "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
     "flag": "TREE_HEAL_ON",
     "why": "P49 #172 (38aa957) vetoed 3x by Sim Tester (drop-ring arrivals 7 -> 6 on 2000+3000 from seed 3086, stall (b) on 3086 t=215-244, stall (c) 2 -> 5 pause games on 2000+3000: new 2022, 3066, 3086) for heal-walk pauses after 40 s",
-    "change": "Same one behavior and flag (TREE_HEAL_ON). Guard inside it: hard cap TREE_HEAL_MAX_S = 8 s on the whole tree-heal walk + hold per heal attempt regardless of progress or HP gain (then the champion's own logic runs; no new tree-heal attempt until the next heal phase); immediate exit when zone travel / leaving the zone / a near-and-reachable drop (DROP_RUN_M) / a drop run or hold needs moving; the abandoned spot is skip-listed for that heal phase. TREE_HEAL_MIN_T stays 40. Step A not needed (P49 fired 160/192 and 148/192).",
+    "change": "Same one behavior and flag (TREE_HEAL_ON), guard inside it: a heal phase (one stretch below 90% HP within one zone phase) gets ONE tree-heal attempt; walk + hold hard-capped at TREE_HEAL_MAX_S = 8 s from its first walk tick regardless of progress or HP; ends at once outside the zone, when leaving for the next circle, on a drop near AND reachable within DROP_RUN_M, in a drop run/hold, or when its spot leaves the circle; the spot is skip-listed and the champion runs until the next heal phase. TREE_HEAL_MIN_T stays 40. No new flag. Step A not needed (P49 fired 160/192 and 148/192).",
     "pin_check_seeds": [
       2022,
       3066,
       3086
     ],
     "timestamps": {
-      "created": "2026-11-22 00:35 ET"
-    }
+      "created": "2026-11-22 00:35 ET",
+      "updated": "2026-11-22 00:52 ET"
+    },
+    "flagoff_sha": "931567f00429cf59f6195f6415bfd7951a29d6b1",
+    "sha_note": "Flag-ON head = the final commit on branch p49b-tree-heal-cap that only flips TREE_HEAL_ON to true in params.ts (printed as PUSHED by the builder). Flag-off code = 931567f00429cf59f6195f6415bfd7951a29d6b1.",
+    "fix_round": "One fix used. Round 1 (cap + exits only) failed the pin check: 3066's 25 s pause (t=61-86) stayed identical to P49 (tree heal there was 2 episodes <= 1.5 s, the cap never bound) and base-6000 NEW pin 6082 (28 s, 7 flag ticks) stayed. Both were the champion's laser rush stuck after a short tree walk moved a gun-only bot off its weapon route (until LASER_CHASE_S 20 s). Fix: tree heal is also off while the champion's weapon walk could start (no laser held, a free slot, t < LASER_RUSH_S or gun-only after; LASER_RUSH_ON). Round 1 numbers: base 0 fired 47, +0.333+-0.196, drops 5->4, deaths<40 24->24, no new pin; base 6000 fired 55, +0.073+-0.138, drops 1->1, deaths<40 16->16, NEW pin 6082.",
+    "pin_check": {
+      "sim": "copy of /workspace/builder-sim/tools/sim, --trees, --jobs 1; champion rows equal the tester's trees-b9492c6 CSV rows (non-timing) on 2022, 3066, 3086 and on 96/96 of bases 2000 and 3000; P49 (131a852 flag on) reproduces the tester's three pauses exactly",
+      "3086": "champion: 1st survived, kills 13, drops 20001 @220.6 + 20002 @247, no pause. P49: 1st survived, kills 11, no drops, pause 29 s t=215-244 at (39,-95). P49b: 1st survived, kills 12, drop 20002 @243.7 (20001 lost), NO pause >= 20 s. Pause gone; drops 1 vs champion 2 (not fully back).",
+      "2022": "champion: 3rd, death 100.65, no drops, no pause. P49: 2nd, death 282.65, pause 35 s t=217-252 at (70,107). P49b: 1st survived, kills 15, drop 20000 @125.8, NO pause.",
+      "3066": "champion: 13th, death 118.85, no pause. P49: 13th, death 175.35, pause 25 s t=61-86 at (-50,67) (laser rush/heal). P49b: 11th, death 109.25, kills 5, NO pause.",
+      "full_2000_3000": "P49b vs champion: pause games 2 -> 3 (2047, 3060 same as champion; 2022/3066/3086 gone; NEW 2021 28 s t=84-112 at (30,232), 0 flag ticks, last flag tick 53.6 s, champion break crossfire/heal/retreat-to-cover flip, place 11 -> 10, death 212.40 -> 112.75). Drop arrivals 7 -> 9 (2000: 2 -> 5 gained 2022, 2055, 2090; 3000: 5 -> 4 lost 3086). Deaths<40 29->29, 19->19. Survivors 1->3, 1->1. Paired +0.135+-0.101 (2000), +0.000+-0.109 (3000). Fired 34, 34. Kills 333->347, 346->347. (P49 on the official screen: pause games 2 -> 5, drops 7 -> 6.)"
+    },
+    "checklist": {
+      "eqdrive": "flag-off 931567f vs origin/main a2aa4e1 (bot code = b9492c6): every non-timing CSV column 96/96 on bases 0 and 6000; action-stream hash 96/96 on 6000 and 95/96 on 0 in the batch, the one (seed 63) a 61.6 ms load spike that switched canPlan()'s wall-clock budget at t=226; isolated rerun of seed 63 identical (hash b1fc8eb8, 2366 ticks, max 3.5 ms) -> IDENTICAL 192/192",
+      "check_py": "PASS default (max 3.1 ms) and flag-on (max 3.3 ms); check.py's 300 observations end before t = 40 so P49b never runs in it. Sim wrapper per-decision max flag on: 5.4 (0), 4.8 (6000), 13.9 (2000), 9.3 (3000) ms",
+      "early_activation": "0 tree-heal ticks before t = 10 (and 0 before t = 40) on all 384 flag-on games",
+      "cap": "longest continuous 'heal, trees' stretch 3.1 / 4.6 / 5.8 / 7.9 s (bases 0 / 6000 / 2000 / 3000), all under 8 s",
+      "archive_bytes": 3543040,
+      "ancestry": "edb729f and b9492c6 are ancestors of HEAD"
+    },
+    "screens": [
+      {
+        "seed_set": "0 trees-on (builder checklist, 96, --jobs 1)",
+        "fired": 37,
+        "diff_behavior": 37,
+        "diff_score": 20,
+        "sim_delta": 0.229,
+        "sim_se": 0.173,
+        "better": 12,
+        "worse": 8,
+        "drop_ring_arrivals": "5 -> 4 (lost 44: 2 -> 0, gained 61)",
+        "died_before_40": "24 -> 24",
+        "survivors": "2 -> 2",
+        "kills": "293 -> 314",
+        "pins": "champ 3 pin games (41, 43, 79), head 3: same as champion, 0 flag ticks; none new",
+        "vs_P49": "P49: fired 47, +0.625+-0.238, drops 5->6, survivors 2->6, kills 293->345, NEW pin 38"
+      },
+      {
+        "seed_set": "6000 trees-on (builder checklist, 96, --jobs 1)",
+        "fired": 40,
+        "diff_behavior": 40,
+        "diff_score": 27,
+        "sim_delta": 0.104,
+        "sim_se": 0.112,
+        "better": 16,
+        "worse": 11,
+        "drop_ring_arrivals": "1 -> 1",
+        "died_before_40": "16 -> 16",
+        "survivors": "0 -> 0",
+        "kills": "358 -> 367",
+        "pins": "champ 2 pin games, head 1: 6082 20 s t=63-83 at (-362.8, 9.0), 0 flag ticks, same spot as the champion's stall (place 12 -> 12, death 102.75 -> 102.75); none new",
+        "vs_P49": "P49: fired 55, +0.031+-0.123, drops 1->1, survivors 0->0, kills 358->360, NEW pin 6082 (28 s, 7 flag ticks)"
+      }
+    ],
+    "verdict": "PASS (builder checklist: eqdrive, check.py, 0 early, deaths<40 equal on both bases, no new pin on 0/6000; pin check: all three veto pauses gone). Caveats for the screen: 3086 drops 1 vs champion 2; new 28 s pause game 2021 on base 2000 (0 flag ticks, 30 s after the last flag tick), so 2000+3000 pause games 2 -> 3.",
+    "next_action": "Coordinator: flag-ON head of p49b-tree-heal-cap ready for the Sim Tester trees-on paired screen (2000+3000, 4000+5000) vs P48 b9492c6. Note seed 2021 (new pause, 0 flag ticks) and 3086 (drops 2 -> 1) on 2000+3000."
   }
 }

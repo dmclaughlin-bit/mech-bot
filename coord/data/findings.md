@@ -26,3 +26,7 @@ Rules:
 
 ## What the champion doesn't do (saves us building dead ideas)
 - N1 P48 almost never just stands still mid-game (P46 Step A 0/192 and 1/192), so stuck-in-the-open fixes don't fire.
+
+## Added by the 10-minute loop, 12:42 AM ET Sun
+- F11 Early farming cuts early deaths (P52 #169, 74b6ee4, Diego's Mac sim): died<40 s 48 to 45 and 38 to 37; means +0.047 and +0.016; cost: drop-ring total 8 to 3 on 2000+3000. Sim signal; supports F8.
+- F12 Tree rotate on the zone trip is safe (P47 #171, 9d388ad, Diego's Mac sim): no veto, survivors 3 to 4 on 4000+5000, all hazard counts flat; low activation (13 and 15 of 192). Sim signal; builds on F3.

@@ -137,3 +137,13 @@ All earlier approvals have expired. Every waiting build (P33, P34, P35, P29b #14
 
 ## NEW CHAMPION 10:29 PM ET: P48 tree retreat 4.44 (BB-94897D91), commit b9492c6 (PR #157, merge pending)
 Near-miss data test: screen vs P34 0e6fadd failed exactly one veto (drop-ring set totals 9->7 and 8->5); means -0.005 / +0.026; fired 24/192 on both sets; early deaths, survivors, 20 s+ pause games equal; check.py max 2.9 ms; archive 3,430,400 bytes. All earlier approvals expired; P43 (#158), P38b, P35b, P40c, P44 must rebase onto b9492c6 and be re-screened.
+
+## P47 TREE_ROTATE_ON, PR #171, 9d388ad9c3673ac097c2df4d99ce5a5731f0ad70 — READY (12:42 AM ET Sun, 10-minute loop)
+- Champion: P48 b9492c6 (main edb729f, site 4.44). Contains edb729f: yes (merge-base --is-ancestor OK).
+- Single change: bot files differ only in brain.ts (+33 lines, all inside `if (TREE_ROTATE_ON && ...)` plus one unused-when-off let) and params.ts (3 new constants). Flag-off identical to main by inspection (short-circuit on TREE_ROTATE_ON).
+- check.py (loop rerun, /tmp/p47wt): PASS, 300/300 in time, max 2.9 ms.
+- Archive: 3,543,040 bytes (< 15,000,000).
+- Screen: Diego's Mac full paired trees-on screen vs Mac P48 baseline (PR #171 comment 05:11Z, hazard sim f67a491): 2000+3000 -0.010±0.023, 4000+5000 +0.031±0.040; died<40 48->48, 38->38; drop rings 8->8, 4->4; 20 s+ pause games 2->2, 2->2; survivors 2->2, 3->4; missed/over 50 ms 0/0. No veto. Sim Tester has not screened it; Mac verdict stands (whichever station finishes first decides).
+- Activation: different behaviour 13/192 and 15/192 (>= 10 on both).
+- Novelty: tree-shadow detour on the zone trip; not site-tested; builds on F3 (tree cover). Not equivalent to P48 (retreat under fire) or zone-early family.
+- Decision: READY for the next free slot once the pending P49 score (submitted 12:33 AM ET on Doug's order) is back. Expected impact small (neutral within noise).

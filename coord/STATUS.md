@@ -164,3 +164,7 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 - BB-9617EF60 (P53b) still queued (#3 of 28 at ~2:08). Counter 3 of 6 left; rules text 4/hour.
 - Near-miss pool now EMPTY: P41 #173 was retired 12:50 AM ET (Sim Tester stall b+c vetoes); 96-fresh-game advisory 2:03 AM: P41 3.708 vs P48 3.740, delta -0.031 +/- 0.056. Loop rechecks of c21d23b (check.py max 3.9 ms, archive 3,584,000) are moot.
 - Unused slot reason: no READY build and no eligible near miss after P53b. Closest: Mech Builder P60 (no branch yet; last builder commit P59 1:48 AM).
+
+## Loop 2:15 AM ET Sun
+- P53b BB-9617EF60 scored 3.63 builders-4: LOSS (-0.12 vs 3.75). 96-game had predicted +0.000 (neutral); site came in lower, consistent with N2 (hypothesis).
+- Submitted P41 c21d23b as near-miss data test (BB-0AAB8ADB, queued #14). Reason: no READY build; P60 (positive F16, near-miss candidate) still needs the official screen + 96-game estimate. Site tests last 60 min: 3 (P48 1:44, P53b 1:58, P41 2:13). P60 is next once screened.

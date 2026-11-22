@@ -40,3 +40,5 @@ flowchart TD
 - Doug 7:16 PM ET: stall rule narrowed (see WORKFLOW.md, "stall rule"); other vetoes unchanged.
 
 - Doug 7:35 PM ET: full paired screens run on the #133 faster sim (identical results, about 2.6x faster).
+
+- Doug 7:55 PM ET: drop-arrival veto judged by set totals; a ~1.3 s earlier death at the same place is not "worse" under stall clause (b).

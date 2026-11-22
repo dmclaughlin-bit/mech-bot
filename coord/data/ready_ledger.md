@@ -123,3 +123,11 @@ These were listed in the stub as “not eligible / do not submit.” They stay H
 - Screens complete; seed 3043 pin fixed, but new 20 s+ pins 72 (20 s), 4091 (26 s), 5048 (25 s), 5054 (20 s), memory not active in any window. Also D3 question: memory plus no-progress drop may be two behaviors under one flag. Owner: Doug (pin rule + D3). Next: Doug's answer.
 
 ### 6:54 PM ET: P27 submitted 6:50 PM ET, BB-004FA2FF, scored 4.13 (-0.04 vs 4.17). CLOSE. READY count now 0.
+
+## P29 midring settle (PR #143) READY 7:58 PM ET
+- SHA 2e1d03615f6e8faa7097ffcbd441be43b234c5b9 vs champion 6182d29 (site 4.17). Screen: Sim Tester #143 comment 7071728630 (old sim, both sets).
+- Novelty: first zone settle/midring position rule site-tested (not zone-early, not P28 patrol).
+- Gate: own check.py PASS, max 2.6 ms. Flag-0 identical (Sim Tester, base 2000). merge-base OK. q.py eligible OK (single change).
+- Activation: 17/16/8 (2000+3000), 25/25/11 (4000+5000). Sim +0.031 ± 0.037, +0.021 ± 0.028 (information only).
+- Hazards: drops 6->8 and 5->7; died <40 s 56->56, 54->54; 20 s+ pause games 4->4, 5->5; survivors equal.
+- Decision: READY by Doug's 7:55 PM ET ruling (set-total drop arrivals; seed 4027 1.3 s earlier death at same place is not "worse").

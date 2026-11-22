@@ -1,0 +1,57 @@
+{
+  "id": "P26b",
+  "title": "Healthy boost, drop-safe: P26's healthy reserve boost only on the long zone leg, never near any drop (HEALTHY_BOOST_ON)",
+  "family": "movement",
+  "flags": [
+    "HEALTHY_BOOST_ON"
+  ],
+  "flag": "HEALTHY_BOOST_ON",
+  "behaviors": [
+    "on a long (> 60 m) 'to next circle' leg, healthy (HP >= 60%, not hurt in the Build 19 sense), grounded, unseen, energy above 50%, t >= 10 s, no drop announced/falling/on the map, not in a drop run/hold, and not in the 15 s before any drops.times call: boost instead of walk"
+  ],
+  "owner": "Mech Builder",
+  "stage": "retired",
+  "pr": null,
+  "sha": "2bb68462ea1541a4039142f615aae432fbe809fc",
+  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "screens": [
+    {
+      "sha": "69cfa880e0c8a8a62b2c2193d796e8d4ac13b264 with HEALTHY_BOOST_ON=true (temp copy /tmp/p26b-on)",
+      "seed_set": "0 (base-0 activation count, n=96, builder run, --jobs 1)",
+      "fired": 0,
+      "diff_behavior": null,
+      "diff_score": null,
+      "pins": null,
+      "verdict": "BARELY FIRES (0/96 < 5/96): stopped at BUILD step C",
+      "source": "builder run: /tmp/wild-sim run.ts --jobs 1, passive per-decision wrapper, 2026-11-22",
+      "sim_delta": null,
+      "sim_se": null,
+      "notes": "0 activation ticks in 96 games. Cause: in the sim an uncaptured drop stays in obs.drops after it lands, so a drop is on the map on 97.6% of ticks at t >= 70 s; only 17 'to next circle' ticks (1 game, t 180-190 s) pass the drop/opening/pre-call gates, and none of them pass the HP/energy/line-of-sight/leg-length checks. Mean 3.479 (info only)."
+    }
+  ],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": "RETIRED 8:00 PM ET by coordinator: the drop-on-map gate fixes #138's arrival losses but the boost then fires 0/96 (a drop is on the map 97.6% of ticks after 70 s in the sim). Possible follow-up P26c (gate only drops within DROP_RUN_M) is parked below P34/P35/P32/P33. No PR opened.",
+  "blocker": "with 'no drop announced or on the map' the rule fires in 0/96 base-0 games (a drop is on the map 97.6% of ticks after 70 s); needs a coordinator decision on the drop gate before any further work",
+  "next_action": "Grok/Doug: retire, or re-scope the drop gate (e.g. only drops we could run to / within DROP_RUN_M); builder does not proceed to step D/E",
+  "doug_waiver": false,
+  "source": "Rebuild of P26 (#138, c566fba, held for a drop-ring arrival loss 6->5 on 2000+3000 and 20 s+ pause games 5->6 on 4000+5000). Builder diagnosis: every lost arrival (seeds 89, 94, 2047, 3000, 5051) and every new/grown pause game (4018, 5053, 78) diverges from the champion through P26 boost ticks taken on a 'drop, run' leg or while a drop was announced or uncaptured on the map; boost drains energy to the 50% reserve and the bot meets the drop contest with 15-50 energy.",
+  "timestamps": {
+    "assigned": "2026-11-22",
+    "updated": "2026-11-22"
+  },
+  "sources": [
+    "coord/data/ideas/P26.json",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/138#issuecomment-7071092977",
+    "/workspace/tester/haz138.out and /tmp/stress-logs/{c2,h138,i138}-* (Sim Tester #138 logs)",
+    "builder single-seed reruns /tmp/wild-sim --jobs 1, main 6182d29 vs P26 c566fba",
+    "builder base-0 activation run, /tmp/p26b-h/logs96/on-0 (local)"
+  ],
+  "flags_note": "FLAGOFF commit 69cfa880e0c8a8a62b2c2193d796e8d4ac13b264: eqdrive flag-off vs origin/main identical (cmp)",
+  "diagnosis": {
+    "lost_arrivals": "P26 lost drop-ring arrivals on seeds 89, 94 (base 0), 2047 (2000), 3000 (3000), 5051 (5000). Every one starts with P26 boost on a 'drop, run' leg toward a landed, uncaptured drop (110-200 s; 3000 also with 20002 announced at 216-218 s). Energy drains 100 -> ~51 in ~3 s and the bot meets the drop contest (crossfire / fight / sticky spot) with 15-50 energy instead of 60-100: 89 died 213 -> 140 s; 2047 HP 1739 -> 196 by 135 s; 3000 died 376 -> 227 s (place 10 -> 15); 5051 died 191 -> 151 s; 94 could not stuck-jet (energy 14, needs > 15) at (64,-126).",
+    "pauses": "4018 (22 s), 5053 (20 s), 78 (28 -> 38 s): boost never active inside the pause; each game first diverges through boost ticks taken while a drop was announced or on the map (4018 on 'drop, run' at 196.8 s; 5053 and 78 on 'to next circle' at 152.9 s / 160.5 s with 20000 landed and 20001 announced)."
+  }
+}

@@ -1,3 +1,5 @@
+**11:55 PM ET:** P43b #162 e4879af official screen vs P48: 1 veto (drop-ring 7->5 on 2000+3000), mean -0.010/+0.031, fires 8/192 and 11/192. Near-miss candidate pending Doug ruling on 8/192 activation. Slot unused this tick: no READY build; near miss held for that ruling. ChatGPT #168 reviewed (APPROVE_WITH_STIPULATIONS, advisory).
+
 # Current status for researchers (read this first)
 
 **Doug 10:28 PM ET:** Diego's Mac screens builds with build and champion on the same machine; first two builds (P43 #158, P35b #159) cross-checked on both stations before its verdicts count.

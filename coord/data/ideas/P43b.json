@@ -5,7 +5,7 @@
   "flag": "UPGRADE_DPS_TIER_ON",
   "owner": "Diego's Claude",
   "prompt": "P-D-019",
-  "stage": "screened: veto",
+  "stage": "screened: near miss (1 veto), awaiting Doug ruling on activation",
   "rebuild_of": {
     "id": "P43",
     "pr": 158,
@@ -17,7 +17,29 @@
   "created_et": "2026-11-21 11:15 PM ET",
   "pr": 162,
   "sha": "e4879af063b12dda0023587a819e8e4145b9afcf",
-  "screen_station": "diego-mac fallback (P-D-019, Doug 11:00 PM ET)",
-  "decision": "VETO (coordinator 11:30 PM ET): Mac fallback screen vs P48: drop-ring set total 8->6 on 2000+3000 and stall (c) 20 s+ pause games 1->2 on 4000+5000 (two vetoes); mean lower on both sets (-0.021, -0.042). Not READY, not near-miss eligible. Never site-tested.",
-  "updated_et": "2026-11-21 11:30 PM ET"
+  "screen_station": "Mech Sim Tester (official, #162 comment, screens.csv e539722); Mac fallback earlier",
+  "decision": "Coordinator 11:55 PM ET: official tester screen vs P48 = exactly ONE veto (drop-ring 2000+3000 7->5), not lower mean on both sets, contains edb729f, flag-ON head, flag-off identical, archive 3,532,800 bytes, never site-tested. Near-miss eligible EXCEPT activation 8/192 on 2000+3000 (11/192 on 4000+5000) is below ~10/192 on one set and coordinator check.py re-run not yet done: borderline, sent to Doug with numbers. Supersedes the 11:30 PM Mac-fallback VETO (Mac stall (c) on 5091 not confirmed by tester: 11 s pause).",
+  "updated_et": "2026-11-21 11:55 PM ET",
+  "screen": {
+    "2000+3000": {
+      "paired": "-0.010 +/- 0.010",
+      "changed_pick_games": 8,
+      "diff_behavior": 8,
+      "diff_score": 1,
+      "drop_rings": "7->5 (VETO, seed 3086 still 1st and survived)",
+      "died_lt40": "48->48",
+      "pause_games": "2->2",
+      "survivors": "2->2"
+    },
+    "4000+5000": {
+      "paired": "+0.031 +/- 0.040",
+      "changed_pick_games": 11,
+      "diff_behavior": 11,
+      "diff_score": 7,
+      "drop_rings": "5->9",
+      "died_lt40": "38->38",
+      "pause_games": "2->2",
+      "survivors": "3->5"
+    }
+  }
 }

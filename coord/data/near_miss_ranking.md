@@ -1,3 +1,8 @@
+## Update 11:55 PM ET (champion P48 edb729f)
+
+1. P43b UPGRADE_DPS_TIER_ON, PR #162, e4879af: official trees-on screen vs P48, exactly one veto (drop-ring set total 7->5 on 2000+3000, seed 3086 still 1st and survived; 4000+5000 5->9). Means -0.010 +/- 0.010 and +0.031 +/- 0.040 (not lower on both). Changed pick 8/192 and 11/192. Archive 3,532,800 bytes. Blocker: activation 8/192 on one set (borderline vs ~10/192) and coordinator check.py re-run; Doug ruling requested.
+Old P34-era pool below is stale (champion changed).
+
 # Near-miss ranking
 
 First ranking, Sat Nov 21 2026, 9:53 PM ET, by the coordinator after Doug confirmed the near-miss pathway at 9:47 PM ET. Champion at this ranking: P34 lethal release, code `0e6fadd1a30db4ee30c26114b8198f63d782b7c9`, merged to main as `8c130ad7f0c81acb03508c40f20c31867f29d358`, official score 4.38, receipt BB-ABEB42BF (`coord/data/site_results.csv`; `coord/STATUS.md` 9:17 PM ET update).

@@ -1,0 +1,130 @@
+{
+  "author": "Doug",
+  "submitted_at": "2026-11-21T19:41:00-05:00",
+  "findings": [
+    {
+      "claim": "Winners make most of their kills late: 2.51 kills per winner-game after 120 s vs 0.68 in the first 60 s, and 58% of winners' kills after 120 s are laser kills (93 complete showdowns).",
+      "topic": "strategy_mechanics",
+      "sources": [{"ref": "/workspace/watch/research-doug-1941/killsrc.out (from /workspace/watch/mechanics/cache/events.csv.gz)", "kind": "watch_stream", "quote": "winner n=94 0-60:0.68 60-120:0.51 120+:2.51; killer winner n=236 laser 58%"}],
+      "confidence": 0.7,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "Rank mid/late laser-kill mechanisms above opening changes",
+      "mechanism": "Score tracks our kills; the largest kill pool is after 120 s and is mostly laser kills",
+      "sample_size": 1395,
+      "keywords": ["late-game", "kill-source", "laser"]
+    },
+    {
+      "claim": "Our laser lets go only at full charge (fire[laser] = !(full && lined)); a top-16 public bot releases a partial charge early when 0.8 x its partial damage already covers the target's HP.",
+      "topic": "untested_opportunity",
+      "sources": [
+        {"ref": "brain.ts:1036-1046 (main 6182d29)", "kind": "repo", "quote": "fire[laser] = !(full && lined)"},
+        {"ref": "Watcher T06 public MIT bot, mech/brain.go:978-990 (commit f3871e2; link withheld per team rule)", "kind": "repo", "quote": null},
+        {"ref": "/workspace/mechfight-kit/protocol.md:305", "kind": "protocol", "quote": "Damage scales with the charge, from min_frac 35% at none to damage 315 at full"}
+      ],
+      "confidence": 0.35,
+      "is_guess": true,
+      "verification": "unverified",
+      "suggested_change": "LETHAL_RELEASE flag: release a charging laser once 0.8 x partial damage (with cube bonus and cook-off) >= locked target's visible hp and lined up, never before min_charge",
+      "mechanism": "Finishes low targets up to 0.6 s sooner, before they break line of sight; touches only late laser kills",
+      "expected_gain": 0.05,
+      "effort": 2,
+      "regression_risk": 0.15,
+      "failure_classes": [{"class": "AIM_WEAPON", "confidence": 0.3, "basis": "full-charge-only release delays finishing shots"}],
+      "related_experiments": ["B108"],
+      "keywords": ["laser", "finish", "release"]
+    },
+    {
+      "claim": "In 1,856 showdown first engagements, landing the first hit gives KILL 309 / DIED 171 vs KILL 129 / DIED 297 when the opponent lands it; rear hits are 9.2% of hits dealt in KILL engagements vs 1.3% in DIED ones.",
+      "topic": "strategy_mechanics",
+      "sources": [
+        {"ref": "/workspace/watch/research-doug-1941/q2.out", "kind": "watch_stream", "quote": "first hit mine: n=993 KILL=309 DIED=171; first hit theirs: n=863 KILL=129 DIED=297"},
+        {"ref": "/workspace/mechfight-kit/protocol.md:295", "kind": "protocol", "quote": "A hit from outside your torso's front arc ... deals mech.rear_mult (x1.5) damage"}
+      ],
+      "confidence": 0.6,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "UNSEEN_PICK flag: target.ts bonus for an enemy whose aim is >90 deg off its bearing to us and >45 m away",
+      "mechanism": "A target that cannot see us gives us the first hit and x1.5 rear damage",
+      "expected_gain": 0.08,
+      "effort": 2,
+      "regression_risk": 0.3,
+      "related_experiments": ["B16", "B40"],
+      "sample_size": 1856,
+      "keywords": ["first-hit", "rear", "target-pick"]
+    },
+    {
+      "claim": "A top-16 bot's fitted fight-odds model adds +0.82 logit when opening on a target whose aim is more than 1.75 rad off us, alongside log HP ratio, capped cube difference, weapon count and busy terms.",
+      "topic": "top_team_behavior",
+      "sources": [{"ref": "Watcher T06 public MIT bot, mech/brain.go:1890-1924 (commit f3871e2; link withheld per team rule)", "kind": "repo", "quote": null}],
+      "confidence": 0.5,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "Use the aim-off-us signal as one target-pick term (see UNSEEN_PICK); ideas only, no code reuse",
+      "keywords": ["odds", "target-pick", "public-repo"]
+    },
+    {
+      "claim": "Showdown winners almost always end up with a laser (94% vs 34% of the bottom half), but laser by 30 s is only 57% vs 33%; 30 of winners' 45 first lasers taken after 30 s were dropped weapons, and 862 lasers were dropped on the tick their holder died.",
+      "topic": "contradiction",
+      "sources": [
+        {"ref": "/workspace/watch/research-doug-1941/q1.out", "kind": "watch_stream", "quote": "ever took a laser 94% (113/120) ... 34% (320/944); laser by 30 s 57% ... 33%"},
+        {"ref": "/workspace/watch/research-doug-1941/dropsrc.out", "kind": "watch_stream", "quote": "('at_death', 'laser'), 862"},
+        {"ref": "/workspace/watch/ladder.md:56", "kind": "watch_stream", "quote": "has laser by 30 s ... 56% ... 33% ... d=+0.47 ... low"}
+      ],
+      "confidence": 0.6,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "Step A: count sim games where we kill a laser holder and end without a laser; build TAKE_KILL_LASER only if >=10/192",
+      "mechanism": "In practice only house bots we kill drop lasers; taking it converts a kill into the late laser that finishes most late kills",
+      "expected_gain": 0.05,
+      "effort": 2,
+      "regression_risk": 0.2,
+      "related_experiments": ["B17", "B80", "UF100", "B66", "B90"],
+      "sample_size": 1888,
+      "keywords": ["laser", "late", "drop"]
+    },
+    {
+      "claim": "The early-laser lever looks saturated on the site: B17 arm-up gained +0.42, but UF100 raised sim laser-by-30 s 58 -> 82 of 192 and tied 3.79, and every later early-laser variant tied or lost.",
+      "topic": "contradiction",
+      "sources": [
+        {"ref": "coord/data/site_results.csv (B17, UF100, B36, B74, B40, B32, B39, B64, B45 rows)", "kind": "other", "quote": null},
+        {"ref": "coord/log.md:409", "kind": "other", "quote": "laser by 30 s 58->82"}
+      ],
+      "confidence": 0.65,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "Do not spend slots on opening or early-laser changes",
+      "related_experiments": ["B8", "B17", "UF100"],
+      "keywords": ["laser-rush", "opening", "dead-family"]
+    },
+    {
+      "claim": "B21's upgrade reorder (sensors moved below weapon upgrades) lost 0.04 on deterministic seeds; sensors adds +25 m vision and +15 m proximity, which plausibly buys the first hit that decides first fights.",
+      "topic": "resource_upgrade",
+      "sources": [
+        {"ref": "coord/log.md:313", "kind": "other", "quote": "e0710b6 scored 3.46 ... below champion 3.50"},
+        {"ref": "/workspace/mechfight-kit/check/stream.jsonl.gz config.upgrades", "kind": "protocol", "quote": "sensors near_range_bonus +15, vision_bonus +25, hearing x0.5"}
+      ],
+      "confidence": 0.3,
+      "is_guess": true,
+      "verification": "unverified",
+      "suggested_change": "Keep sensors at rank 3; if an empty slot appears, order only the weapon tier (gun_mag first) and leave sensors in place",
+      "expected_gain": 0.02,
+      "effort": 1,
+      "regression_risk": 0.2,
+      "related_experiments": ["B21"],
+      "keywords": ["upgrades", "sensors"]
+    },
+    {
+      "claim": "Opening on an opponent already under 70% HP gives KILL 111 / DIED 16 (n=244) in showdown first engagements; winners open on hurt targets 25% of the time vs 8% for the bottom half.",
+      "topic": "strategy_mechanics",
+      "sources": [{"ref": "/workspace/watch/research-doug-1941/q2.out", "kind": "watch_stream", "quote": "opp already <70% HP: n=244 KILL=111 DIED=16"}],
+      "confidence": 0.55,
+      "is_guess": false,
+      "verification": "unverified",
+      "suggested_change": "No new build: target pick already weights hp (TARGET_W.hp); keep as evidence for target-pick tuning",
+      "related_experiments": ["B16", "B117"],
+      "sample_size": 244,
+      "keywords": ["target-pick", "hurt-target"]
+    }
+  ]
+}

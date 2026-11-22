@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_DROP_PRE_S, MIDRING_PROGRESS_M, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -309,7 +309,7 @@ function buildBot(hello: Hello): Bot {
   /** P-B-001: the enemy the standoff break walked at last decision (null when it did not run). */
   let standoffId: number | null = null
   /** P-D-012 (P29): the midring settle walk in progress, and the hold phases (by shrink_start) it gave up on. */
-  let settle: { goal: Vec3; phase: number; best: number; at: number } | null = null
+  let settle: { goal: Vec3; phase: number; from: number; at: number } | null = null
   const settleSkip = new Set<number>()
 
   /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
@@ -849,7 +849,8 @@ function buildBot(hello: Hello): Bot {
         const phase = z.shrink_start
         const r = z.radius
         const afterShrink = r < Number(cfg.zone.start_radius) - 1 && obs.t < z.shrink_start
-        const dropNear = (obs.drops ?? []).some((x) => (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M)
+        // P-D-013: yield to every supply drop: none announced or on the ground, and no drop call due in MIDRING_DROP_PRE_S.
+        const dropNear = (obs.drops ?? []).length > 0 || ((cfg.drops?.times ?? []) as number[]).some((c) => c - obs.t >= 0 && c - obs.t <= MIDRING_DROP_PRE_S)
         const d = flat(me.pos, z.center)
         if (settle && settle.phase !== phase) settle = null
         const can = mode === "hold" && farmOk && !farmGoal && !farmHold && afterShrink && r > MIDRING_MIN_R && !dropNear && !settleSkip.has(phase)
@@ -859,15 +860,20 @@ function buildBot(hello: Hello): Bot {
           const goal: Vec3 = [z.center[0] + ux * MIDRING_GOAL * r, z.center[1] + uy * MIDRING_GOAL * r, me.pos[2]]
           const pace = ZONE_WALK * walkSpeed
           const safe = (flat(me.pos, goal) + Math.max(0, flat(goal, z.next_center) - inner)) / pace + ZONE_BUFFER < timeLeft
-          if (safe) settle = { goal, phase, best: flat(me.pos, goal), at: obs.t }
+          if (safe) settle = { goal, phase, from: flat(me.pos, goal), at: obs.t }
         }
         if (settle) {
           const left = flat(me.pos, settle.goal)
-          if (left < settle.best - 1) { settle.best = left; settle.at = obs.t }
-          if (left < 5) settle = null
-          else if (obs.t - settle.at > MIDRING_STUCK_S) { settleSkip.add(phase); settle = null }
-          else {
-            move = travel(me.pos, settle.goal, obs.t, canPlan()).move
+          // P-D-013: under MIDRING_PROGRESS_M of progress in each MIDRING_STUCK_S window = give up for this circle.
+          if (obs.t - settle.at >= MIDRING_STUCK_S) {
+            if (settle.from - left < MIDRING_PROGRESS_M) { settleSkip.add(phase); settle = null }
+            else { settle.from = left; settle.at = obs.t }
+          }
+          if (settle && left < 5) settle = null
+          if (settle) {
+            // P-D-013: always at the silent speed, so the walk is never heard (a heard walk drew hunters in seed 5028).
+            const go = travel(me.pos, settle.goal, obs.t, canPlan()).move
+            move = [go[0] * silent, go[1] * silent]
             mode = "midring settle"
           }
         }
@@ -901,7 +907,7 @@ function buildBot(hello: Hello): Bot {
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
-      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush" && mode !== "midring settle") move = [move[0] * silent, move[1] * silent]
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

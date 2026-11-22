@@ -144,9 +144,11 @@ export const DROP_RUN_M = 200
 /**
  * P-D-012 / idea P29 (midring settle, Watcher SKILLS.md idea 5): after a shrink, in the hold phase before the next one,
  * while we would only hold (farmOk, nothing to farm, no engage, no zone travel, no drop run/hold and no claimable drop
- * within DROP_RUN_M), and our distance from the circle's center is outside MIDRING_LO..MIDRING_HI of its radius, walk
- * (silently) to the point at MIDRING_GOAL of the radius on our own side of the center, then sit there. Off at radius
- * <= MIDRING_MIN_R m. Gives up for the rest of that hold phase after MIDRING_STUCK_S s without 1 m of progress.
+ * within DROP_RUN_M; P-D-013: no drop announced or on the ground anywhere, and no drop call due within
+ * MIDRING_DROP_PRE_S s), and our distance from the circle's center is outside MIDRING_LO..MIDRING_HI of its radius, walk
+ * (always at the silent speed) to the point at MIDRING_GOAL of the radius on our own side of the center, then sit there. Off at radius
+ * <= MIDRING_MIN_R m. Gives up for the rest of that hold phase when a MIDRING_STUCK_S s window brings under
+ * MIDRING_PROGRESS_M m of progress.
  * Zone travel, engage, retreat, laser walk, crossfire, ambush, drops and farming all rank above it.
  * false = champion behavior exactly.
  */
@@ -156,3 +158,6 @@ export const MIDRING_HI = 0.7
 export const MIDRING_GOAL = 0.55
 export const MIDRING_MIN_R = 70
 export const MIDRING_STUCK_S = 3
+/** P-D-013 (P29b): metres of progress the settle walk needs per MIDRING_STUCK_S window, and seconds before a drop call it stands down. */
+export const MIDRING_PROGRESS_M = 3
+export const MIDRING_DROP_PRE_S = 15

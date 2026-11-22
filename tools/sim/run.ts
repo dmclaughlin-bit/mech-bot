@@ -83,6 +83,7 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
   let late = 0, missed = 0, botMs = 0, decisions = 0, missedRun = 0
   const trace = !!process.env.SIM_TRACE
   const HASH = process.env.SIM_HASH_DIR, hashes: string[] = []
+  const DUMP = process.env.SIM_DUMP_DIR, DUMP_T = +(process.env.SIM_DUMP_S ?? 60), dump: string[] = []
   const pins: [number, number][] = []; let pinA: number[] | null = null, pinT = 0
   const smp: { t: number; x: number; y: number; h: number; z: boolean; mv: number }[] = []
   const houseAlive = () => S.mechs.filter((m: any) => m.alive && m.tier).length
@@ -99,6 +100,7 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
       }
     }
     const ms = performance.now() - s0
+    const answered = !!action
     decisions++; botMs += ms
     if (ms > cfg.bot.tick_budget_ms) late++
     if (action) { setAction(me, action); missedRun = 0 }
@@ -116,6 +118,9 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
       else { if (pinA && S.t - pinT >= 20) pins.push([pinT, S.t]); pinA = null } }
     smp.push({ t: S.t, x: me.pos[0], y: me.pos[1], h: me.pos[2], z: !!me.inZone, mv: Math.hypot(me.act?.move?.[0] ?? 0, me.act?.move?.[1] ?? 0) })
     if (HASH) hashes.push(Bun.hash(JSON.stringify([S.tick, S.mechs.map((m: any) => [m.id, m.alive, m.pos, m.vel, m.hp, m.energy, m.cubes, m.weapons?.map((w: any) => w?.kind), m.kills]), me.act, S.deaths.length, (S.drops ?? []).map((d: any) => [d.taken, d.holder])])).toString(16))
+    // SIM_DUMP_DIR (station-mismatch study): per-tick plain state for t <= SIM_DUMP_S, our action and answer time
+    // (ms is wall-clock and not part of any comparison). One JSON line per tick: [tick, ms, answered, act, mechs].
+    if (DUMP && S.t <= DUMP_T) dump.push(JSON.stringify([S.tick, +ms.toFixed(2), answered, me.act, S.mechs.map((m: any) => [m.id, m.alive, m.pos.map((x: number) => +x.toFixed(3)), +m.hp.toFixed(2), +m.energy.toFixed(2), m.cubes]), S.deaths.length, (S.drops ?? []).map((d: any) => [d.taken, d.holder])]))
     if (trace && S.tick % 100 === 0) {
       const near = S.mechs.filter((m: any) => m.alive && m.tier).map((m: any) => hdist(m.pos, me.pos)).sort((a: number, b: number) => a - b)
       console.error(`t=${S.t.toFixed(0)} hp=${me.hp.toFixed(0)}/${me.maxHp.toFixed(0)} pos=${me.pos.map((x: number) => x.toFixed(0))} cubes=${me.cubes} w=${me.weapons.map((w: any) => w?.kind)} hunters=${S.huntersNow} nearest=${near.slice(0, 3).map((x: number) => x.toFixed(0))} alive=${houseAlive() + 1} inZone=${me.inZone} deaths=${JSON.stringify(S.deaths)}`)
@@ -125,6 +130,7 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
   if (!me.alive) place = me.place
   else place = 1 + S.mechs.filter((m: any) => m.alive && m !== me && m.hp > me.hp).length
   if (HASH) require("node:fs").writeFileSync(`${HASH}/${seed}.trace`, hashes.join("\n") + "\n")
+  if (DUMP) require("node:fs").writeFileSync(`${DUMP}/${seed}.dump.jsonl`, dump.join("\n") + "\n")
   await bot.close({ type: "end", place, kills: me.kills })
   if (pinA && S.t - pinT >= 20) pins.push([pinT, S.t])
   const k = me.killer

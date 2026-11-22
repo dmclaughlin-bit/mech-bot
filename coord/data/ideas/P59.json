@@ -1,0 +1,43 @@
+{
+  "id": "P59",
+  "title": "RETREAT_SAFE_TREE",
+  "family": "retreat / tree cover choice",
+  "flag": "RETREAT_SAFE_TREE_ON",
+  "flags": ["RETREAT_SAFE_TREE_ON"],
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "branch": "p59-retreat-safe-tree",
+  "base": "f3c9eea",
+  "champion": "P48 b9492c6 (main merge edb729f, site 4.44)",
+  "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_main": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
+  "builds_on": ["F3", "F15"],
+  "source": "Coordinator brief 2026-11-22 01:39 AM ET (P59 RETREAT SAFE TREE); F15 = P-D-024 death study (PR #152 table, F15 text in PR #175)",
+  "hypothesis": "P48 dies mostly while retreating (F15: 60-67% of deaths). Its tree retreat (F3) walks to the NEAREST spot (1-3 s straight walk) that trees + buildings hide from every enemy that sees us. That spot is often hidden only by canopy, which stops counting once the enemy is inside near_range (45 m), and the nearest spot can lie on the attacker's side, so the walk keeps us in its fire and lets it close in. Choosing instead a spot whose line from each seer is blocked by a building or a tree trunk (holds at any range) and that does not lie toward the nearest threat keeps us hidden longer, so fewer retreats end in death.",
+  "mechanism": "Only inside the champion's tree-retreat spot search (treeSpot, called only from the 'retreat, trees' branch, t >= 40 s, no drop run/hold, no near-and-reachable drop): with RETREAT_SAFE_TREE_ON, keep the champion's nearest-first search and its filters, but take the first spot that ALSO (a) has its center line from every seer's eye blocked by a building or a trunk (canopy ignored) and (b) lies more than RETREAT_SAFE_TREE_DEG (60 deg) away from the bearing to the nearest threat. If no spot passes, use the champion's nearest spot unchanged. Run state, skip list, stuck give-up, re-validation, move/boost/torso and every other mode unchanged.",
+  "activation": "Decision-level: the champion's treeSpot returns a spot and the safe-tree search returns a different spot. Game-level Step A count = games where this happens at least once.",
+  "disproof": "Fails if a different tree is chosen in < 10/192 retreats-games on either set (Step A), or if retreat deaths don't fall on both sets in the trees-on screen (practice bases 0 and 6000 here; the Sim Tester screen on 2000-5000 later).",
+  "novelty": {
+    "vs_P57": "P57 RETREAT_FACE_ON changes only the torso/aim target during the retreat (who we shoot back at); legs and path unchanged. P59 changes only which tree spot the legs walk to; torso/aim unchanged. Different decision, same retreat window, no shared code path beyond the retreat branch guard.",
+    "vs_EARLY_RETREAT_HIDE_ON": "EARLY_RETREAT_HIDE_ON (Diego, #152) is retreat timing: tree/building hide before 40 s. Diego recommended outcome D (redundant with P48 v1 TREE_RETREAT_MIN_T 10, which raised early deaths); no record or code exists on any origin branch. P59 keeps the 40 s gate and the champion's timing; it changes only the spot choice."
+  },
+  "overlap_check": "No overlap (2026-11-22): P57 record (origin/p57-retreat-face) = torso/aim only; EARLY_RETREAT_HIDE_ON appears only as text in findings (diego/findings-mac-0540) and PR #152 comments, no code, no PR.",
+  "positives": null,
+  "negatives": null,
+  "confidence": "Uncertain (F15 is Uncertain; mechanism untested)",
+  "reuse": null,
+  "step_a_result": null,
+  "screens": [],
+  "outcome": "pending",
+  "pr": null,
+  "sha": null,
+  "timestamps": {
+    "recorded": "2026-11-22 ET"
+  },
+  "sources": [
+    "coord/data/findings.md (F3)",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/175 (F15 text)",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/152 (P-D-024, EARLY_RETREAT_HIDE_ON proposal and Diego's outcome-D note)",
+    "origin/p57-retreat-face:coord/data/ideas/P57.json"
+  ]
+}

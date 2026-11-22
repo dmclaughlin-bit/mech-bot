@@ -1,0 +1,43 @@
+{
+  "id": "P57",
+  "title": "RETREAT_FACE_ON: while retreating under fire, keep the torso and guns on the nearest shooter (return fire) without changing the retreat path/legs",
+  "family": "retreat / combat while retreating",
+  "flag": "RETREAT_FACE_ON",
+  "flags": [
+    "RETREAT_FACE_ON"
+  ],
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "branch": "p57-retreat-face",
+  "base": "59d6354bb1389f4d40a722d995e742efd4eb41e5",
+  "champion": "P48 b9492c6 (main merge edb729f, site 4.44)",
+  "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_main": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
+  "builds_on": [
+    "F3",
+    "P-D-024/F15"
+  ],
+  "source": "Diego's P-D-024 death study (PR #152 comment; F15 in PR #175, Uncertain) and the Coordinator brief 2026-11-22 01:25 AM ET",
+  "mechanism_choice": "Fallback mechanism, not Diego's proposal verbatim. Diego's RETREAT_FACE_ON (#152: 'when retreating and exactly 1 enemy with a laser sees us -> keep facing it and firing while backing off (strafe-retreat) instead of turning away') is not a single change on P48: it changes the legs (backing off instead of P48's walk to building/tree cover) as well as the torso, and its trigger (exactly 1 laser seer) targets the vs-champions cause, not the house-bot cause (retreat with 2+ gun seers, 37%, 40-120 s). So P57 changes only the torso/aim target during the champion's retreat.",
+  "hypothesis": "P48 dies mostly while retreating (60-67% of deaths, F15), most often to 2+ gun-armed house bots watching at 40-120 s. In the retreat the champion's torso stays on its Build 16 kill-value lock, which is often not the enemy shooting at us (or has no clear line), so we take fire without returning it. Turning the torso and guns onto the nearest enemy that is shooting at us and that we can hit returns fire while the legs still run to cover, so shooters break off or die and fewer retreats end in death.",
+  "mechanism": "In the champion's three retreat branches (mode 'retreat to cover', 'retreat, trees', 'retreat': HP < retreatHp, hit in the last 2 s, not engaging, in zone), from t >= 40 s, never in a drop run or ring hold and never while a drop is near AND reachable within DROP_RUN_M (the P48 drop test): pick the nearest enemy mech among the target options that has a clear line from our muzzle, is inside the reach of a weapon we hold (gun, laser or lightning), and sees us or hit us in the last 2 s; make it the aim/fire target for this decision. The champion's weapon choice, aim, lead and fire gates then run unchanged on it. The target lock state, move, boost, path and every other mode are unchanged.",
+  "activation": "Decision-level: in a retreat mode at t >= 40 s, no drop run/hold/near-reachable drop, a shooter in reach exists, and it is not the champion's chosen target. Game-level Step A count = games where this happens at least once.",
+  "disproof": "If Step A < 10/192 on either set, or practice shows deaths <40 s up on either base, or retreat deaths not down on at least one base, or the mean lower on both bases, stop with outcome C/D and no PR.",
+  "positives": null,
+  "negatives": null,
+  "confidence": "Uncertain (F15 is Uncertain; mechanism untested)",
+  "reuse": null,
+  "step_a_result": null,
+  "screens": [],
+  "outcome": "pending",
+  "pr": null,
+  "sha": null,
+  "timestamps": {
+    "recorded": "2026-11-22 01:35 ET"
+  },
+  "sources": [
+    "coord/data/findings.md (F3)",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/175 (F15 text)",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/152 (P-D-024 table and RETREAT_FACE_ON proposal)"
+  ]
+}

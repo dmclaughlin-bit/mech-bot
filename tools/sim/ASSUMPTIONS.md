@@ -87,6 +87,29 @@ match still ends when we die, when we are the last mech alive, or at time; place
 All 16 bots answer every decision before the tick runs, so a seed can fork under CPU load when a bot's own wall-clock
 planning budget runs out (same caveat as the normal sim, more likely with 16 processes per match).
 
+## `--death-report` (P-D-017, off by default)
+
+This option is read-only. It adds `dr_*` columns to each row about our own death. `bun tools/sim/deaths.ts` groups those
+rows into the top causes for each seed set. The option only reads sim state; it never draws from the rng and never
+writes to state, so turning it on leaves every game unchanged.
+
+Each column, and where it comes from:
+- `dr_mode`: the last `mode` our bot printed in its own debug label (`label · mode`, brain.ts). Commas are written as `;`.
+- `dr_mode_cat`: `dr_mode` grouped into categories. These are settle, drop run/hold, zone walk/escape, heal/hide,
+  engage, farm, hold and other. Two extra categories were added because they are frequent: retreat, and weapon trip
+  (laser rush).
+- `dr_hit`: whether the last non-zone hit on us was `front` or `rear`.
+- `dr_seers_2s`: how many enemy mechs had sight of us, by the sim's own `sees()`, at any decision in the last 2 s.
+- `dr_hp_3s`: our HP 3 s before death.
+- `dr_alive`: our place, which equals the number of mechs alive when we died.
+- `dr_zone_r`: the zone radius when we died.
+- `dr_trees_blocked`: 1 if, in the last 2 s, any enemy would have seen us except for trees. It is blank when `--trees`
+  is off.
+
+Two limits on what the report knows:
+- The killer is the mech whose damage finished us (the house tier and slot, or `champ#id`).
+- The bot's mode is only as fine-grained as its debug label.
+
 ## Calibration from the recordings
 
 Source: 9 complete public matches in `/workspace/watch` with 1 to 3 humans and 13 to 15 house bots

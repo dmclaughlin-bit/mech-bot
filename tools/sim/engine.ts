@@ -168,6 +168,25 @@ export function sees(S: Sim, m: Mech, e: any): boolean {
   return clear(S.geo, eye, c, 1.5) || clear(S.geo, eye, top, 0.5)
 }
 
+/** P-D-017 (--death-report): true when `m` would see `e` (range and wedge pass, a line clears the buildings) but trees
+ *  block every such line. Read-only, so turning the report on cannot change a match. */
+export function treeBlockedSight(S: Sim, m: Mech, e: any): boolean {
+  const T = S.geo.trees
+  if (!T) return false
+  const cfg = S.cfg.vision
+  const d = Math.hypot(e.pos[0] - m.pos[0], e.pos[1] - m.pos[1], e.pos[2] - m.pos[2])
+  const near = cfg.near_range + (m.stats.near_range_bonus ?? 0), far = cfg.range + (m.stats.vision_bonus ?? 0)
+  if (d > far) return false
+  if (d > near && Math.abs(angDiff(Math.atan2(e.pos[1] - m.pos[1], e.pos[0] - m.pos[0]), m.aim[0])) > (cfg.fov_deg * Math.PI) / 360) return false
+  const eye: Vec3 = [m.pos[0], m.pos[1], m.pos[2] + m.stats.eye_height]
+  const h = e.kind ? heightOf(e, S) : 1
+  const c: Vec3 = [e.pos[0], e.pos[1], e.pos[2] + h / 2], top: Vec3 = [e.pos[0], e.pos[1], e.pos[2] + h]
+  const cc = clear(S.geo, eye, c, 1.5), ct = clear(S.geo, eye, top, 0.5)
+  if (!cc && !ct) return false
+  const canopy = d > near
+  return (!cc || treeBlocks(T, eye, c, canopy)) && (!ct || treeBlocks(T, eye, top, canopy))
+}
+
 // ---------- damage ----------
 export function hurt(S: Sim, tgt: any, amt: number, weapon: string, by: any, from: number[] | null, effect?: string) {
   if (!tgt.alive) return

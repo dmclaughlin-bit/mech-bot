@@ -4,6 +4,7 @@
  *
  *   bun tools/sim/run.ts --bot <path/to/bot.ts> --seeds 48 --out sim.csv [--jobs N] [--kit /workspace/mechfight-kit] [--trees]
  *     [--vs-champions <path/to/champion/bot.ts>]   P-D-016: the 15 other slots run that bot instead of house bots
+ *     [--death-report]   P-D-017: add our death's context to each row (read-only; results unchanged). Summarise with deaths.ts
  *
  * This is a model of the house squad, not the house squad: read ASSUMPTIONS.md before trusting a number.
  */
@@ -11,7 +12,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { availableParallelism } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { gunzipSync } from "node:zlib"
-import { buildObs, createSim, hdist, setAction, tick } from "./engine.ts"
+import { buildObs, createSim, hdist, sees, setAction, tick, treeBlockedSight, zoneAt } from "./engine.ts"
 import { loadGeo, loadTrees } from "./geom.ts"
 import { squadDecide } from "./house.ts"
 
@@ -110,6 +111,9 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
   const maxTick = cfg.match.duration_s * cfg.match.tick_hz
   let late = 0, missed = 0, botMs = 0, decisions = 0, missedRun = 0
   const trace = !!process.env.SIM_TRACE
+  // P-D-017 --death-report: read-only bookkeeping about our last seconds
+  const DR = flag("death-report"), seenBy = new Map<number, number>(), hpHist: [number, number][] = []
+  let lastMode = "", treeT = -99
   const houseAlive = () => S.mechs.filter((m: any) => m.alive && (champPath ? m !== me : m.tier)).length
   while (me.alive && S.tick < maxTick && houseAlive() > 0) {
     const live = champs.filter((c) => c.m.alive)
@@ -129,13 +133,17 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
     const ms = performance.now() - s0
     decisions++; botMs += ms
     if (ms > cfg.bot.tick_budget_ms) late++
-    if (action) { setAction(me, action); missedRun = 0 }
+    if (action) { setAction(me, action); missedRun = 0; if (DR && typeof action.debug?.label === "string") lastMode = action.debug.label.split(" · ").pop()! }
     else { missed++; missedRun = coast(me, missedRun, cfg) }
     const ca = await cans
     live.forEach((c, i) => { if (ca[i]) { setAction(c.m, ca[i]); c.m.missedRun = 0 } else c.m.missedRun = coast(c.m, c.m.missedRun, cfg) })
     if (!champPath) squadDecide(S)
     tick(S, true)
     tick(S, false)
+    if (DR) {
+      hpHist.push([S.t, me.hp]); if (hpHist.length > 60) hpHist.shift()
+      for (const e of S.mechs) if (e !== me && e.alive) { if (sees(S, e, me)) seenBy.set(e.id, S.t); if (treeBlockedSight(S, e, me)) treeT = S.t }
+    }
     if (trace && S.tick % 100 === 0) {
       const near = S.mechs.filter((m: any) => m.alive && m.tier).map((m: any) => hdist(m.pos, me.pos)).sort((a: number, b: number) => a - b)
       console.error(`t=${S.t.toFixed(0)} hp=${me.hp.toFixed(0)}/${me.maxHp.toFixed(0)} pos=${me.pos.map((x: number) => x.toFixed(0))} cubes=${me.cubes} w=${me.weapons.map((w: any) => w?.kind)} hunters=${S.huntersNow} nearest=${near.slice(0, 3).map((x: number) => x.toFixed(0))} alive=${houseAlive() + 1} inZone=${me.inZone} deaths=${JSON.stringify(S.deaths)}`)
@@ -146,6 +154,17 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
   else place = 1 + S.mechs.filter((m: any) => m.alive && m !== me && m.hp > me.hp).length
   await Promise.all([bot.close({ type: "end", place, kills: me.kills }), ...champs.map((c) => c.bot.close({ type: "end", place: c.m.alive ? 1 : c.m.place, kills: c.m.kills }))])
   const k = me.killer
+  const dr: any = DR ? { dr_mode: "", dr_mode_cat: "", dr_hit: "", dr_seers_2s: "", dr_hp_3s: "", dr_alive: "", dr_zone_r: "", dr_trees_blocked: "" } : {}
+  if (DR && !me.alive) {
+    const t = me.deathT, hit = [...S.events].reverse().find((e: any) => e.type === "damaged" && e.weapon !== "zone")
+    const hp3 = hpHist.find(([ht]) => ht >= t - 3)
+    dr.dr_mode = lastMode.replace(/[,"]/g, ";"); dr.dr_mode_cat = modeCat(lastMode)
+    dr.dr_hit = me.killWeapon === "zone" ? "" : hit ? (hit.rear ? "rear" : "front") : ""
+    dr.dr_seers_2s = [...seenBy.values()].filter((st) => st >= t - 2).length
+    dr.dr_hp_3s = hp3 ? Math.round(hp3[1]) : ""
+    dr.dr_alive = me.place; dr.dr_zone_r = Math.round(zoneAt(S, t).radius)
+    dr.dr_trees_blocked = geo.trees ? (treeT >= t - 2 ? 1 : 0) : ""
+  }
   return {
     seed, slot: S.meId, place, score: 16 - place, death_t: me.alive ? "" : me.deathT.toFixed(2),
     killer: me.alive ? "" : k ? (k.kind === "npc" ? "npc" : k.tier ? `house:${k.tier}#${k.id}` : `champ#${k.id}`) : me.killWeapon ?? "", killer_weapon: me.alive ? "" : me.killWeapon ?? "",
@@ -153,7 +172,23 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
     weapons: me.weapons.filter(Boolean).map((w: any) => w.kind).join("+"), house_dead: S.deaths.filter((d: any) => d.tier).length, hunters_at_end: S.huntersNow ?? 0,
     our_gun_shots: S.stats.ourShots, our_gun_hits: S.stats.ourHits, house_gun_shots: S.stats.houseShots, house_gun_hits: S.stats.houseHits,
     decisions, missed, late_over_50ms: late, bot_ms_mean: (botMs / Math.max(1, decisions)).toFixed(2), bot_ready: ready ? 1 : 0,
+    ...dr,
   }
+}
+
+/** P-D-017: the bot's debug label (brain.ts `mode`) folded into the categories Grok asked for. */
+function modeCat(m: string): string {
+  if (!m) return "unknown"
+  if (/settle|midring/.test(m)) return "settle"
+  if (/drop/.test(m)) return "drop run/hold"
+  if (/zone|next circle/.test(m)) return "zone walk/escape"
+  if (/heal|hid/.test(m)) return "heal/hide"
+  if (/^retreat/.test(m)) return "retreat"
+  if (/^engage|finish|crossfire|ambush/.test(m)) return "engage"
+  if (/laser rush|lightning/.test(m)) return "weapon trip"
+  if (/farm|collect|pickup/.test(m)) return "farm"
+  if (/hold/.test(m)) return "hold"
+  return "other"
 }
 
 function findKit(): string {
@@ -187,7 +222,7 @@ async function main() {
   await Promise.all(Array.from({ length: jobs }, async (_, j) => {
     const mine = seeds.filter((_, i) => i % jobs === j)
     if (!mine.length) return
-    const pass = ["--bot", botPath, "--seed-list", mine.join(","), ...(opt("kit") ? ["--kit", opt("kit")!] : []), ...(opt("vs-champions") ? ["--vs-champions", resolve(opt("vs-champions")!)] : []), ...(flag("trees") ? ["--trees"] : [])]
+    const pass = ["--bot", botPath, "--seed-list", mine.join(","), ...(opt("kit") ? ["--kit", opt("kit")!] : []), ...(opt("vs-champions") ? ["--vs-champions", resolve(opt("vs-champions")!)] : []), ...(flag("trees") ? ["--trees"] : []), ...(flag("death-report") ? ["--death-report"] : [])]
     const p = Bun.spawn(["bun", import.meta.path, "--worker", ...pass], { stdout: "pipe", stderr: "inherit" })
     const text = await new Response(p.stdout).text()
     for (const line of text.split("\n")) if (line.startsWith("RESULT ")) rows.push(JSON.parse(line.slice(7)))

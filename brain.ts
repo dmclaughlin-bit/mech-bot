@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  BACKAWAY_FAR_COVER_ON, BACKAWAY_FAR_STEPS_S, DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
@@ -296,6 +296,9 @@ function buildBot(hello: Hello): Bot {
   /** P48: the tree spot we are retreating to (with its best distance so far, for the no-progress give-up) and spots we gave up on. */
   let treeRun: { spot: Vec3; key: string; best: number; bestAt: number; used: number } | null = null
   const treeSkip = new Set<string>()
+  /** P60: the far cover spot the back-away retreat walks to (same shape as treeRun) and far spots we gave up on. */
+  let farRun: { spot: Vec3; key: string; best: number; bestAt: number; used: number } | null = null
+  const farSkip = new Set<string>()
   /** Build 14 (engage): each weapon's DPS and reach from hello.config, read once here. */
   const baseDps = {} as Record<WeaponKind, number>
   const baseReach = {} as Record<WeaponKind, number>
@@ -465,15 +468,16 @@ function buildBot(hello: Hello): Bot {
    */
   function treeSpot(
     me: Observation["self"], height: number, walk: number, seers: { pos: Vec3; cubes?: number }[], keepIn: [number[], number], timeOk: () => boolean,
+    steps: number[] = HIDE_STEPS_S, skip: Set<string> = treeSkip,
   ): Vec3 | null {
     const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
-    for (const s of HIDE_STEPS_S) {
+    for (const s of steps) {
       for (let b = 0; b < HIDE_BEARINGS; b++) {
         if (!timeOk()) return null
         const yaw = (2 * Math.PI * b) / HIDE_BEARINGS
         const x = me.pos[0] + Math.cos(yaw) * walk * s, y = me.pos[1] + Math.sin(yaw) * walk * s
         if (Math.hypot(x - keepIn[0][0], y - keepIn[0][1]) > keepIn[1]) continue
-        if (treeSkip.has(treeKey(x, y))) continue
+        if (skip.has(treeKey(x, y))) continue
         const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
         if (g === -Infinity) continue
         const p: Vec3 = [x, y, g]
@@ -788,13 +792,12 @@ function buildBot(hello: Hello): Bot {
       // P48 (TREE_RETREAT_ON): the tree spot for the no-cover retreat, or null (champion back-away). Called only from that
       // branch. Off before TREE_RETREAT_MIN_T (40 s), while a drop run/hold is on, and while a drop is near AND reachable (the
       // drop run's own candidate filter above, without its state gates); off when trees already hide us from every seer.
+      const dropSafe = (p: number[], stay: number) =>
+        flat(p, z.center) < Math.max(0, z.radius - margin) &&
+        (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + stay < timeLeft
+      const dropReach = () => DROP_RUN_M > 0 && (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
+        flat(x.pos, me.pos) <= DROP_RUN_M && dropSafe(x.pos, x.lands_in + x.capture_s - x.progress))
       const treeRetreat = (): Vec3 | null => {
-        const pace = ZONE_WALK * walkSpeed
-        const dropSafe = (p: number[], stay: number) =>
-          flat(p, z.center) < Math.max(0, z.radius - margin) &&
-          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
-        const dropReach = () => DROP_RUN_M > 0 && (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
-          flat(x.pos, me.pos) <= DROP_RUN_M && dropSafe(x.pos, x.lands_in + x.capture_s - x.progress))
         if (!TREE_RETREAT_ON || !trees || obs.t < TREE_RETREAT_MIN_T || dropMove || dropHold || dropReach()) return (treeRun = null)
         const seers = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
         if (!seers.length || seers.every((e) => treeHidden(me.pos, myHeight, e))) return (treeRun = null)
@@ -811,6 +814,28 @@ function buildBot(hello: Hello): Bot {
         }
         const p = treeSpot(me, myHeight, walkSpeed, seers, zoneKeep, canPlan)
         if (p) treeRun = { spot: p, key: treeKey(p[0], p[1]), best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
+        return p
+      }
+      // P60 (BACKAWAY_FAR_COVER_ON): the far cover spot for the back-away retreat, or null (champion back-away). Called only
+      // from that branch; the same gates as treeRetreat (40 s, no drop run/hold, no near-and-reachable drop, a seer in view
+      // that trees don't already hide us from), searched BACKAWAY_FAR_STEPS_S out, latched with the same give-up.
+      const farRetreat = (): Vec3 | null => {
+        if (!BACKAWAY_FAR_COVER_ON || !trees || obs.t < TREE_RETREAT_MIN_T || dropMove || dropHold || dropReach()) return (farRun = null)
+        const seers = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        if (!seers.length || seers.every((e) => treeHidden(me.pos, myHeight, e))) return (farRun = null)
+        if (farRun && obs.t - farRun.used > 0.5) farRun = null
+        if (farRun) {
+          const run = farRun
+          const d = flat(me.pos, run.spot)
+          if (d < run.best - 0.5) { run.best = d; run.bestAt = obs.t }
+          const stuck = obs.t - run.bestAt > TREE_RETREAT_STUCK_S || d < 1.5
+          const still = !stuck && flat(run.spot, zoneKeep[0]) <= zoneKeep[1] && seers.every((e) => treeHidden(run.spot, myHeight, e))
+          if (still) { run.used = obs.t; return run.spot }
+          if (stuck) farSkip.add(run.key)
+          farRun = null
+        }
+        const p = treeSpot(me, myHeight, walkSpeed, seers, zoneKeep, canPlan, BACKAWAY_FAR_STEPS_S, farSkip)
+        if (p) farRun = { spot: p, key: treeKey(p[0], p[1]), best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
         return p
       }
       let spot: Vec3 | null = null
@@ -852,6 +877,12 @@ function buildBot(hello: Hello): Bot {
         move = heading(spot)
         boost = me.energy > 0.3 * me.max_energy
         mode = "retreat, trees"
+      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && (spot = farRetreat())) {
+        // P60 (BACKAWAY_FAR_COVER_ON): no building or tree spot within 1-3 s, but one 4-6 s out hides us from every
+        // enemy that sees us: walk there instead of backing straight away, torso still on the attacker (legs only, N8).
+        move = heading(spot)
+        boost = me.energy > 0.3 * me.max_energy
+        mode = "retreat, far cover"
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp) {
         // Retreat (F2, F3) with no cover in reach, or hit by someone we can't see: back away from the attacker with the torso still on it.
         // Lean toward the center near the circle's edge; boost only above 30% energy.

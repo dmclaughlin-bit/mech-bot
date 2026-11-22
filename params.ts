@@ -185,3 +185,15 @@ export const LETHAL_RELEASE_MIN_T = 40
 export const TREE_RETREAT_ON = true
 export const TREE_RETREAT_MIN_T = 40
 export const TREE_RETREAT_STUCK_S = 3
+
+/**
+ * P60 (back-away far cover): in the champion's back-away retreat (mode "retreat": hurt, hit in the last 2 s, no building
+ * hide spot and no P48 tree spot within a 1-3 s walk), from t = TREE_RETREAT_MIN_T (40 s), never in a drop run/hold or
+ * while a drop is near AND reachable within DROP_RUN_M, when an enemy in view sees us and trees + buildings don't already
+ * hide us from it: walk (same boost rule) to the nearest in-zone spot BACKAWAY_FAR_STEPS_S of straight walk away, no
+ * closer to any of those enemies, that trees + buildings hide from all of them, instead of backing straight away. Latched
+ * like P48's tree run (no progress for TREE_RETREAT_STUCK_S: skip list). Legs only; torso and aim unchanged (N8).
+ * false = champion behavior exactly.
+ */
+export const BACKAWAY_FAR_COVER_ON = false
+export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]

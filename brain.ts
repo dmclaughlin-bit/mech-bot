@@ -28,7 +28,7 @@ import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON, LOW_HP_BOOST_FRAC, LOW_HP_BOOST_MIN_T, LOW_HP_BOOST_SAVE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -785,16 +785,17 @@ function buildBot(hello: Hello): Bot {
           else dropRun = null
         }
       }
+      // A drop is near AND reachable within DROP_RUN_M: the drop run's own candidate filter above, without its state
+      // gates. Read-only; used by P48 (tree retreat) and P53 (low-HP boost save).
+      const dropSafe = (p: number[], stay: number) =>
+        flat(p, z.center) < Math.max(0, z.radius - margin) &&
+        (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + stay < timeLeft
+      const dropReach = () => DROP_RUN_M > 0 && (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
+        flat(x.pos, me.pos) <= DROP_RUN_M && dropSafe(x.pos, x.lands_in + x.capture_s - x.progress))
       // P48 (TREE_RETREAT_ON): the tree spot for the no-cover retreat, or null (champion back-away). Called only from that
       // branch. Off before TREE_RETREAT_MIN_T (40 s), while a drop run/hold is on, and while a drop is near AND reachable (the
       // drop run's own candidate filter above, without its state gates); off when trees already hide us from every seer.
       const treeRetreat = (): Vec3 | null => {
-        const pace = ZONE_WALK * walkSpeed
-        const dropSafe = (p: number[], stay: number) =>
-          flat(p, z.center) < Math.max(0, z.radius - margin) &&
-          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
-        const dropReach = () => DROP_RUN_M > 0 && (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
-          flat(x.pos, me.pos) <= DROP_RUN_M && dropSafe(x.pos, x.lands_in + x.capture_s - x.progress))
         if (!TREE_RETREAT_ON || !trees || obs.t < TREE_RETREAT_MIN_T || dropMove || dropHold || dropReach()) return (treeRun = null)
         const seers = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
         if (!seers.length || seers.every((e) => treeHidden(me.pos, myHeight, e))) return (treeRun = null)
@@ -978,6 +979,12 @@ function buildBot(hello: Hello): Bot {
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
       const sneaking = mode === "heal" || mode === "heal, hiding" || mode === "hide"
       if (!noSneak && (toEnter === 0 || sneaking) && !boost && !mode.startsWith("retreat") && !mode.startsWith("engage") && mode !== "laser rush") move = [move[0] * silent, move[1] * silent]
+      // P53 (LOW_HP_BOOST_SAVE_ON): below LOW_HP_BOOST_FRAC of max HP, keep the boost energy for when HP recovers. Only
+      // the boost flag is withheld (after the silent cap, so the move vector is the champion's); zone escape, the trip to
+      // the next circle and an active P48 tree-retreat move keep their boost, and so does the unstick jet below. Off before
+      // LOW_HP_BOOST_MIN_T, on a drop run/hold, and while a drop is near AND reachable within DROP_RUN_M.
+      if (LOW_HP_BOOST_SAVE_ON && boost && obs.t >= LOW_HP_BOOST_MIN_T && me.hp < LOW_HP_BOOST_FRAC * me.max_hp &&
+        mode !== "zone escape" && mode !== "to next circle" && mode !== "retreat, trees" && !dropMove && !dropHold && !dropReach()) boost = false
       // Unstick (Build 3): nav.stuck is true after 0.5 s of a held move with almost no speed; call it once per
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {

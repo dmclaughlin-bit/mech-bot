@@ -185,3 +185,14 @@ export const LETHAL_RELEASE_MIN_T = 40
 export const TREE_RETREAT_ON = true
 export const TREE_RETREAT_MIN_T = 40
 export const TREE_RETREAT_STUCK_S = 3
+
+/**
+ * P53 (low-HP boost save): when HP is below LOW_HP_BOOST_FRAC of max, from t = LOW_HP_BOOST_MIN_T, do not spend boost:
+ * withhold the boost flag the champion would set (the building-cover retreat, the back-away retreat, the crossfire
+ * break), keeping the move vector unchanged. Exceptions keep their boost: zone escape (outside the circle), the trip to
+ * the next circle, an active P48 tree-retreat move ("retreat, trees"), and the unstick jet. Off on a drop run/hold and
+ * while a drop is near AND reachable within DROP_RUN_M. false = champion behavior exactly.
+ */
+export const LOW_HP_BOOST_SAVE_ON = false
+export const LOW_HP_BOOST_FRAC = 0.35
+export const LOW_HP_BOOST_MIN_T = 10

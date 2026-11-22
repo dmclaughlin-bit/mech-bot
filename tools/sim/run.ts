@@ -3,6 +3,7 @@
  * bots, for a fixed list of seeds, and writes one CSV row per match.
  *
  *   bun tools/sim/run.ts --bot <path/to/bot.ts> --seeds 48 --out sim.csv [--jobs N] [--kit /workspace/mechfight-kit]
+ *     [--vs-champions <path/to/champion/bot.ts>]   P-D-016: the 15 other slots run that bot instead of house bots
  *
  * This is a model of the house squad, not the house squad: read ASSUMPTIONS.md before trusting a number.
  */
@@ -17,7 +18,7 @@ import { squadDecide } from "./house.ts"
 const args = process.argv.slice(2)
 const opt = (name: string, def?: string) => { const i = args.indexOf("--" + name); return i >= 0 ? args[i + 1] : def }
 const flag = (name: string) => args.includes("--" + name)
-const SEED_BASE = 1000
+const SEED_BASE = Number(process.env.SEED_BASE ?? 1000)
 /** Wall-clock wait for one answer. Longer than the server's 50 ms so a loaded machine does not change results; late answers are counted. */
 const ANSWER_MS = 2000
 
@@ -66,24 +67,55 @@ class BotProc {
   }
 }
 
-async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena: string) {
-  const S = createSim(geo, cfg, seed)
-  const me = S.me
-  const bot = new BotProc(botPath)
-  bot.send({ type: "hello", protocol: "mechfight/1", slot: S.meId, seed: (Math.imul(S.meId + 1, 2654435761) >>> 0), map: { dir: arena, files: ["v2/world.json", "v2/terrain.i16"] }, config: cfg })
-  let ready = false
+const hello = (slot: number, arena: string, cfg: any) => ({ type: "hello", protocol: "mechfight/1", slot, seed: (Math.imul(slot + 1, 2654435761) >>> 0), map: { dir: arena, files: ["v2/world.json", "v2/terrain.i16"] }, config: cfg })
+
+async function waitReady(bot: BotProc, cfg: any): Promise<boolean> {
   const t0 = performance.now()
-  while (!ready && performance.now() - t0 < cfg.bot.hello_budget_ms) {
+  while (performance.now() - t0 < cfg.bot.hello_budget_ms) {
     const line = await bot.next(cfg.bot.hello_budget_ms - (performance.now() - t0))
     if (line === null) break
-    try { ready = JSON.parse(line).type === "ready" } catch {}
+    try { if (JSON.parse(line).type === "ready") return true } catch {}
   }
+  return false
+}
+
+async function answer(bot: BotProc, obs: any): Promise<any> {
+  const s0 = performance.now()
+  bot.send(obs)
+  for (;;) {
+    const line = await bot.next(ANSWER_MS - (performance.now() - s0))
+    if (line === null) return null
+    try { const o = JSON.parse(line); if (o.tick === obs.tick) return o } catch {}
+  }
+}
+
+/** No answer: coast on the continuous parts, then idle after coast_s. Returns the new missed run. */
+function coast(m: any, run: number, cfg: any): number {
+  run += 0.1
+  m.once = {}; m.act = { ...m.act, fire: [false, false] }
+  if (run > cfg.bot.coast_s) m.act = { move: [0, 0], boost: false, fire: [false, false], aim: m.cmdAim }
+  return run
+}
+
+async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena: string, champPath?: string) {
+  const S = createSim(geo, cfg, seed, !!champPath)
+  const me = S.me
+  const bot = new BotProc(botPath)
+  bot.send(hello(S.meId, arena, cfg))
+  // P-D-016 --vs-champions: one champion process per other slot, all started before we wait on anyone
+  const champs: { m: any; bot: BotProc; ready: boolean }[] = []
+  if (champPath) for (const m of S.mechs) if (m.player) { const b = new BotProc(champPath); b.send(hello(m.id, arena, cfg)); champs.push({ m, bot: b, ready: false }) }
+  const [ready, ...cr] = await Promise.all([waitReady(bot, cfg), ...champs.map((c) => waitReady(c.bot, cfg))])
+  champs.forEach((c, i) => (c.ready = cr[i]))
   const maxTick = cfg.match.duration_s * cfg.match.tick_hz
   let late = 0, missed = 0, botMs = 0, decisions = 0, missedRun = 0
   const trace = !!process.env.SIM_TRACE
-  const houseAlive = () => S.mechs.filter((m: any) => m.alive && m.tier).length
+  const houseAlive = () => S.mechs.filter((m: any) => m.alive && (champPath ? m !== me : m.tier)).length
   while (me.alive && S.tick < maxTick && houseAlive() > 0) {
+    const live = champs.filter((c) => c.m.alive)
+    const cobs = live.map((c) => buildObs(S, c.m))
     const obs = buildObs(S)
+    const cans = Promise.all(live.map((c, i) => (c.ready && !c.bot.dead ? answer(c.bot, cobs[i]) : null)))
     const s0 = performance.now()
     let action: any = null
     if (ready && !bot.dead) {
@@ -98,13 +130,10 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
     decisions++; botMs += ms
     if (ms > cfg.bot.tick_budget_ms) late++
     if (action) { setAction(me, action); missedRun = 0 }
-    else {
-      // no answer: coast on the continuous parts, then idle after coast_s
-      missed++; missedRun += 0.1
-      me.once = {}; me.act = { ...me.act, fire: [false, false] }
-      if (missedRun > cfg.bot.coast_s) me.act = { move: [0, 0], boost: false, fire: [false, false], aim: me.cmdAim }
-    }
-    squadDecide(S)
+    else { missed++; missedRun = coast(me, missedRun, cfg) }
+    const ca = await cans
+    live.forEach((c, i) => { if (ca[i]) { setAction(c.m, ca[i]); c.m.missedRun = 0 } else c.m.missedRun = coast(c.m, c.m.missedRun, cfg) })
+    if (!champPath) squadDecide(S)
     tick(S, true)
     tick(S, false)
     if (trace && S.tick % 100 === 0) {
@@ -115,11 +144,11 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
   let place: number
   if (!me.alive) place = me.place
   else place = 1 + S.mechs.filter((m: any) => m.alive && m !== me && m.hp > me.hp).length
-  await bot.close({ type: "end", place, kills: me.kills })
+  await Promise.all([bot.close({ type: "end", place, kills: me.kills }), ...champs.map((c) => c.bot.close({ type: "end", place: c.m.alive ? 1 : c.m.place, kills: c.m.kills }))])
   const k = me.killer
   return {
     seed, slot: S.meId, place, score: 16 - place, death_t: me.alive ? "" : me.deathT.toFixed(2),
-    killer: me.alive ? "" : k ? (k.kind === "npc" ? "npc" : `house:${k.tier}#${k.id}`) : me.killWeapon ?? "", killer_weapon: me.alive ? "" : me.killWeapon ?? "",
+    killer: me.alive ? "" : k ? (k.kind === "npc" ? "npc" : k.tier ? `house:${k.tier}#${k.id}` : `champ#${k.id}`) : me.killWeapon ?? "", killer_weapon: me.alive ? "" : me.killWeapon ?? "",
     kills: me.kills, damage_dealt: Math.round(me.dmgDealt), damage_taken: Math.round(me.dmgTaken), cubes: me.cubes, upgrades: me.upList.join("+"),
     weapons: me.weapons.filter(Boolean).map((w: any) => w.kind).join("+"), house_dead: S.deaths.filter((d: any) => d.tier).length, hunters_at_end: S.huntersNow ?? 0,
     our_gun_shots: S.stats.ourShots, our_gun_hits: S.stats.ourHits, house_gun_shots: S.stats.houseShots, house_gun_hits: S.stats.houseHits,
@@ -137,16 +166,16 @@ async function worker() {
   const kit = findKit(), arena = join(kit, "arena")
   const cfg = JSON.parse(gunzipSync(readFileSync(join(kit, "check/stream.jsonl.gz"))).toString("utf8").split("\n")[0]).config
   const geo = loadGeo(arena)
-  const bot = resolve(opt("bot")!)
+  const bot = resolve(opt("bot")!), champ = opt("vs-champions") ? resolve(opt("vs-champions")!) : undefined
   for (const seed of opt("seed-list")!.split(",").map(Number)) {
-    const row = await runMatch(geo, cfg, seed, bot, arena)
+    const row = await runMatch(geo, cfg, seed, bot, arena, champ)
     console.log("RESULT " + JSON.stringify(row))
   }
 }
 
 async function main() {
   const botPath = opt("bot")
-  if (!botPath || !existsSync(botPath)) { console.error("usage: bun tools/sim/run.ts --bot <path/to/bot.ts> [--seeds 48] [--out sim.csv] [--jobs N] [--kit dir]"); process.exit(2) }
+  if (!botPath || !existsSync(botPath)) { console.error("usage: bun tools/sim/run.ts --bot <path/to/bot.ts> [--seeds 48] [--out sim.csv] [--jobs N] [--kit dir] [--vs-champions <champion bot.ts>]"); process.exit(2) }
   findKit()
   const n = Number(opt("seeds", "48")), out = opt("out", "sim.csv")!
   const jobs = Math.max(1, Math.min(Number(opt("jobs", String(Math.min(8, availableParallelism())))), n))
@@ -156,7 +185,7 @@ async function main() {
   await Promise.all(Array.from({ length: jobs }, async (_, j) => {
     const mine = seeds.filter((_, i) => i % jobs === j)
     if (!mine.length) return
-    const pass = ["--bot", botPath, "--seed-list", mine.join(","), ...(opt("kit") ? ["--kit", opt("kit")!] : [])]
+    const pass = ["--bot", botPath, "--seed-list", mine.join(","), ...(opt("kit") ? ["--kit", opt("kit")!] : []), ...(opt("vs-champions") ? ["--vs-champions", resolve(opt("vs-champions")!)] : [])]
     const p = Bun.spawn(["bun", import.meta.path, "--worker", ...pass], { stdout: "pipe", stderr: "inherit" })
     const text = await new Response(p.stdout).text()
     for (const line of text.split("\n")) if (line.startsWith("RESULT ")) rows.push(JSON.parse(line.slice(7)))

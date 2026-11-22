@@ -5,7 +5,7 @@ code, and practice returns only an aggregate score. Use the sim to rank builds, 
 calibration numbers are in the pull request that added this folder.
 
 ```sh
-bun tools/sim/run.ts --bot <path/to/bot.ts> --seeds 48 --out sim.csv   # [--jobs N] [--kit <mechfight-kit dir>]
+bun tools/sim/run.ts --bot <path/to/bot.ts> --seeds 48 --out sim.csv   # [--jobs N] [--kit <mechfight-kit dir>] [--vs-champions <bot.ts>]
 SIM_TRACE=1 bun tools/sim/run.ts --worker --bot bot.ts --seed-list 1000   # one match, a status line every 5 s
 ```
 
@@ -75,6 +75,17 @@ Tiers (`tune.ts`):
 | medium | 8° | 0.8 s | 75 m | 30 m | 60% | no |
 | hard | 6° | 0.5 s | 65 m | 45 m | 85% | yes |
 | expert | 4.3° | 0.25 s | 55 m | 60 m | 100% | yes |
+
+## `--vs-champions <bot.ts>` (P-D-016, off by default)
+
+An information mode, not a practice model. The 15 other slots each run their own copy of the given bot (normally the
+champion) as a subprocess, with its own hello (its slot and the same per-slot seed rule as ours), observations and
+events built exactly as ours are. There are no house bots, so the squad, tiers, hunters and the house-shot counters are
+off (`house_dead`, `house_gun_*` stay 0). Every mech can hurt every other mech. Spawns, our slot, zone, drops, loot and
+NPCs come from the same seed as a normal run (the tier shuffle still draws from the rng so the world matches). The
+match still ends when we die, when we are the last mech alive, or at time; place 1 means we outlived all 15.
+All 16 bots answer every decision before the tick runs, so a seed can fork under CPU load when a bot's own wall-clock
+planning budget runs out (same caveat as the normal sim, more likely with 16 processes per match).
 
 ## Calibration from the recordings
 

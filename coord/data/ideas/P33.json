@@ -2,10 +2,35 @@
   "id": "P33",
   "title": "Mid-game hurt retreat distance: in mid phase with HP < 35%, keep the existing retreat going until the nearest visible enemy is at least ~120 m before stopping to heal (HURT_RETREAT_FAR_ON)",
   "family": "evasion",
+  "flags": [
+    "HURT_RETREAT_FAR_ON"
+  ],
   "flag": "HURT_RETREAT_FAR_ON",
+  "behaviors": [
+    "in mid phase (zone shrinking to the 2nd/3rd circle, 240 m then 140 m; 5+ alive) with HP < 35% of max, when the champion's existing retreat ('retreat to cover' or 'retreat') was active on the previous decision and we would otherwise start the stand-still heal, keep running that same retreat (same hide-spot / back-away path, same boost rule) until the nearest visible enemy is at least HURT_RETREAT_FAR_M (120 m) away or none is visible; give up after 3 s without progress; never at t < 10 s or with a supply drop announced/landed or a drop run/ring hold possible; drop run, zone and heal rules otherwise unchanged"
+  ],
   "owner": "Mech Builder",
   "stage": "building",
-  "source": "coord/data/watcher/RANKED.md rule 11 (nearest enemy while HP<35%, mid phase, 119 vs 95 m)",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
   "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
-  "created_et": "2026-11-21 19:35"
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": null,
+  "doug_waiver": false,
+  "source": "coord/data/watcher/RANKED.md rule 11 (nearest enemy while HP<35%, mid phase, 119 vs 95 m)",
+  "timestamps": {
+    "created": "2026-11-21 19:35",
+    "updated": "2026-11-22"
+  },
+  "sources": [
+    "coord/data/watcher/RANKED.md",
+    "coord/data/watcher/STATES.md",
+    "coord/BUILD_CHECKLIST.md"
+  ]
 }

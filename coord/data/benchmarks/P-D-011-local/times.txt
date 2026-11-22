@@ -1,0 +1,23 @@
+time time-current 2000 40.212509632
+time time-current 3000 63.313545942
+time time-current 4000 60.251207113
+time time-current 5000 43.265748262
+wall time-current-384 207.131892204
+time time-shortcut 2000 17.955364943
+time time-shortcut 3000 18.751770735
+time time-shortcut 4000 20.888826609
+time time-shortcut 5000 22.236385822
+wall time-shortcut-384 79.914515972
+time hash-current 2000 40.148872852
+time hash-current 3000 60.842444420
+time hash-current 4000 63.933469772
+time hash-current 5000 45.570332289
+wall hash-current-384 210.579787731
+time hash-shortcut 2000 17.497436285
+time hash-shortcut 3000 19.523684740
+time hash-shortcut 4000 21.549998045
+time hash-shortcut 5000 23.795441389
+wall hash-shortcut-384 82.452374220
+time iso-A 4085 0.632418156
+time iso-B 4085 0.639330864
+HASH_ISO_DONE

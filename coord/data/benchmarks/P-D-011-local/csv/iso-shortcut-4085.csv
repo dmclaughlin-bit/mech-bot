@@ -1,0 +1,2 @@
+seed,slot,place,score,death_t,killer,killer_weapon,kills,damage_dealt,damage_taken,cubes,upgrades,weapons,house_dead,hunters_at_end,our_gun_shots,our_gun_hits,house_gun_shots,house_gun_hits,decisions,missed,late_over_50ms,bot_ms_mean,bot_ready
+4085,3,12,4,35.75,house:expert#14,gun,4,6435,1402,0,,gun+laser,4,5,69,59,132,27,358,0,0,0.29,1

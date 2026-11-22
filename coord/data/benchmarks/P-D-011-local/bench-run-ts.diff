@@ -1,0 +1,37 @@
+diff --git a/tools/sim/run.ts b/tools/sim/run.ts
+index f6160ca..427a45b 100644
+--- a/tools/sim/run.ts
++++ b/tools/sim/run.ts
+@@ -17,7 +17,7 @@ import { squadDecide } from "./house.ts"
+ const args = process.argv.slice(2)
+ const opt = (name: string, def?: string) => { const i = args.indexOf("--" + name); return i >= 0 ? args[i + 1] : def }
+ const flag = (name: string) => args.includes("--" + name)
+-const SEED_BASE = 1000
++const SEED_BASE = Number(process.env.SEED_BASE ?? 1000)
+ /** Wall-clock wait for one answer. Longer than the server's 50 ms so a loaded machine does not change results; late answers are counted. */
+ const ANSWER_MS = 2000
+ 
+@@ -81,6 +81,7 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
+   const maxTick = cfg.match.duration_s * cfg.match.tick_hz
+   let late = 0, missed = 0, botMs = 0, decisions = 0, missedRun = 0
+   const trace = !!process.env.SIM_TRACE
++  const HASH = process.env.SIM_HASH_DIR, hashes: string[] = []
+   const houseAlive = () => S.mechs.filter((m: any) => m.alive && m.tier).length
+   while (me.alive && S.tick < maxTick && houseAlive() > 0) {
+     const obs = buildObs(S)
+@@ -107,6 +108,7 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
+     squadDecide(S)
+     tick(S, true)
+     tick(S, false)
++    if (HASH) hashes.push(Bun.hash(JSON.stringify([S.tick, S.mechs.map((m: any) => [m.id, m.alive, m.pos, m.vel, m.hp, m.energy, m.cubes, m.weapons?.map((w: any) => w?.kind), m.kills]), me.act, S.deaths.length, (S.drops ?? []).map((d: any) => [d.taken, d.holder])])).toString(16))
+     if (trace && S.tick % 100 === 0) {
+       const near = S.mechs.filter((m: any) => m.alive && m.tier).map((m: any) => hdist(m.pos, me.pos)).sort((a: number, b: number) => a - b)
+       console.error(`t=${S.t.toFixed(0)} hp=${me.hp.toFixed(0)}/${me.maxHp.toFixed(0)} pos=${me.pos.map((x: number) => x.toFixed(0))} cubes=${me.cubes} w=${me.weapons.map((w: any) => w?.kind)} hunters=${S.huntersNow} nearest=${near.slice(0, 3).map((x: number) => x.toFixed(0))} alive=${houseAlive() + 1} inZone=${me.inZone} deaths=${JSON.stringify(S.deaths)}`)
+@@ -115,6 +117,7 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
+   let place: number
+   if (!me.alive) place = me.place
+   else place = 1 + S.mechs.filter((m: any) => m.alive && m !== me && m.hp > me.hp).length
++  if (HASH) require("node:fs").writeFileSync(`${HASH}/${seed}.trace`, hashes.join("\n") + "\n")
+   await bot.close({ type: "end", place, kills: me.kills })
+   const k = me.killer
+   return {

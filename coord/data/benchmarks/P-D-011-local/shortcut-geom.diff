@@ -1,0 +1,50 @@
+diff --git a/tools/sim/geom.ts b/tools/sim/geom.ts
+index 641c748..74929c9 100644
+--- a/tools/sim/geom.ts
++++ b/tools/sim/geom.ts
+@@ -148,6 +148,35 @@ function nearestFree(g: Geo, c: number): number {
+   return c
+ }
+ 
++const compCache = new WeakMap<Geo, Int32Array>()
++/** Connected components of the coarse walk grid under the same moves A* uses (8 neighbours, no corner cutting). */
++function components(g: Geo): Int32Array {
++  let comp = compCache.get(g)
++  if (comp) return comp
++  const n = g.cnx * g.cny
++  comp = new Int32Array(n).fill(-1)
++  const stack: number[] = []
++  let label = 0
++  for (let s0 = 0; s0 < n; s0++) {
++    if (g.blocked[s0] || comp[s0] >= 0) continue
++    comp[s0] = label; stack.push(s0)
++    while (stack.length) {
++      const c = stack.pop()!, ci = c % g.cnx, cj = Math.floor(c / g.cnx)
++      for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
++        if (!di && !dj) continue
++        const i2 = ci + di, j2 = cj + dj
++        if (i2 < 0 || j2 < 0 || i2 >= g.cnx || j2 >= g.cny) continue
++        const k = j2 * g.cnx + i2
++        if (g.blocked[k] || comp[k] >= 0) continue
++        if (di && dj && (g.blocked[cj * g.cnx + i2] || g.blocked[j2 * g.cnx + ci])) continue
++        comp[k] = label; stack.push(k)
++      }
++    }
++    label++
++  }
++  compCache.set(g, comp)
++  return comp
++}
+ let gs: Float32Array | null = null, stamp: Int32Array, from: Int32Array, closed: Int32Array, curStamp = 0
+ /** Straight coarse-grid walk check between two points. */
+ export function freeLine(g: Geo, ax: number, ay: number, bx: number, by: number): boolean {
+@@ -165,6 +194,9 @@ export function findPath(g: Geo, sx: number, sy: number, tx: number, ty: number)
+   if (!gs) { gs = new Float32Array(n); stamp = new Int32Array(n); from = new Int32Array(n); closed = new Int32Array(n) }
+   curStamp++
+   const s = nearestFree(g, cellOf(g, sx, sy)), t = nearestFree(g, cellOf(g, tx, ty))
++  // #133 item 1: A* from one connected component never reaches another, so answer null without searching.
++  const comp = components(g)
++  if (!g.blocked[s] && !g.blocked[t] && comp[s] !== comp[t]) return null
+   const ti = t % g.cnx, tj = Math.floor(t / g.cnx)
+   const h = (c: number) => { const dx = Math.abs((c % g.cnx) - ti), dy = Math.abs(Math.floor(c / g.cnx) - tj); return Math.max(dx, dy) + 0.4142 * Math.min(dx, dy) }
+   const heapC: number[] = [s], heapF: number[] = [h(s)]

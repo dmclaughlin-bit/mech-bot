@@ -2,10 +2,77 @@
   "id": "P34",
   "title": "Lethal release: fire a partially charged laser as soon as its damage is lethal on the current target, instead of waiting for full charge (LETHAL_RELEASE_ON)",
   "family": "weapons",
+  "flags": ["LETHAL_RELEASE_ON"],
   "flag": "LETHAL_RELEASE_ON",
+  "behaviors": [
+    "while charging the laser at the locked enemy mech with the torso lined up (existing `lined` test, no re-aim, not a farm shot), let go as soon as 0.8 x partial-charge damage (protocol §7: damage x (min_frac + (1 - min_frac) x max(charge, min_charge) / full) x cube bonus x (1 + cookoff) if it holds a mortar) >= its shown hp; never before 40 s and never while a drop run/hold is possible (dropRun set, or a called drop not held by another mech within DROP_RUN_M)"
+  ],
   "owner": "Mech Builder",
-  "stage": "assigned",
-  "source": "PR #145 research-doug-1941 ranked build 1 (brain.ts:1036-1046)",
-  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
-  "created_et": "2026-11-21 19:57"
+  "stage": "hold",
+  "pr": null,
+  "sha": "flag-on head = the commit after this record on branch p34-lethal-release (flips LETHAL_RELEASE_ON only); flag-off build = parent of that commit (bot code = afa18f2d466c6b95927fd7a620fe9f7e6b3a5d12)",
+  "champion_sha_tested_against": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
+  "champion_sha": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
+  "base_main": "81fc3219cc7cddc6c20874e287ac283f3c408338 (bot code identical to main b6f2f8b / 5404931; screen main runs used worktree at 5404931)",
+  "screens": [
+    {
+      "sha": "builder hazard run (not a Sim Tester screen), flag-on copy of afa18f2 (MIN_T 40 + drop gate)",
+      "seed_set": "0 (96 games, wild-sim, --jobs 1)",
+      "fired": 27,
+      "diff_behavior": 27,
+      "diff_score": 18,
+      "pins": "20 s+ pins main 6 seeds (16, 41, 43, 78, 79, 92), P34 5 (same spots, 0 flag ticks in every window); 0 new; seed 78's 28 s pin gone",
+      "verdict": "FAIL item 3: drop-ring arrivals 5 -> 4 (seed 94 lost drop 20001 at 165 s, same place 1st, same 13 kills; diverged after a lethal release at 46.8 s that killed). Died <40 s 33 -> 33. t<10 s activations 0",
+      "sim_delta": 0.125,
+      "sim_se": 0.100,
+      "better_worse": "11 / 7",
+      "kills": "307 -> 318",
+      "laser_shots": "701 -> 729",
+      "early_releases": "69 (killed 62, missed 7, hit-but-alive 0); mean charge at release 0.341 s (0.409 s before full)",
+      "laser_kills": "126 -> 146; laser-kill time median 51.35 -> 59.75 s, mean 67.7 -> 73.5 s",
+      "source": "/tmp/p34-on-0.csv, /tmp/p34-main-0.csv, /tmp/p34-logs (builder run, not committed)"
+    },
+    {
+      "sha": "builder hazard run (not a Sim Tester screen), flag-on copy of afa18f2 (MIN_T 40 + drop gate)",
+      "seed_set": "1000 (96 games, wild-sim, --jobs 1)",
+      "fired": 24,
+      "diff_behavior": 24,
+      "diff_score": 14,
+      "pins": "20 s+ pins main 2 seeds (1005 x2, 1018), P34 the same 3 windows, 0 flag ticks in each; 0 new",
+      "verdict": "FAIL item 3: drop-ring arrivals 3 -> 2 (seed 1010 lost 2, died 190.85 vs 234.50 s, diverged after a lethal release at 46.3 s that killed; seed 1028 gained 1). Died <40 s 30 -> 30. t<10 s activations 0",
+      "sim_delta": -0.052,
+      "sim_se": 0.108,
+      "better_worse": "7 / 7",
+      "kills": "309 -> 304",
+      "laser_shots": "645 -> 649",
+      "early_releases": "56 (killed 54, missed 2, hit-but-alive 0); mean charge at release 0.346 s",
+      "laser_kills": "131 -> 135; laser-kill time median 46.8 -> 46.2 s, mean 57.6 -> 56.6 s",
+      "source": "/tmp/p34-on-1000.csv, /tmp/p34-main-1000.csv, /tmp/p34-logs (builder run, not committed)"
+    },
+    {
+      "sha": "first try, flag-on copy of b2ba4ff (MIN_T 10, no drop gate); superseded by the fix",
+      "seed_set": "0 + 1000 (96 + 96)",
+      "fired": 73,
+      "diff_behavior": 73,
+      "diff_score": 52,
+      "pins": "0 new 20 s+ pins on either set",
+      "verdict": "FAIL items 3 and 5: drop-ring arrivals 5 -> 2 (base 0), 3 -> 4 (base 1000); died <40 s 33 -> 34 and 30 -> 31. Paired +0.073 +/- 0.179 (20/8) and +0.115 +/- 0.145 (13/11); kills 307 -> 314 and 309 -> 318; early releases 110 + 118, 211 killed, 17 missed",
+      "source": "/tmp/p34-try1-on-*.csv (builder run, not committed)"
+    }
+  ],
+  "gate": "check.py --map-dir arena PASS: default max 6.7 ms, flag-on max 2.9 ms; eqdrive flag-off vs origin/main IDENTICAL (cmp); merge-base --is-ancestor b6f2f8b OK; sim decision max 11.4 ms flag-on",
+  "receipt": null,
+  "site_score": null,
+  "decision": "HOLD: BUILD_CHECKLIST item 3 FAIL on both sets after the one allowed fix (set totals 5 -> 4 and 3 -> 2); items 1, 2, 4, 5 PASS",
+  "blocker": "Drop-ring arrival totals lower on both sets. Every early release that changed a drop game killed its target before any drop was called (46-47 s); the lost arrivals are 150-235 s later in games that diverged. The behavior already never starts while a drop run/hold is possible. Closing the rest within this behavior means turning it off for most of the match. Needs a coordinator / Doug decision (the noise-calibration benchmark and the 7:55 PM ET set-total ruling are the context)",
+  "next_action": "Grok/Doug: decide whether a 1-arrival set-total drop from knock-on divergence vetoes P34; if not, Sim Tester full screen 2000+3000 and 4000+5000 on the pushed head",
+  "doug_waiver": false,
+  "source": "PR #145 research-doug-1941 ranked build 1 (brain.ts:1036-1046 on 6182d29; on the P29 champion the hook is brain.ts:1078-1093)",
+  "created_et": "2026-11-21 19:57",
+  "timestamps": { "built": "2026-11-21 20:32 ET", "updated": "2026-11-21 20:32 ET" },
+  "sources": [
+    "PR #145 (coord/research-doug-1941.md)",
+    "/workspace/mechfight-kit/protocol.md:305, :319",
+    "builder hazard runs /tmp/p34-{main,on}-{0,1000}.csv and /tmp/p34-logs, analyzed with /tmp/p34-harness/analyze.py and /tmp/paired.py"
+  ]
 }

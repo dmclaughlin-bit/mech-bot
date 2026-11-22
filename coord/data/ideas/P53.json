@@ -1,0 +1,40 @@
+{
+  "id": "P53",
+  "title": "LOW_HP_BOOST_SAVE: below 35% HP, do not spend boost (except zone escape or finishing an active P48 tree-retreat move); save it for when HP recovers. Movement direction unchanged, only the boost flag is withheld.",
+  "family": "movement / energy (boost discipline)",
+  "flags": ["LOW_HP_BOOST_SAVE_ON"],
+  "flag": "LOW_HP_BOOST_SAVE_ON",
+  "params": { "LOW_HP_BOOST_FRAC": 0.35 },
+  "behaviors": [
+    "when HP < LOW_HP_BOOST_FRAC (0.35) of max HP, t >= 10 s, and the drop gate is open (no drop near AND reachable within DROP_RUN_M, not on a drop run or ring hold): withhold the boost flag the champion would set on that tick, unless the move is a zone escape / leaving the zone or an active P48 tree-retreat move; direction unchanged"
+  ],
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "stage_detail": "step_a on P48 (log-only Step A, no behavior change)",
+  "pr": null,
+  "sha": null,
+  "branch": "p53-low-hp-boost-save",
+  "base": "4179419",
+  "champion": "P48 b9492c6 (main merge edb729f)",
+  "champion_sha_tested_against": null,
+  "champion_sha": "b9492c6",
+  "champion_main": "edb729f",
+  "evidence": {
+    "source": "Mech Watcher ladder study, 135 top-16 matches",
+    "confidence": "medium",
+    "kind": "correlation only",
+    "finding": "winners boost while below 35% HP only 19% of the time vs 37% for the bottom half; d -0.72; 90/112 matches"
+  },
+  "novelty_note": null,
+  "step_a_result": null,
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Mech Builder runs log-only Step A (trees-on, bases 2000-5000) on P48 b9492c6",
+  "doug_waiver": false,
+  "source": "Coordinator brief 12:25 AM ET Sun Nov 22 (P53 LOW HP BOOST SAVE TASK)",
+  "timestamps": { "created": "2026-11-22 12:25 AM ET", "updated": "2026-11-22 12:25 AM ET" },
+  "sources": ["Coordinator brief 12:25 AM ET Sun Nov 22", "Mech Watcher ladder study (135 top-16 matches)"]
+}

@@ -29,6 +29,8 @@ Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, f
 
 Not ACKed. Add `ACK P-D-013 (Diego's Claude) <time ET>` to `coord/log.md` in your first push. Same rules as P-D-012 below: one behavior, one flag, flag 0 byte-identical, never merge/submit/click.
 
+**Status (7:58 PM ET):** P29 #143 was PASSED by Doug (drop arrivals judged by set totals) and goes to the site first. P29b is a backup, only useful if P29 loses or the seed 5028 and 4027 issues matter. Keep it a separate PR.
+
 **Why.** Sim Tester's full paired screen of P29 PR #143 (head 2e1d036) came back VETO, so the build is on hold. 2000+3000 was clean. On 4000+5000: seed **5028 lost its drop-ring arrival** (place 15 vs 14), and seed **4027 had a new 46 s pause** at a spot where the champion never gets stuck, in a game that ended 1.3 s earlier. That hits clause (b) of Doug's 7:16 PM ET stall rule (coord/WORKFLOW.md). See the Sim Tester comment on #143.
 
 **Task.** On your branch `diego/P-D-012-midring-settle` (or `diego/P-D-013-midring-settle-fix`), fix both inside the SAME behavior:
@@ -36,7 +38,7 @@ Not ACKed. Add `ACK P-D-013 (Diego's Claude) <time ET>` to `coord/log.md` in you
 2. Drop yield: never settle in the 15 s before a drop call or while a drop is announced or live, or while a drop run or ring hold is possible. Stand down instantly if a drop is called.
 3. No-progress give-up: if the settle move makes less than about 3 m of progress in 3 s, abandon that settle target for the rest of the circle (no retry loop).
 4. Re-run your base-0 hazard plus seeds 5028 and 4027, and report the full `coord/BUILD_CHECKLIST.md`. Drop arrivals must equal main, with no new 20 s+ pause where the flag was active.
-5. The PR head must be the **flag-ON build**, since screens and site tests run on the exact SHA. Keep the flag-off eqdrive proof in the PR body. Push to #143 (or a new PR titled with P-D-013 and P29b) and update `coord/data/ideas/P29.json` on your branch. Grok copies it to main.
+5. The PR head must be the **flag-ON build**, since screens and site tests run on the exact SHA. Keep the flag-off eqdrive proof in the PR body. Do NOT push to #143: Doug passed P29 #143 (2e1d036) at 7:55 PM ET and it's going to the site as is. Open a NEW PR titled with P-D-013 and P29b on branch `diego/P-D-013-midring-settle-fix` and update `coord/data/ideas/P29.json` on your branch. Grok copies it to main.
 
 If the fix needs a second behavior, stop and say so in the PR.
 

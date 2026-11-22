@@ -104,3 +104,9 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 - Mac fallback screens (P-D-019): P43b #162 VETO (drop-ring 8->6 on 2000+3000; pause games 1->2 on 4000+5000). P35c #163 HOLD (pause games 1->3 on 2000+3000; survivors 3->2 on 4000+5000; mean lower on both sets). Records copied to main (D2).
 - P50 #161: checklist item 3 fail (rings 11->10 over 4 bases); Doug's ruling requested.
 - ChatGPT issue inbox (Doug 10:44 PM ET): labels chatgpt-review / under-review / reviewed created; test issue #164 detected, one review comment (APPROVE_WITH_STIPULATIONS), labels flipped to reviewed, closed; a second pass did not detect it again. Verified 11:33 PM ET.
+
+## 11:45 PM ET tick
+- Champion P48 b9492c6 (main edb729f), 4.44. Ready: 0 (below target 3-4). Tests in last 60 min: 0 (last 10:27 PM ET). Slot unused this tick: no READY build and no eligible near miss (owner: builders; next: Sim Tester official screens of P43b #162 / P35c #163, Mech Builder P44b / P40d).
+- P50 #161: Sim Tester trees-on screen vs P48 = VETO, 3 vetoes (stall a/b/c) + 1 NEEDS DOUG (survivors 3->2 on 4000+5000). Failed, not a near miss. Mac cross-check also VETO (drop rings 8->7).
+- P51 (PR #167): Step A on P48 fired 8/192, retired.
+- ChatGPT issues #165 and #166 (connection tests from Diego) reviewed: DENY as directives (no idea in them); integration confirmed working.

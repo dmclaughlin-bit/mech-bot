@@ -5,12 +5,13 @@
   "flag": "CHARGE_LINED_ON",
   "owner": "Diego's Claude",
   "prompt": "P-D-018",
-  "stage": "waiting for screen",
+  "stage": "failed: screen veto",
   "source": "Sim Tester death report 20261121-2153-0e6fadd (ST-1)",
-  "champion_sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
-  "decision": "Doug 11:28 PM ET: yes, send P50 to the full paired trees-on screen vs P48 despite the checklist drop-ring dip (11 -> 10 across 4 bases). All screen vetoes still apply. Sim Tester told to screen it first after re-running the P48 baseline. Never site-tested.",
+  "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
+  "decision": "Doug 11:28 PM ET: yes to full screen despite checklist dip. Coordinator 11:45 PM ET: FAILED (3 vetoes), not a near miss (more than one veto). Off the in-flight list. Never site-tested.",
   "created_et": "2026-11-21 10:03 PM ET",
   "pr": 161,
   "sha": "424029b",
-  "updated_et": "2026-11-21 11:40 PM ET"
+  "updated_et": "2026-11-21 11:45 PM ET",
+  "screen": "Sim Tester trees-on full paired screen vs P48 b9492c6 (#161, 11:39 PM ET; screens.csv e6b2b0f): VETO, 3 vetoes (stall (a) seed 4093, stall (b) seed 2047, stall (c) pause games 2->6 on 4000+5000) plus 1 NEEDS DOUG (survivors 3->2 on 4000+5000, corrected 11:40 PM ET). Mac cross-check (Diego 11:32 PM ET): VETO on drop-ring 8->7 on 2000+3000."
 }

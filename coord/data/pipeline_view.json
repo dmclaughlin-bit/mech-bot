@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 23:30 ET",
- "origin_main": "e1e0a7faf486e38d9c3d46461e020e590fa15180",
+ "generated_at_et": "2026-11-21 23:42 ET",
+ "origin_main": "e6b2b0fd34cb91528bdd46e648ff8ed42ed6de53",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -2069,8 +2069,8 @@
     "outcome": "win",
     "receipt": "BB-94897D91",
     "verdict": "WIN",
-    "result_logged_et": "2026-11-21 22:29 ET",
-    "result_url": null
+    "result_logged_et": "2026-11-21 23:32 ET",
+    "result_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/157#issuecomment-7074238509"
    },
    "screen": {
     "both": true,
@@ -2093,6 +2093,17 @@
       "exact_sha": true
      },
      {
+      "src": "PR #157 comment",
+      "sets": [
+       "A",
+       "B"
+      ],
+      "at": "2026-11-21 23:32 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/157#issuecomment-7074238509",
+      "after_click": true,
+      "exact_sha": true
+     },
+     {
       "src": "PR #157 body table (time = PR opened; body may have been edited)",
       "sets": [
        "A",
@@ -2102,6 +2113,26 @@
       "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/157",
       "after_click": false,
       "exact_sha": false
+     },
+     {
+      "src": "screens.csv P48",
+      "sets": [
+       "A"
+      ],
+      "at": "2026-11-21 22:23 ET",
+      "url": null,
+      "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "screens.csv P48",
+      "sets": [
+       "B"
+      ],
+      "at": "2026-11-21 22:23 ET",
+      "url": null,
+      "after_click": false,
+      "exact_sha": true
      },
      {
       "src": "screens.csv P48",
@@ -4577,7 +4608,7 @@
    "kind": "build",
    "source": "Mech Sim Tester death report /workspace/tester/proposals/20261121-2153-0e6fadd.md (ST-2), PR #154",
    "owner": "Mech Builder",
-   "decision": null,
+   "decision": "Coordinator 11:45 PM ET: Step A on P48 fired 8/192 (below 10/192), retired per Diego P-D-020 log (PR #167). Never built, never site-tested.",
    "changes": 1,
    "changes_basis": "idea record flags",
    "multi": false,
@@ -4592,15 +4623,15 @@
    "screened_before_click": false,
    "postmortems": [],
    "first_mention": null,
-   "sha": null,
+   "sha": "cadffc6",
    "champion_sha_note": null,
    "research": [],
    "prs": [],
    "pr_opened": null,
-   "primary_pr": null,
-   "pr_url": null,
+   "primary_pr": 167,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/167",
    "pr_state": null,
-   "head": null,
+   "head": "cadffc6",
    "pr_closed": null,
    "pr_merged": null,
    "contains_champion": null,
@@ -5285,7 +5316,7 @@
    "kind": "build",
    "source": "Sim Tester death report 20261121-2153-0e6fadd (ST-1)",
    "owner": "Diego's Claude",
-   "decision": "Doug 11:28 PM ET: yes, send P50 to the full paired trees-on screen vs P48 despite the checklist drop-ring dip (11 -> 10 across 4 bases). All screen vetoes still apply. Sim Tester told to screen it first after re-running the P48 baseline. Never site-tested.",
+   "decision": "Doug 11:28 PM ET: yes to full screen despite checklist dip. Coordinator 11:45 PM ET: FAILED (3 vetoes), not a near miss (more than one veto). Off the in-flight list. Never site-tested.",
    "changes": 1,
    "changes_basis": "idea record flags",
    "multi": false,
@@ -5301,7 +5332,7 @@
    "postmortems": [],
    "first_mention": null,
    "sha": "424029b",
-   "champion_sha_note": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+   "champion_sha_note": "b9492c6f122c549c705b69402157f078b4a57857",
    "research": [],
    "prs": [],
    "pr_opened": null,

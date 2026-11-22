@@ -4,7 +4,7 @@
   "family": "loadout / late weapon pickup",
   "flag": "LATE_MORTAR_ON",
   "owner": "Mech Builder",
-  "stage": "step_a",
+  "stage": "retired: Step A fail",
   "source": "Mech Sim Tester death report /workspace/tester/proposals/20261121-2153-0e6fadd.md (ST-2), PR #154",
   "champion": "P34 0e6fadd1a30db4ee30c26114b8198f63d782b7c9 (main 8c130ad)",
   "change": "When still gun-only after LASER_RUSH_S with a free slot, allow a reachable in-zone ground mortar as the lowest-priority pickup, behind laser and lightning (brain.ts loot rule ~:496 and the Build 80 late trip ~:684-700; held-mortar fire code ~:1098 already exists).",
@@ -13,7 +13,9 @@
   "step_a": "Log only, trees-on on P34: count gun-only-after-45 s games with a reachable in-zone mortar seen and no enemy within 160 m, on 2000+3000 and 4000+5000. Fewer than 10/192 on either set: retire, no build.",
   "novelty": "No prior site test picks up a mortar (EXPERIMENTS.md has no mortar entries).",
   "assigned_et": "2026-11-21 10:30 PM ET (coordinator, free Builder session)",
-  "pr": null,
-  "sha": null,
-  "decision": null
+  "pr": 167,
+  "sha": "cadffc6",
+  "decision": "Coordinator 11:45 PM ET: Step A on P48 fired 8/192 (below 10/192), retired per Diego P-D-020 log (PR #167). Never built, never site-tested.",
+  "branch": "p51-stepa-on-p48",
+  "updated_et": "2026-11-21 11:45 PM ET"
 }

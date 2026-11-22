@@ -183,3 +183,4 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 - Queue stale again: P61 (being rebuilt on P41) must instead be built on P60. Top next build: P41 EARS_LOOK rebuilt on P60 (F17+F18). Sim Tester needs a P60 trees-on baseline (screens vs P48 already exist for afb6f26).
 - Unused slot reason (from 2:44): no build READY vs the new champion.
 - Because we learned P60's far-cover walk scores above P41 on the site, we moved "P41 look on P60" to the top, moved P61 down until rebuilt on P60, and assigned Sim Tester to baseline P60.
+- 2:42 AM ET: P60 afb6f26 3.88 builders-4 (BB-6F449E11) = champion. Coordinator merged #181 as 32acd3d with main bot code exactly afb6f26 (P41 EARS_LOOK removed from main because the scored champion lacks it). New builds must contain 32acd3d. Top build: P41 EARS_LOOK as one change on 32acd3d; then P61 on 32acd3d. Sim Tester: P60 baseline.

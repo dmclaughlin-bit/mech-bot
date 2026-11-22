@@ -3,25 +3,83 @@
   "title": "BACKAWAY_LOS_BREAK_ON: when the back-away retreat has no far cover spot, walk toward the nearest spot that hides us from MORE of the recent shooters than now (a building corner or tree edge), instead of straight away",
   "family": "movement / retreat (back-away mode)",
   "flag": "BACKAWAY_LOS_BREAK_ON",
-  "flags": ["BACKAWAY_LOS_BREAK_ON"],
+  "flags": [
+    "BACKAWAY_LOS_BREAK_ON"
+  ],
   "owner": "Diego's Claude",
   "prompt": "P64 (Grok 3:04 AM ET Sun)",
   "branch": "diego/p64-backaway-los-break",
   "champion": "P60 afb6f263972480e03d381d5dbb32f56954e8ae73 (site 3.88 builders-4, BB-6F449E11)",
   "base": "main b2d0b06 (bot code = afb6f26; contains 32acd3d)",
-  "builds_on": ["F16", "F18", "N8", "N9"],
+  "builds_on": [
+    "F16",
+    "F18",
+    "N8",
+    "N9"
+  ],
   "evidence": "F16: 79 of P48's 337 retreat deaths (23%) are back-away deaths where no cover was ever reached, and only 23 of those 79 had a far (4-6 s) cover spot hidden from the shooters. F18: P60's far cover won on the site, so a leg-only move toward cover in this mode is positive. N8: aim/torso retargeting loses kills, so legs only. N9: most retreat deaths are in back-away or building-cover mode, not tree-retreat.",
   "hypothesis": "For the other ~56 of the 79 deaths there is no spot hidden from every shooter, but there often is a spot within 1-3 s hidden from SOME of them (a corner or trunk between us and the main shooter). Fewer shooters seeing us means less damage while we back away.",
   "mechanism": "In the plain back-away branch (hurt, hit in the last 2 s, no building hideSpot, no P48 tree spot, no P60 far cover spot), from t = 40 s, never in a drop run/hold or near-and-reachable drop: among in-zone, walkable spots 1, 2 or 3 s of straight walk away that are no closer to any shooter than we are, pick the one that the fewest shooters can see, if that is strictly fewer than see us now (nearest first on ties). Walk there (same boost rule as the back-away), torso and aim unchanged. Latched with a 3 s no-progress give-up and a skip list. Shooters = seers that hit us in the last THREAT_HIT_S, else all seers (same as P60).",
-  "activation": null,
+  "activation": "Step A: 23/192 (2000+3000) and 24/192 (4000+5000) games; 0 activations before 40 s; passive 384/384 vs main (place, death_t, kills).",
   "novelty": "P60 and P48 only act when ONE spot hides us from every shooter; P64 acts exactly in the cases they return null (the 56 deaths without a far spot) and accepts partial cover.",
   "weakness_to_watch": "Partial cover can pull us sideways and slow the escape; the straight back-away at least increases range from every shooter. The spot must be no closer to any shooter.",
   "disproof": "On practice bases 0 and 6000 vs P60: back-away, no-cover-reached deaths do not fall, OR the mean (16 - place) is lower on both bases; or deaths < 40 s rise, or Step A under 10/192 on either set.",
-  "positives": null,
-  "negatives": null,
+  "positives": "Mean positive on both bases (+0.094, +0.010), 5 better vs 1 worse, kills 298->306, early deaths and drops flat.",
+  "negatives": "Small (12 games change per base). New pin on 6000 (180-211 s) occurred with the flag inactive. Per-mode death buckets (back-away, no cover reached) were not measured in this run.",
   "confidence": "Uncertain",
   "reuse": null,
   "outcome": null,
-  "stage": "record_written",
-  "step_a_result": null
+  "stage": "checklist_pass_pr_open",
+  "step_a_result": {
+    "verdict": "PASS",
+    "sim": "cloud x86 hazard sim (trees on, jobs 4), 96 seeds per base",
+    "games_fired": {
+      "2000": 8,
+      "3000": 15,
+      "4000": 13,
+      "5000": 11
+    },
+    "sets": {
+      "2000+3000": "23/192",
+      "4000+5000": "24/192"
+    },
+    "trigger_ticks": {
+      "2000": 75,
+      "3000": 102,
+      "4000": 72,
+      "5000": 101
+    },
+    "activations_before_40s": 0,
+    "passivity": "384/384 games identical to main in place, death_t and kills"
+  },
+  "sha_flag_off": "085a3dc73d0ac7877df6e6bfe762653be5509842",
+  "checklist": {
+    "bases": "0 and 6000, cloud x86, trees on, vs main (= P60 afb6f26 bot code)",
+    "flag_off": "96/96 rows and 96/96 traces identical on both bases; kit actions identical (KIT_IDENTICAL)",
+    "fired_diff_behavior_diff_score": {
+      "0": "12 / 12 / 3",
+      "6000": "12 / 12 / 3"
+    },
+    "mean": {
+      "0": "+0.094+/-0.074",
+      "6000": "+0.010+/-0.018"
+    },
+    "better_worse": {
+      "0": "3/0",
+      "6000": "2/1"
+    },
+    "kills": {
+      "0": "298->306",
+      "6000": "365->365"
+    },
+    "survivors": {
+      "0": "2->3",
+      "6000": "2->2"
+    },
+    "died_lt_40": "24->24 and 16->16",
+    "drop_rings": "3->3 and 1->1",
+    "pins20": "2->2 and 1->2 (new: 6000 180-211 s, flag ticks 0 in that window)",
+    "check_py": "PASS, max 4.6 ms",
+    "archive_bytes": 3829760
+  }
 }

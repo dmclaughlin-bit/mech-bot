@@ -207,5 +207,5 @@ export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]
  * instead of backing straight away. Latched with P48's no-progress give-up and a skip list. Legs only; torso and aim
  * unchanged (N8). false = champion behavior exactly.
  */
-export const BACKAWAY_LOS_BREAK_ON = false
+export const BACKAWAY_LOS_BREAK_ON = true
 export const BACKAWAY_LOS_STEPS_S = [1, 2, 3]

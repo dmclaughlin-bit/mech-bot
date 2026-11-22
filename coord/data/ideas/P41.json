@@ -1,0 +1,157 @@
+{
+  "id": "P41",
+  "title": "Sound-cued look: with 12 or fewer alive and nothing to shoot, turn the torso to the last heard mech sound (EARS_LOOK_ON)",
+  "family": "vision / aim (late game)",
+  "flags": [
+    "EARS_LOOK_ON"
+  ],
+  "flag": "EARS_LOOK_ON",
+  "behaviors": [
+    "with obs.alive <= 12, t >= 10, no target (no enemy and no farm mark), not hit in the last 2 s, no laser charge in progress, no drop run/hold and no claimable drop within DROP_RUN_M: aim the torso (yaw only, pitch 0) at the bearing of the most recent mech-made sound heard in the last 2 s when that bearing is more than 30 deg off the aim the champion would use"
+  ],
+  "owner": "unassigned (parked; Step A on P48)",
+  "stage": "step_a_pass",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Grok: assign or keep parked. Step A passed on P48 trees on; a build still needs the full BUILD_CHECKLIST 4-base screen.",
+  "doug_waiver": false,
+  "single_decision": "Where the torso points when the champion has no target. Today (brain.ts:913, :1102-1115) it points along the move direction, or at the next circle's center when standing, and at the last hit's bearing for 2 s after a hit. The bot never reads obs.sounds (no reference in brain.ts/target.ts/nav.ts). The flag adds one more aim source after the lastHit line: the newest heard mech sound. Legs, path, fire rules and target pick are unchanged.",
+  "trigger": "EARS_LOOK_ON AND obs.t >= 10 AND obs.alive <= 12 AND no target after the target/farm pick (`!target`, brain.ts:1004) AND NOT (lastHit && obs.t - lastHit.t < 2) AND laser charge <= 0 (beamCharge, brain.ts:935) AND NOT dropMove AND NOT dropHold AND NOT dropNear (same test as brain.ts:853) AND the newest sound of kind step/boost/jet/gun/laser/laser_charge/lightning/reload/mortar has (obs.t - heard_at) <= 2 s AND |wrap(sound.bearing - aim[0])| > 30 deg. Not counted: npc_gun, crate, explosion, death, drop (not a mech, or no shooter position).",
+  "hook": "brain.ts remember() (brain.ts:448-474): keep `lastSound = {bearing, at: obs.t - s.age, kind}` from obs.sounds (protocol.md section 8: sounds arrive once, with bearing, dist band and age). brain.ts act(), no-target branch brain.ts:1102-1118: after `if (lastHit && obs.t - lastHit.t < 2) aim = [lastHit.bearing, 0]` (brain.ts:1115) add `else if (EARS_LOOK_ON && <trigger>) aim = [lastSound.bearing, 0]`. dropMove/dropHold/dropNear are in scope (brain.ts:724-746, :853). Flag + EARS_ALIVE/EARS_AGE_S/EARS_MIN_DEG in params.ts next to MIDRING_SETTLE_ON.",
+  "observable_inputs": [
+    "obs.sounds kind/bearing/age (protocol.md section 8)",
+    "obs.alive",
+    "obs.t",
+    "obs.mechs (target pick, unchanged)",
+    "self.weapons[laser].charge",
+    "obs.events damaged.bearing (existing lastHit)",
+    "obs.drops"
+  ],
+  "gates": "Cannot start before t = 10 s (explicit obs.t >= 10). Only with obs.alive <= 12. Off on any tick with dropMove or dropHold, or with a claimable drop (holder null or us) within DROP_RUN_M; the aim then is the champion's (so a drop run's torso is never turned). No movement change of any kind. Off = champion exactly (flag false short-circuits).",
+  "drop_gate": "Uses the NARROW gate (no claimable drop within DROP_RUN_M, never during dropMove/dropHold), not the plain obs.drops-empty gate. The plain gate would keep only 18/192 and 10/192 games (the second set is at the bar) because a called or untaken drop sits in obs.drops for most of the mid game; the narrow gate keeps 22/192 and 21/192. Plain gate = obs.drops is empty. Narrow gate = no drop with holder null or us within DROP_RUN_M (200 m), the same `dropNear` test P29 uses (brain.ts:853), and the champion's dropMove/dropHold are both off on that tick.",
+  "evidence": {
+    "first_sight": "PR #145 coord/research-doug-1941.md (1,856 showdown first engagements): first hit ours KILL 309 / DIED 171, first hit theirs KILL 129 / DIED 297; the note's inferred reason B21 lost is that 'seeing first is the fight' (sensors).",
+    "watcher": "coord/data/watcher/STATES.md: sounds give a bearing only (no id), which is all this rule needs; the Watcher has no torso-vs-sound metric (not measured). aggression_slices.csv alive_5_8: share of ticks with a hit dealt 9.3% (T01-T04) vs 6.0% (T13-T16), d=0.12, 8475/7763 ticks, 72/68 matches (ok): top teams land more hits late. RANKED.md #6: mean nearest enemy at alive_2_4 141 vs 121 m (d=0.27): top teams see and hold enemies at range late.",
+    "sim_state": "Run 1, champion: with <= 12 alive the champion has no target on 8,908 decisions (2000+3000) and 12,049 (4000+5000). With <= 8 alive it has no target on 50%, 54%, 68%, 55% of decisions (bases 2000/3000/4000/5000), and a known enemy (seen in the last 10 s) on only 408/3317, 210/1769, 14/4556, 756/4988 of those, so the champion's own memory rarely says where the hunters are; a heard sound often does.",
+    "sim_sounds": "Run 2, narrow-gated activations (episodes) by sound kind, 2000+3000: gun 19, boost 13, mortar 7, laser 6, step 4, laser_charge 4; dist band mid 39, near 11, far 3. 4000+5000: boost 14, gun 13, mortar 5, laser 2, step 2, laser_charge 2, reload 1. A mech target appeared within 3 s after 21/53 and 18/39 episodes (champion, no change applied).",
+    "sim_squad": "/tmp/wild-sim/tune.ts SQUAD: every house bot hunts us from 240 s or once 8 or fewer house bots are left; they find us by sight and by our gunfire within 320 m. The sound-cued look answers that convergence."
+  },
+  "trigger_counts": {
+    "2000+3000": {
+      "fired_games": 24,
+      "episodes": 58,
+      "decisions": 1599,
+      "plain_gate_games": 18,
+      "plain_gate_episodes": 26,
+      "narrow_gate_games": 22,
+      "narrow_gate_episodes": 53,
+      "per_base": {
+        "2000": "none 12/36, plain 11/15, narrow 12/35 (games/episodes)",
+        "3000": "none 12/22, plain 7/11, narrow 10/18"
+      }
+    },
+    "4000+5000": {
+      "fired_games": 22,
+      "episodes": 47,
+      "decisions": 820,
+      "plain_gate_games": 10,
+      "plain_gate_episodes": 13,
+      "narrow_gate_games": 21,
+      "narrow_gate_episodes": 39,
+      "per_base": {
+        "4000": "none 15/21, plain 8/11, narrow 14/20",
+        "5000": "none 7/26, plain 2/2, narrow 7/19"
+      }
+    },
+    "alive_le_8_gate_rejected": "With obs.alive <= 8 (the requested late window) the same trigger fires in 7/192 (plain 2, narrow 6) and 5/192 (plain 0, narrow 5) games, under the 10/192 bar on both sets, so the spec uses <= 12 (the Watcher's alive_9_12 bucket edge). Only 15/192 and 21/192 games reach <= 8 alive with our bot alive.",
+    "episode_definition": "an episode is a run of trigger decisions with no gap over 1 s; decisions are 0.1 s"
+  },
+  "estimated_activation": "22/192 (2000+3000) and 21/192 (4000+5000) games with the narrow drop gate; 53 and 39 episodes.",
+  "closest_prior_test": "No test has used obs.sounds. Aim-only cousins: B45 TRACK_SWEEP_ON (glance away from a far harmless target to find a laser, opening) LOSS 3.35 vs 3.67; P23 late idle torso sweep VETO (64 s pin) and P23b CLOSE 4.00 (BB-AEFC0FA8); P30 front-arc facing toward a visible attacker while retreating/healing, RETIRED (drop arrivals 6->4, deaths <40 s up). This differs: a single look at a heard source, only with no target and no recent hit, never in the opening (B45), never a sweep (P23), never during a drop run (P30's loss).",
+  "what_would_disprove": "Paired screen: fires < 10/192 on either set; no rise in the share of fights after an activation where we land the first hit; or drop-ring set totals below the champion, deaths < 40 s above, or a new 20 s+ pin in a window where the look was active. An official score at or below 4.35.",
+  "risks": "Pins: no movement change, but a new view can surface a cube, drone or weapon and start a farm/loot walk the champion would not have made (P23's failure mode); check 20 s+ pins. Drops: off during dropMove/dropHold and with a claimable drop within 200 m. Early deaths: off before 10 s and only at <= 12 alive. Fights: seeing a hunter sooner also starts fights sooner (engage, standoff break and crossfire run on what we see); looking away from the move direction can hide an enemy ahead on a zone trip. Gun sounds include house bots shooting drones.",
+  "source": "Research P41-44 (this run): Watcher STATES/aggression slices, PR #145 first-fight table, passive sim log of the P29 champion.",
+  "timestamps": {
+    "created": "2026-11-21 21:30 ET",
+    "updated": "2026-11-21 23:42 ET"
+  },
+  "sources": [
+    "coord/data/watcher/STATES.md",
+    "coord/data/watcher/aggression_slices.csv",
+    "coord/data/watcher/RANKED.md",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/145 (coord/research-doug-1941.md)",
+    "/workspace/mechfight-kit/protocol.md section 8",
+    "/tmp/wild-sim/tune.ts",
+    "brain.ts (origin/main 8f0ca4c = P29 2e1d036 bot code)",
+    "coord/data/site_results.csv",
+    "Instrumented champion sim (research P41-44): copies of the champion bot files from origin/main 8f0ca4c (bot code identical to P29 2e1d036: `git diff 2e1d036 HEAD` on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p4144/bot (run 1: per-decision state log), /tmp/p4144/bot2 (run 2: exact candidate triggers) and /tmp/p4144/bot3 (run 3: laser-charge triggers), passive CSV logging appended before act.move, no action changed. Run: `cd /tmp/wild-sim && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv>` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column of each run's CSV equals /workspace/tester/runs/fast-b6f2f8b-<s>.csv on 96/96 games per base, after two load-timing outliers in run 2 (seeds 3012 and 4027) were rerun alone and matched the champion exactly; the isolated logs replaced the batch logs. Logs stay in /tmp (not committed).",
+    "Trees-on recheck (Doug 8:58 PM ET, coord/WORKFLOW.md 475eb09): copies of the current champion bot files from origin/main 8c130ad (P34 merge; bot code identical to 0e6fadd) under /tmp/p4144t/bot and /tmp/p4144t/bot2 with passive per-decision CSV logging before act.move (no action changed; the tree sight model is copied read-only from /tmp/builder-sim-trees/geom.ts treeBlocks and loaded from the kit's arena/v2/world.json). Run: `cd /tmp/builder-sim-trees && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144t/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column equals /workspace/tester/runs/trees-0e6fadd-<s>.csv on 96/96 games per base for both runs (768 games). Logs in /tmp (not committed).",
+    "git show 8e623eb:coord/data/ideas/P41.json (research record)",
+    "/workspace/tester/runs/trees-b9492c6-{2000,3000,4000,5000}.csv (Sim Tester reference rows)",
+    "Step A on P48: /tmp/stepa2 (instrumented bot, sim copy, logs; not committed)"
+  ],
+  "priority_rank": 4,
+  "research_note": "Research P41-44 also measured and dropped (fewer than 10/192 games on a set, or a tested family): late farm-shot silence with <= 8 alive (2/192 and 5/192); P29 settle extended to r <= 70 (0/192 and 0/192: the bot is alive at r <= 70 in 1-2 games per 192); zone-entry choice with <= 8 alive (zone travel at <= 8 alive in only 8/192 games on 2000+3000); gun+lightning late walk to a laser (2/192 and 0/192 after gates; also B90 KEEP_LIGHT_ON lost 3.73); sensors over nanites while holding a laser (4/192). The sound-cued look at <= 8 alive fired 7/192 and 5/192, so P41 uses <= 12.",
+  "hook_lines_note": "brain.ts line numbers re-pointed to origin/main 8c130ad (champion P34 0e6fadd); trees-off counts below were taken on P29 2e1d036 (same lines minus the P34 shifts).",
+  "trigger_counts_trees_on": {
+    "champion": "P34 0e6fadd1a30db4ee30c26114b8198f63d782b7c9 (main 8c130ad7f0c81acb03508c40f20c31867f29d358)",
+    "sim": "/tmp/builder-sim-trees --trees",
+    "2000+3000": {
+      "none": "30 games / 45 episodes",
+      "plain": "19 / 24",
+      "narrow": "30 / 44",
+      "reach": "30 / 45",
+      "per_base": "2000: none 18/27, plain 13/16, narrow 18/26, reach 18/27; 3000: none 12/18, plain 6/8, narrow 12/18, reach 12/18"
+    },
+    "4000+5000": {
+      "none": "30 / 57",
+      "plain": "13 / 17",
+      "narrow": "28 / 50",
+      "reach": "30 / 57",
+      "per_base": "4000: none 12/26, plain 6/9, narrow 12/22, reach 12/26; 5000: none 18/31, plain 7/8, narrow 16/28, reach 18/31"
+    },
+    "gates": "Gates as counted: none; plain = obs.drops empty; narrow = no drop (holder null or us) within DROP_RUN_M and no dropMove/dropHold; reach = 'near AND reachable within DROP_RUN_M' (Doug 8:58 PM ET follow-up): no drop that passes the champion's own drop-run candidate filter (not in dropSkip, holder null or us, within DROP_RUN_M, zone-safe for lands_in + capture time; brain.ts:731-736 on main 8c130ad) and no dropMove/dropHold that tick. Spec gate = reach."
+  },
+  "trees_on_change": "Fires more often with trees on: reach-gated 30/192 and 30/192 games (trees off on P29: narrow 22 and 21). Trees hide hunters beyond 45 m from our view too (shots and sounds ignore trees), so 'no target while a mech is heard' happens more; that strengthens the case for a sound cue. The <= 8 alive gate still fails trees on (5/192 and 6/192 games), so the <= 12 gate stands. The plain gate stays weak (19 and 13).",
+  "champion_sha_trees_on_recheck": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+  "step_a_result": {
+    "champion": "P48 b9492c6f122c549c705b69402157f078b4a57857 (main 9071465e31afe09ccc4e2bd66aaab2e4ce3b8684, merge edb729f), TREE_RETREAT_ON=true",
+    "trees": true,
+    "seeds_per_set": 192,
+    "2000+3000": {
+      "fired_games": 29,
+      "decisions": 861
+    },
+    "4000+5000": {
+      "fired_games": 25,
+      "decisions": 723
+    },
+    "per_base_games": {
+      "2000": 16,
+      "3000": 13,
+      "4000": 10,
+      "5000": 15
+    },
+    "worst_check_ms": 0.79,
+    "trigger_as_counted": "obs.t >= 10 AND obs.alive <= 12 AND no target after the target/farm pick (`!target`) AND NOT (lastHit && obs.t - lastHit.t < 2) AND beamCharge <= 0 AND the newest heard sound of kind step/boost/jet/gun/laser/laser_charge/lightning/reload/mortar (kept from obs.sounds as at = obs.t - age) is <= 2 s old AND |wrap(sound.bearing - final champion aim yaw)| > 30 deg AND drop gate open.",
+    "drop_gate": "Drop gate (champion's, Doug 8:58 PM ET / drop-gate-rule.txt): off when dropMove or dropHold is on that tick, or when any drop passes the champion's drop-run candidate filter (not in dropSkip, holder null or us, flat distance <= DROP_RUN_M 200 m, zone-safe for lands_in + capture time). Never 'any drop exists'.",
+    "passivity": "IDENTICAL: every non-timing column (all but late_over_50ms, bot_ms_mean) of the instrumented rows equals /workspace/tester/runs/trees-b9492c6-<b>.csv on 96/96 games for each base (384/384); 0 instrumentation exceptions; per-game log decisions equal the CSV decisions column on every game.",
+    "method": "Instrumented ONE copy of the champion P48 bot (b9492c6 bot files) at /tmp/stepa2/bot: passive per-decision checks for all four triggers at once, appended after every champion decision is final (just before act.move), inside try/catch, read-only on champion state, one JSON log per game; no action changed. Sim: /tmp/stepa2/sim = copy of /workspace/wt-tester-trees/tools/sim, byte-identical to 4b8663e (the Sim Tester's trees sim that wrote the reference rows). Run: `cd /tmp/stepa2 && STEPA_DIR=<dir> SEED_BASE=<b> bun sim/run.ts --bot /tmp/stepa2/bot/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees` for b = 2000, 3000, 4000, 5000. Not /workspace/builder-sim/tools/sim/run.ts: that file is the committed bd6d1a2 version, which ignores SEED_BASE (always seeds 1000-1095) and --trees.",
+    "rule": "coord/BUILD_CHECKLIST.md Step A (3d08872): fewer than 10/192 on either set retires the idea.",
+    "verdict": "step_a_pass",
+    "run": "2026-11-21 23:42 ET",
+    "drop_gated_out_games": {
+      "2000+3000": 0,
+      "4000+5000": 0,
+      "note": "games where the trigger held on some decision but the drop gate closed it (not all of these games are excluded: the idea may fire on other decisions)"
+    }
+  }
+}

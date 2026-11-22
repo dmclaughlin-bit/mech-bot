@@ -1,0 +1,155 @@
+{
+  "id": "P42",
+  "title": "No new laser charge on the zone trip: while walking to the next circle or escaping the zone, the laser does not start a charge (ZONE_TRIP_NO_CHARGE_ON)",
+  "family": "zone travel / weapon timing",
+  "flags": [
+    "ZONE_TRIP_NO_CHARGE_ON"
+  ],
+  "flag": "ZONE_TRIP_NO_CHARGE_ON",
+  "behaviors": [
+    "while mode is 'to next circle' or 'zone escape' (t >= 10), the laser may not take the lead and start a new charge; gun and lightning lead and fire as usual; a charge already in progress is released by the champion's rules"
+  ],
+  "owner": "unassigned (parked; Step A on P48)",
+  "stage": "step_a_pass",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Grok: assign or keep parked. Step A passed on P48 trees on; a build still needs the full BUILD_CHECKLIST 4-base screen.",
+  "doug_waiver": false,
+  "single_decision": "Whether the laser may start a charge during zone travel. Protocol: while charging you move at half speed (protocol.md:305, charge_move_mult 0.5; sim engine.ts:421). Zone travel (brain.ts:751-760) leaves just in time (needed >= timeLeft with a 10 s buffer, brain.ts:547-552), but the target code (brain.ts:1029, :1094) still starts laser charges on the way, so the trip runs at half speed for each 0.75 s charge plus the time to line up the release.",
+  "trigger": "ZONE_TRIP_NO_CHARGE_ON AND obs.t >= 10 AND mode is 'to next circle' or 'zone escape' AND the laser would take the lead (clear target, laser cooldown <= 0, d <= laser range, brain.ts:1029) AND its charge is 0 (a new charge would start at brain.ts:1094). Drop gate: by construction never on a drop tick (zone travel ranks above the drop run and the drop run requires !leaveNow && !trip && me.in_zone, brain.ts:731), and counted with the narrow gate as well.",
+  "hook": "brain.ts act(), weapon lead choice brain.ts:1029: `if (clear && laser >= 0 && w(laser).cooldown <= 0 && d <= w(laser).stats.range)` gains `&& !(ZONE_TRIP_NO_CHARGE_ON && obs.t >= 10 && (mode === \"to next circle\" || mode === \"zone escape\") && (w(laser).charge ?? 0) <= 0)`, so lightning (brain.ts:1032) or the gun (:1035) leads instead. A charge already in progress keeps the laser in the lead and is released as today. Flag in params.ts.",
+  "observable_inputs": [
+    "self.weapons[laser].charge / cooldown / stats.range",
+    "self.pos, obs.zone (existing zone-travel mode)",
+    "obs.mechs (existing target)",
+    "obs.t"
+  ],
+  "gates": "Cannot start before t = 10 s (explicit; zone travel cannot happen before the first shrink at 60 s anyway). Only in the two zone-travel modes, which rank above the drop run (brain.ts:751-760 vs :819-824), so it can never displace or alter a drop run or hold. No movement change: the path and the boost rule are the champion's; only the laser start is withheld. Off = champion exactly.",
+  "drop_gate": "This is the clearest case of the drop-on-the-map trap: with the plain gate (obs.drops empty) it fires in 0/192 on both sets, because the first drop is called at 70 s, inside the first shrink (60-110 s), and called or untaken drops then stay listed for every later zone trip. The spec therefore does not use the plain gate. Zone travel already excludes a drop run or hold on the same tick (brain.ts:731). Counts with the narrow gate (no claimable drop within 200 m and no dropMove/dropHold) are 15/192 and 21/192. Plain gate = obs.drops is empty. Narrow gate = no drop with holder null or us within DROP_RUN_M (200 m), the same `dropNear` test P29 uses (brain.ts:853), and the champion's dropMove/dropHold are both off on that tick.",
+  "evidence": {
+    "protocol": "protocol.md:305: laser charge 0.75 s, move at half speed while charging, cooldown 1.65 s; release fires along the aim. Sim models it (/tmp/wild-sim/engine.ts:421).",
+    "sim_zone_deaths": "P-D-007 Step A (PR #124, bot 6182d29): 'died after 60 s with zone travel in the last 5 s' in 28/192 and 37/192 games; zone travel yields almost no kills (15 kills in 6,520 travel ticks, 21 in 9,642). Run 1 on the P29 champion: zone travel in 21/24/29/28 games and deaths with travel in the last 5 s in 13/15/19/15 games (bases 2000/3000/4000/5000).",
+    "sim_zone_escape": "Run 1: the champion is outside the circle ('zone escape') in 43/79/73/100 episodes over 9/8/13/11 games per base; outside it loses 20-260 HP/s with no armor and no regen (protocol.md:291, section 9).",
+    "sim_charge_cost": "Run 2, narrow gate: the champion spends 326 decisions (32.6 s) charging the laser during zone travel in 17 games (2000+3000) and 697 decisions (69.7 s) in 22 games (4000+5000). 142 of 147 narrow-gated new charges are on 'to next circle', 5 on 'zone escape'.",
+    "watcher": "movement_slices.csv: mean speed at alive_5_8 7.51 vs 4.22 m/s (d=0.61, 8475/7763 ticks, 72/68 matches, ok) and 7.54 vs 4.98 at alive_2_4 (d=0.46, ok); late phase 7.15 vs 5.31 and final 8.31 vs 5.73 (small n, no conclusion). Top teams keep moving late; zone.md has no in/out gap in adequate buckets (outside 0.3% vs 0.3%).",
+    "counter_evidence": "P-D-010 (PR #140): healthy en-route travel delay changed zone arrival in only 6/192 and 2/192 games, so a slow trip rarely decides arrival on its own; this rule removes a delay that happens while a target is in view (when travel is most exposed), which P-D-010 did not isolate."
+  },
+  "trigger_counts": {
+    "2000+3000": {
+      "fired_games": 19,
+      "new_charges_blocked": 61,
+      "plain_gate_games": 0,
+      "plain_gate_events": 0,
+      "narrow_gate_games": 15,
+      "narrow_gate_events": 38,
+      "per_base": {
+        "2000": "none 10/39, plain 0/0, narrow 7/20 (games/charge starts)",
+        "3000": "none 9/22, plain 0/0, narrow 8/18"
+      },
+      "alive_le_8": "6 games (narrow 5)"
+    },
+    "4000+5000": {
+      "fired_games": 31,
+      "new_charges_blocked": 154,
+      "plain_gate_games": 0,
+      "plain_gate_events": 0,
+      "narrow_gate_games": 21,
+      "narrow_gate_events": 109,
+      "per_base": {
+        "4000": "none 13/76, plain 0/0, narrow 9/55",
+        "5000": "none 18/78, plain 0/0, narrow 12/54"
+      },
+      "alive_le_8": "14 games (narrow 12)"
+    },
+    "note": "Gated to <= 8 alive it would fire in 6/192 and 14/192 games (fails the first set), so it is not alive-gated. Run 3 recounted the starts on all four bases independently and got the same numbers."
+  },
+  "estimated_activation": "19/192 and 31/192 games (narrow drop gate: 15 and 21); 61 and 154 withheld charge starts (38 and 109 with the narrow gate).",
+  "closest_prior_test": "None on laser use during travel. Zone timing: P-D-007 Step B ZONE_EARLY_S failed in sim (zone-travel deaths 28->30, 37->45, PR #125), a different decision (when to leave). P-D-010 travel delay: measurement, no Step B. Laser handling: B32 laser pre-charge behind cover LOSS 3.48; P34 lethal release (when to let go) is in screening; this changes only whether a charge starts while travelling.",
+  "what_would_disprove": "Paired screen: no fall in zone damage taken or in 'zone escape' time in fired games, or fewer kills/more deaths on zone trips (the lost laser shots mattered more than the speed); fires < 10/192; drop-ring set totals below the champion or deaths < 40 s above.",
+  "risks": "Pins: none (no movement change). Drops: none (only in modes that rank above the drop run). Combat: a 315-damage laser shot is given up on each blocked start; against a lone chaser the gun's lower DPS may lose the exchange. Lightning holders keep the lightning. Sibling not included: run 3 shows the same half-speed charge during a hurt retreat in 64/192 games (narrow 59) on 2000+3000; that would be a separate flag in the retreat family and is not part of this spec.",
+  "source": "Research P41-44 (this run): protocol.md, P-D-007 Step A, passive sim log of the P29 champion.",
+  "timestamps": {
+    "created": "2026-11-21 21:30 ET",
+    "updated": "2026-11-21 23:42 ET"
+  },
+  "sources": [
+    "/workspace/mechfight-kit/protocol.md:291, :305, section 9",
+    "/tmp/wild-sim/engine.ts:421",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/124",
+    "coord/data/ideas/P-D-007A.json",
+    "coord/data/ideas/P-D-007B.json",
+    "coord/data/ideas/P-D-010.json",
+    "coord/data/watcher/movement_slices.csv",
+    "coord/data/watcher/zone.md",
+    "brain.ts (origin/main 8f0ca4c = P29 2e1d036 bot code)",
+    "Instrumented champion sim (research P41-44): copies of the champion bot files from origin/main 8f0ca4c (bot code identical to P29 2e1d036: `git diff 2e1d036 HEAD` on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p4144/bot (run 1: per-decision state log), /tmp/p4144/bot2 (run 2: exact candidate triggers) and /tmp/p4144/bot3 (run 3: laser-charge triggers), passive CSV logging appended before act.move, no action changed. Run: `cd /tmp/wild-sim && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv>` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column of each run's CSV equals /workspace/tester/runs/fast-b6f2f8b-<s>.csv on 96/96 games per base, after two load-timing outliers in run 2 (seeds 3012 and 4027) were rerun alone and matched the champion exactly; the isolated logs replaced the batch logs. Logs stay in /tmp (not committed).",
+    "Trees-on recheck (Doug 8:58 PM ET, coord/WORKFLOW.md 475eb09): copies of the current champion bot files from origin/main 8c130ad (P34 merge; bot code identical to 0e6fadd) under /tmp/p4144t/bot and /tmp/p4144t/bot2 with passive per-decision CSV logging before act.move (no action changed; the tree sight model is copied read-only from /tmp/builder-sim-trees/geom.ts treeBlocks and loaded from the kit's arena/v2/world.json). Run: `cd /tmp/builder-sim-trees && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144t/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column equals /workspace/tester/runs/trees-0e6fadd-<s>.csv on 96/96 games per base for both runs (768 games). Logs in /tmp (not committed).",
+    "git show 8e623eb:coord/data/ideas/P42.json (research record)",
+    "/workspace/tester/runs/trees-b9492c6-{2000,3000,4000,5000}.csv (Sim Tester reference rows)",
+    "Step A on P48: /tmp/stepa2 (instrumented bot, sim copy, logs; not committed)"
+  ],
+  "priority_rank": 6,
+  "research_note": "Research P41-44 also measured and dropped (fewer than 10/192 games on a set, or a tested family): late farm-shot silence with <= 8 alive (2/192 and 5/192); P29 settle extended to r <= 70 (0/192 and 0/192: the bot is alive at r <= 70 in 1-2 games per 192); zone-entry choice with <= 8 alive (zone travel at <= 8 alive in only 8/192 games on 2000+3000); gun+lightning late walk to a laser (2/192 and 0/192 after gates; also B90 KEEP_LIGHT_ON lost 3.73); sensors over nanites while holding a laser (4/192). The sound-cued look at <= 8 alive fired 7/192 and 5/192, so P41 uses <= 12.",
+  "hook_lines_note": "brain.ts line numbers re-pointed to origin/main 8c130ad (champion P34 0e6fadd); trees-off counts below were taken on P29 2e1d036 (same lines minus the P34 shifts).",
+  "trigger_counts_trees_on": {
+    "champion": "P34 0e6fadd1a30db4ee30c26114b8198f63d782b7c9 (main 8c130ad7f0c81acb03508c40f20c31867f29d358)",
+    "sim": "/tmp/builder-sim-trees --trees",
+    "2000+3000": {
+      "none": "16 games / 65 charge starts",
+      "plain": "0 / 0",
+      "narrow": "13 / 49",
+      "reach": "16 / 65",
+      "per_base": "2000: none 7, narrow 5, reach 7 games; 3000: none 9, narrow 8, reach 9"
+    },
+    "4000+5000": {
+      "none": "30 / 211",
+      "plain": "0 / 0",
+      "narrow": "23 / 141",
+      "reach": "30 / 210",
+      "per_base": "4000: none 15, narrow 11, reach 15 games; 5000: none 15, narrow 12, reach 15"
+    },
+    "gates": "Gates as counted: none; plain = obs.drops empty; narrow = no drop (holder null or us) within DROP_RUN_M and no dropMove/dropHold; reach = 'near AND reachable within DROP_RUN_M' (Doug 8:58 PM ET follow-up): no drop that passes the champion's own drop-run candidate filter (not in dropSkip, holder null or us, within DROP_RUN_M, zone-safe for lands_in + capture time; brain.ts:731-736 on main 8c130ad) and no dropMove/dropHold that tick. Spec gate = reach."
+  },
+  "trees_on_change": "About the same (trees off on P29: 19 and 31 ungated, narrow 15 and 21). The plain gate is still 0/192 on both sets. With the reach gate the count equals the ungated count on 2000+3000 because zone travel already excludes a claimable drop run. Unchanged by trees in mechanism: the half-speed charge is not a sight effect.",
+  "champion_sha_trees_on_recheck": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+  "step_a_result": {
+    "champion": "P48 b9492c6f122c549c705b69402157f078b4a57857 (main 9071465e31afe09ccc4e2bd66aaab2e4ce3b8684, merge edb729f), TREE_RETREAT_ON=true",
+    "trees": true,
+    "seeds_per_set": 192,
+    "2000+3000": {
+      "fired_games": 15,
+      "decisions": 63
+    },
+    "4000+5000": {
+      "fired_games": 32,
+      "decisions": 195
+    },
+    "per_base_games": {
+      "2000": 6,
+      "3000": 9,
+      "4000": 16,
+      "5000": 16
+    },
+    "worst_check_ms": 0.3,
+    "trigger_as_counted": "obs.t >= 10 AND final mode is 'to next circle' or 'zone escape' AND the laser takes the lead (clear target, laser cooldown <= 0, d <= laser range; leading === 'laser') AND laser charge <= 0 (a new charge would start) AND drop gate open.",
+    "drop_gate": "Drop gate (champion's, Doug 8:58 PM ET / drop-gate-rule.txt): off when dropMove or dropHold is on that tick, or when any drop passes the champion's drop-run candidate filter (not in dropSkip, holder null or us, flat distance <= DROP_RUN_M 200 m, zone-safe for lands_in + capture time). Never 'any drop exists'.",
+    "passivity": "IDENTICAL: every non-timing column (all but late_over_50ms, bot_ms_mean) of the instrumented rows equals /workspace/tester/runs/trees-b9492c6-<b>.csv on 96/96 games for each base (384/384); 0 instrumentation exceptions; per-game log decisions equal the CSV decisions column on every game.",
+    "method": "Instrumented ONE copy of the champion P48 bot (b9492c6 bot files) at /tmp/stepa2/bot: passive per-decision checks for all four triggers at once, appended after every champion decision is final (just before act.move), inside try/catch, read-only on champion state, one JSON log per game; no action changed. Sim: /tmp/stepa2/sim = copy of /workspace/wt-tester-trees/tools/sim, byte-identical to 4b8663e (the Sim Tester's trees sim that wrote the reference rows). Run: `cd /tmp/stepa2 && STEPA_DIR=<dir> SEED_BASE=<b> bun sim/run.ts --bot /tmp/stepa2/bot/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees` for b = 2000, 3000, 4000, 5000. Not /workspace/builder-sim/tools/sim/run.ts: that file is the committed bd6d1a2 version, which ignores SEED_BASE (always seeds 1000-1095) and --trees.",
+    "rule": "coord/BUILD_CHECKLIST.md Step A (3d08872): fewer than 10/192 on either set retires the idea.",
+    "verdict": "step_a_pass",
+    "run": "2026-11-21 23:42 ET",
+    "drop_gated_out_games": {
+      "2000+3000": 0,
+      "4000+5000": 1,
+      "note": "games where the trigger held on some decision but the drop gate closed it (not all of these games are excluded: the idea may fire on other decisions)"
+    }
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "id": "P49",
+  "renumbered_from": "research P45 @ 8e623eb (coord/data/ideas/P45.json on branch research-p41-44); renumbered to P49 by the Coordinator because P45 on main is MIDRING_SPOT, a different idea",
+  "title": "Heal behind trees: when the champion would stand to heal while seen, first walk to a spot within 3 s that trees hide from every enemy seeing us (TREE_HEAL_ON)",
+  "family": "heal / tree cover",
+  "flags": [
+    "TREE_HEAL_ON"
+  ],
+  "flag": "TREE_HEAL_ON",
+  "behaviors": [
+    "in the champion's standing 'heal' mode (HP < 90%), t >= 10, when an enemy in view sees us by the champion's own test (seenAt cone=true) and trees+buildings do not already hide us from all of them: walk to the nearest in-zone spot 1, 2 or 3 s of walking away (12 bearings, nearest first, straight-line walkable, no closer to any of those enemies) that trees+buildings hide from all of them, then heal there; give up after 3 s without 1 m of progress; off when a drop is near and reachable or a drop run/hold is on"
+  ],
+  "owner": "unassigned (parked; Step A on P48)",
+  "stage": "step_a_pass",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Grok: assign or keep parked. Step A passed on P48 trees on; a build still needs the full BUILD_CHECKLIST 4-base screen.",
+  "doug_waiver": false,
+  "single_decision": "Where we stand while healing when seen. Today 'heal' (brain.ts:825-830) stands still; its hide walk runs only while hurt (!noSneak) and only toward building cover (hideSpot, brain.ts:425, building-only seenAt brain.ts:405). This adds one destination type: a tree-hidden spot, used where the champion would stand in the open.",
+  "trigger": "TREE_HEAL_ON AND obs.t >= 10 AND mode === 'heal' (brain.ts:830, standing) AND threats seeing us by seenAt(me.pos, myHeight, [e], true) is non-empty AND NOT (trees+buildings hide us from every such enemy already) AND a tree spot exists (see behavior) AND NOT (near-and-reachable drop OR dropMove OR dropHold).",
+  "hook": "brain.ts act(), heal branch brain.ts:825-830: when `spot` is null and TREE_HEAL_ON, set `spot = treeSpot(...)` (hideSpot's 12-bearing/1-2-3 s search with the tree-aware hidden test) and keep mode 'heal, hiding' so the existing silent cap applies; a small `settleTree` give-up (3 s no progress, skip list per phase) like P29's settle (brain.ts:850-876). Tree data loaded once in buildBot from hello.map.dir/v2/world.json next to loadMap (brain.ts:265). Flag in params.ts.",
+  "observable_inputs": [
+    "hello.map.dir v2/world.json trees + rules",
+    "obs.mechs pos/aim/cubes",
+    "self hp/max_hp",
+    "obs.zone",
+    "obs.drops",
+    "obs.t"
+  ],
+  "gates": "Not before t = 10 s. Only in the champion's standing heal mode, which ranks below drop run/hold, engage, retreat, crossfire, ambush and zone travel (brain.ts:751-830), so it never replaces them; plus the near-and-reachable drop gate. Movement has a 3 s no-progress give-up and per-phase skip list (BUILD_CHECKLIST item 4). Off = champion exactly.",
+  "drop_gate": "Drop gate (Doug 8:58 PM ET rule, near AND reachable within DROP_RUN_M): the rule is off on any tick where a drop passes the champion's own drop-run candidate filter (not in dropSkip, holder null or us, flat distance <= DROP_RUN_M, zone-safe for lands_in + capture time; brain.ts:731-736) or dropMove/dropHold is on, and it yields to a drop run/hold on the same tick. A plain 'no drop listed' gate is not used (an untaken drop sits in obs.drops most of the game; it killed P26b, P33, P29b).",
+  "tree_model": "Tree cover test (observable: the kit map files hello.map.dir/v2/world.json, 1560 trees, rules.canopyDensity 0.35, canopyBlockT 0.25; protocol.md:369-372, :452): a spot p is hidden from enemy e when both e's eye-to-our-center and eye-to-our-top lines are blocked by a building (map.ts clearLine) or by a tree: a trunk always, canopy only when e is beyond near_range 45 m and the transmittance exp(-0.35 x metres inside crowns) is below 0.25. Shots ignore trees (protocol.md:317), so hiding behind a tree does not stop our own fire.",
+  "evidence": {
+    "protocol": "protocol.md:369-372: canopy is soft, trunks block sight, canopy does not block inside near_range 45 m; :317 trees do not stop shots; :452 world.json trees. Our bot never reads trees: map.ts:119 clearLine covers buildings/terrain only, and seenAt (brain.ts:405) and hideSpot (brain.ts:425) use it.",
+    "sim_trees_on": "Champion trees-on baselines (/workspace/tester/runs): P29 b6f2f8b mean (16-place) 3.562 -> 3.708 (2000+3000) and 3.870 -> 4.083 (4000+5000) when trees are switched on; deaths before 40 s 56 -> 48 and 54 -> 38. P34 0e6fadd trees on: 3.750 and 4.099, deaths before 40 s 48 and 38. Trees on is now the official screen (coord/WORKFLOW.md 475eb09).",
+    "sim_heal_seen": "Trees on, P34 champion: it stands in 'heal' while an enemy sees it by its building-only test in 188/192 (2000+3000) and 178/192 (4000+5000) games; in 91 and 98 of those games trees already hid it at some point (the champion cannot tell).",
+    "sim_deaths": "Trees on: 100 of 190 deaths (2000+3000) and 96 of 189 (4000+5000) had a P45 trigger (reach gate) in the 10 s before death.",
+    "watcher": "Watcher cover.md / SKILLS.md use building LOS only and treat trees as not cover ('Trees are not cover' in the Watcher methods), so there is no tree-cover Watcher metric (not measured). final_circle.md: top teams are less often in building cover in the final circle (70.6% vs 100%, small n)."
+  },
+  "trigger_counts_trees_on": {
+    "champion": "P34 0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+    "2000+3000": {
+      "none": "161 games / 467 episodes",
+      "plain": "144 / 381",
+      "narrow": "157 / 455",
+      "reach": "160 / 463",
+      "per_base": "2000: none 84/250, reach 83/246; 3000: none 77/217, reach 77/217"
+    },
+    "4000+5000": {
+      "none": "149 / 516",
+      "plain": "133 / 405",
+      "narrow": "146 / 503",
+      "reach": "148 / 514",
+      "per_base": "4000: none 73/235, reach 73/235; 5000: none 76/281, reach 75/279"
+    },
+    "gates": "Gates as counted: none; plain = obs.drops empty; narrow = no drop (holder null or us) within DROP_RUN_M and no dropMove/dropHold; reach = 'near AND reachable within DROP_RUN_M' (Doug 8:58 PM ET follow-up): no drop that passes the champion's own drop-run candidate filter (not in dropSkip, holder null or us, within DROP_RUN_M, zone-safe for lands_in + capture time; brain.ts:731-736 on main 8c130ad) and no dropMove/dropHold that tick. Spec gate = reach."
+  },
+  "estimated_activation": "160/192 and 148/192 games (reach gate). Very broad: well above the bar.",
+  "closest_prior_test": "P24 HEAL_COVER=2 (walk to a short in-zone hide spot before healing; building cover) CLOSE 3.79 vs 4.17 (BB-BE220066), fired 85/192 with 34 worse vs 18 better scores; HEAL_COVER1 (noSneak gap only) parked as the same family. B6 hold behind cover LOSS 2.23. This idea is the same family with a new cover source (trees, which only matter trees-on) and a different spot test; the P24 loss is the main reason to doubt it.",
+  "what_would_disprove": "Trees-on paired screen: no fall in damage taken while healing or in deaths within 10 s of a heal; drop-ring set totals below the champion, deaths < 40 s above, or new 20 s+ pins with the flag active; an official score at or below the champion. The P24 pattern (more worse than better games) repeating trees on.",
+  "risks": "Pins: a movement rule; tree spots can sit against trunks or slopes; needs the 3 s give-up and skip list. Drops: gated (near and reachable) and heal ranks below drop run/hold. Early deaths: off before 10 s; walking while hurt draws a step sound within 40 m only above 5 m/s (silent cap applies in 'heal, hiding'). Fire continues (B5b). Broad trigger: changes behavior in most games, so a small per-game loss adds up (P24's failure mode).",
+  "source": "Doug 8:58 PM ET follow-up (tree-aware ideas): trees-on passive sim log of the P34 champion.",
+  "timestamps": {
+    "created": "2026-11-21 21:55 ET",
+    "updated": "2026-11-21 23:42 ET"
+  },
+  "sources": [
+    "/workspace/mechfight-kit/protocol.md:317, :369-372, :452",
+    "/workspace/mechfight-kit/arena/v2/world.json (trees, rules)",
+    "/tmp/builder-sim-trees/geom.ts treeBlocks and ASSUMPTIONS.md (read only)",
+    "/workspace/tester/runs/trees-0e6fadd-*.csv, trees-b6f2f8b-*.csv, fast-b6f2f8b-*.csv",
+    "coord/WORKFLOW.md (origin/main 475eb09)",
+    "brain.ts and map.ts on origin/main 8c130ad",
+    "Trees-on recheck (Doug 8:58 PM ET, coord/WORKFLOW.md 475eb09): copies of the current champion bot files from origin/main 8c130ad (P34 merge; bot code identical to 0e6fadd) under /tmp/p4144t/bot and /tmp/p4144t/bot2 with passive per-decision CSV logging before act.move (no action changed; the tree sight model is copied read-only from /tmp/builder-sim-trees/geom.ts treeBlocks and loaded from the kit's arena/v2/world.json). Run: `cd /tmp/builder-sim-trees && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144t/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column equals /workspace/tester/runs/trees-0e6fadd-<s>.csv on 96/96 games per base for both runs (768 games). Logs in /tmp (not committed).",
+    "git show 8e623eb:coord/data/ideas/P45.json (research record)",
+    "/workspace/tester/runs/trees-b9492c6-{2000,3000,4000,5000}.csv (Sim Tester reference rows)",
+    "Step A on P48: /tmp/stepa2 (instrumented bot, sim copy, logs; not committed)"
+  ],
+  "priority_rank": 5,
+  "step_a_result": {
+    "champion": "P48 b9492c6f122c549c705b69402157f078b4a57857 (main 9071465e31afe09ccc4e2bd66aaab2e4ce3b8684, merge edb729f), TREE_RETREAT_ON=true",
+    "trees": true,
+    "seeds_per_set": 192,
+    "2000+3000": {
+      "fired_games": 160,
+      "decisions": 9286
+    },
+    "4000+5000": {
+      "fired_games": 148,
+      "decisions": 8788
+    },
+    "per_base_games": {
+      "2000": 83,
+      "3000": 77,
+      "4000": 73,
+      "5000": 75
+    },
+    "worst_check_ms": 8.28,
+    "trigger_as_counted": "obs.t >= 10 AND final mode === 'heal' (standing; after the standoff break) AND enemies seeing us by seenAt(me.pos, h, [e], true) non-empty AND trees+buildings do not already hide us from all of them AND a spot exists on the 12-bearing x 1/2/3 s walk grid, inside zoneKeep, no closer to any of them, straight-line walkable, hidden by trees+buildings from all of them AND drop gate open.",
+    "drop_gate": "Drop gate (champion's, Doug 8:58 PM ET / drop-gate-rule.txt): off when dropMove or dropHold is on that tick, or when any drop passes the champion's drop-run candidate filter (not in dropSkip, holder null or us, flat distance <= DROP_RUN_M 200 m, zone-safe for lands_in + capture time). Never 'any drop exists'.",
+    "passivity": "IDENTICAL: every non-timing column (all but late_over_50ms, bot_ms_mean) of the instrumented rows equals /workspace/tester/runs/trees-b9492c6-<b>.csv on 96/96 games for each base (384/384); 0 instrumentation exceptions; per-game log decisions equal the CSV decisions column on every game.",
+    "method": "Instrumented ONE copy of the champion P48 bot (b9492c6 bot files) at /tmp/stepa2/bot: passive per-decision checks for all four triggers at once, appended after every champion decision is final (just before act.move), inside try/catch, read-only on champion state, one JSON log per game; no action changed. Sim: /tmp/stepa2/sim = copy of /workspace/wt-tester-trees/tools/sim, byte-identical to 4b8663e (the Sim Tester's trees sim that wrote the reference rows). Run: `cd /tmp/stepa2 && STEPA_DIR=<dir> SEED_BASE=<b> bun sim/run.ts --bot /tmp/stepa2/bot/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees` for b = 2000, 3000, 4000, 5000. Not /workspace/builder-sim/tools/sim/run.ts: that file is the committed bd6d1a2 version, which ignores SEED_BASE (always seeds 1000-1095) and --trees.",
+    "rule": "coord/BUILD_CHECKLIST.md Step A (3d08872): fewer than 10/192 on either set retires the idea.",
+    "verdict": "step_a_pass",
+    "run": "2026-11-21 23:42 ET"
+  }
+}

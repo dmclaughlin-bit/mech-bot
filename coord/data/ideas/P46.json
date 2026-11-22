@@ -10,7 +10,7 @@
     "With 5-8 alive and mid phase, if our own position moved < a few m over ~5 s, we are not in/holding a drop ring, not inside P29's settle, not healing and not engaged, re-path to a reachable in-zone point a short distance away. Drop run, midring settle and zone rules unchanged. Own observations only."
   ],
   "owner": "Mech Builder (Doug 12:06 AM ET)",
-  "stage": "step_a",
+  "stage": "step-a-fail",
   "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
   "source": "Watcher refresh 74cdbcf (9:29-9:33 PM ET, 128 showdown matches)",
   "evidence": {
@@ -19,11 +19,38 @@
   },
   "non_overlap": "Not P28 midring patrol (retired), not P40b roof jet route, not P45 (spot choice inside the settle). Movement P-B-008 strafe/modes stayed sim-only and on hold; this is a stuck trigger, not strafing.",
   "step_a": "Log-only on P48 champion b9492c6 (TREE_RETREAT_ON=true), trees-on, bases 2000-5000 (96 each): count games with a 5 s stuck stretch (moved < few m) with 5-8 alive, mid phase, outside drop rings/drop run/near-reachable drop (DROP_RUN_M gate)/P29 settle/heal/fight, where the unstuck would fire and change behavior; plus deaths or zone damage within 20 s after. Pass: >= 10/192 games on both sets (2000+3000 and 4000+5000).",
-  "next_action": "Mech Builder (Doug 12:06 AM ET): Step A log-only on P48, then build only if it passes.",
+  "next_action": "Retired at Step A (not built). If revived, the target would be 5-8-alive heal/engage stillness, which is a different behavior.",
   "approval_requirements": "None new; existing workflow.",
-  "updated_et": "2026-11-22 00:08",
+  "updated_et": "2026-11-22 00:31",
   "base": "aee5017",
   "champion": "P48 b9492c6/edb729f",
   "champion_merge": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
-  "branch": "p46-unstuck-mid"
+  "branch": "p46-unstuck-mid",
+  "step_a_result": {
+    "champion": "P48 b9492c6 (TREE_RETREAT_ON=true), trees-on sim, 96 seeds per base, --jobs 1",
+    "trigger": "t>=40 s, 5-8 alive, in zone, not leaving, champion mode 'hold' (not engaged/retreat/heal/farm/claim/laser walk), no P29 settle, no drop run/hold/farm capture, no drop near AND reachable within DROP_RUN_M (P48's filter), HP>=90%, no mech/zone damage 3 s, own position moved <4 m over 5 s, and a reachable in-zone point 15 m away exists (would change behavior: champion holds with zero move)",
+    "passivity": "log-only copy rows identical to plain champion CSVs on all 4 bases (0/96 behavior diffs each; timing columns excluded)",
+    "set_2000_3000": {
+      "games_fired": 0,
+      "of": 192,
+      "stretches": 0,
+      "stretches_with_death_or_zone_dmg_within_20s": 0
+    },
+    "set_4000_5000": {
+      "games_fired": 1,
+      "of": 192,
+      "stretches": 7,
+      "stretches_with_death_or_zone_dmg_within_20s": 1,
+      "games_with_death_or_zone_dmg_within_20s": 1
+    },
+    "per_base_games_fired": {
+      "2000": 0,
+      "3000": 0,
+      "4000": 0,
+      "5000": 1
+    },
+    "diagnosis_base_2000": "Champion alive at 5-8 alive and t>=40 s in only 9/96 games (median death 53 s). 5 s still stretches there happen in 6 games, all in heal (561 ticks) or engage/retreat/zone travel; 0 in plain hold. The drop gate never blocked a still stretch. The idea's target state (holding still mid-game) does not occur on P48 in this sim.",
+    "verdict": "FAIL (<10/192 on both sets)",
+    "run_et": "2026-11-22 00:30"
+  }
 }

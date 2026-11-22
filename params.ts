@@ -217,4 +217,4 @@ export const BACKAWAY_LOS_STEPS_S = [1, 2, 3]
  * walk test also needs three knee-height lines (feet + step_up + 0.3 m; offsets -radius, 0, +radius perpendicular to the
  * walk) clear (P66 round 1). Hide test, other hideSpot callers, torso and aim unchanged (N8). false = champion exactly.
  */
-export const BODY_WIDTH_KNEE_CELLTOP_ON = false
+export const BODY_WIDTH_KNEE_CELLTOP_ON = true

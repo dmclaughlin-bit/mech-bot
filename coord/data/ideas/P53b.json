@@ -1,0 +1,25 @@
+{
+  "id": "P53b",
+  "title": "LOW_HP_BOOST_SAVE_SAFE: P53 boost saving only when no enemy is within gun range",
+  "family": "movement / energy (boost discipline), refinement of P53",
+  "flag": "LOW_HP_BOOST_SAVE_SAFE_ON",
+  "flags": [
+    "LOW_HP_BOOST_SAVE_SAFE_ON"
+  ],
+  "builds_on": [
+    "F9",
+    "F14"
+  ],
+  "weakness_fixed": "N5: P53 withheld boost while still under fire in 40-145 s fights, causing earlier mid-game deaths. P53b keeps P53's rule but never withholds boost when any visible enemy is within gun range.",
+  "disproof": "P53b is wrong if, on a full paired trees-on screen vs P48 on both sets, (a) worse games outnumber better games on either set or died<40 rises, or (b) the long-game survivals P53 gained (2090, 4064, 5065 class) are not kept, or (c) the mean is lower on both sets.",
+  "success": "No earlier mid-game deaths, died<40 flat, the long-game survivals kept on both sets, mean not lower on both sets.",
+  "step_a": "log-only Step A first: count games where the gated rule would withhold boost (target >= 10/192 on both sets); if below, stop and log.",
+  "owner": "Diego's Claude",
+  "stage": "assigned",
+  "assigned": "2026-11-22 00:58 ET (10-minute loop, lane rank 1: refinement keeping F14's good part and fixing N5)",
+  "base": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
+  "champion": "P48 b9492c6 (main edb729f, site 4.44)",
+  "pr": null,
+  "sha": null,
+  "outcome": null
+}

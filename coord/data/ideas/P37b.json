@@ -1,0 +1,33 @@
+{
+  "id": "P37b",
+  "title": "P37 heal pickup re-applied on champion P34, with a near-and-reachable drop gate (HEAL_PICKUP_ON)",
+  "family": "heal-farm order",
+  "flags": ["HEAL_PICKUP_ON"],
+  "flag": "HEAL_PICKUP_ON",
+  "behaviors": [
+    "when the champion would stand still in 'heal' (HP < 90%) and farmOk is true, walk to the visible zone-safe cube the Build 12 farm already chose (within 80 m) instead of standing; never start or continue it while a free supply drop is within DROP_RUN_M (near and reachable, the champion's dropOpen test) or while on a drop run / drop hold / farm capture / heading to the next circle"
+  ],
+  "owner": "Mech Builder",
+  "stage": "building",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "588557e464dd4946680bff964a7c8e86700b8739",
+  "champion_sha": "588557e464dd4946680bff964a7c8e86700b8739",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Builder: implement flag-off, run BUILD_CHECKLIST trees-on on bases 0/1000/6000/7000.",
+  "doug_waiver": false,
+  "source": "P37 PR #149 Sim Tester veto (https://github.com/dmclaughlin-bit/mech-bot/pull/149#issuecomment-7072563191: drop-ring arrivals 8->7 and 7->4, all lost arrivals in fired games; survival 6->5 from seed 3012) + Coordinator drop-gate rule (gate on a drop near and reachable within DROP_RUN_M, never on 'any drop exists')",
+  "timestamps": { "created": "2026-11-22 ET (builder step 0)", "updated": "2026-11-22 ET (builder step 0)" },
+  "sources": [
+    "coord/data/ideas/P37.json",
+    "/workspace/patches/p37-bot.diff (P37 flag-off a214f12)",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/149#issuecomment-7072563191",
+    "/workspace/drop-gate-rule.txt"
+  ],
+  "branch": "p37b-heal-drop-gate",
+  "parent_idea": "P37"
+}

@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 20:51 ET",
- "origin_main": "a882e5410553c8baa4c8a43a6f93a2241bc98f3c",
+ "generated_at_et": "2026-11-21 21:05 ET",
+ "origin_main": "6a7a22fdfb4ba737cb6bcfa5dc90b80beadbc898",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -25,8 +25,8 @@
   "pending": [],
   "slots": {
    "limit": 6,
-   "used_rolling_60": 1,
-   "used_clock_hour": 1,
+   "used_rolling_60": 0,
+   "used_clock_hour": 0,
    "last_submit": "2026-11-21 20:04 ET"
   },
   "ready_count": 0,
@@ -75,7 +75,7 @@
  },
  "board": {
   "Idea": 0,
-  "Researched": 25,
+  "Researched": 23,
   "Assigned": 0,
   "Built (PR)": 1,
   "Screened": 15,
@@ -83,12 +83,12 @@
   "Submitted": 0,
   "Scored": 0,
   "Merged": 5,
-  "Retired": 42
+  "Retired": 44
  },
  "board_detail": {
   "Retired_loss": 13,
   "Retired_tie": 3,
-  "Retired_unsubmitted": 26
+  "Retired_unsubmitted": 28
  },
  "items": [
   {
@@ -4199,7 +4199,7 @@
    "kind": "build",
    "source": "PR #145 research-doug-1941 ranked build 2 (target.ts); first hit decides first fights (KILL/DIED 309/171 vs 129/297)",
    "owner": "Mech Builder",
-   "decision": null,
+   "decision": "9:04 PM ET coordinator: VETO confirmed (https://github.com/dmclaughlin-bit/mech-bot/pull/150#issuecomment-7072641748). Drop-arrival set total 2000+3000 8->7, all from seed 2089 (place 1->9, died 121.45 s before the champion arrival). Effect otherwise flat or negative: +0.010 +/- 0.056 and -0.068 +/- 0.037. Note: seed 2089 also cost P34 and P37 a drop; it is a fragile late-drop game.",
    "changes": 1,
    "changes_basis": "idea record flags",
    "multi": false,
@@ -4219,15 +4219,15 @@
    "research": [],
    "prs": [],
    "pr_opened": null,
-   "primary_pr": 150,
-   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/150",
+   "primary_pr": "https://github.com/dmclaughlin-bit/mech-bot/pull/150",
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/https://github.com/dmclaughlin-bit/mech-bot/pull/150",
    "pr_state": null,
    "head": "5778086",
    "pr_closed": null,
    "pr_merged": null,
    "contains_champion": null,
    "stage_idx": null,
-   "stage": "Researched",
+   "stage": "Retired",
    "outcome": null,
    "blocker": null,
    "from_idea_record": true
@@ -4670,7 +4670,7 @@
    "kind": "build",
    "source": "Research P34-37 (this run): heal-vs-farm priority in brain.ts:821/833 + passive sim log; heal-positioning.md; SKILLS.md cube rate",
    "owner": "unassigned (research P34-37; Grok assigns)",
-   "decision": null,
+   "decision": "8:57 PM ET coordinator: VETO confirmed (own check of https://github.com/dmclaughlin-bit/mech-bot/pull/149#issuecomment-7072563191). Drop-arrival set totals fell on BOTH sets, 8->7 and 7->4, all lost arrivals in games where the rule fired; survivors 6->5 on 2000+3000. Paired delta -0.115 and -0.089. Builder checklist (+0.177 on base 0) did not hold on the screen sets. Deaths <40 s not up; new pause 3074 meets no stall clause.",
    "changes": 1,
    "changes_basis": "idea record flags",
    "multi": false,
@@ -4698,7 +4698,7 @@
    "pr_merged": null,
    "contains_champion": null,
    "stage_idx": null,
-   "stage": "Researched",
+   "stage": "Retired",
    "outcome": null,
    "blocker": null,
    "from_idea_record": true

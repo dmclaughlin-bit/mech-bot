@@ -1,8 +1,8 @@
 {
  "experiment_id": "P34",
  "commit": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
- "merge_commit": null,
- "branch": "p34-rebased",
+ "merge_commit": "8c130ad7f0c81acb03508c40f20c31867f29d358",
+ "branch": "main",
  "score": 4.38,
  "submission_id": "BB-ABEB42BF",
  "target_score": 6.0,
@@ -122,6 +122,5 @@
    "score": 4.35,
    "at": "2026-11-21T20:10:00-05:00"
   }
- ],
- "note": "Site champion is the branch head 0e6fadd (P34 on main 00e9ff1). Not yet merged to main; merge needs a PR by the builders/Doug (coordinator does not merge)."
+ ]
 }

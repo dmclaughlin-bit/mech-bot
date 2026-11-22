@@ -80,3 +80,4 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 
 ## Loop 9:13 PM ET (Sat Nov 21)
 - NEW CHAMPION: P34 lethal release, 0e6fadd, 4.38 (BB-ABEB42BF), +0.03 over P29 4.35. Submitted 9:10 PM ET on Doug's order. Branch p34-rebased is not merged to main yet (needs a PR; coordinator does not merge). All waiting builds are stale: rebase on 0e6fadd and re-screen. Banner now: 'Shopping Sessions is being rescored, please see the rules page!'. Counter 4 of 6 left, next frees 10:07 PM EST.
+- UPDATE 9:17 PM ET: P34 0e6fadd is now merged to main as 8c130ad7f0c81acb03508c40f20c31867f29d358. Bot code on main equals 0e6fadd (coord/pipeline excepted).

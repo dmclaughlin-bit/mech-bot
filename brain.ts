@@ -155,7 +155,7 @@ const LASER_REAIM_S = 0.8
  * circle we keep to with a clear line. Shot lost or out of range: the normal finish walk resumes on the same tick. No
  * progress (under FADE_STUCK_M in FADE_STUCK_S): that target goes on a skip list and gets the normal walk. Only while no
  * other enemy has been seen for FADE_SECOND_S. false = champion. */
-const FIGHT_FADE_ON = false
+const FIGHT_FADE_ON = true
 const FADE_MIN_T = 10
 /** P32: backward weight against a sideways weight of 1 (normalized), how far ahead (m) the step is checked, and the give-up. */
 const FADE_BACK = 0.3

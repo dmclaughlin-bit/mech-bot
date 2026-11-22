@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 18:58 ET",
- "origin_main": "c2686c0e8787ea29d26a3dd352d4cb9104d93b2c",
+ "generated_at_et": "2026-11-21 19:00 ET",
+ "origin_main": "fec28eed7960096f4328d3203a3e545637f0cc7f",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -26,7 +26,7 @@
   "slots": {
    "limit": 6,
    "used_rolling_60": 1,
-   "used_clock_hour": 1,
+   "used_clock_hour": 0,
    "last_submit": "2026-11-21 18:50 ET"
   },
   "ready_count": 0,
@@ -39,7 +39,22 @@
    "PR #133 sim-effectiveness recs (docs only)",
    "HEAL_COVER=1 (`c3a5d11`)",
    "other open bot PRs (stale screen, hold, or veto)",
-   "new PRs (loop, 6:06 PM ET)"
+   "new PRs (loop, 6:06 PM ET)",
+   "HOLD - P26 healthy boost (HEALTHY_BOOST_ON), PR #138, c566fbad",
+   "HOLD - P25b cube memory + no-progress drop (CUBE_MEMORY_ON), PR #136, 47d0e6ce",
+   "P-D-011: benchmark complete on Diego's 4-core machine; Doug decides whether to adopt. A same-machine confirm on Sim Tester was requested and is not in the repo yet.",
+   "P-D-006: HOLD",
+   "P-B-004: HOLD",
+   "PR-133: HOLD (not a bot candidate; screening-lane change only after a benchmark and Doug's yes). Benchmark is P-D-011.",
+   "B112: HOLD",
+   "P18: HOLD",
+   "B116: ON HOLD by Doug 3:07 PM ET (PR #119 comment)",
+   "P19: HOLD",
+   "HEAL_COVER1: HOLD / parked: same family as P24 official 3.79 CLOSE (BB-BE220066); no official paired screen of this SHA",
+   "P-B-005: HOLD",
+   "P-B-008: Movement & evasion track (sim-only, modes 1-6)",
+   "P-B-008i3: HOLD",
+   "P-B-002: HOLD"
   ],
   "reserve_target": "2 fully screened + 1 researched (WORKFLOW.md, Doug 5:41 PM ET)",
   "since": "2026-11-21 12:00 ET",
@@ -59,20 +74,20 @@
  },
  "board": {
   "Idea": 0,
-  "Researched": 24,
-  "Assigned": 1,
-  "Built (PR)": 11,
-  "Screened": 1,
+  "Researched": 22,
+  "Assigned": 0,
+  "Built (PR)": 0,
+  "Screened": 15,
   "READY": 0,
   "Submitted": 0,
   "Scored": 0,
   "Merged": 4,
-  "Retired": 27
+  "Retired": 31
  },
  "board_detail": {
   "Retired_loss": 13,
   "Retired_tie": 3,
-  "Retired_unsubmitted": 11
+  "Retired_unsubmitted": 15
  },
  "items": [
   {
@@ -164,7 +179,9 @@
    "stage_idx": 7,
    "stage": "Merged",
    "outcome": "win",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "KEEP (merged 2026-11-21 12:48 ET)",
+   "from_idea_record": true
   },
   {
    "id": "B104",
@@ -262,7 +279,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "loss",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "B105-PB001",
@@ -333,7 +352,9 @@
    "stage_idx": 7,
    "stage": "Merged",
    "outcome": "win",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "KEEP (merged 2026-11-21 12:59 ET)",
+   "from_idea_record": true
   },
   {
    "id": "B106",
@@ -389,7 +410,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "loss",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "B108",
@@ -454,7 +477,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "loss",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "P-D-002",
@@ -525,7 +550,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "loss",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "B107",
@@ -594,7 +621,9 @@
    "stage_idx": 7,
    "stage": "Merged",
    "outcome": "win",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "KEEP (merged 2026-11-21 13:59 ET)",
+   "from_idea_record": true
   },
   {
    "id": "P-B-006",
@@ -650,7 +679,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "loss",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "B113",
@@ -706,7 +737,9 @@
    "stage_idx": 7,
    "stage": "Merged",
    "outcome": "win",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "KEEP (merged 2026-11-21 14:44 ET)",
+   "from_idea_record": true
   },
   {
    "id": "B115",
@@ -762,7 +795,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "loss",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "B118",
@@ -818,7 +853,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "tie",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "P20",
@@ -889,7 +926,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "tie",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "B117",
@@ -977,7 +1016,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "loss",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "P21",
@@ -1046,7 +1087,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "tie",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "B110",
@@ -1134,7 +1177,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "loss",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "B111",
@@ -1222,7 +1267,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "loss",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "P24",
@@ -1310,7 +1357,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "loss",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "P23b",
@@ -1418,7 +1467,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "loss",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "B125",
@@ -1494,14 +1545,16 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "loss",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE",
+   "from_idea_record": true
   },
   {
    "id": "P27",
    "title": "P27 drop crossfire skip (DROP_CROSSFIRE_SKIP_ON): keep drop run / ring hold when 2+ enemies see us but none hit us in 2 s, on 4.17 main",
    "kind": "build",
    "source": "unknown",
-   "owner": "unknown",
+   "owner": "Mech Builder",
    "decision": "P27 drop crossfire skip (DROP_CROSSFIRE_SKIP_ON): keep drop run / ring hold when 2+ enemies see us but none hit us in 2 s, on 4.17 main",
    "changes": 1,
    "changes_basis": "one behavior in the summary",
@@ -1601,7 +1654,9 @@
    "stage_idx": 7,
    "stage": "Retired",
    "outcome": "loss",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "CLOSE (-0.04 vs 4.17)",
+   "from_idea_record": true
   },
   {
    "id": "P-B-004",
@@ -1662,9 +1717,11 @@
    "pr_merged": null,
    "contains_champion": true,
    "stage_idx": 3,
-   "stage": "Built (PR)",
+   "stage": "Screened",
    "outcome": "open",
-   "blocker": "no complete screen on both seed sets for the current head"
+   "blocker": "no complete screen on both seed sets for the current head",
+   "record_decision": "HOLD",
+   "from_idea_record": true
   },
   {
    "id": "P-D-006",
@@ -1719,9 +1776,11 @@
    "pr_merged": null,
    "contains_champion": true,
    "stage_idx": 3,
-   "stage": "Built (PR)",
+   "stage": "Screened",
    "outcome": "open",
-   "blocker": "no complete screen on both seed sets for the current head"
+   "blocker": "no complete screen on both seed sets for the current head",
+   "record_decision": "HOLD",
+   "from_idea_record": true
   },
   {
    "id": "P-B-005",
@@ -1769,9 +1828,11 @@
    "pr_merged": null,
    "contains_champion": true,
    "stage_idx": 3,
-   "stage": "Built (PR)",
+   "stage": "Screened",
    "outcome": "open",
-   "blocker": "no complete screen on both seed sets for the current head"
+   "blocker": "no complete screen on both seed sets for the current head",
+   "record_decision": "HOLD",
+   "from_idea_record": true
   },
   {
    "id": "B112",
@@ -1819,9 +1880,11 @@
    "pr_merged": null,
    "contains_champion": true,
    "stage_idx": 3,
-   "stage": "Built (PR)",
+   "stage": "Screened",
    "outcome": "open",
-   "blocker": "no complete screen on both seed sets for the current head"
+   "blocker": "no complete screen on both seed sets for the current head",
+   "record_decision": "HOLD",
+   "from_idea_record": true
   },
   {
    "id": "P18",
@@ -1869,9 +1932,11 @@
    "pr_merged": null,
    "contains_champion": true,
    "stage_idx": 3,
-   "stage": "Built (PR)",
+   "stage": "Screened",
    "outcome": "open",
-   "blocker": "no complete screen on both seed sets for the current head"
+   "blocker": "no complete screen on both seed sets for the current head",
+   "record_decision": "HOLD",
+   "from_idea_record": true
   },
   {
    "id": "P19",
@@ -1919,9 +1984,11 @@
    "pr_merged": null,
    "contains_champion": true,
    "stage_idx": 3,
-   "stage": "Built (PR)",
+   "stage": "Screened",
    "outcome": "open",
-   "blocker": "no complete screen on both seed sets for the current head"
+   "blocker": "no complete screen on both seed sets for the current head",
+   "record_decision": "HOLD",
+   "from_idea_record": true
   },
   {
    "id": "P-B-002",
@@ -1998,9 +2065,11 @@
    "pr_merged": null,
    "contains_champion": true,
    "stage_idx": 3,
-   "stage": "Built (PR)",
+   "stage": "Screened",
    "outcome": "open",
-   "blocker": "no complete screen on both seed sets for the current head"
+   "blocker": "no complete screen on both seed sets for the current head",
+   "record_decision": "HOLD",
+   "from_idea_record": true
   },
   {
    "id": "P-B-008",
@@ -2051,9 +2120,11 @@
    "pr_merged": null,
    "contains_champion": false,
    "stage_idx": 3,
-   "stage": "Built (PR)",
+   "stage": "Screened",
    "outcome": "open",
-   "blocker": "sim-only track, not a site candidate; head does not contain the champion 6182d29 (stale); no complete screen on both seed sets for the current head"
+   "blocker": "sim-only track, not a site candidate; head does not contain the champion 6182d29 (stale); no complete screen on both seed sets for the current head",
+   "record_decision": "Movement & evasion track (sim-only, modes 1-6)",
+   "from_idea_record": true
   },
   {
    "id": "B116",
@@ -2114,9 +2185,11 @@
    "pr_merged": null,
    "contains_champion": true,
    "stage_idx": 3,
-   "stage": "Built (PR)",
+   "stage": "Screened",
    "outcome": "open",
-   "blocker": "ON HOLD by Doug 3:07 PM ET (PR #119 comment); no complete screen on both seed sets for the current head"
+   "blocker": "ON HOLD by Doug 3:07 PM ET (PR #119 comment); no complete screen on both seed sets for the current head",
+   "record_decision": "ON HOLD by Doug 3:07 PM ET (PR #119 comment)",
+   "from_idea_record": true
   },
   {
    "id": "P-B-008i3",
@@ -2164,9 +2237,11 @@
    "pr_merged": null,
    "contains_champion": true,
    "stage_idx": 3,
-   "stage": "Built (PR)",
+   "stage": "Screened",
    "outcome": "open",
-   "blocker": "sim-only track, not a site candidate; no complete screen on both seed sets for the current head"
+   "blocker": "sim-only track, not a site candidate; no complete screen on both seed sets for the current head",
+   "record_decision": "HOLD",
+   "from_idea_record": true
   },
   {
    "id": "B114",
@@ -2216,7 +2291,9 @@
    "stage_idx": 3,
    "stage": "Retired",
    "outcome": "retired",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "superseded by B113 4.17 (shorter reach is the losing direction)",
+   "from_idea_record": true
   },
   {
    "id": "P-D-007A",
@@ -2264,9 +2341,11 @@
    "pr_merged": null,
    "contains_champion": true,
    "stage_idx": 3,
-   "stage": "Built (PR)",
+   "stage": "Retired",
    "outcome": "open",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "Late deaths are multi-LOS; zone travel touches 28/37 games (measurement)",
+   "from_idea_record": true
   },
   {
    "id": "P-D-007B",
@@ -2331,7 +2410,9 @@
    "stage_idx": 3,
    "stage": "Retired",
    "outcome": "retired",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "fails in sim; PR recommends no slot",
+   "from_idea_record": true
   },
   {
    "id": "B122",
@@ -2396,7 +2477,9 @@
    "stage_idx": 3,
    "stage": "Retired",
    "outcome": "retired",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "VETO: fires 5/192 and 6/192, drop-ring arrivals fell (PR #126 comment)",
+   "from_idea_record": true
   },
   {
    "id": "B124",
@@ -2461,7 +2544,9 @@
    "stage_idx": 3,
    "stage": "Retired",
    "outcome": "retired",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "frequency check only, not a site candidate",
+   "from_idea_record": true
   },
   {
    "id": "B123",
@@ -2526,7 +2611,9 @@
    "stage_idx": 3,
    "stage": "Retired",
    "outcome": "retired",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "VETO per PR title: do not site-test",
+   "from_idea_record": true
   },
   {
    "id": "P23",
@@ -2611,7 +2698,9 @@
    "stage_idx": 4,
    "stage": "Retired",
    "outcome": "retired",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "Tester VETO 5:09 PM ET (new in-zone pin, seed 90); rebuilt as P23b",
+   "from_idea_record": true
   },
   {
    "id": "P-D-008",
@@ -2661,7 +2750,9 @@
    "stage_idx": 3,
    "stage": "Retired",
    "outcome": "retired",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "comeback 4/192 and 3/192, below the ~10/192 bar; no Step B",
+   "from_idea_record": true
   },
   {
    "id": "P-D-009",
@@ -2711,14 +2802,16 @@
    "stage_idx": 3,
    "stage": "Retired",
    "outcome": "retired",
-   "blocker": null
+   "blocker": null,
+   "record_decision": "disagreement 9/192 and 10/192, outcomes mixed; no build",
+   "from_idea_record": true
   },
   {
    "id": "P-D-010",
    "title": "En-route travel delay (healthy, unengaged travel)",
    "kind": "research",
    "source": "Watcher SKILLS (healthy boost/travel) + Doug 5:38 PM overhaul",
-   "owner": "Diego's Claude (assigned, NOT acknowledged)",
+   "owner": "Diego's Claude (ACK P-D-010; PR #140)",
    "decision": "En-route travel delay (healthy, unengaged travel)",
    "changes": 0,
    "changes_basis": "measurement first",
@@ -2734,7 +2827,7 @@
    "screened_before_click": false,
    "postmortems": [],
    "first_mention": "2026-11-21 17:40 ET",
-   "sha": null,
+   "sha": "dd28d770070216d4779f86993b79264c32183d58",
    "research": [],
    "hold": null,
    "retired_reason": null,
@@ -2744,9 +2837,14 @@
    "prs": [],
    "pr_opened": null,
    "stage_idx": 2,
-   "stage": "Assigned",
+   "stage": "Retired",
    "outcome": "open",
-   "blocker": "owner has not acknowledged"
+   "blocker": "owner has not acknowledged",
+   "head": "dd28d770070216d4779f86993b79264c32183d58",
+   "record_decision": "no Step B: delay changes zone arrival in 6/192 and 2/192, drop captures in 0, below the ~10/192 bar (PR #140)",
+   "primary_pr": 140,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/140",
+   "from_idea_record": true
   },
   {
    "id": "P25",
@@ -2804,7 +2902,7 @@
    "screened_before_click": false,
    "postmortems": [],
    "first_mention": "2026-11-21 17:45 ET",
-   "sha": "47d0e6cecbe5df5432b6e604897a0bad9fd40f73",
+   "sha": "b34271c15df17bac4fda4275a7928643034f5e83",
    "research": [
     "coord/data/watcher/SKILLS.md"
    ],
@@ -2826,16 +2924,18 @@
    "primary_pr": 136,
    "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/136",
    "pr_state": "open",
-   "head": "47d0e6cecbe5df5432b6e604897a0bad9fd40f73",
+   "head": "b34271c15df17bac4fda4275a7928643034f5e83",
    "pr_closed": null,
    "pr_merged": null,
    "contains_champion": true,
    "queue_rank": "Medium (runner-up)",
    "queue_pos": 2,
    "stage_idx": 4,
-   "stage": "Screened",
+   "stage": "Retired",
    "outcome": "open",
-   "blocker": "both-set screen rows recorded; the READY/HOLD verdict (fire count, hazards, timing, veto) is decided by the routine in ready_ledger.md, not computed here"
+   "blocker": "superseded; do not submit this SHA",
+   "record_decision": "superseded by P25b (47d0e6ce). Full screen of b34271c was HOLD: new change-caused 21 s pin on seed 3043 (ready_ledger.md 6:05 PM ET).",
+   "from_idea_record": true
   },
   {
    "id": "P-D-005",
@@ -2912,7 +3012,7 @@
    "title": "When farm is open and the list is empty, walk a midring patrol instead of holding",
    "kind": "idea",
    "source": "Watcher SKILLS.md (17:25 ET)",
-   "owner": "unassigned (no record)",
+   "owner": "unassigned",
    "decision": "When farm is open and the list is empty, walk a midring patrol instead of holding",
    "changes": null,
    "changes_basis": "not built",
@@ -2940,7 +3040,8 @@
    "stage_idx": 1,
    "stage": "Researched",
    "outcome": "open",
-   "blocker": null
+   "blocker": "not assigned; queue says P-D-010 should inform this before a build \u2014 P-D-010 found delay rarely changes arrival",
+   "from_idea_record": true
   },
   {
    "id": "SKILLS-3",
@@ -2982,7 +3083,7 @@
    "title": "In a gun or laser fight with a clear shot, orbit and fade instead of walking straight in",
    "kind": "idea",
    "source": "Watcher SKILLS.md (17:25 ET)",
-   "owner": "unassigned (no record)",
+   "owner": "unassigned",
    "decision": "In a gun or laser fight with a clear shot, orbit and fade instead of walking straight in",
    "changes": null,
    "changes_basis": "not built",
@@ -3010,14 +3111,15 @@
    "stage_idx": 1,
    "stage": "Researched",
    "outcome": "open",
-   "blocker": null
+   "blocker": "ranked Low; recently failed cousins in the movement/evasion family; park until a screen can isolate this exact fade",
+   "from_idea_record": true
   },
   {
    "id": "SKILLS-5",
    "title": "After a shrink, settle in the midring and farm \u2014 do not camp the center",
    "kind": "idea",
    "source": "Watcher SKILLS.md (17:25 ET)",
-   "owner": "unassigned (no record)",
+   "owner": "unassigned",
    "decision": "After a shrink, settle in the midring and farm \u2014 do not camp the center",
    "changes": null,
    "changes_basis": "not built",
@@ -3045,7 +3147,8 @@
    "stage_idx": 1,
    "stage": "Researched",
    "outcome": "open",
-   "blocker": null
+   "blocker": "not assigned; not measured in the sim; final-circle samples too small (SKILLS.md)",
+   "from_idea_record": true
   },
   {
    "id": "RANKED-1",
@@ -3718,10 +3821,11 @@
    "pr_opened": null,
    "queue_rank": "High",
    "queue_pos": 1,
-   "blocker": "needs a one-flag site SHA and a both-set screen of that exact SHA",
+   "blocker": "built as P27 (PR #137); see that record",
    "stage_idx": 1,
-   "stage": "Researched",
-   "outcome": "open"
+   "stage": "Retired",
+   "outcome": "open",
+   "record_decision": "superseded by P27"
   },
   {
    "id": "HEAL_COVER1",
@@ -3744,7 +3848,7 @@
    "screened_before_click": false,
    "postmortems": [],
    "first_mention": "2026-11-21 17:54 ET (ideas_queue.md)",
-   "sha": null,
+   "sha": "c3a5d11a11c51ebc2caaca9469a91044c0b4fdb1",
    "research": [
     "coord/data/research/heal-positioning.md"
    ],
@@ -3753,10 +3857,175 @@
    "pr_opened": null,
    "queue_rank": "Low",
    "queue_pos": 7,
-   "blocker": null,
+   "blocker": "family just lost 0.38 official; no both-set screen of c3a5d11; no PR",
    "stage_idx": 1,
-   "stage": "Researched",
-   "outcome": "open"
+   "stage": "Screened",
+   "outcome": "open",
+   "head": "c3a5d11a11c51ebc2caaca9469a91044c0b4fdb1",
+   "record_decision": "HOLD / parked: same family as P24 official 3.79 CLOSE (BB-BE220066); no official paired screen of this SHA",
+   "from_idea_record": true
+  },
+  {
+   "id": "P-D-011",
+   "title": "P-D-011 #133 path-search shortcut benchmark (geom.ts component skip)",
+   "kind": "build",
+   "source": "PR #133 item 1; Doug yes to benchmark 5:57 PM ET",
+   "owner": "Diego's Claude (ACK P-D-011 6:16 PM ET)",
+   "decision": "benchmark complete on Diego's 4-core machine; Doug decides whether to adopt. A same-machine confirm on Sim Tester was requested and is not in the repo yet.",
+   "changes": null,
+   "changes_basis": "unknown",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": "c247700008d89d91afe4f6970e0bb2394e02572b",
+   "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",
+   "research": [],
+   "prs": [],
+   "pr_opened": "2026-11-21 18:16 ET",
+   "primary_pr": 139,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/139",
+   "pr_state": null,
+   "head": "c247700008d89d91afe4f6970e0bb2394e02572b",
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Screened",
+   "outcome": null,
+   "blocker": "Doug's adoption decision; Sim Tester local A/B result not posted",
+   "from_idea_record": true
+  },
+  {
+   "id": "P25b",
+   "title": "Cube memory plus no-progress drop (CUBE_MEMORY_ON)",
+   "kind": "build",
+   "source": "Watcher SKILLS.md idea 1; pin fix of P25",
+   "owner": "Mech Builder",
+   "decision": "HOLD: rule (6) new 20 s+ pins (72, 4091, 5048, 5054) \u2014 Doug decides; ready_ledger also notes a D3 question: memory + no-progress drop may be two behaviors under one flag",
+   "changes": 1,
+   "changes_basis": "idea record flags",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": true,
+    "status": "both",
+    "sets": [
+     "A",
+     "B"
+    ],
+    "when_both": "2026-11-21 18:47 ET",
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": "47d0e6cecbe5df5432b6e604897a0bad9fd40f73",
+   "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",
+   "research": [],
+   "prs": [],
+   "pr_opened": "2026-11-21 17:47 ET",
+   "primary_pr": 136,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/136",
+   "pr_state": null,
+   "head": "47d0e6cecbe5df5432b6e604897a0bad9fd40f73",
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Screened",
+   "outcome": null,
+   "blocker": "new 20 s+ pins on the official sets (memory not active in those windows). Doug decides whether they veto. D3 question also pending.",
+   "from_idea_record": true
+  },
+  {
+   "id": "P26",
+   "title": "Healthy boost with reserve on long legs to drop/zone (HEALTHY_BOOST_ON)",
+   "kind": "build",
+   "source": "Watcher SKILLS.md idea 3 (queue item 4)",
+   "owner": "Mech Builder",
+   "decision": "HOLD: rule (6) new 20 s+ pins (4018 22 s, 5053 20 s) with boost not active in the window \u2014 Doug decides whether pins with the feature inactive count; check.py not yet re-run by loop",
+   "changes": 1,
+   "changes_basis": "idea record flags",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": true,
+    "status": "both",
+    "sets": [
+     "A",
+     "B"
+    ],
+    "when_both": "2026-11-21 18:45 ET",
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": "c566fbadf65372c0de70d2ccd02e8f4c91a29ef0",
+   "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",
+   "research": [],
+   "prs": [],
+   "pr_opened": "2026-11-21 17:59 ET",
+   "primary_pr": 138,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/138",
+   "pr_state": null,
+   "head": "c566fbadf65372c0de70d2ccd02e8f4c91a29ef0",
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Screened",
+   "outcome": null,
+   "blocker": "new 20 s+ pins 4018 and 5053; Doug decides. Loop has not yet re-run check.py.",
+   "from_idea_record": true
+  },
+  {
+   "id": "PR-133",
+   "title": "PR #133 sim-effectiveness recommendations (docs only)",
+   "kind": "build",
+   "source": "ready_ledger.md",
+   "owner": "unknown",
+   "decision": "HOLD (not a bot candidate; screening-lane change only after a benchmark and Doug's yes). Benchmark is P-D-011.",
+   "changes": null,
+   "changes_basis": "unknown",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": "1703c0c58c72c3b7e1f95f03c2006efa64399e98",
+   "champion_sha_note": null,
+   "research": [],
+   "prs": [],
+   "pr_opened": null,
+   "primary_pr": 133,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/133",
+   "pr_state": null,
+   "head": "1703c0c58c72c3b7e1f95f03c2006efa64399e98",
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Screened",
+   "outcome": null,
+   "blocker": "Doug must yes before the screening lane changes",
+   "from_idea_record": true
   }
  ],
  "site_tests": [
@@ -5793,6 +6062,7 @@
   "coord/data/site_results.csv",
   "coord/data/screens.csv",
   "coord/data/ready_ledger.md",
+  "coord/data/ideas/",
   "coord/data/ideas.md",
   "coord/data/watcher/SKILLS.md",
   "coord/data/watcher/RANKED.md",

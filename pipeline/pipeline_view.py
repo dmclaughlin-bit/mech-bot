@@ -238,6 +238,12 @@ def parse_ready(path):
     ready, hold = [], []
     sec = None
     for l in txt.splitlines():
+        if l.startswith("### READY"):
+            ready.append(l[4:].strip())
+            continue
+        if l.startswith("### HOLD"):
+            hold.append(l[4:].strip())
+            continue
         if l.startswith("## READY"):
             sec = "r"
         elif l.startswith("## HOLD"):
@@ -251,6 +257,117 @@ def parse_ready(path):
         elif sec == "r" and l.strip() and not l.strip().lower().startswith("none"):
             ready.append(l.strip())
     return ready, hold, txt
+
+
+
+def load_idea_records():
+    folder = ROOT / "coord/data/ideas"
+    out = {}
+    if not folder.exists():
+        return out
+    for p in folder.glob("*.json"):
+        try:
+            rec = json.loads(p.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        if rec.get("id"):
+            out[rec["id"]] = rec
+    return out
+
+
+IDEA_STAGE = {
+    "idea": "Researched",
+    "building": "Built (PR)",
+    "screening": "Screened",
+    "ready": "READY",
+    "hold": "Screened",
+    "submitted": "Submitted",
+    "retired": "Retired",
+}
+
+
+def apply_idea_records(items, ready, hold):
+    """Overlay coord/data/ideas/*.json onto the view (D1/D6). Missing records are added."""
+    recs = load_idea_records()
+    if not recs:
+        return items, ready, hold
+    by = {it["id"]: it for it in items}
+    repo = "https://github.com/dmclaughlin-bit/mech-bot"
+
+    def view_stage(rec):
+        st = (rec.get("stage") or "").lower()
+        if st == "scored":
+            dec = (rec.get("decision") or "").upper()
+            return "Merged" if dec.startswith("KEEP") else "Retired"
+        return IDEA_STAGE.get(st)
+
+    for iid, rec in recs.items():
+        st = view_stage(rec)
+        ts = rec.get("timestamps") or {}
+        prn = rec.get("pr")
+        it = by.get(iid)
+        if not it:
+            scr = rec.get("screens") or []
+            sets = []
+            for s in scr:
+                ss = s.get("seed_set") or ""
+                if "2000" in ss and "A" not in sets:
+                    sets.append("A")
+                if "4000" in ss and "B" not in sets:
+                    sets.append("B")
+            flags = rec.get("flags") or ([] if not rec.get("flag") else [rec["flag"]] if isinstance(rec.get("flag"), str) else rec.get("flag") or [])
+            it = dict(
+                id=iid, title=rec.get("title") or iid, kind="build",
+                source=rec.get("source"), owner=rec.get("owner"),
+                decision=rec.get("decision"), changes=len(flags) or None,
+                changes_basis="idea record flags" if flags else "unknown",
+                multi=len(flags) > 1, site=None,
+                screen=dict(both=set(sets) >= {"A", "B"}, status="both" if set(sets) >= {"A", "B"} else ("none" if not sets else "partial"), sets=sets, when_both=ts.get("screened"), events=[]),
+                screened_before_click=False, postmortems=[], first_mention=ts.get("first_mention"),
+                sha=rec.get("sha"), champion_sha_note=rec.get("champion_sha_tested_against") or rec.get("champion_sha"),
+                research=[], prs=[], pr_opened=ts.get("pr_opened"), primary_pr=prn,
+                pr_url=(f"{repo}/pull/{prn}" if prn else None), pr_state=None, head=rec.get("sha"),
+                pr_closed=ts.get("pr_closed"), pr_merged=ts.get("pr_merged"),
+                contains_champion=None, stage_idx=None, stage=st or "Researched",
+                outcome=None, blocker=rec.get("blocker"), from_idea_record=True,
+            )
+            if rec.get("site_score") is not None:
+                it["site"] = dict(submitted_et=ts.get("submitted"), score=rec.get("site_score"),
+                                  receipt=rec.get("receipt"), verdict=rec.get("decision"), outcome=None)
+            items.append(it)
+            by[iid] = it
+        else:
+            if rec.get("sha"):
+                it["sha"] = rec["sha"]
+                it["head"] = rec["sha"]
+            if rec.get("owner"):
+                it["owner"] = rec["owner"]
+            if rec.get("blocker") is not None:
+                it["blocker"] = rec["blocker"]
+            if rec.get("decision"):
+                it["record_decision"] = rec["decision"]
+            if st:
+                it["stage"] = st
+            if prn:
+                it["primary_pr"] = prn
+                it["pr_url"] = it.get("pr_url") or f"{repo}/pull/{prn}"
+            it["from_idea_record"] = True
+        if (rec.get("stage") or "").lower() == "hold":
+            label = f"{iid}: {rec.get('decision') or rec.get('blocker') or 'HOLD'}"
+            if not any(str(x).startswith(iid) or iid in str(x) for x in hold):
+                hold.append(label)
+    # Idea records win over a stale ledger heading (e.g. a ### READY line left after the score lands).
+    ready = []
+    for iid, rec in recs.items():
+        if (rec.get("stage") or "").lower() == "ready":
+            prn = rec.get("pr")
+            ready.append(f"{iid}" + (f" PR #{prn}" if prn else "") + (f" {rec.get('decision')}" if rec.get("decision") else ""))
+    # mode 36 was cut as P27
+    if "P27" in recs and "MODE36" in by:
+        by["MODE36"]["stage"] = "Retired"
+        by["MODE36"]["blocker"] = "built as P27 (PR #137); see that record"
+        by["MODE36"]["record_decision"] = "superseded by P27"
+    return items, ready, hold
 
 
 def main():
@@ -522,6 +639,8 @@ def main():
         else:
             it["blocker"] = None
 
+    items, ready, hold = apply_idea_records(items, ready, hold)
+
     # ---------------- header
     board = {s: 0 for s in STAGES}
     board_detail = {"Retired_loss": 0, "Retired_tie": 0, "Retired_unsubmitted": 0}
@@ -613,7 +732,7 @@ def main():
 
     out = dict(generated_at_et=fmt(now), origin_main=head, since=fmt(since), stages=STAGES, header=header, board=board, board_detail=board_detail,
                items=items, site_tests=tests, change_audit=audit, truth_checks=checks,
-               sources=["coord/data/site_results.csv", "coord/data/screens.csv", "coord/data/ready_ledger.md", "coord/data/ideas.md", "coord/data/watcher/SKILLS.md",
+               sources=["coord/data/site_results.csv", "coord/data/screens.csv", "coord/data/ready_ledger.md", "coord/data/ideas/", "coord/data/ideas.md", "coord/data/watcher/SKILLS.md",
                         "coord/data/watcher/RANKED.md", "coord/STATUS.md", "coord/log.md", "pipeline/data/champion.json", f"gh pulls + comments ({REPO})"])
     OUT.write_text(json.dumps(out, indent=1, default=str))
     print(f"wrote {OUT.relative_to(ROOT)}: {len(items)} items, {len(tests)} site tests, champion {champ_id} {champ['score']}, board {board}")

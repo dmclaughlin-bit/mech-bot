@@ -103,3 +103,4 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 - Champion P48 b9492c6 (main edb729f), 4.44. Ready: 0. Tests in last hour: 1 (P48 10:27 PM). Slot unused 10:32-11:23 PM ET: coordinator computer down, and no READY build existed.
 - Mac fallback screens (P-D-019): P43b #162 VETO (drop-ring 8->6 on 2000+3000; pause games 1->2 on 4000+5000). P35c #163 HOLD (pause games 1->3 on 2000+3000; survivors 3->2 on 4000+5000; mean lower on both sets). Records copied to main (D2).
 - P50 #161: checklist item 3 fail (rings 11->10 over 4 bases); Doug's ruling requested.
+- ChatGPT issue inbox (Doug 10:44 PM ET): labels chatgpt-review / under-review / reviewed created; test issue #164 detected, one review comment (APPROVE_WITH_STIPULATIONS), labels flipped to reviewed, closed; a second pass did not detect it again. Verified 11:33 PM ET.

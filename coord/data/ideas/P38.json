@@ -1,5 +1,5 @@
 {
-  "id": "P34",
+  "id": "P38",
   "title": "Reload the gun in a quiet lull instead of running it dry in the next exchange (LULL_RELOAD_ON)",
   "family": "weapon handling",
   "flags": [
@@ -46,7 +46,6 @@
   "closest_prior_test": "None on reload timing. Nearest fire-handling tests: B15 aim lead + fire discipline LOSS (2.65 vs 2.98) and B7 drop the 100 m gun gate LOSS (2.04 vs 2.38); both changed when we shoot, P34 changes only when an idle gun refills. Not in the B125 package list (TAC_SPACE_EARLY, TAC_FIRE_MOVE, TAC_DODGE, TAC_JET_LOOT, TAC_LASER_REACH, TAC_FINISH_AMMO).",
   "what_would_disprove": "Paired screen: decisions with a clear enemy target while reloading not lower in fired games, or first-3-s damage dealt after re-contact lower, or deaths in the 10 s after an activation higher than the champion; fired < 10/192. The 52% 'target back within 2.4 s' share is the main way this loses.",
   "risks": "Pins: none (no movement). Drops: no movement, and gated on obs.drops empty. Combat: a reload started just before the target reappears delays the first shot by up to 2.4 s (52% of starts in the champion log); the reload makes a 60 m sound (protocol.md sound list). Lightning/laser holders keep their other weapon, so the cost is smaller for them.",
-  "id_note": "ID collision: origin/main d7d6ef8 (19:57 ET, after this branch was cut from d7fca14) already uses P34 for a different idea ('Lethal release' LETHAL_RELEASE_ON, from PR #145). This record was written under the P34-P37 file whitelist for this research task; the coordinator should renumber it (next free P id) when copying it to main. Do not overwrite main's P34.json.",
   "source": "Research P34-37 (this run): champion reload rules brain.ts:1052/1071 + passive sim log; PR #145 first-fight table",
   "timestamps": {
     "created": "2026-11-21 19:55 ET",
@@ -59,5 +58,6 @@
     "coord/data/site_results.csv",
     "https://github.com/dmclaughlin-bit/mech-bot/pull/145 (coord/research-doug-1941.md)",
     "Instrumented champion sim (this research run): a copy of the champion bot files from origin/main d7fca14 (bot code identical to 6182d29: git diff 6182d29 HEAD on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p3437/bot, with passive per-decision CSV logging appended before act.move (no action changed). Run: bun tools/sim/run.ts --worker --seed-list 2000-2095,3000-3095 (one job, 192 games, ~5 min). Sanity: mean 16-place 3.531 vs 3.542 for the same seeds in coord/data/research/heal-positioning.md; deaths < 40 s 56/192. Logs are in /tmp (not committed). Held-out 4000+5000 not run (kept light)."
-  ]
+  ],
+  "renumbered_from": "P34"
 }

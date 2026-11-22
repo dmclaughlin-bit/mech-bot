@@ -1,5 +1,5 @@
 {
-  "id": "P35",
+  "id": "P39",
   "title": "Regen guard: while healing, do not shoot drones or crates that are not shooting us (REGEN_GUARD_ON)",
   "family": "fire control (NPC targets)",
   "flags": [
@@ -45,7 +45,6 @@
   "closest_prior_test": "B5 (F4 fire gate: no firing while healing) 2.04 vs B3 2.23, and B5b (same heal without the gate) 2.38 KEEP: that gate stopped fire at ENEMY MECHS; P35 never touches mech fire, only drone/crate shots, which the heal rule cannot need for defense (a drone that is shooting us stays a target). HEAL_COVER1 / P24 are heal positioning, not fire.",
   "what_would_disprove": "Paired screen: HP at the next enemy contact not higher in fired games, or cubes at end lower (crates/drones left unbroken), or more damage from drones; fired < 10/192. If diff_score is mostly ties, it is the low-impact outcome predicted by the 11/192 figure and should not take a site slot.",
   "risks": "Pins: none (no movement). Drops: no movement, gated on obs.drops empty. Cubes: a deferred drone may wander off within its 30 m leash and an enemy may arrive first (median 2.2 s), so some cubes are lost rather than deferred. Aim: with no mark, the torso follows the move direction/next center instead of a crate, which changes the vision wedge.",
-  "id_note": "ID collision: origin/main d7d6ef8 (19:57 ET, after this branch was cut from d7fca14) already uses P35 for a different idea ('Unseen target first' UNSEEN_TARGET_ON, from PR #145). This record was written under the P34-P37 file whitelist for this research task; the coordinator should renumber it (next free P id) when copying it to main. Do not overwrite main's P35.json.",
   "source": "Research P34-37 (this run): regen rule protocol.md:291 vs farm-shot gate brain.ts:955 + passive sim log",
   "timestamps": {
     "created": "2026-11-21 19:55 ET",
@@ -59,5 +58,6 @@
     "coord/data/site_results.csv",
     "https://github.com/dmclaughlin-bit/mech-bot/pull/145 (coord/research-doug-1941.md)",
     "Instrumented champion sim (this research run): a copy of the champion bot files from origin/main d7fca14 (bot code identical to 6182d29: git diff 6182d29 HEAD on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p3437/bot, with passive per-decision CSV logging appended before act.move (no action changed). Run: bun tools/sim/run.ts --worker --seed-list 2000-2095,3000-3095 (one job, 192 games, ~5 min). Sanity: mean 16-place 3.531 vs 3.542 for the same seeds in coord/data/research/heal-positioning.md; deaths < 40 s 56/192. Logs are in /tmp (not committed). Held-out 4000+5000 not run (kept light)."
-  ]
+  ],
+  "renumbered_from": "P35"
 }

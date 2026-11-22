@@ -1099,12 +1099,13 @@ function buildBot(hello: Hello): Bot {
         if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true
         if (gun >= 0 && (w(gun).ammo ?? 1) === 0 && (w(gun).reload ?? 0) <= 0) act.reload = true
         // P38 (LULL_RELOAD_ON): top up a part-empty gun in a lull: no gun fire, no clear line to our target and no
-        // visible enemy seeing us for LULL_RELOAD_QUIET_S. Never before 10 s, and never while a drop run/hold is possible
-        // (a run in progress, or a claimable drop within DROP_RUN_M: the same read-only test as the lethal release).
+        // visible enemy seeing us for LULL_RELOAD_QUIET_S. Never in an engage mode (we chose to fight: a broken line there
+        // is not a lull), never before 10 s, and never while a drop run/hold is possible (a run in progress, or a
+        // claimable drop within DROP_RUN_M: the same read-only test as the lethal release).
         if (LULL_RELOAD_ON) {
           const contact = (gun >= 0 && fire[gun]) || clear || (enemies.length > 0 && seenAt(me.pos, myHeight, threats, false))
           if (contact) lullContact = obs.t
-          else if (!farmShot && gun >= 0 && !act.reload && obs.t >= 10 && obs.t - lullContact >= LULL_RELOAD_QUIET_S &&
+          else if (!farmShot && gun >= 0 && !act.reload && !mode.startsWith("engage") && obs.t >= 10 && obs.t - lullContact >= LULL_RELOAD_QUIET_S &&
             dropRun === null && !(obs.drops ?? []).some((x) => (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M)) {
             const g = w(gun)
             if ((g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0) act.reload = true

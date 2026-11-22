@@ -1,0 +1,13 @@
+{
+  "id": "EARLY_RETREAT_HIDE",
+  "title": "EARLY_RETREAT_HIDE_ON: before 40 s, retreat to tree/building cover instead of backing straight away",
+  "flag": "EARLY_RETREAT_HIDE_ON",
+  "owner": "Diego's Claude",
+  "builds_on": ["F3", "F15"],
+  "stage": "not_built",
+  "outcome": "D (redundant)",
+  "reason": "Building cover ('retreat to cover') already has no time gate in the champion. The only new part, tree cover before 40 s, is P48 v1 (TREE_RETREAT_MIN_T 10), which failed deaths<40 (25 vs 24, 16 vs 15; P48.json fix_once). Re-testing that mechanism under a new name isn't allowed (LEARNING_STANDARD).",
+  "see_also": ["N8", "N9"],
+  "confidence": "Disproven",
+  "hypothesis": null, "mechanism": null, "activation": null, "positives": null, "negatives": null, "reuse": null, "disproof": null
+}

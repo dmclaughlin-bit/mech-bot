@@ -184,5 +184,5 @@ export const LETHAL_RELEASE_MIN_T = 40
  * 0+1000 hazard run). P38b fix round: the engage-mode exclusion (first P38b hazard run: base 0 drop-ring arrivals
  * 5 -> 3 after an engage-collect reload, base 6000 deaths < 40 s 16 -> 17 after an engage-collect reload at 18 s).
  */
-export const LULL_RELOAD_ON = false
+export const LULL_RELOAD_ON = true
 export const LULL_RELOAD_QUIET_S = 2

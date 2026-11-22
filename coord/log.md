@@ -477,3 +477,4 @@ ACK LEARNING-STANDARD (Diego's Claude) Sun Nov 22 12:50 AM ET, copied by Grok fr
 ACK LEARNING-STANDARD (Mech Sim Tester) Sun Nov 22 ~12:52 AM ET, copied by Grok from its reply to the coordinator
 
 ACK LEARNING-STANDARD (Mech Sim Tester) Sun Nov 22 12:56 AM ET
+- 2026-11-22 01:37 ET (Grok): Doug 1:36 AM ET: "do we have anything going through the testing process if not lets utilize it". The site queue is slow during the builders-4 rescore, so the one-at-a-time wait is lifted for independent single-change builds on the same champion: the coordinator submits READY P53b #178 52c2862 while P49b BB-7C26BD16 is still queued. The loop may submit the next READY/near-miss while a receipt is pending, as long as the counter allows it; max 2 pending at once.

@@ -140,3 +140,33 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P26b (healthy boost, drop-safe rebuild of P26 #138): on a long healthy leg to the next circle ("to next circle"), run at
+ * boost speed instead of walking, but only while energy stays above a reserve so a fight that follows still has energy for
+ * lightning, a jet or a retreat boost. It fires only when all of these hold:
+ *   - healthy: HP at or above HEALTHY_BOOST_HP of max and not hurt in the Build 19 sense (noSneak), so the silent-step cap
+ *     is already off and boost never overrides it;
+ *   - not engaged: the mode is "to next circle" and no enemy mech we know of has line of sight to us;
+ *   - long leg: the remaining nav path to the circle is longer than HEALTHY_BOOST_M (m);
+ *   - on the ground (boost in the air is a jet), and energy above HEALTHY_BOOST_RESERVE of max;
+ *   - drops untouched: no supply drop is called, falling or on the ground (obs.drops is empty), no drop run or ring hold,
+ *     and the time is not within HEALTHY_BOOST_CALL_S before a call in hello.config.drops.times;
+ *   - opening untouched: t at or after HEALTHY_BOOST_MIN_T.
+ * P26 also boosted on "drop, run" legs and while drops were on the map; every drop-ring arrival it lost (seeds 89, 94, 2047,
+ * 3000, 5051) and every new 20 s+ pause game (4018, 5053, 78) diverged from the champion through those boosts (energy at the
+ * reserve when the drop contest started). When and where the bot travels is unchanged; existing boosts are unchanged.
+ * Evidence: Watcher Top-16 teams boost on 8.1% of healthy, not-engaged ticks vs 1.8% (coord/data/watcher/SKILLS.md idea 3).
+ * false = champion behavior exactly.
+ */
+export const HEALTHY_BOOST_ON = false
+/** Healthy = HP at or above this fraction of max. */
+export const HEALTHY_BOOST_HP = 0.6
+/** Boost only while energy is above this fraction of max (the escape reserve). */
+export const HEALTHY_BOOST_RESERVE = 0.5
+/** Long leg = remaining nav path to the next circle longer than this (m). */
+export const HEALTHY_BOOST_M = 60
+/** No boost in this many seconds before each scheduled drop call. */
+export const HEALTHY_BOOST_CALL_S = 15
+/** No boost before this match time (s): the opening. */
+export const HEALTHY_BOOST_MIN_T = 10

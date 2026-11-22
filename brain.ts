@@ -28,6 +28,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  HEALTHY_BOOST_CALL_S, HEALTHY_BOOST_HP, HEALTHY_BOOST_M, HEALTHY_BOOST_MIN_T, HEALTHY_BOOST_ON, HEALTHY_BOOST_RESERVE,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -288,6 +289,8 @@ function buildBot(hello: Hello): Bot {
   /** P-D-003: the drop we are walking to, and drops we gave up on. */
   let dropRun: { id: number; since: number } | null = null
   const dropSkip = new Set<number>()
+  /** P26b: when each supply drop is called (hello.config.drops.times; absent = no drops). */
+  const dropCalls: number[] = cfg.drops?.times ?? []
   /** Build 14 (engage): each weapon's DPS and reach from hello.config, read once here. */
   const baseDps = {} as Record<WeaponKind, number>
   const baseReach = {} as Record<WeaponKind, number>
@@ -744,6 +747,8 @@ function buildBot(hello: Hello): Bot {
       let move: [number, number] = [0, 0]
       let boost = false
       let mode = "hold"
+      /** P26b: remaining path (m) of the zone leg we walk this tick, 0 for any other mode. */
+      let legDist = 0
       if (!me.in_zone) {
         // Outside the circle every tick costs HP and stops regen (Z2): head in along a path, boosting.
         move = travel(me.pos, [z.center[0], z.center[1], me.pos[2]], obs.t, canPlan()).move
@@ -754,6 +759,7 @@ function buildBot(hello: Hello): Bot {
         move = go.move
         boost = go.dist / walkSpeed > timeLeft
         mode = "to next circle"
+        legDist = go.dist
       } else if (engage) {
         // Engage (F1, Build 14): fight on instead of the HP retreat. Hold the line of fire, and close in along a path
         // when the target is behind cover, or (finish rule) beyond our best range. Never walk outside the circle we keep to.
@@ -866,6 +872,17 @@ function buildBot(hello: Hello): Bot {
         }
         standoffId = foe?.id ?? null
       }
+      // P26b (HEALTHY_BOOST_ON): healthy, unengaged and on the ground on a long leg to the next circle, run at boost speed
+      // while energy stays above the reserve. Never near a drop: not while any drop is called or on the map, not in a drop
+      // run or hold, not in the HEALTHY_BOOST_CALL_S before a drop call, and not before HEALTHY_BOOST_MIN_T (the opening).
+      // Only where the Build 19 cap is already off (noSneak), so it never overrides it.
+      if (
+        HEALTHY_BOOST_ON && !boost && mode === "to next circle" && legDist > HEALTHY_BOOST_M && obs.t >= HEALTHY_BOOST_MIN_T &&
+        !dropMove && !dropHold && !dropRun && !(obs.drops ?? []).length &&
+        !dropCalls.some((c) => obs.t < c && obs.t >= c - HEALTHY_BOOST_CALL_S) &&
+        noSneak && me.hp >= HEALTHY_BOOST_HP * me.max_hp && me.grounded && me.energy > HEALTHY_BOOST_RESERVE * me.max_energy &&
+        !seenAt(me.pos, myHeight, threats, false)
+      ) boost = true
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.

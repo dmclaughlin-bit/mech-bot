@@ -1,0 +1,94 @@
+{
+  "id": "P43",
+  "title": "Weapon-tier upgrade pick by DPS gain on the held loadout, defensive order unchanged (UPGRADE_DPS_TIER_ON)",
+  "family": "upgrades",
+  "flags": [
+    "UPGRADE_DPS_TIER_ON"
+  ],
+  "flag": "UPGRADE_DPS_TIER_ON",
+  "behaviors": [
+    "when an offer has no plating/armor/nanites/sensors (so the champion's best rank is the weapon/gyros tier), pick the tier-4 choice with the largest sustained-DPS gain for a weapon we hold now (from hello.config.upgrades effects and our current weapon stats); keep the champion's pick on a tie, on gyros-only offers, at t < 10 s, and on a drop run/hold tick"
+  ],
+  "owner": "unassigned (research P41-44; Grok assigns)",
+  "stage": "idea",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
+  "champion_sha": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Grok: assign or park. If built: one flag UPGRADE_DPS_TIER_ON default false, base-0 96-game hazard with fired / different behavior / different score and the list of changed picks. No movement change, so pins and drop arrivals should be identical until the changed upgrade alters a fight.",
+  "doug_waiver": false,
+  "single_decision": "Which index to pick inside rank 4 of upgradeRank (brain.ts:157-165). Today all weapon upgrades and gyros tie at rank 4 and the first one listed wins (brain.ts:489-492, `ranks.indexOf(Math.min(...ranks))`), i.e. the offer's random order decides. Ranks 0-3 (plating > armor > nanites > sensors) and 5-6 are unchanged.",
+  "trigger": "UPGRADE_DPS_TIER_ON AND obs.offer has choices AND obs.t >= 10 AND min rank of the choices is 4 AND some tier-4 choice upgrades a weapon kind we hold now with a sustained-DPS gain strictly larger than the champion's choice (weaponDps before/after the upgrade's effects, using self.weapons[i].stats, the same weaponDps as brain.ts:205-209) AND NOT dropMove AND NOT dropHold AND NOT dropNear. Gains at base stats: gun_mag +31.7 DPS, lightning_efficiency +24.0, laser_damage +23.6, gun_damage +15.3, laser_charge +11.1, gun_rate +7.8; gun_velocity, lightning_range, lightning_chain, laser_pierce and gyros score 0, so they only win when nothing better is offered.",
+  "hook": "brain.ts act(), upgrade answer brain.ts:489-492: when the min rank is 4, replace `ranks.indexOf(min)` with the argmax of DPS gain over tier-4 choices (fall back to the champion's index unless strictly better). DPS uses weaponDps (brain.ts:205-209) on `{...cfg.weapons[kind], ...w.stats}` before and after applying the choice's effects from cfg.upgrades (hello.config.upgrades, protocol.md section 10). Flag in params.ts.",
+  "observable_inputs": [
+    "obs.offer.choices ids",
+    "hello.config.upgrades (effects)",
+    "self.weapons[i].kind / stats",
+    "obs.t",
+    "obs.drops (gate)"
+  ],
+  "gates": "Cannot act before t = 10 s (explicit). On a tick with dropMove or dropHold, or with a claimable drop within DROP_RUN_M, the champion's pick is used (the offer is answered on the same tick either way; no movement, aim or fire change). Off = champion exactly.",
+  "drop_gate": "Counted both ways. Plain gate (no drop listed): 13/192 and 19/192 games. Narrow gate (spec): 17/192 and 22/192. A drop capture gives +3 cubes and often crosses an upgrade threshold, so offers cluster around drops; the narrow gate keeps the ones away from a run or hold. Plain gate = obs.drops is empty. Narrow gate = no drop with holder null or us within DROP_RUN_M (200 m), the same `dropNear` test P29 uses (brain.ts:852), and the champion's dropMove/dropHold are both off on that tick.",
+  "evidence": {
+    "pr145": "PR #145 coord/research-doug-1941.md section 3: B21 moved sensors below the weapon upgrades AND reordered the weapon tier, and lost 3.46 vs 3.50 (sim -0.08 +/- 0.17); 'The upgrade with the biggest effect sits at the bottom of the tie. gun_mag (+31% sustained DPS) ties with gun_velocity, laser_pierce and the mortar upgrades at rank 4. A single change could order only that tier and leave sensors at rank 3. B21 moved both at once, so they were never tested apart.' The same note reports Watcher T06's bot reorders by held weapon (laser_damage, laser_charge high when it holds a laser).",
+    "sim_offers": "Run 1, P29 champion: 91/109/100/106 offers per base; 35/91, 41/109, 35/100, 41/106 had no defensive choice, so the tier-4 tie decided the pick. Champion picks in those offers include gun_velocity (22 over four bases), gyros (17), lightning_chain (9) and laser_pierce (7), all zero sustained-DPS gain.",
+    "sim_changes": "Changed picks 2000+3000 (23 offers): gun_velocity->gun_damage 4, gun_velocity->gun_rate 3, gyros->laser_damage 2, gun_rate->gun_mag 2, gun_rate->laser_damage 1, gyros->gun_rate/gun_damage/gun_mag 4, lightning_chain->lightning_efficiency/laser_charge/gun_damage/gun_mag 5, laser_charge->laser_damage 1, gun_damage->gun_mag 1.",
+    "first_fights": "PR #145 first-fight table: cube/weapon lead decides fights (more cubes KILL 166 / DIED 74 vs fewer 100/220); a tier-4 pick is the only upgrade lever untested in isolation.",
+    "watcher": "coord/data/watcher/loadout.md: upgrades_n T01 2.90 / T03 2.84 vs T13 1.26 / T16 1.54; exact upgrade choices were not scored ('winners' first upgrades were already mixed'), so the Watcher gives no ladder; this rule takes no defensive position."
+  },
+  "trigger_counts": {
+    "2000+3000": {
+      "offers_at_t_ge_10": 182,
+      "fired_games": 18,
+      "changed_picks": 23,
+      "plain_gate_games": 13,
+      "plain_gate_picks": 15,
+      "narrow_gate_games": 17,
+      "narrow_gate_picks": 22,
+      "per_base": {
+        "2000": "none 6/8, plain 4/4, narrow 5/7 (games/picks)",
+        "3000": "none 12/15, plain 9/11, narrow 12/15"
+      }
+    },
+    "4000+5000": {
+      "offers_at_t_ge_10": 185,
+      "fired_games": 22,
+      "changed_picks": 27,
+      "plain_gate_games": 19,
+      "plain_gate_picks": 21,
+      "narrow_gate_games": 22,
+      "narrow_gate_picks": 27,
+      "per_base": {
+        "4000": "none 12/16, plain 9/10, narrow 12/16",
+        "5000": "none 10/11, plain 10/11, narrow 10/11"
+      }
+    },
+    "method": "Offline replay of the spec on every logged offer (choices, champion pick, held weapons, upgrades taken so far for stacking); the replayed champion pick matched the logged pick on every offer. Changed picks before 10 s (3 on 2000+3000, 2 on 4000+5000) are excluded by the t >= 10 gate and not counted."
+  },
+  "estimated_activation": "17/192 and 22/192 games (narrow gate); 22 and 27 changed picks.",
+  "closest_prior_test": "B21 upgrade order change, LOSS 3.46 vs 3.50 (BB-1AFE6423), which also moved sensors below the weapon tier. This spec leaves plating > armor > nanites > sensors and mobility untouched and only breaks the tier-4 tie, the piece PR #145 says was never tested apart.",
+  "what_would_disprove": "Paired screen: fired < 10/192; no gain in damage dealt or kills in fired games; or a site score at or below 4.35. If B21's loss came from the weapon tier rather than from sensors, this loses too.",
+  "risks": "Pins: none (no movement). Drops: none (champion pick on drop ticks; no movement). Early deaths: none before 10 s. The DPS model ignores hit rate and range (gun_velocity's +25% shell speed and +15% range score 0), so a long-range gun fighter may lose a useful velocity pick; gun upgrades can be taken just before a B80/B17 walk swaps the gun out (upgrades persist on the mech, protocol.md section 10, and apply again if a gun is taken later).",
+  "source": "Research P41-44 (this run): PR #145 section 3, kit config upgrades, offline replay on the passive sim log of the P29 champion.",
+  "timestamps": {
+    "created": "2026-11-21 21:30 ET",
+    "updated": "2026-11-21 21:30 ET"
+  },
+  "sources": [
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/145 (coord/research-doug-1941.md section 3)",
+    "coord/data/site_results.csv (B21)",
+    "coord/data/watcher/loadout.md",
+    "/workspace/mechfight-kit/check/stream.jsonl.gz (config.upgrades, config.weapons)",
+    "/workspace/mechfight-kit/protocol.md section 10",
+    "brain.ts (origin/main 8f0ca4c = P29 2e1d036 bot code)",
+    "Instrumented champion sim (research P41-44): copies of the champion bot files from origin/main 8f0ca4c (bot code identical to P29 2e1d036: `git diff 2e1d036 HEAD` on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p4144/bot (run 1: per-decision state log), /tmp/p4144/bot2 (run 2: exact candidate triggers) and /tmp/p4144/bot3 (run 3: laser-charge triggers), passive CSV logging appended before act.move, no action changed. Run: `cd /tmp/wild-sim && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv>` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column of each run's CSV equals /workspace/tester/runs/fast-b6f2f8b-<s>.csv on 96/96 games per base, after two load-timing outliers in run 2 (seeds 3012 and 4027) were rerun alone and matched the champion exactly; the isolated logs replaced the batch logs. Logs stay in /tmp (not committed)."
+  ],
+  "priority_rank": 1,
+  "research_note": "Research P41-44 also measured and dropped (fewer than 10/192 games on a set, or a tested family): late farm-shot silence with <= 8 alive (2/192 and 5/192); P29 settle extended to r <= 70 (0/192 and 0/192: the bot is alive at r <= 70 in 1-2 games per 192); zone-entry choice with <= 8 alive (zone travel at <= 8 alive in only 8/192 games on 2000+3000); gun+lightning late walk to a laser (2/192 and 0/192 after gates; also B90 KEEP_LIGHT_ON lost 3.73); sensors over nanites while holding a laser (4/192). The sound-cued look at <= 8 alive fired 7/192 and 5/192, so P41 uses <= 12."
+}

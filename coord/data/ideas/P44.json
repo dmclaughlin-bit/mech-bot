@@ -1,0 +1,95 @@
+{
+  "id": "P44",
+  "title": "No laser charge into a lightning holder's reach: do not start a charge on a target seen holding lightning within 54 m; gun or lightning leads instead (LASER_SHORT_GUARD_ON)",
+  "family": "weapon choice by enemy loadout",
+  "flags": [
+    "LASER_SHORT_GUARD_ON"
+  ],
+  "flag": "LASER_SHORT_GUARD_ON",
+  "behaviors": [
+    "when the laser would take the lead and start a new charge (charge 0) on a target whose visible weapons include lightning and that is within 54 m, the laser does not lead; lightning or the gun lead and fire as usual; t >= 10; champion behavior on drop run/hold ticks"
+  ],
+  "owner": "unassigned (research P41-44; Grok assigns)",
+  "stage": "idea",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
+  "champion_sha": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Grok: assign or park. If built: one flag LASER_SHORT_GUARD_ON default false (+SHORT_GUARD_M 54), base-0 96-game hazard with fired / different behavior / different score, count of 'effect: short' events on us and damage dealt/taken in fights against lightning holders, drop-ring arrivals, pins, deaths < 40 s.",
+  "doug_waiver": false,
+  "single_decision": "Which weapon leads against a lightning holder inside its reach. Lightning beats laser: a lightning hit on a laser holder wipes any charge in progress and blocks a new one for short_s 2 s (protocol.md:306, :312; sim engine.ts:327-332, :352), and while charging we move at half speed (protocol.md:305). The champion never reads the short effect (no 'short' handling in brain.ts) and picks the laser first whenever it is off cooldown with a clear line in range (brain.ts:1028), so inside lightning reach it keeps re-trying a charge that the arc keeps wiping, with the torso on the beam aim instead of the gun's lead aim.",
+  "trigger": "LASER_SHORT_GUARD_ON AND obs.t >= 10 AND the laser would take the lead (clear target, laser cooldown <= 0, d <= laser range, brain.ts:1028) AND laser charge == 0 AND the target's weapons (obs.mechs[i].weapons, or the remembered Known.weapons) include 'lightning' AND its distance <= 54 m (lightning range 45 m x 1.2, one Tesla coil; enemy upgrades are not observable) AND NOT dropMove AND NOT dropHold AND NOT dropNear.",
+  "hook": "brain.ts act(), weapon lead choice brain.ts:1028: add `&& !(LASER_SHORT_GUARD_ON && obs.t >= 10 && (w(laser).charge ?? 0) <= 0 && (m.weapons ?? known.get(m.id)?.weapons ?? []).includes(\"lightning\") && d <= SHORT_GUARD_M && !dropMove && !dropHold && !dropNear)` so the else-branches (lightning :1031, gun :1034) lead. A charge already in progress is released by the champion's rules. dropNear is the P29 test (brain.ts:852) lifted above the target block. Flag + SHORT_GUARD_M in params.ts.",
+  "observable_inputs": [
+    "obs.mechs[i].weapons and pos (target)",
+    "self.weapons[laser].charge / cooldown / stats.range",
+    "obs.t",
+    "obs.drops"
+  ],
+  "gates": "Cannot start before t = 10 s (explicit). No movement change; on a tick with dropMove or dropHold or a claimable drop within DROP_RUN_M the champion's weapon choice is used. Off = champion exactly.",
+  "drop_gate": "Plain gate (no drop listed) keeps 11/192 and 10/192 games (the second set is at the bar); the narrow gate (spec) keeps 13/192 and 15/192. A weapon-choice rule cannot displace a drop run, but the gate is kept so the drop run's fight is exactly the champion's. Plain gate = obs.drops is empty. Narrow gate = no drop with holder null or us within DROP_RUN_M (200 m), the same `dropNear` test P29 uses (brain.ts:852), and the champion's dropMove/dropHold are both off on that tick.",
+  "evidence": {
+    "protocol": "protocol.md:306 lightning: 'Short: a mech it hits that holds a laser loses any charge in progress and can't start one for short_s 2 s'; protocol.md:312 'Lightning beats laser (short)'; protocol.md:305 laser 0.75 s charge at half move speed. Lightning range 45 m, 60 dmg every 0.25 s (240 DPS before hit rate), Tesla coil +20% range per stack (config.upgrades). Sim models short (engine.ts:327-332, :352).",
+    "sim_retries": "Run 3, champion: inside the trigger the laser start fires again and again in one episode (2000+3000: 170 start decisions in 30 episodes, 5.7 per episode; 4000+5000: 119 in 23), the signature of a charge that cannot build while shorted; each of those decisions leads with the beam aim instead of the gun's lead aim.",
+    "sim_any_holder": "Run 3: counting any visible lightning holder within 54 m (not only the target), the start happens in 22/192 and 26/192 games; the spec keeps the target-only test as the single decision.",
+    "watcher": "coord/data/watcher/final_circle.md: HP in the final circle for laser holders 0.36 (T01-T04) vs 0.74 (T13-T16), small n (8/31 ticks), no conclusion; loadout.md end-of-life laser 53.2% vs 39.0% and lightning 20.0% vs 26.8% (190/205 mech-matches) - top teams carry lasers more, so how the laser is used against a short matters more for them. No Watcher metric counts shorts (not measured).",
+    "first_fights": "PR #145 first-fight table: opponent holds a laser and I do not KILL 46 / DIED 156; laser holders win at range, which this rule keeps (it only acts inside 54 m)."
+  },
+  "trigger_counts": {
+    "2000+3000": {
+      "fired_games": 15,
+      "episodes": 30,
+      "start_decisions": 170,
+      "plain_gate_games": 11,
+      "plain_gate_episodes": 20,
+      "narrow_gate_games": 13,
+      "narrow_gate_episodes": 26,
+      "per_base": {
+        "2000": "none 6/10, plain 5/9, narrow 6/10 (games/episodes)",
+        "3000": "none 9/20, plain 6/11, narrow 7/16"
+      }
+    },
+    "4000+5000": {
+      "fired_games": 16,
+      "episodes": 23,
+      "start_decisions": 119,
+      "plain_gate_games": 10,
+      "plain_gate_episodes": 12,
+      "narrow_gate_games": 15,
+      "narrow_gate_episodes": 22,
+      "per_base": {
+        "4000": "none 10/12, plain 6/6, narrow 9/11",
+        "5000": "none 6/11, plain 4/6, narrow 6/11"
+      }
+    },
+    "alive_le_8": "not alive-gated (it is a weapon-choice rule; few games reach <= 8 alive)."
+  },
+  "estimated_activation": "13/192 and 15/192 games with the narrow drop gate (15 and 16 ungated); 26 and 22 episodes.",
+  "closest_prior_test": "B117 loadout/HP matchup range CLOSE 4.08 vs 4.17 (BB-A84FCC28): changed fight range by loadout, not which weapon leads. B106 AMBUSH_WITH_LASER_ON CLOSE 3.85 (ambush band with an uncharged laser). P34 lethal release (when to let go of a charge) and B32 laser pre-charge behind cover LOSS 3.48 are the other laser-handling tests; none withheld a charge against a lightning holder.",
+  "what_would_disprove": "Paired screen: no fall in short events on us or in time spent charging inside 54 m of a lightning holder; lower damage dealt or more deaths in those fights (the laser shot mattered more than the short); fires < 10/192; drop-ring set totals below the champion or deaths < 40 s above.",
+  "risks": "Pins: none (no movement). Drops: none (champion choice on drop ticks). Early deaths: off before 10 s. Combat: a full 315-damage laser shot is given up against a lightning holder at 45-54 m who may not fire its lightning; enemy Tesla-coil stacks are unobservable, so a 64.8 m reach (two stacks) is not covered. Small sample: 13-15 games per set.",
+  "source": "Research P41-44 (this run): protocol.md weapon matchup, passive sim log of the P29 champion (run 3).",
+  "timestamps": {
+    "created": "2026-11-21 21:30 ET",
+    "updated": "2026-11-21 21:30 ET"
+  },
+  "sources": [
+    "/workspace/mechfight-kit/protocol.md:305, :306, :312",
+    "/workspace/mechfight-kit/check/stream.jsonl.gz (config.weapons.lightning, config.upgrades lightning_range)",
+    "/tmp/wild-sim/engine.ts:327-332, :352, :421",
+    "coord/data/watcher/final_circle.md",
+    "coord/data/watcher/loadout.md",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/145 (coord/research-doug-1941.md)",
+    "coord/data/site_results.csv (B117, B106, B32)",
+    "brain.ts (origin/main 8f0ca4c = P29 2e1d036 bot code)",
+    "Instrumented champion sim (research P41-44): copies of the champion bot files from origin/main 8f0ca4c (bot code identical to P29 2e1d036: `git diff 2e1d036 HEAD` on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p4144/bot (run 1: per-decision state log), /tmp/p4144/bot2 (run 2: exact candidate triggers) and /tmp/p4144/bot3 (run 3: laser-charge triggers), passive CSV logging appended before act.move, no action changed. Run: `cd /tmp/wild-sim && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv>` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column of each run's CSV equals /workspace/tester/runs/fast-b6f2f8b-<s>.csv on 96/96 games per base, after two load-timing outliers in run 2 (seeds 3012 and 4027) were rerun alone and matched the champion exactly; the isolated logs replaced the batch logs. Logs stay in /tmp (not committed)."
+  ],
+  "priority_rank": 3,
+  "research_note": "Research P41-44 also measured and dropped (fewer than 10/192 games on a set, or a tested family): late farm-shot silence with <= 8 alive (2/192 and 5/192); P29 settle extended to r <= 70 (0/192 and 0/192: the bot is alive at r <= 70 in 1-2 games per 192); zone-entry choice with <= 8 alive (zone travel at <= 8 alive in only 8/192 games on 2000+3000); gun+lightning late walk to a laser (2/192 and 0/192 after gates; also B90 KEEP_LIGHT_ON lost 3.73); sensors over nanites while holding a laser (4/192). The sound-cued look at <= 8 alive fired 7/192 and 5/192, so P41 uses <= 12."
+}

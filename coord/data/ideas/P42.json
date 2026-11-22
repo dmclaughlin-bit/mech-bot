@@ -1,0 +1,97 @@
+{
+  "id": "P42",
+  "title": "No new laser charge on the zone trip: while walking to the next circle or escaping the zone, the laser does not start a charge (ZONE_TRIP_NO_CHARGE_ON)",
+  "family": "zone travel / weapon timing",
+  "flags": [
+    "ZONE_TRIP_NO_CHARGE_ON"
+  ],
+  "flag": "ZONE_TRIP_NO_CHARGE_ON",
+  "behaviors": [
+    "while mode is 'to next circle' or 'zone escape' (t >= 10), the laser may not take the lead and start a new charge; gun and lightning lead and fire as usual; a charge already in progress is released by the champion's rules"
+  ],
+  "owner": "unassigned (research P41-44; Grok assigns)",
+  "stage": "idea",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
+  "champion_sha": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Grok: assign or park. If built: one flag ZONE_TRIP_NO_CHARGE_ON default false, base-0 96-game hazard with fired / different behavior / different score, zone damage taken, deaths with zone travel in the last 5 s, drop-ring arrivals, pins, deaths < 40 s.",
+  "doug_waiver": false,
+  "single_decision": "Whether the laser may start a charge during zone travel. Protocol: while charging you move at half speed (protocol.md:305, charge_move_mult 0.5; sim engine.ts:421). Zone travel (brain.ts:750-759) leaves just in time (needed >= timeLeft with a 10 s buffer, brain.ts:546-551), but the target code (brain.ts:1028, :1079) still starts laser charges on the way, so the trip runs at half speed for each 0.75 s charge plus the time to line up the release.",
+  "trigger": "ZONE_TRIP_NO_CHARGE_ON AND obs.t >= 10 AND mode is 'to next circle' or 'zone escape' AND the laser would take the lead (clear target, laser cooldown <= 0, d <= laser range, brain.ts:1028) AND its charge is 0 (a new charge would start at brain.ts:1079). Drop gate: by construction never on a drop tick (zone travel ranks above the drop run and the drop run requires !leaveNow && !trip && me.in_zone, brain.ts:730), and counted with the narrow gate as well.",
+  "hook": "brain.ts act(), weapon lead choice brain.ts:1028: `if (clear && laser >= 0 && w(laser).cooldown <= 0 && d <= w(laser).stats.range)` gains `&& !(ZONE_TRIP_NO_CHARGE_ON && obs.t >= 10 && (mode === \"to next circle\" || mode === \"zone escape\") && (w(laser).charge ?? 0) <= 0)`, so lightning (brain.ts:1031) or the gun (:1034) leads instead. A charge already in progress keeps the laser in the lead and is released as today. Flag in params.ts.",
+  "observable_inputs": [
+    "self.weapons[laser].charge / cooldown / stats.range",
+    "self.pos, obs.zone (existing zone-travel mode)",
+    "obs.mechs (existing target)",
+    "obs.t"
+  ],
+  "gates": "Cannot start before t = 10 s (explicit; zone travel cannot happen before the first shrink at 60 s anyway). Only in the two zone-travel modes, which rank above the drop run (brain.ts:750-759 vs :818-823), so it can never displace or alter a drop run or hold. No movement change: the path and the boost rule are the champion's; only the laser start is withheld. Off = champion exactly.",
+  "drop_gate": "This is the clearest case of the drop-on-the-map trap: with the plain gate (obs.drops empty) it fires in 0/192 on both sets, because the first drop is called at 70 s, inside the first shrink (60-110 s), and called or untaken drops then stay listed for every later zone trip. The spec therefore does not use the plain gate. Zone travel already excludes a drop run or hold on the same tick (brain.ts:730). Counts with the narrow gate (no claimable drop within 200 m and no dropMove/dropHold) are 15/192 and 21/192. Plain gate = obs.drops is empty. Narrow gate = no drop with holder null or us within DROP_RUN_M (200 m), the same `dropNear` test P29 uses (brain.ts:852), and the champion's dropMove/dropHold are both off on that tick.",
+  "evidence": {
+    "protocol": "protocol.md:305: laser charge 0.75 s, move at half speed while charging, cooldown 1.65 s; release fires along the aim. Sim models it (/tmp/wild-sim/engine.ts:421).",
+    "sim_zone_deaths": "P-D-007 Step A (PR #124, bot 6182d29): 'died after 60 s with zone travel in the last 5 s' in 28/192 and 37/192 games; zone travel yields almost no kills (15 kills in 6,520 travel ticks, 21 in 9,642). Run 1 on the P29 champion: zone travel in 21/24/29/28 games and deaths with travel in the last 5 s in 13/15/19/15 games (bases 2000/3000/4000/5000).",
+    "sim_zone_escape": "Run 1: the champion is outside the circle ('zone escape') in 43/79/73/100 episodes over 9/8/13/11 games per base; outside it loses 20-260 HP/s with no armor and no regen (protocol.md:291, section 9).",
+    "sim_charge_cost": "Run 2, narrow gate: the champion spends 326 decisions (32.6 s) charging the laser during zone travel in 17 games (2000+3000) and 697 decisions (69.7 s) in 22 games (4000+5000). 142 of 147 narrow-gated new charges are on 'to next circle', 5 on 'zone escape'.",
+    "watcher": "movement_slices.csv: mean speed at alive_5_8 7.51 vs 4.22 m/s (d=0.61, 8475/7763 ticks, 72/68 matches, ok) and 7.54 vs 4.98 at alive_2_4 (d=0.46, ok); late phase 7.15 vs 5.31 and final 8.31 vs 5.73 (small n, no conclusion). Top teams keep moving late; zone.md has no in/out gap in adequate buckets (outside 0.3% vs 0.3%).",
+    "counter_evidence": "P-D-010 (PR #140): healthy en-route travel delay changed zone arrival in only 6/192 and 2/192 games, so a slow trip rarely decides arrival on its own; this rule removes a delay that happens while a target is in view (when travel is most exposed), which P-D-010 did not isolate."
+  },
+  "trigger_counts": {
+    "2000+3000": {
+      "fired_games": 19,
+      "new_charges_blocked": 61,
+      "plain_gate_games": 0,
+      "plain_gate_events": 0,
+      "narrow_gate_games": 15,
+      "narrow_gate_events": 38,
+      "per_base": {
+        "2000": "none 10/39, plain 0/0, narrow 7/20 (games/charge starts)",
+        "3000": "none 9/22, plain 0/0, narrow 8/18"
+      },
+      "alive_le_8": "6 games (narrow 5)"
+    },
+    "4000+5000": {
+      "fired_games": 31,
+      "new_charges_blocked": 154,
+      "plain_gate_games": 0,
+      "plain_gate_events": 0,
+      "narrow_gate_games": 21,
+      "narrow_gate_events": 109,
+      "per_base": {
+        "4000": "none 13/76, plain 0/0, narrow 9/55",
+        "5000": "none 18/78, plain 0/0, narrow 12/54"
+      },
+      "alive_le_8": "14 games (narrow 12)"
+    },
+    "note": "Gated to <= 8 alive it would fire in 6/192 and 14/192 games (fails the first set), so it is not alive-gated. Run 3 recounted the starts on all four bases independently and got the same numbers."
+  },
+  "estimated_activation": "19/192 and 31/192 games (narrow drop gate: 15 and 21); 61 and 154 withheld charge starts (38 and 109 with the narrow gate).",
+  "closest_prior_test": "None on laser use during travel. Zone timing: P-D-007 Step B ZONE_EARLY_S failed in sim (zone-travel deaths 28->30, 37->45, PR #125), a different decision (when to leave). P-D-010 travel delay: measurement, no Step B. Laser handling: B32 laser pre-charge behind cover LOSS 3.48; P34 lethal release (when to let go) is in screening; this changes only whether a charge starts while travelling.",
+  "what_would_disprove": "Paired screen: no fall in zone damage taken or in 'zone escape' time in fired games, or fewer kills/more deaths on zone trips (the lost laser shots mattered more than the speed); fires < 10/192; drop-ring set totals below the champion or deaths < 40 s above.",
+  "risks": "Pins: none (no movement change). Drops: none (only in modes that rank above the drop run). Combat: a 315-damage laser shot is given up on each blocked start; against a lone chaser the gun's lower DPS may lose the exchange. Lightning holders keep the lightning. Sibling not included: run 3 shows the same half-speed charge during a hurt retreat in 64/192 games (narrow 59) on 2000+3000; that would be a separate flag in the retreat family and is not part of this spec.",
+  "source": "Research P41-44 (this run): protocol.md, P-D-007 Step A, passive sim log of the P29 champion.",
+  "timestamps": {
+    "created": "2026-11-21 21:30 ET",
+    "updated": "2026-11-21 21:30 ET"
+  },
+  "sources": [
+    "/workspace/mechfight-kit/protocol.md:291, :305, section 9",
+    "/tmp/wild-sim/engine.ts:421",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/124",
+    "coord/data/ideas/P-D-007A.json",
+    "coord/data/ideas/P-D-007B.json",
+    "coord/data/ideas/P-D-010.json",
+    "coord/data/watcher/movement_slices.csv",
+    "coord/data/watcher/zone.md",
+    "brain.ts (origin/main 8f0ca4c = P29 2e1d036 bot code)",
+    "Instrumented champion sim (research P41-44): copies of the champion bot files from origin/main 8f0ca4c (bot code identical to P29 2e1d036: `git diff 2e1d036 HEAD` on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p4144/bot (run 1: per-decision state log), /tmp/p4144/bot2 (run 2: exact candidate triggers) and /tmp/p4144/bot3 (run 3: laser-charge triggers), passive CSV logging appended before act.move, no action changed. Run: `cd /tmp/wild-sim && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv>` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column of each run's CSV equals /workspace/tester/runs/fast-b6f2f8b-<s>.csv on 96/96 games per base, after two load-timing outliers in run 2 (seeds 3012 and 4027) were rerun alone and matched the champion exactly; the isolated logs replaced the batch logs. Logs stay in /tmp (not committed)."
+  ],
+  "priority_rank": 4,
+  "research_note": "Research P41-44 also measured and dropped (fewer than 10/192 games on a set, or a tested family): late farm-shot silence with <= 8 alive (2/192 and 5/192); P29 settle extended to r <= 70 (0/192 and 0/192: the bot is alive at r <= 70 in 1-2 games per 192); zone-entry choice with <= 8 alive (zone travel at <= 8 alive in only 8/192 games on 2000+3000); gun+lightning late walk to a laser (2/192 and 0/192 after gates; also B90 KEEP_LIGHT_ON lost 3.73); sensors over nanites while holding a laser (4/192). The sound-cued look at <= 8 alive fired 7/192 and 5/192, so P41 uses <= 12."
+}

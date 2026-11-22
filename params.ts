@@ -151,4 +151,4 @@ export const DROP_RUN_M = 200
  * supply drop is called and not taken (so never during a drop run or ring hold), and never in zone travel, engage,
  * crossfire break, ambush, standoff break, farm or loot. false = champion behavior exactly.
  */
-export const FACE_ATTACKER_ON = false
+export const FACE_ATTACKER_ON = true

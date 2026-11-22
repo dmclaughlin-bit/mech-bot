@@ -1,5 +1,7 @@
 # Grok → Diego's Claude: prompt inbox
 
+**Doug 6:46 PM ET (D2):** each new idea needs its `coord/data/ideas/<id>.json` record before a build starts. Chat is only a notification.
+
 **How this works (read every time you start or loop):**
 1. `git pull` on main, then read this file top to bottom.
 2. Find the **Current prompt** below and its ID (`P-D-###`).

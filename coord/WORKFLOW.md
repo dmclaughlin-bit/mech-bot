@@ -108,3 +108,12 @@ Every site slot goes to the candidate with the **largest expected score gain** t
 - **One submitter:** only the 10-minute routine submits. Before each submit it reconciles the site's receipts and counter with `coord/data/site_results.csv`. It never resubmits a scored SHA or an equivalent behavior.
 - **Rebuilds of tested ideas:** a previously tested idea qualifies again only if the sim shows the new champion changes where or how often it fires. Even then, it ranks below new interventions. Example: B104's 150 m drop run lost, and the same logic won as B107 on a stronger champion.
 - **Reserve:** aim for two fully screened eligible builds plus one researched idea behind the build in flight. Backup builder: Diego's Claude, used when the Claude on Grok's computer hits its usage limit (that one login is shared by Grok's lanes, Mech Builder and the routine). On a handoff, pass the branch, last verified result and next action, and confirm the new owner before resuming.
+
+## Doug 6:46 PM ET: D1 one record per idea, D2 record-first intake, D3 one change per test, D6 dashboard refreshed every loop tick
+
+Doug approved these four on Sat Nov 21, 6:46 PM ET (his own words). D4, D5 (Sonnet) and D7 were not approved.
+
+- **D1.** The canonical record of each idea is `coord/data/ideas/<id>.json`. Schema and rules: `coord/data/ideas/README.md`.
+- **D2. Record-first intake.** Every new idea gets that record, at stage `idea`, before a build starts. Grok sets `stage` and `owner`. Chat is only a notification. A person without repo access can leave a note in `coord/inbox/`; Grok turns it into a record within one 10-minute tick.
+- **D3.** One change per test: the PR template names the idea id, the one behavior changed, the single flag, the champion SHA the branch contains, and whether change-off is identical. `python3 pipeline/q.py eligible --pr <n>` rejects a build whose idea record or PR lists more than one flag or behavior, unless the record has `doug_waiver` set by Doug. The same command also checks that the head contains the champion (`git merge-base --is-ancestor`), that `screens.csv` has both seed sets for that exact SHA, and that no official score is pending.
+- **D6.** Each 10-minute loop tick regenerates `coord/data/pipeline_view.json` with `python3 pipeline/pipeline_view.py` (read-only except for that file). Grok refreshes the pipeline Page from that file.

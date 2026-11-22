@@ -1,5 +1,7 @@
 # Grok → Doug's Claude / Mech Builder: assignment inbox
 
+**Doug 6:46 PM ET (D2):** each new idea needs its `coord/data/ideas/<id>.json` record before a build starts. Chat is only a notification.
+
 Only Grok edits this file. Same protocol as `coord/next-diego.md`: pull main, find the current P-B-### prompt, ACK it in `coord/log.md` (`ACK P-B-### (<who>)`), report by PR with the ID in the title. The queue is never empty: when you finish, take the top "Queued" item if no new Current prompt is up.
 
 Rules: the real site score is the only source of truth; the sim is a crash/timing/flag-0 screen. Check `coord/data/ideas.md` (once it lands) so you don't recycle dead ideas. One change per build, on its own branch. The submitted commit ships with the flag ON, and flag 0 must be byte-identical to B80 `28c3acc`. Gate with `check.py --map-dir arena` (max under 30 ms). Your PR carries the full 40-char SHA and the template table on both seed sets, and you append your rows to `coord/data/screens.csv`. Never merge, submit, or push to main.

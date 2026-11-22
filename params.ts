@@ -172,7 +172,7 @@ export const MIDRING_STUCK_S = 3
  * modes rank above it and take over on the same tick). Ranks above the midring settle.
  * Not B125's TAC_JET_LOOT (see coord/data/ideas/P40.json). false = champion behavior exactly.
  */
-export const ROOF_JET_ROUTE_ON = false
+export const ROOF_JET_ROUTE_ON = true
 export const ROOF_START_S = 10
 export const ROOF_RANGE_M = 100
 export const ROOF_MAX_H = 48

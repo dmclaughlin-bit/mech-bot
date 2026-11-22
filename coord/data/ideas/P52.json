@@ -1,0 +1,15 @@
+{
+  "id": "P52",
+  "title": "Early farm: in the first 60 s, walk to cubes harder while keeping early spacing (EARLY_FARM_ON)",
+  "family": "farm (new early trigger)",
+  "flag": "EARLY_FARM_ON",
+  "owner": "Diego's Claude",
+  "prompt": "P-D-023",
+  "source": "Mech Watcher ladder update 11:38 PM ET (PR #152 comment 7074455224): winners alive at 60 s had 4.2 vs 2.2 cubes, 1.9 vs 1.2 upgrades; kept ~145 m nearest-enemy spacing in the first 30 s",
+  "change": "From 10 s to 60 s, when the champion has no farm goal: walk to the nearest zone-safe cube within 120 m (champion farm reach is 80 m) if every enemy in view or known in the last 10 s is more than 145 m away and no mech hit us for 3 s. The champion's farm gate requires no enemy in view at all. Drops, hunt, and every other mode are unchanged and keep priority.",
+  "distinct_from": "B12/B13 (farm gate, no enemy in view), B21 (upgrade order), P23b (late idle farm)",
+  "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
+  "main": "edb729f",
+  "stage": "step_a",
+  "created_et": "2026-11-22 12:05 AM ET"
+}

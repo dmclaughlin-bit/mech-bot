@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_RUN_M, EARLY_FARM_FROM_S, EARLY_FARM_ON, EARLY_FARM_PICKUP_M, EARLY_FARM_SPACE_M, EARLY_FARM_T, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
@@ -638,6 +638,20 @@ function buildBot(hello: Hello): Bot {
             farmHunt = true
           }
         }
+      }
+      // P52 (EARLY_FARM_ON): early cube walk with enemies in view but all beyond EARLY_FARM_SPACE_M (see params.ts).
+      if (EARLY_FARM_ON && !farmGoal && !farmHold && obs.t >= EARLY_FARM_FROM_S && obs.t < EARLY_FARM_T && FARM_ON && me.in_zone && !leaveNow &&
+        obs.t - lastMechHit > FARM_QUIET_S && enemies.every((e) => flat(e.pos, me.pos) > EARLY_FARM_SPACE_M) &&
+        ![...known.values()].some((k) => obs.t - k.lastSeen < FARM_MEMORY_S && flat(k.pos, me.pos) <= EARLY_FARM_SPACE_M)) {
+        const pace = ZONE_WALK * walkSpeed
+        const spaced = (p: number[]) => enemies.every((e) => flat(e.pos, p) > EARLY_FARM_SPACE_M) &&
+          ![...known.values()].some((k) => obs.t - k.lastSeen < FARM_MEMORY_S && flat(k.pos, p) <= EARLY_FARM_SPACE_M)
+        const cube = obs.cubes
+          .filter((c) => !farmGiveUp.has(c.id) && flat(c.pos, me.pos) < EARLY_FARM_PICKUP_M && spaced(c.pos) &&
+            flat(c.pos, z.center) < Math.max(0, z.radius - margin) &&
+            (flat(me.pos, c.pos) + Math.max(0, flat(c.pos, z.next_center) - inner)) / pace + ZONE_BUFFER < timeLeft)
+          .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
+        if (cube) farmGoal = cube
       }
       if (farmGoal && farmChase?.id !== farmGoal.id) farmChase = { id: farmGoal.id, since: obs.t }
       if (!farmGoal && !farmHold) farmChase = null

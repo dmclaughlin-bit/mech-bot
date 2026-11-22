@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_RUN_M, EARLY_SPACING_M, EARLY_SPACING_ON, EARLY_SPACING_T, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
@@ -82,6 +82,9 @@ const HIDE_BEARINGS = 12
 const HIDE_STEPS_S = [1, 2, 3]
 /** P48: give-up list key for a tree spot (4 m cells). */
 const treeKey = (x: number, y: number) => `${Math.round(x / 4)},${Math.round(y / 4)}`
+/** P54: early spacing never runs in the opening (s), and gives up on a target after this long (s) without 1 m of progress. */
+const EARLY_SPACING_MIN_T = 10
+const EARLY_SPACING_STUCK_S = 3
 /** Build 12 (farm): no farming for this long (s) after damage from anything but a drone. */
 const FARM_QUIET_S = 3
 /** Build 12: known enemies seen this recently (s) count against the FARM_ENEMY_M ring. */
@@ -318,6 +321,9 @@ function buildBot(hello: Hello): Bot {
   let standoffId: number | null = null
   /** P-D-012 (P29): the midring settle walk in progress, and the hold phases (by shrink_start) it gave up on. */
   let settle: { goal: Vec3; phase: number; best: number; at: number } | null = null
+  /** P54: the early-spacing walk in progress, and targets given up on (no progress). */
+  let spacing: { key: string; best: number; at: number } | null = null
+  const spacingSkip = new Set<string>()
   const settleSkip = new Set<number>()
 
   /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
@@ -813,6 +819,43 @@ function buildBot(hello: Hello): Bot {
         if (p) treeRun = { spot: p, key: treeKey(p[0], p[1]), best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
         return p
       }
+      // P54: the early-spacing target, or null (champion's choice). Enemies: in view, or seen in the last FARM_MEMORY_S.
+      const earlySpacing = (): Vec3 | null => {
+        const foes: number[][] = enemies.map((m) => m.pos)
+        for (const k of known.values()) if (obs.t - k.lastSeen < FARM_MEMORY_S && !enemies.some((m) => m.id === k.id)) foes.push(k.pos)
+        const nearest = foes.slice().sort((a, b) => flat(a, me.pos) - flat(b, me.pos))[0]
+        if (!nearest || flat(nearest, me.pos) > EARLY_SPACING_M) return (spacing = null)
+        const pace = ZONE_WALK * walkSpeed
+        const safe = (p: number[], stay: number) =>
+          flat(p, z.center) < Math.max(0, z.radius - margin) &&
+          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
+        // Drop gate: off while a drop passes the drop run's own candidate filter (near AND reachable within DROP_RUN_M).
+        if (DROP_RUN_M > 0 && (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
+          flat(x.pos, me.pos) <= DROP_RUN_M && safe(x.pos, x.lands_in + x.capture_s - x.progress))) return (spacing = null)
+        const cands: { key: string; rank: number; pos: Vec3 }[] = []
+        if (LASER_RUSH_ON && !holdsLaser && rushSlot)
+          for (const [id, a] of arms) {
+            const len = flat(me.pos, a.pos)
+            if ((a.kind === "laser" || gunOnly) && !laserSkip.has(id) && flat(a.pos, z.center) < Math.max(0, z.radius - margin) &&
+              !(solids?.ground && Math.abs(a.pos[2] - groundAt(solids, a.pos[0], a.pos[1])) >= 4) &&
+              len <= LASER_TRIP_M && (len + Math.max(0, flat(a.pos, z.next_center) - inner)) / pace + ZONE_BUFFER < timeLeft)
+              cands.push({ key: `a${id}`, rank: a.kind === "laser" ? 0 : 1, pos: a.pos })
+          }
+        for (const c of obs.cubes) if (!farmGiveUp.has(c.id) && flat(c.pos, me.pos) < FARM_PICKUP_M && safe(c.pos, 0)) cands.push({ key: `c${c.id}`, rank: 2, pos: c.pos })
+        if (toEnter > 0) cands.push({ key: "zone", rank: 3, pos: entry })
+        const ok = cands
+          .filter((c) => !spacingSkip.has(c.key) && foes.every((f) => flat(f, c.pos) >= EARLY_SPACING_M) &&
+            (c.pos[0] - me.pos[0]) * (nearest[0] - me.pos[0]) + (c.pos[1] - me.pos[1]) * (nearest[1] - me.pos[1]) <= 0)
+          .sort((a, b) => a.rank - b.rank || flat(a.pos, me.pos) - flat(b.pos, me.pos))
+        const kept = spacing ? ok.find((c) => c.key === spacing!.key) : undefined
+        const pick = kept ?? ok[0]
+        if (!pick) return (spacing = null)
+        const d = flat(me.pos, pick.pos)
+        if (!kept) spacing = { key: pick.key, best: d, at: obs.t }
+        else if (d < spacing!.best - 1) { spacing!.best = d; spacing!.at = obs.t }
+        else if (obs.t - spacing!.at > EARLY_SPACING_STUCK_S) { spacingSkip.add(pick.key); return (spacing = null) }
+        return pick.pos
+      }
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -948,6 +991,15 @@ function buildBot(hello: Hello): Bot {
           }
         }
       }
+      // P54 (EARLY_SPACING_ON, see params.ts): where we would only hold or heal in place early in the match with an enemy
+      // within EARLY_SPACING_M, walk to one of the champion's own targets that keeps that spacing.
+      if (EARLY_SPACING_ON && obs.t >= EARLY_SPACING_MIN_T && obs.t < EARLY_SPACING_T && (mode === "hold" || mode === "heal")) {
+        const goal = earlySpacing()
+        if (goal) {
+          move = travel(me.pos, goal, obs.t, canPlan()).move
+          mode = "early spacing"
+        }
+      } else spacing = null
       // Standoff break (P-B-001, see STANDOFF_BREAK_S): where we would heal or hold, late in the match, against one lone
       // enemy 45–90 m away that is not charging a laser, while we are well above the retreat line: walk at it along a
       // path until our best weapon reaches it. Everything above (engage, retreat, zone, crossfire, laser walk, lightning

@@ -185,3 +185,17 @@ export const LETHAL_RELEASE_MIN_T = 40
 export const TREE_RETREAT_ON = true
 export const TREE_RETREAT_MIN_T = 40
 export const TREE_RETREAT_STUCK_S = 3
+
+/**
+ * P54 (early spacing, finding F10: winners keep the nearest enemy at 145 m in the first 30 s, losers 117 m): from
+ * t = 10 s (the opening is untouched) to EARLY_SPACING_T, where the champion would only hold or heal in place, and an
+ * enemy mech in view or seen in the last 10 s is within EARLY_SPACING_M: walk (nav path, no boost) to the nearest of
+ * the targets the champion already considers (a remembered laser / lightning it could rush, a zone-safe cube within
+ * FARM_PICKUP_M, the next circle's entry point) that lies at least EARLY_SPACING_M from every such enemy and not
+ * toward the nearest one. With none, the champion's choice. Engage, retreat, crossfire, ambush, the laser rush, zone
+ * travel and drops all rank first; off while a drop is near AND reachable within DROP_RUN_M. A target with no 1 m of
+ * progress for 3 s goes on a skip list. false = champion behavior exactly.
+ */
+export const EARLY_SPACING_ON = false
+export const EARLY_SPACING_M = 120
+export const EARLY_SPACING_T = 30

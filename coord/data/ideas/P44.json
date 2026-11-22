@@ -10,7 +10,7 @@
     "when the laser would take the lead and start a new charge (charge 0) on a target whose visible weapons include lightning and that is within 54 m, the laser does not lead; lightning or the gun lead and fire as usual; t >= 10; champion behavior on drop run/hold ticks"
   ],
   "owner": "Mech Builder",
-  "stage": "building",
+  "stage": "hold",
   "pr": null,
   "sha": null,
   "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
@@ -19,9 +19,9 @@
   "receipt": null,
   "site_score": null,
   "score": null,
-  "decision": null,
-  "blocker": null,
-  "next_action": "Mech Builder: re-apply LASER_SHORT_GUARD_ON on P48 (base 9071465), trees-on activation count (0+1000), four-base trees-on hazard run (0/1000/6000/7000) vs champion P48 b9492c6, push p44b-laser-short-guard.",
+  "decision": "FAILED (builder checklist item 3, HARD): drop-ring arrival total on base 0 is 3 vs champion 5 after the one allowed fix (seed 44)",
+  "blocker": "Checklist item 3 fails on base 0 (drop-ring arrivals 3 < 5) for both the first build and fix 1; the brief allows one fix only. Branch pushed with LASER_SHORT_GUARD_ON=false (no flip commit).",
+  "next_action": "Grok: decide retire vs hold. Not eligible for a slot (item 3 HARD fail; fix 1 also changes the score in only 2/384 games).",
   "doug_waiver": false,
   "single_decision": "Which weapon leads against a lightning holder inside its reach. Lightning beats laser: a lightning hit on a laser holder wipes any charge in progress and blocks a new one for short_s 2 s (protocol.md:306, :312; sim engine.ts:327-332, :352), and while charging we move at half speed (protocol.md:305). The champion never reads the short effect (no 'short' handling in brain.ts) and picks the laser first whenever it is off cooldown with a clear line in range (brain.ts:1029), so inside lightning reach it keeps re-trying a charge that the arc keeps wiping, with the torso on the beam aim instead of the gun's lead aim.",
   "trigger": "LASER_SHORT_GUARD_ON AND obs.t >= 10 AND the laser would take the lead (clear target, laser cooldown <= 0, d <= laser range, brain.ts:1029) AND laser charge == 0 AND the target's weapons (obs.mechs[i].weapons, or the remembered Known.weapons) include 'lightning' AND its distance <= 54 m (lightning range 45 m x 1.2, one Tesla coil; enemy upgrades are not observable) AND NOT dropMove AND NOT dropHold AND NOT dropNear.",
@@ -77,7 +77,7 @@
   "source": "Research P41-44 (this run): protocol.md weapon matchup, passive sim log of the P29 champion (run 3).",
   "timestamps": {
     "created": "2026-11-21 21:30 ET",
-    "updated": "2026-11-22 (P44b rebuild on P48 start)",
+    "updated": "2026-11-22 00:20 ET (P44b FAILED, hold)",
     "build_started": "2026-11-22",
     "rebuild_started": "2026-11-22"
   },
@@ -134,5 +134,128 @@
     "from_head": "9b211fdf70432348d64cc2df221ed025aa33cb3b",
     "from_champion": "P34 0e6fadd1a30db4ee30c26114b8198f63d782b7c9 (main 8c130ad)",
     "note": "P34-based build never finished; its code commit conflicted with P48 in brain.ts/params.ts, re-applied by hand on P48 (P44b)."
-  }
+  },
+  "flag_off_sha": "bb2f5b4 (fix 1, LASER_SHORT_GUARD_ON=false; first build 169e5e4)",
+  "fix_1": {
+    "change": "The guard acts only while a lightning short on us still blocks a new charge: an `effect: short` event on us within cfg.weapons.lightning.short_s (2 s). Same flag, SHORT_GUARD_M 54, t >= 10 s, drop gates (dropMove/dropHold off, no drop passing the drop run's own candidate filter).",
+    "why": "In the champion, 939 of the 1074 would-fire ticks (87%; 41 of 68 games) came within 2 s of a short on us, when the charge cannot start anyway. The first build fired 4412 ticks (4x): once it held the laser back it kept doing so after the short ended and gave up laser shots that could start. Damage dealt to lightning holders within 54 m fell 202279 -> 183973 and kills 1391 -> 1340 (4 bases), while shorts on us fell only 544 -> 528."
+  },
+  "novelty_vs_P34_lethal_release": {
+    "lethal_release_code": "brain.ts (main 9071465, P48 b9492c6) inside `if (laser >= 0) { ... if (charge > 0) {`: LETHAL_RELEASE_ON && !full && lined (leading === 'laser' && beamOn) && !other (no re-aim rescue) && !farmShot && m.kind === 'mech' && m.hp != null && obs.t >= LETHAL_RELEASE_MIN_T (40 s) && !dropOpen() (no dropRun, no drop held by nobody/us within DROP_RUN_M). It computes the partial-charge damage (protocol §7 min_frac curve x cube bonus x cookoff if the target holds a mortar); if LETHAL_RELEASE_MARGIN 0.8 x that >= the target's shown hp, fire[laser] = false lets go of the charge NOW instead of waiting for a full charge.",
+    "lethal_release": "Trigger: a charge is ALREADY in progress (charge > 0), lined up on a mech whose shown hp the partial shot would kill, t >= 40 s. Action: RELEASE that existing charge early. Any target loadout.",
+    "P44": "Trigger: NO charge in progress (charge == 0) and the laser would take the lead to START one; target seen holding lightning within 54 m; t >= 10 s; (fix 1) a short on us within short_s. Action: the laser does not lead, so no new charge starts and lightning/gun aim leads. It never touches a charge in progress, so it never decides a release.",
+    "same_tick": "0 by construction (charge == 0 vs charge > 0) and measured 0 on every base in both runs.",
+    "same_target_same_game": "Champion runs (4 trees-on bases, 384 games): lethal releases 324, of which 26 on a lightning holder within 54 m. P44 original rule would fire on 1074 ticks in 68 games; a lethal release hit the same target id in the same game 30 times in 26 games. P44 fix-1 rule (would fire 939 ticks / 41 games): 9 lethal releases on the same target in 8 games. Flag-on fix 1: guard 918 ticks / 41 games; same-target lethal releases 8 in 7 games; total lethal releases 323 (champion 324), within 54 m of a lightning holder 27 (26).",
+    "conclusion": "The two rules are disjoint per tick and cover different decisions (start vs release). They share a target in about 2% of the games (8/384 for fix 1), where a charge started before or after the short is still released by P34 as before."
+  },
+  "screens_builder_trees_on": {
+    "sim": "diego/mac-hazard-sim 351758e (= sim/trees-screen-patch-v1 4b8663e game logic + read-only drop_me_in / pins20 / per-tick state-hash columns), copied to /tmp/p44b/sim; kit world.json sha256 e0302dd4...; --trees, --jobs 1, 96 seeds per base. Setup check: plain P34 0e6fadd reproduced /workspace/tester/runs/trees-0e6fadd-0.csv seeds 0-7 exactly.",
+    "champion_baseline": "Own instrumented P48 champion runs (main 9071465 = b9492c6 bot code) on the same sim. Instrumentation is passive: plain vs instrumented champion base 0 = 0/96 CSV and 0/96 per-tick state-hash differences (flag-on: 0/96 hash differences). /workspace/champ-p48/trees-b9492c6-*.csv was NOT used: it was made with /workspace/builder-sim tools/sim (main), which hard-codes SEED_BASE=1000 and has no --trees, so every base file there holds seeds 1000-1095 trees-off.",
+    "diff_behavior_def": "per-tick sim state hash differs from the champion's",
+    "first_build_169e5e4": {
+      "0": {
+        "fired": 18,
+        "diff_behavior": 18,
+        "diff_score": 8,
+        "paired": "-0.052 ± 0.045",
+        "drop_ring": "3 vs 5 FAIL",
+        "died_lt40": "24 vs 24",
+        "kills": "291 vs 293",
+        "survivors": "2 vs 2"
+      },
+      "1000": {
+        "fired": 13,
+        "diff_behavior": 13,
+        "diff_score": 8,
+        "paired": "-0.208 ± 0.116",
+        "drop_ring": "1 vs 1",
+        "died_lt40": "15 vs 15",
+        "kills": "350 vs 369",
+        "survivors": "1 vs 2"
+      },
+      "6000": {
+        "fired": 18,
+        "diff_behavior": 18,
+        "diff_score": 6,
+        "paired": "+0.010 ± 0.050",
+        "drop_ring": "3 vs 1",
+        "died_lt40": "16 vs 16",
+        "kills": "359 vs 358",
+        "survivors": "1 vs 0"
+      },
+      "7000": {
+        "fired": 19,
+        "diff_behavior": 19,
+        "diff_score": 10,
+        "paired": "-0.333 ± 0.131",
+        "drop_ring": "3 vs 4 FAIL",
+        "died_lt40": "22 vs 22",
+        "kills": "340 vs 371",
+        "survivors": "1 vs 2"
+      },
+      "t_lt_10_activations": 0,
+      "new_pins_ge_20s": 0,
+      "early_activation_0_1000": "31/192"
+    },
+    "fix_1_bb2f5b4": {
+      "0": {
+        "fired": 12,
+        "diff_behavior": 12,
+        "diff_score": 2,
+        "paired": "+0.010 ± 0.023",
+        "drop_ring": "3 vs 5 FAIL",
+        "died_lt40": "24 vs 24",
+        "kills": "295 vs 293",
+        "survivors": "2 vs 2",
+        "activation_ticks": 211,
+        "episodes": 13
+      },
+      "1000": {
+        "fired": 6,
+        "diff_behavior": 6,
+        "diff_score": 0,
+        "paired": "+0.000 ± 0.000",
+        "drop_ring": "1 vs 1",
+        "died_lt40": "15 vs 15",
+        "kills": "369 vs 369",
+        "survivors": "2 vs 2",
+        "activation_ticks": 103,
+        "episodes": 6
+      },
+      "6000": {
+        "fired": 11,
+        "diff_behavior": 11,
+        "diff_score": 0,
+        "paired": "+0.000 ± 0.000",
+        "drop_ring": "1 vs 1",
+        "died_lt40": "16 vs 16",
+        "kills": "358 vs 358",
+        "survivors": "0 vs 0",
+        "activation_ticks": 312,
+        "episodes": 12
+      },
+      "7000": {
+        "fired": 12,
+        "diff_behavior": 12,
+        "diff_score": 0,
+        "paired": "+0.000 ± 0.000",
+        "drop_ring": "4 vs 4",
+        "died_lt40": "21 vs 22",
+        "kills": "371 vs 371",
+        "survivors": "2 vs 2",
+        "activation_ticks": 292,
+        "episodes": 15
+      },
+      "t_lt_10_activations": 0,
+      "pins_ge_20s": "all pre-existing, none new, flag never active in a pin window: 41 [10-46], 89 [184-213], 1005 [30-100 110-164], 1015 [171-202], 1037 [191-222], 1058 [86-126], 6083 [178-218]",
+      "drop_fail_seed": "base 0 seed 44: champion 2 ring arrivals/2 claims, flag-on 0/0 (both place 1). Guard episode from 199.5 s (target 12 at 39 m, gun leads) with no reachable drop; the game diverges and the champion's later runs (drop 20000 MV 227-247 s, hold 247-251 s; drop 20002 MV 265-269 s, hold 269-273 s) do not happen. First build: same seed lost both (guard 90-93 s), and seed 7045 (base 7000) died at 105.8 s in a guarded fight before its drop."
+    },
+    "extra_counts_4_bases": {
+      "short_effects_on_us": "champion 544, first build 528, fix 1 537",
+      "dmg_taken_from_lightning_holders_within_54m": "champion 114429, first build 117452, fix 1 113987 (all ranges: 154752 / 158685 / 154310)",
+      "dmg_dealt_to_lightning_holders_within_54m": "champion 202279, first build 183973, fix 1 202202 (all ranges: 535423 / 514524 / 534793)"
+    },
+    "check": "check.py --map-dir arena PASS: default max 2.8 ms, flag-on (fix 1) max 3.0 ms (first build 2.8 ms); eqdrive (kit stream, 301 replies) flag-off vs origin/main IDENTICAL (cmp) for 169e5e4 and bb2f5b4; merge-base --is-ancestor edb729f OK"
+  },
+  "compare_old_P34_based": "The P34-based build (9b211fd) was never screened (no screens in its record). Its research counts on the P34 champion were trees-off 15/192 and 16/192, trees-on 'reach' gate 27/192 (2000+3000) and 34/192 (4000+5000). On P48 trees-on the first build fired 31/192 on 0+1000 and 37/192 on 6000+7000, about the same rate. Fix 1 fires 18/192 and 23/192."
 }

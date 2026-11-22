@@ -164,10 +164,12 @@ export const MIDRING_STUCK_S = 3
  * with charge counted as at least min_charge (a release before it fires once that much is in), × our cube damage bonus
  * (damage_per_cube × min(cubes, stat_cap)), × (1 + cookoff) if the target holds a mortar. Lethal = LETHAL_RELEASE_MARGIN
  * × that ≥ the target's shown hp (the margin covers its armor and regen, which we cannot see). Never before
- * LETHAL_RELEASE_MIN_T. Target choice, aim, movement and every other decision are unchanged. false = champion exactly.
+ * LETHAL_RELEASE_MIN_T, and never while a drop run/hold is possible (a run in progress, or a called drop not held by
+ * another mech within DROP_RUN_M, the midring settle's dropNear test). Target choice, aim, movement and every other
+ * decision are unchanged. false = champion exactly.
  */
 export const LETHAL_RELEASE_ON = false
 /** Share of the computed partial-charge damage that must cover the target's hp (top-16 public bot: 0.8). */
 export const LETHAL_RELEASE_MARGIN = 0.8
-/** Never release early before this match time (s): the opening is untouched. */
-export const LETHAL_RELEASE_MIN_T = 10
+/** Never release early before this match time (s): play before it, and so every death before 40 s, equals the champion's. */
+export const LETHAL_RELEASE_MIN_T = 40

@@ -1078,7 +1078,9 @@ function buildBot(hello: Hello): Bot {
             }
             // P34 (LETHAL_RELEASE_ON): let go early once the charge already in kills the locked mech we are lined up on.
             let lethal = false
-            if (LETHAL_RELEASE_ON && !full && lined && !other && !farmShot && m.kind === "mech" && m.hp != null && obs.t >= LETHAL_RELEASE_MIN_T) {
+            // Read-only drop test (same as the midring settle's dropNear): no early release while a drop run/hold is possible.
+            const dropOpen = () => dropRun !== null || (obs.drops ?? []).some((x) => (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M)
+            if (LETHAL_RELEASE_ON && !full && lined && !other && !farmShot && m.kind === "mech" && m.hp != null && obs.t >= LETHAL_RELEASE_MIN_T && !dropOpen()) {
               const L = cfg.weapons.laser
               const st = l.stats
               const fullS = st.charge ?? L.charge

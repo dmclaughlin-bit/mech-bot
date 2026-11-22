@@ -7,7 +7,7 @@
     "BACKAWAY_FAR_COVER_ON"
   ],
   "owner": "Mech Builder",
-  "stage": "building",
+  "stage": "retired",
   "branch": "p60-retreat-death-buckets",
   "base": "89f19c1fcf550d0d7b254f794ff9516ea41a0a55",
   "champion": "P48 b9492c6 (main merge edb729f, site 4.44)",
@@ -128,10 +128,10 @@
   "mechanism": "Only in the champion's back-away branch (mode 'retreat': hurt, hit in the last 2 s, no hideSpot and no tree spot), from t >= TREE_RETREAT_MIN_T (40 s), never in a drop run/hold and never while a drop is near AND reachable within DROP_RUN_M (P48's drop test), and only when an enemy that sees us is in view and trees/buildings don't already hide us from all of them: search the same 12 bearings at 4, 5, 6 s of straight walk (inside the circle we keep to, no closer to any seer, straight line clear) for a spot where buildings+trees hide us from every seer (P48's treeHidden). Walk/boost there (same boost rule as the champion's retreat), latched like P48's tree run with a 3 s no-progress give-up and a skip list; drop the latch once the spot no longer hides us. Torso/aim untouched (N8). No spot: champion back-away unchanged.",
   "activation": "Decision-level: in mode 'retreat' at t >= 40 s, gates pass, and the far search returns a spot whose heading differs from the back-away heading by > 20 deg. Game-level Step A count = games where this happens at least once.",
   "disproof": "Fails if Step A < 10/192 on either set, or the target bucket's deaths (back-away x a) don't fall on both practice bases (0 and 6000), or deaths < 40 s rise on either base.",
-  "positives": null,
-  "negatives": null,
-  "confidence": "Uncertain (new mechanism; F15 Uncertain; cell size measured on 384 games)",
-  "reuse": null,
+  "positives": "Fix round: target cell back-away x a lower on both bases (24->21, 15->13); mean up on both (+0.052 +/- 0.034, +0.083 +/- 0.067); kills up on both (293->298, 358->365); survivors 2->2 and 0->2; deaths < 40 s unchanged; 0 activations before 10 s. Hiding from the seers that actually hit us is what made it fire usefully: the all-seers version (round 1) found a spot in too few target deaths and moved nothing (24->24, 15->15).",
+  "negatives": "NEW 20 s pin on 6034 (downstream, flag off in the window, at a known champion stuck spot) trips stall clause c on base 6000 (2->3). Building x a rose on 6000 (4->8) and tree x a on 0 (6->8): part of the saved back-away deaths move to other cells. Drop-ring arrivals 5->3 on base 0 (1->1 on 6000). Small effect: only ~29% of target-cell deaths have a far spot at all (Step A), and 'no far spot' or t < 40 s explain most of the rest.",
+  "confidence": "Uncertain (practice bases only; +0.05/+0.08 within ~1.5 SE)",
+  "reuse": "1) The P60 bucket tooling (sim ground-truth LOS trace + bot mode trace) classifies every retreat death; it reproduces P57's 136/124 under P57's definition. 2) In multi-seer fights, cover tests should hide from the shooters (hit us in the last 2 s), not every seer: hidden-from-all spots rarely exist 4-6 s out. 3) Half of retreat deaths are bucket d (HP at retreat start already below the last 2 s burst), mostly in back-away: timing (EARLY_RETREAT_HIDE_ON family) is the larger lever.",
   "novelty": {
     "vs_P57": "P57 (N8) changed the torso/aim target during retreat; P60 changes only the legs in the back-away branch, aim untouched.",
     "vs_P59": "P59 (N9) changed which tree spot the 'retreat, trees' branch picks within 1-3 s; P60 acts only where the champion found NO building or tree spot at all (back-away), with a farther search.",
@@ -184,13 +184,103 @@
     "verdict": "PASS (37/192 and 42/192 >= 10/192)",
     "note": "Only 23 of the 79 target-cell deaths have a far spot available in their final episode, so the reachable share of the cell is about 29%."
   },
-  "screens": [],
-  "outcome": "pending",
+  "screens": [
+    {
+      "round": 1,
+      "sha": "ffa4c1a",
+      "seed_set": "practice 0",
+      "fired": 18,
+      "diff_behavior": 15,
+      "diff_score": 4,
+      "sim_delta": -0.052,
+      "sim_se": 0.04,
+      "better": 1,
+      "worse": 3,
+      "survivors": "2->2",
+      "kills": "293->288",
+      "deaths_lt_40": "24->24",
+      "drop_ring_arrivals": "5->3",
+      "target_back_away_a": "24->24",
+      "pin20_games": "3->3 (none new)",
+      "verdict": "item 5 FAIL (target cell not lower)"
+    },
+    {
+      "round": 1,
+      "sha": "ffa4c1a",
+      "seed_set": "practice 6000",
+      "fired": 24,
+      "diff_behavior": 20,
+      "diff_score": 8,
+      "sim_delta": 0.083,
+      "sim_se": 0.06,
+      "better": 5,
+      "worse": 3,
+      "survivors": "0->1",
+      "kills": "358->365",
+      "deaths_lt_40": "16->16",
+      "drop_ring_arrivals": "1->1",
+      "target_back_away_a": "15->15",
+      "pin20_games": "2->2 (none new)",
+      "verdict": "item 5 FAIL (target cell not lower)"
+    },
+    {
+      "round": "fix",
+      "sha": "e9bc676",
+      "seed_set": "practice 0",
+      "fired": 25,
+      "diff_behavior": 21,
+      "diff_score": 5,
+      "sim_delta": 0.052,
+      "sim_se": 0.034,
+      "better": 4,
+      "worse": 1,
+      "survivors": "2->2",
+      "kills": "293->298",
+      "deaths_lt_40": "24->24",
+      "drop_ring_arrivals": "5->3",
+      "target_back_away_a": "24->21",
+      "retreat_deaths": "80->80",
+      "pin20_games": "3->3 (41, 43, 79 = champion pins, flag ticks 0)",
+      "buckets": {
+        "tree": "a 6->8 b 1->1 c 4->2 d 9->11",
+        "building": "a 7->6 b 0->1 c 0->1 d 7->9",
+        "back_away": "a 24->21 b 1->2 c 4->5 d 17->13"
+      },
+      "verdict": "items 2, 5 pass; drop dip 5->3 reported (warning only: not lower on both bases)"
+    },
+    {
+      "round": "fix",
+      "sha": "e9bc676",
+      "seed_set": "practice 6000",
+      "fired": 32,
+      "diff_behavior": 28,
+      "diff_score": 13,
+      "sim_delta": 0.083,
+      "sim_se": 0.067,
+      "better": 7,
+      "worse": 6,
+      "survivors": "0->2",
+      "kills": "358->365",
+      "deaths_lt_40": "16->16",
+      "drop_ring_arrivals": "1->1",
+      "target_back_away_a": "15->13",
+      "retreat_deaths": "81->80",
+      "pin20_games": "2->3: NEW seed 6034 22 s t=89-111 at (-111,76), flag ticks in window 0, modes heal/to next circle, 7 m from champion pin on seed 6011 (-118,74); flag fired t 60.6-63.3 and the game improved (death 69.5 -> 112.7 s, place 12->10)",
+      "buckets": {
+        "tree": "a 7->7 b 1->1 c 2->3 d 7->5",
+        "building": "a 4->8 b 0->0 c 7->6 d 11->12",
+        "back_away": "a 15->13 b 4->4 c 9->6 d 14->15"
+      },
+      "verdict": "item 5 pass; item 4 NEW pin (stall clause c by count 2->3)"
+    }
+  ],
+  "outcome": "C",
   "pr": null,
   "sha": null,
   "timestamps": {
     "recorded": "2026-11-22 ET (before Step A results)",
-    "step_a": "2026-11-22 ET"
+    "step_a": "2026-11-22 ET",
+    "built": "2026-11-22 ET"
   },
   "sources": [
     "coord/data/findings.md (F3, N8, N9 on origin/main 706ea34)",
@@ -198,5 +288,14 @@
     "/workspace/wt-p57/coord/data/ideas/P57.json",
     "/workspace/wt-p59/coord/data/ideas/P59.json",
     "/tmp/p60 traces (not committed)"
-  ]
+  ],
+  "decision": "FAILED checklist item 4 after the one allowed fix: NEW 20 s pin on seed 6034 (base 6000 pin games 2->3, stall clause c). Flag-false state pushed. Coordinator may re-rule as a near-miss: the flag was off during the pin, the pin is 7 m from the champion own pin spot (seed 6011), and the flag saved that game (death 69.5 -> 112.7 s, 12th -> 10th).",
+  "build": {
+    "flag_off_sha": "e9bc676 (head of the branch after this record commit has the flag false)",
+    "checklist_1": "eqdrive flag-off vs origin/main 706ea34 (bot code = b9492c6): IDENTICAL 301/301 replies (round 1 ffa4c1a and fix e9bc676). Flag-off trees-on base 0 (pristine sim copy) 96/96 rows identical to the champion. check.py --map-dir arena PASS: default max 3.3 ms, flag-on max 3.2 ms. Sims: 0 answers over 50 ms.",
+    "checklist_2": "t < 10 s activations: 0 (base 0) and 0 (base 6000); the behavior is gated at t >= 40 s.",
+    "archive_bytes": 3747840,
+    "contains_edb729f": true
+  },
+  "screens_note": "Champion baselines for 0 and 6000 are my own trees-on runs of the passively traced b9492c6 copy (that trace is proven row-identical on 2000-5000, 384/384). Sim: /workspace/wt-tester-trees/tools/sim copied to /tmp/p60, --jobs 1, 96 seeds per base."
 }

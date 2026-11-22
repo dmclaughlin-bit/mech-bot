@@ -3,9 +3,11 @@
   "title": "BODY_WIDTH_COVER_ON: in the champion's building-cover retreat ('retreat to cover'), hideSpot's straight-walk reachability test also checks two lines offset by the mech's body half-width (+/- radius, perpendicular to the walk), so it rejects spots the body can't reach",
   "family": "retreat / movement",
   "flag": "BODY_WIDTH_COVER_ON",
-  "flags": ["BODY_WIDTH_COVER_ON"],
+  "flags": [
+    "BODY_WIDTH_COVER_ON"
+  ],
   "owner": "Mech Builder",
-  "stage": "step_a",
+  "stage": "building",
   "branch": "p65-body-width-cover",
   "base": "e7f6fdb062430d7830e55911b9561b0676fe6a52",
   "base_note": "origin/main e7f6fdb (contains 490515c and the P60 merge 32acd3d; bot code = afb6f26 exactly)",
@@ -39,7 +41,8 @@
   "sha": null,
   "screens": [],
   "timestamps": {
-    "recorded": "2026-11-22 ~03:25 ET (before Step A results)"
+    "recorded": "2026-11-22 ~03:25 ET (before Step A results)",
+    "step_a": "2026-11-22 ~03:35 ET"
   },
   "sources": [
     "origin/p61-building-cover-commit:coord/data/ideas/P61.json (reuse 2, fix_round)",
@@ -47,5 +50,56 @@
     "coord/data/findings.md F16, F18, N8, N9 on e7f6fdb",
     "brain.ts hideSpot and the 'retreat to cover' branch on e7f6fdb",
     "/workspace/wt-tester-trees/tools/sim/engine.ts passable(): mech collides as an 8-point ring at stats.radius"
-  ]
+  ],
+  "step_a_result": {
+    "champion": "P60 afb6f26 (bot code of origin/main e7f6fdb/b95ba9a)",
+    "method": "log-only /tmp copy of the flag-false build (= afb6f26 behavior): in every champion 'retreat to cover' decision, a shadow hideSpot call with the body-width test (bodyR = me.stats.radius, no deadline) is compared with the champion's spot; fire+change = gates open (t >= 40 s, no drop run/hold, no near reachable drop) and the body spot differs (another spot or none). Trees-on sim copy of /workspace/wt-tester-trees/tools/sim plus P61's passive ground-truth trace, --jobs 1, 96 seeds per base.",
+    "passivity": "every non-timing CSV field identical to /workspace/tester/runs/trees-afb6f26-{2000,3000,4000,5000}.csv, 384/384 (timing only: 5053 and 5067 late_over_50ms 0->1; bot_ms_mean differs)",
+    "2000+3000": {
+      "fire_and_change_games": 43,
+      "of": 192,
+      "of_which_games_with_no_body_spot": 37,
+      "any_change_ungated_games": 64,
+      "games_with_building_cover_decisions": 85,
+      "building_cover_decisions": 1733,
+      "bc_decisions_t_ge_40": 1153,
+      "fire_and_change_decisions": 629,
+      "fire_change_no_body_spot_decisions": 401,
+      "fire_change_other_spot_decisions": 228,
+      "change_t_lt_40_gated_off": 331,
+      "change_drop_gate": 23,
+      "champion_freezes_after_40s": "188/1063 decisions in 17 games (top 3047:25, 3055:25, 2051:22, 3013:21, 3007:18)",
+      "freeze_games_that_also_fire": 14,
+      "building_cover_death_buckets": {
+        "a": 15,
+        "b": 3,
+        "c": 8,
+        "d": 9
+      }
+    },
+    "4000+5000": {
+      "fire_and_change_games": 62,
+      "of": 192,
+      "of_which_games_with_no_body_spot": 55,
+      "any_change_ungated_games": 82,
+      "games_with_building_cover_decisions": 101,
+      "building_cover_decisions": 2338,
+      "bc_decisions_t_ge_40": 1741,
+      "fire_and_change_decisions": 993,
+      "fire_change_no_body_spot_decisions": 663,
+      "fire_change_other_spot_decisions": 330,
+      "change_t_lt_40_gated_off": 278,
+      "change_drop_gate": 74,
+      "champion_freezes_after_40s": "384/1610 decisions in 25 games (top 5092:51, 4095:41, 5018:40, 4094:33, 4070:24)",
+      "freeze_games_that_also_fire": 21,
+      "building_cover_death_buckets": {
+        "a": 14,
+        "b": 3,
+        "c": 6,
+        "d": 21
+      }
+    },
+    "verdict": "PASS (43/192 and 62/192 >= 10/192)",
+    "note": "Building-cover death cells reproduce P61's P60 Step A exactly (a15 b3 c8 d9; a14 b3 c6 d21). The body test is strict: it changes 55% of gated building-cover decisions, two thirds of them by finding no body-reachable spot at all (the branch then falls through to the champion's tree / far-cover / back-away retreat). The freeze-denominator decisions here (1063, 1610) count only decisions with a sim position 0.5 s later at t >= 40 s."
+  }
 }

@@ -198,3 +198,12 @@ export const TREE_RETREAT_STUCK_S = 3
  */
 export const BACKAWAY_FAR_COVER_ON = true
 export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]
+
+/**
+ * P65 (body-width cover): in the champion's building-cover retreat ("retreat to cover"), from t = TREE_RETREAT_MIN_T
+ * (40 s), never in a drop run/hold or while a drop is near AND reachable within DROP_RUN_M, hideSpot's straight-walk test
+ * also needs two lines offset by our body radius (+/-, perpendicular to the walk) clear, so it rejects spots a
+ * zero-width line reaches but the body can't (P61: champion freezes at building edges). Hide test (center/top lines),
+ * other hideSpot callers, torso and aim unchanged (N8). false = champion behavior exactly.
+ */
+export const BODY_WIDTH_COVER_ON = false

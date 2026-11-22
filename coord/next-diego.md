@@ -187,3 +187,5 @@ H07 sound-guided late hunt: PARKED. Wild Sim: a usable sound while idle late sho
 
 ---
 **UPDATE 8:39 PM ET: P29b is RETIRED.** #146 6ff499b was vetoed: the dropNear gate is always true because uncaptured drops stay in obs.drops, so the settle fired 0/384 and P29 was effectively removed. Don't work on P29b any more, and leave #146 as is. **Start P-D-014 (trees in the sim) now**, then P-D-015 (second screening station). Lesson for any gate: test "a drop is near AND reachable within DROP_RUN_M", never "any drop exists".
+
+**UPDATE 8:42 PM ET, P-D-015 match-check reference (from Sim Tester):** the P29 per-seed reference is at https://github.com/dmclaughlin-bit/mech-bot/pull/143#issuecomment-7072375870. It has per-base and per-set totals, per-seed drop churn, the 20 s+ pause list and field definitions. The original P29 screen ran on the OLD sim (plain d548479 tools/sim, WITHOUT #133 item 1). For a seed-for-seed match, use plain d548479: `SEED_BASE=<base> bun tools/sim/run.ts --bot <bot> --seeds 96 --jobs 4`. On any single-seed mismatch, rerun that seed with `--jobs 1` before calling it a failure, because the canPlan wall-clock budget can flip a seed under load.

@@ -10,7 +10,7 @@
     "when the champion would stand still in 'heal' (HP < 90%) and farmOk is true (no enemy in view or known within 160 m for 10 s, no mech hit for 3 s), walk the existing farm pickup path to the visible zone-safe cube Build 12 already chose (within 80 m) instead of standing; regen keeps running because walking does not reset it"
   ],
   "owner": "unassigned (research P34-37; Grok assigns)",
-  "stage": "idea",
+  "stage": "retired",
   "pr": "https://github.com/dmclaughlin-bit/mech-bot/pull/149",
   "sha": null,
   "champion_sha_tested_against": "b6f2f8be91abacbf9f31469ce8b5ad4576c289c9",
@@ -72,7 +72,7 @@
   "receipt": null,
   "site_score": null,
   "score": null,
-  "decision": null,
+  "decision": "8:57 PM ET coordinator: VETO confirmed (own check of https://github.com/dmclaughlin-bit/mech-bot/pull/149#issuecomment-7072563191). Drop-arrival set totals fell on BOTH sets, 8->7 and 7->4, all lost arrivals in games where the rule fired; survivors 6->5 on 2000+3000. Paired delta -0.115 and -0.089. Builder checklist (+0.177 on base 0) did not hold on the screen sets. Deaths <40 s not up; new pause 3074 meets no stall clause.",
   "blocker": null,
   "next_action": "Grok: assign Mech Sim Tester full paired screen (2000+3000 and 4000+5000) of the flag-on head vs champion b6f2f8b.",
   "doug_waiver": false,
@@ -124,7 +124,7 @@
   "sha_note": "Flag-on head = the commit directly after the one that updates this record; it flips HEAL_PICKUP_ON false -> true and nothing else (byte-identical to the screened /tmp/p37-on copy). Exact 40-char head is in the builder report / push output.",
   "drop_gate": "PLAIN gate kept: no supply drop listed in obs.drops (announced, falling or landed), plus never in a drop run or ring hold (dropRun/dropHold/dropMove), and the branch sits below drop hold/run so drop wins on the same tick. First activation run: plain gate fired 17/192 (9 base 0 + 8 base 1000) >= 10, so the narrow gate (no drop announced/falling within DROP_RUN_M, never in drop run/hold) was NOT needed; it would have fired 20/192 (11 + 9).",
   "implementation": "brain.ts: one guarded branch `} else if (healCube) {` immediately before the stand-still heal branch (`} else if (me.hp < HEAL_HP * me.max_hp) {`, now brain.ts:847 on the P29 code), after drop hold and drop run. healCube = farmGoal.pos only when HEAL_PICKUP_ON, obs.t >= HEAL_PICKUP_T (10), farmOk, farmGoal is a cube object from obs.cubes (not a drop, not a hunt target), !farmHold, HP < 90%, no drop listed, no drop run/hold, and the cube is not in healSkip. Own no-progress give-up: if the distance to the cube has not dropped by 1 m for HEAL_PICKUP_STUCK_S (3 s) the cube goes on healSkip for the match (heal pickup only; the Build 12 farm choice is unchanged). Move = travel() to the cube (same walk as farm pickup), mode \"heal, pickup\". params.ts: HEAL_PICKUP_ON (default false), HEAL_PICKUP_T = 10, HEAL_PICKUP_STUCK_S = 3.",
-  "status": "waiting for screen",
+  "status": "retired",
   "head": "f174d5556025fc0bd35c73ef83c3438a7b964c6a",
   "notes": [
     "8:43 PM ET coordinator: builder checklist PASS; queued on Sim Tester after P34 #147 (Sim Tester station only, not Diego Mac)."

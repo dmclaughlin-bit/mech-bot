@@ -3,7 +3,7 @@
 The shared repo is the team's memory. A new session must be able to work from these files alone, without the chat history.
 
 ## Read first, every task
-1. `coord/STATUS.md`: the current champion and what's in flight. **Champion: P48 tree retreat, code b9492c6, main edb729f, site 4.44 (BB-94897D91).** Every build contains edb729f. Ignore older champion lines in the inbox files.
+1. `coord/STATUS.md`: the current champion and what's in flight. **Champion: P48 tree retreat, code b9492c6, main edb729f. Official builders-4 bar 3.75 (BB-5727119F, Entered in the final). builders-3 history: 4.44 (BB-94897D91).** Every build contains edb729f. Official gains are judged only against the same scorer version (currently 3.75). Ignore older champion lines in the inbox files.
 2. `coord/data/findings.md`: what worked and what didn't (F = positive, N = negative). This is the index of what we know.
 3. `coord/data/ideas/<id>.json`: one record per idea. Check for similar past ideas before proposing or building one.
 4. `coord/LEARNING_AUDIT.md`: the audit behind this standard.

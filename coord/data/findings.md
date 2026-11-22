@@ -11,7 +11,7 @@ Rules:
 ## Proven on the site (already in the champion)
 - F1 Midring zone settle (P29): site 4.35 (BB-BAB3F961), +0.18 over 4.17. In the champion.
 - F2 Lethal laser release (P34): site 4.38 (BB-ABEB42BF), +0.03 over P29. In the champion.
-- F3 Tree-cover retreat under fire (P48): site 4.44, +0.06 over P34. Current champion.
+- F3 Tree-cover retreat under fire (P48): builders-3 4.44 (BB-94897D91), +0.06 over P34; builders-4 bar 3.75 (BB-5727119F). Current champion.
 
 ## Sim positives from builds that didn't make it (reuse the good part)
 - F4 Tree heal raises end-game survival (P49 #172, 38aa957): survivors 2 to 3 and 3 to 5; means +0.000 and +0.089; deaths before 40 s flat. It was killed by heal-hold pins (29 s on 3086; pause games 2 to 5). Follow-up: P49b, which caps each heal at 8 s. Site test on Doug's order 12:34 AM ET: 4.02 vs 4.44 (BB-A82B6F7A), a big loss. That confirms the heal-hold pins cost real placement, so the uncapped heal is a NEGATIVE finding. P49b must show the pins gone (2022, 3066, 3086) and no rise in pause games before it gets a slot.

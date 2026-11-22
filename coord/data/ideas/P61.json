@@ -7,7 +7,7 @@
     "BUILDING_COVER_COMMIT_ON"
   ],
   "owner": "Mech Builder",
-  "stage": "building",
+  "stage": "retired",
   "branch": "p61-building-cover-commit",
   "base": "d9979af94b0e9ede56425275df7c97fef343e32e",
   "base_note": "rebased 2026-11-22 ~02:55 ET onto origin/main d9979af (contains 490515c and the P60 merge 32acd3d; commits after 490515c are coord only). Bot code on main = afb6f26 exactly (P41 EARS_LOOK undone in main). Earlier bases: 3dd3a0e (P48), a7ae4a4 (P41).",
@@ -33,18 +33,126 @@
     "vs_P54": "P54 changed opening (t < 30 s) target choice for spacing from enemies; P61 is a retreat movement change from t >= 40 s.",
     "vs_P60": "P60 (F16) added a farther (4-6 s) cover search in the back-away branch where the champion found no spot; P61 keeps the champion's own 1-3 s building spot search and only stops it re-picking mid-retreat."
   },
-  "positives": null,
-  "negatives": null,
-  "confidence": "Uncertain (hypothesis only; no results yet)",
-  "reuse": null,
-  "outcome": "pending",
+  "positives": "No regression on any gate: deaths < 40 s 24->24 and 16->16; 0 activations before 10 s; no new 20 s pin (the champion's 6034 pin is gone on 6000); drop-ring arrivals 3->3 and 1->1; kills 298->307 and 365->368; paired +0.042 +/- 0.104 and +0.031 +/- 0.035 (within noise). The 0.6 s give-up + skip list also frees the bot from some champion building-cover freezes (6017: 73 frozen decisions in the champion).",
+  "negatives": "Target cell unchanged on both bases (6->6, 8->8) in both rounds: it saves some building x a deaths (6034, 6085) and creates others (6003, 6032). On base 0, 4 of the 6 target deaths are before 40 s and so outside the gate. Survivors 2->1 on base 0 (seed 44: survived 1st -> died 187.9 s, 9th). Step A: re-picks are only ~4% of building-cover decisions; the champion's spot usually stays within 20 deg of the previous one, so 'dithering' is not the main cause of building x a.",
+  "confidence": "Disproven for the building x a cell (target unchanged on both practice bases after one fix); sim only",
+  "reuse": "1) P60's 11.7 m 'short of the spot' is the 1 s hide ring itself: hideSpot regenerates the spot relative to our position each decision, so the distance does not show dithering. 2) Building-cover freezes are real in the champion (frozen decisions at t >= 40: 96/551 base 0, 257/916 base 6000): hideSpot's straight-line test has zero radius, so spots behind a building edge can be body-blocked. A body-radius line test (clearLine with the mech radius) or a fast no-progress skip in the champion's own re-pick is a candidate single change. 3) A fixed latched point is worse than the champion's sliding re-pick at edges; any future latch needs a sub-second progress test. 4) Half of base-0 building x a deaths are before 40 s, which a 40 s gate cannot reach.",
+  "outcome": "C",
   "pr": null,
   "sha": null,
-  "screens": [],
+  "screens": [
+    {
+      "round": 1,
+      "sha": "d8fcecb (flag on in a /tmp copy; rebased code, COVER_STUCK_S 3)",
+      "seed_set": "practice 0",
+      "fired": 27,
+      "diff_behavior": 19,
+      "diff_score": 7,
+      "sim_delta": -0.01,
+      "sim_se": 0.076,
+      "better": 4,
+      "worse": 3,
+      "survivors": "2->1",
+      "kills": "298->302",
+      "deaths_lt_40": "24->24",
+      "drop_ring_arrivals": "3->3",
+      "target_building_a": "6->6",
+      "retreat_deaths": "80->80",
+      "t_lt_10_activations": 0,
+      "pin20_games": "3->3 (41, 43, 79 = champion pins, flag ticks 0)",
+      "buckets": {
+        "tree": "a 8->8 b 1->0 c 2->2 d 11->10",
+        "building": "a 6->6 b 1->1 c 1->0 d 9->10",
+        "back_away": "a 21->21 b 2->2 c 5->7 d 13->13"
+      },
+      "verdict": "item 5 FAIL (target cell not lower)"
+    },
+    {
+      "round": 1,
+      "sha": "d8fcecb (flag on in a /tmp copy; rebased code, COVER_STUCK_S 3)",
+      "seed_set": "practice 6000",
+      "fired": 40,
+      "diff_behavior": 30,
+      "diff_score": 10,
+      "sim_delta": 0.021,
+      "sim_se": 0.051,
+      "better": 6,
+      "worse": 4,
+      "survivors": "2->2",
+      "kills": "365->367",
+      "deaths_lt_40": "16->16",
+      "drop_ring_arrivals": "1->1",
+      "target_building_a": "8->8",
+      "retreat_deaths": "80->81",
+      "t_lt_10_activations": 0,
+      "pin20_games": "3->2 (6011, 6082 = champion pins, flag ticks 0; champion pin 6034 gone)",
+      "buckets": {
+        "tree": "a 7->7 b 1->0 c 3->3 d 5->5",
+        "building": "a 8->8 b 0->2 c 6->5 d 12->10",
+        "back_away": "a 13->14 b 4->4 c 6->6 d 15->17"
+      },
+      "verdict": "item 5 FAIL (target cell not lower): saved 6034/6056/6085, new 6003/6024/6032"
+    },
+    {
+      "round": "fix",
+      "sha": "a547aef (flag on in a /tmp copy; COVER_STUCK_S 0.6)",
+      "seed_set": "practice 0",
+      "fired": 27,
+      "diff_behavior": 19,
+      "diff_score": 7,
+      "sim_delta": 0.042,
+      "sim_se": 0.104,
+      "better": 4,
+      "worse": 3,
+      "survivors": "2->1 (seed 44 survived 1st -> died 187.9 s, 9th)",
+      "kills": "298->307",
+      "deaths_lt_40": "24->24",
+      "drop_ring_arrivals": "3->3",
+      "target_building_a": "6->6",
+      "retreat_deaths": "80->80",
+      "t_lt_10_activations": 0,
+      "pin20_games": "3->3 (41, 43, 79 = champion pins, flag ticks 0; none new)",
+      "buckets": {
+        "tree": "a 8->8 b 1->0 c 2->2 d 11->10",
+        "building": "a 6->6 b 1->1 c 1->0 d 9->10",
+        "back_away": "a 21->21 b 2->2 c 5->7 d 13->13"
+      },
+      "target_deaths": "champ 16, 17, 26, 62, 70, 86; candidate 16, 26, 47, 62, 70, 86 (4 of 6 before 40 s, outside the gate)",
+      "verdict": "item 5 FAIL (target cell not lower)"
+    },
+    {
+      "round": "fix",
+      "sha": "a547aef (flag on in a /tmp copy; COVER_STUCK_S 0.6)",
+      "seed_set": "practice 6000",
+      "fired": 40,
+      "diff_behavior": 29,
+      "diff_score": 8,
+      "sim_delta": 0.031,
+      "sim_se": 0.035,
+      "better": 5,
+      "worse": 3,
+      "survivors": "2->2",
+      "kills": "365->368",
+      "deaths_lt_40": "16->16",
+      "drop_ring_arrivals": "1->1",
+      "target_building_a": "8->8",
+      "retreat_deaths": "80->80",
+      "t_lt_10_activations": 0,
+      "pin20_games": "3->2 (6011, 6082 = champion pins, flag ticks 0; champion pin 6034 gone; none new)",
+      "buckets": {
+        "tree": "a 7->8 b 1->0 c 3->3 d 5->5",
+        "building": "a 8->8 b 0->2 c 6->4 d 12->10",
+        "back_away": "a 13->14 b 4->4 c 6->5 d 15->17"
+      },
+      "target_deaths": "champ 6018, 6034, 6048, 6056, 6074, 6085, 6089, 6094; candidate 6003, 6018, 6032, 6048, 6056, 6074, 6089, 6094 (saved 6034, 6085; new 6003, 6032)",
+      "verdict": "item 5 FAIL (target cell not lower)"
+    }
+  ],
   "timestamps": {
     "recorded": "2026-11-22 02:15 ET (before Step A results)",
     "step_a": "2026-11-22 ~03:00 ET (P60)",
-    "rebased": "2026-11-22 ~02:55 ET (onto P60 main d9979af)"
+    "rebased": "2026-11-22 ~02:55 ET (onto P60 main d9979af)",
+    "built": "2026-11-22 ~03:15 ET"
   },
   "sources": [
     "coord/data/findings.md (F3, F15 via N8 text, N8, N9, F16) on 3dd3a0e",
@@ -285,5 +393,16 @@
     },
     "verdict": "PASS (31/192 and 45/192 >= 10/192)",
     "note": "On P60, building x a = 15 + 14 = 29 (back-away x a fell 44->42 and 35->31 vs P48, as P60 intended); 10 of the 29 had a gated re-pick in their final episode, 4 are before 40 s (out of the gate). Re-picks are ~4% of building-cover decisions."
+  },
+  "screens_note": "Champion baselines for 0 and 6000 are my own trees-on runs of the passive Step A copy of afb6f26 (proven identical on every game field vs the tester afb6f26 CSVs on 2000-5000). Sim: /workspace/wt-tester-trees/tools/sim copied to /tmp/p61 plus P60's read-only ground-truth trace, --jobs 1, 96 seeds per base.",
+  "fix_round": "Round 1 showed the latch can pin the bot: a fixed latched spot can be body-blocked at a building edge that hideSpot's zero-radius line test passes (seed 6024: frozen at (-41.3,-229.1) for 4.5 s under fire, HP 381->40; the champion's re-pick slides the target each decision and walks around). Fix: give up on a latched spot after 0.6 s without 0.5 m progress (was 3 s), skip it, pick the next. It did not move the target cell.",
+  "decision": "FAILED checklist item 5 after the one allowed fix: building x a deaths not lower on either practice base (6->6 on 0, 8->8 on 6000). Flag stays false; flag-false state pushed. No flag-flip commit.",
+  "next_action": "Coordinator: no near-miss (item 5 is a block). Possible follow-up from reuse 2: body-radius hideSpot line test (one change), Step A first.",
+  "build": {
+    "flag_off_sha": "a547aef9a878f77bd09eec0787f2e5e5b5c13d63",
+    "checklist_1": "eqdrive flag-off vs origin/main d9979af (bot code = afb6f26): IDENTICAL 301/301 replies (round 1 and fix); flag-on also identical on the kit stream (the behavior does not fire there). check.py --map-dir arena PASS: fix round default max 5.1 ms, flag-on max 4.7 ms (round 1: 2.8 / 6.6 ms; machine shared with another session's sims)",
+    "checklist_2": "t < 10 s activations: 0 (base 0) and 0 (base 6000); the behavior is gated at t >= 40 s",
+    "archive_bytes": 3829760,
+    "contains_32acd3d": true
   }
 }

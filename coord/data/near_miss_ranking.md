@@ -126,3 +126,6 @@ Older HOLD rows remain in `coord/data/ready_ledger.md` and the pipeline view (P-
 
 ## Coordinator ruling, Sun Nov 22 1:29 AM ET: P41 #173 (c21d23b) back in the pool
 Mech Builder's P41b Step 1 trace log (branch p41b-sound-look-no-stall c3a5bef): the sound look was OFF during both veto pauses. 2021 (120-144 s) is a midring-settle/farm-pickup oscillation that P48 also does at the same time ~33 m away (P48 moves 3.08 m per 10 s, just above the 3 m pause counter). 5036 (271-300 s) happened only because P41 survived 166 s longer (8th to 2nd). So stall (b) does not apply (the champion does get stuck there and the game got better; the change was not active, so (a) fails too). Remaining veto: stall (c) only (pause games 2 to 3 on both sets). Mac means +0.052 / +0.005, deaths<40 48 to 47. P41 now fails exactly one veto, so it is an eligible near miss (the loop re-runs check.py + archive on c21d23b before any submit; the #173 head must be the flag-ON build). Ruling made under autonomous mode by the rules' intent.
+
+## P62 d3c356a (3:09 AM ET)
+In pool as near-miss data test, submitted BB-AD32CDFC. One veto type: stall (b on 2021, c 2->3 on both sets); look inactive during both pauses; means +0.036 / +0.057 vs P60.

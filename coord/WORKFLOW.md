@@ -148,3 +148,8 @@ Doug asked that a build beating the 15-champions sim (P-D-016, Diego's Mac) go t
 - Everything else (sole submitter, receipts first, one at a time, PRE-CLICK CHECK) is unchanged.
 
 - UPDATE 8:45-8:46 PM ET (Doug): the 15-champions sim runs from now on, on CURRENT builds only (best first, P37), next to their full screens. The coordinator tracks whether its calls match the full screen and the site. The SPARE-SLOT auto-submit stays OFF until Doug sees it match results and turns it on.
+
+## Doug 8:58 PM ET (Sat Nov 21): official screens switch to trees ON, after a map check
+- Before the switch: verify the sim's map (trees from the kit's arena/world.json via `--trees`, PR #148, plus buildings) matches what actually appears in site games. Compare tree and building counts and positions against Mech Watcher's recorded site footage and the site's map. Report any mismatch to Doug with numbers.
+- Once verified: re-run the champion P29 (2e1d036) baseline with `--trees` on both 2000+3000 and 4000+5000. From then on, every full paired screen uses `--trees`. Screens already started stay trees-off. A build counts as READY only on a trees-on screen once the switch is live.
+- All vetoes and rules are otherwise unchanged.

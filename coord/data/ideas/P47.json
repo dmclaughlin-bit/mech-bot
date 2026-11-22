@@ -1,0 +1,88 @@
+{
+  "id": "P47",
+  "title": "Rotate through tree cover: on the zone trip, while an enemy beyond 45 m sees us, step to a nearby tree-hidden spot that does not lose ground to the entry point (TREE_ROTATE_ON)",
+  "family": "zone travel / tree cover",
+  "flags": [
+    "TREE_ROTATE_ON"
+  ],
+  "flag": "TREE_ROTATE_ON",
+  "behaviors": [
+    "in 'to next circle' (t >= 10), while an enemy beyond 45 m has line of sight and trees+buildings do not already hide us from all such enemies: head for the nearest spot 1-3 s away that trees+buildings hide from all of them and that is at least 0.5 s of walking closer to the entry point, else one 1-2 s away that is no farther from it, only if the trip still fits (distance via the spot / (zoneWalk x walk speed) + zoneBuffer < time left); otherwise the champion's route"
+  ],
+  "owner": "unassigned (research P41-44 trees follow-up; Grok assigns)",
+  "stage": "idea",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+  "champion_sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Grok: assign or park (lowest rank). If built: one flag TREE_ROTATE_ON default false; trees-on hazard with zone damage, zone-travel deaths, arrival times, drop-ring arrivals, pins.",
+  "doug_waiver": false,
+  "single_decision": "The next step of the zone trip. Today 'to next circle' follows the nav path to the entry point (brain.ts:756-760, entry brain.ts:542-545) whoever watches. This allows a short detour into tree shadow when it costs no ground.",
+  "trigger": "TREE_ROTATE_ON AND obs.t >= 10 AND mode === 'to next circle' AND enemies beyond 45 m with seenAt(..., false) non-empty AND not already tree/building-hidden from all AND a qualifying spot exists AND the trip still fits AND NOT (near-and-reachable drop OR dropMove OR dropHold).",
+  "hook": "brain.ts act(), zone-travel branch brain.ts:756-760: if TREE_ROTATE_ON and a qualifying tree spot exists, `move = heading(spot)` for that decision; boost rule unchanged. Shared tree helper with P45/P46 (one flag here).",
+  "observable_inputs": [
+    "hello.map.dir v2/world.json trees + rules",
+    "obs.mechs",
+    "obs.zone",
+    "self pos/stats",
+    "obs.drops",
+    "obs.t"
+  ],
+  "gates": "Not before t = 10 s. Zone travel ranks above the drop run (brain.ts:751-760), so a drop run cannot be active that tick; the near-and-reachable gate is applied anyway. The fit test keeps zone safety; a 3 s no-progress give-up.",
+  "drop_gate": "Drop gate (Doug 8:58 PM ET rule, near AND reachable within DROP_RUN_M): the rule is off on any tick where a drop passes the champion's own drop-run candidate filter (not in dropSkip, holder null or us, flat distance <= DROP_RUN_M, zone-safe for lands_in + capture time; brain.ts:731-736) or dropMove/dropHold is on, and it yields to a drop run/hold on the same tick. A plain 'no drop listed' gate is not used (an untaken drop sits in obs.drops most of the game; it killed P26b, P33, P29b). Plain gate: 0/192 on both sets (zone trips always have a drop listed).",
+  "tree_model": "Tree cover test (observable: the kit map files hello.map.dir/v2/world.json, 1560 trees, rules.canopyDensity 0.35, canopyBlockT 0.25; protocol.md:369-372, :452): a spot p is hidden from enemy e when both e's eye-to-our-center and eye-to-our-top lines are blocked by a building (map.ts clearLine) or by a tree: a trunk always, canopy only when e is beyond near_range 45 m and the transmittance exp(-0.35 x metres inside crowns) is below 0.25. Shots ignore trees (protocol.md:317), so hiding behind a tree does not stop our own fire.",
+  "evidence": {
+    "protocol": "protocol.md:369-372: canopy is soft, trunks block sight, canopy does not block inside near_range 45 m; :317 trees do not stop shots; :452 world.json trees. Our bot never reads trees: map.ts:119 clearLine covers buildings/terrain only, and seenAt (brain.ts:405) and hideSpot (brain.ts:425) use it.",
+    "sim_trees_on": "Champion trees-on baselines (/workspace/tester/runs): P29 b6f2f8b mean (16-place) 3.562 -> 3.708 (2000+3000) and 3.870 -> 4.083 (4000+5000) when trees are switched on; deaths before 40 s 56 -> 48 and 54 -> 38. P34 0e6fadd trees on: 3.750 and 4.099, deaths before 40 s 48 and 38. Trees on is now the official screen (coord/WORKFLOW.md 475eb09).",
+    "sim_rotation": "Trees on, P34 champion: an enemy beyond 45 m sees us on the zone trip (and trees do not already hide us) in 35/192 and 46/192 games; a tree spot that gains ground exists in only 6 and 6 games; allowing no-loss steps raises it to 13 and 21 (reach gate).",
+    "sim_zone_deaths": "P-D-007 Step A (PR #124): deaths with zone travel in the last 5 s 28/192 and 37/192 (trees off, 6182d29); zone travel yields almost no kills.",
+    "drop_run_variant_dropped": "Routing drop runs through tree cover: by the drop gate it is a drop run, so 0 triggers; ungated a progress-making tree spot exists in only 8 and 7 games. Not recorded (drop-run family, under the bar)."
+  },
+  "trigger_counts_trees_on": {
+    "champion": "P34 0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+    "2000+3000": {
+      "none": "13 games / 15 episodes",
+      "plain": "0 / 0",
+      "narrow": "10 / 11",
+      "reach": "13 / 15",
+      "per_base": "2000: none 6/7, reach 6/7; 3000: none 7/8, reach 7/8",
+      "progress_only_variant": "6 games"
+    },
+    "4000+5000": {
+      "none": "21 / 28",
+      "plain": "0 / 0",
+      "narrow": "13 / 19",
+      "reach": "21 / 28",
+      "per_base": "4000: none 11/14, narrow 4/6, reach 11/14; 5000: none 10/14, reach 10/14",
+      "progress_only_variant": "6 games"
+    },
+    "gates": "Gates as counted: none; plain = obs.drops empty; narrow = no drop (holder null or us) within DROP_RUN_M and no dropMove/dropHold; reach = 'near AND reachable within DROP_RUN_M' (Doug 8:58 PM ET follow-up): no drop that passes the champion's own drop-run candidate filter (not in dropSkip, holder null or us, within DROP_RUN_M, zone-safe for lands_in + capture time; brain.ts:731-736 on main 8c130ad) and no dropMove/dropHold that tick. Spec gate = reach.",
+    "caveat": "The trip-still-fits test was not applied when counting, so these are upper bounds; the 2000+3000 count is close to the 10/192 bar."
+  },
+  "estimated_activation": "13/192 and 21/192 games (reach gate, upper bound before the fit test).",
+  "closest_prior_test": "P-D-007 Step B ZONE_EARLY_S (when to leave) failed in sim; P-D-010 travel delay measurement (no build); P40 roof jet route (route family) queued. No zone-route or tree test.",
+  "what_would_disprove": "Fires < 10/192 once the fit test is applied; more zone damage, later arrivals or more zone-travel deaths; drop-ring set totals below the champion.",
+  "risks": "Zone safety: any detour on a just-in-time trip can cost zone damage (the fit test must hold). Pins near trunks. The 2000+3000 count is at the bar, so it may fail the activation rule after the fit test.",
+  "source": "Doug 8:58 PM ET follow-up (rotations through tree cover): trees-on passive sim log of the P34 champion.",
+  "timestamps": {
+    "created": "2026-11-21 21:55 ET",
+    "updated": "2026-11-21 21:55 ET"
+  },
+  "sources": [
+    "/workspace/mechfight-kit/protocol.md:317, :369-372, :452",
+    "/workspace/mechfight-kit/arena/v2/world.json (trees, rules)",
+    "/tmp/builder-sim-trees/geom.ts treeBlocks and ASSUMPTIONS.md (read only)",
+    "/workspace/tester/runs/trees-0e6fadd-*.csv, trees-b6f2f8b-*.csv, fast-b6f2f8b-*.csv",
+    "coord/WORKFLOW.md (origin/main 475eb09)",
+    "brain.ts and map.ts on origin/main 8c130ad",
+    "Trees-on recheck (Doug 8:58 PM ET, coord/WORKFLOW.md 475eb09): copies of the current champion bot files from origin/main 8c130ad (P34 merge; bot code identical to 0e6fadd) under /tmp/p4144t/bot and /tmp/p4144t/bot2 with passive per-decision CSV logging before act.move (no action changed; the tree sight model is copied read-only from /tmp/builder-sim-trees/geom.ts treeBlocks and loaded from the kit's arena/v2/world.json). Run: `cd /tmp/builder-sim-trees && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144t/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column equals /workspace/tester/runs/trees-0e6fadd-<s>.csv on 96/96 games per base for both runs (768 games). Logs in /tmp (not committed).",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/124"
+  ],
+  "priority_rank": 7
+}

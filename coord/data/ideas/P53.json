@@ -7,22 +7,23 @@
   ],
   "flag": "LOW_HP_BOOST_SAVE_ON",
   "params": {
-    "LOW_HP_BOOST_FRAC": 0.35
+    "LOW_HP_BOOST_FRAC": 0.35,
+    "LOW_HP_BOOST_MIN_T": 40
   },
   "behaviors": [
-    "when HP < LOW_HP_BOOST_FRAC (0.35) of max HP, t >= 10 s, and the drop gate is open (no drop near AND reachable within DROP_RUN_M, not on a drop run or ring hold): withhold the boost flag the champion would set on that tick, unless the move is a zone escape / leaving the zone or an active P48 tree-retreat move; direction unchanged"
+    "when HP < LOW_HP_BOOST_FRAC (0.35) of max HP, t >= LOW_HP_BOOST_MIN_T (40 s), and the drop gate is open (no drop run/hold, no drop near AND reachable within DROP_RUN_M): withhold the boost flag the champion would set on that tick (back-away retreat, building-cover retreat, crossfire break), after the silent cap so the move vector is unchanged; zone escape, the trip to the next circle, an active P48 'retreat, trees' move and the unstick jet keep their boost"
   ],
   "owner": "Mech Builder",
-  "stage": "building",
-  "stage_detail": "Step A passed (171/192, 164/192); building on P48",
+  "stage": "built",
+  "stage_detail": "built on P48; FASTER checklist (bases 0, 6000) passed; flag-ON head pushed for screening",
   "pr": null,
   "sha": null,
   "branch": "p53-low-hp-boost-save",
-  "base": "4179419",
-  "champion": "P48 b9492c6 (main merge edb729f)",
-  "champion_sha_tested_against": null,
-  "champion_sha": "b9492c6",
-  "champion_main": "edb729f",
+  "base": "417941960688f7e0cb3619a8b8f8027ffbedff29",
+  "champion": "P48 b9492c6f122c549c705b69402157f078b4a57857 (main merge edb729fc790c0bd583204fa2a0c6492cc8277ca8)",
+  "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_main": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
   "evidence": {
     "source": "Mech Watcher ladder study, 135 top-16 matches",
     "confidence": "medium",
@@ -72,22 +73,86 @@
     "note": "Champion boosts on 31.4% of its below-35% HP ticks (ladder bottom half 37%, winners 19%). The trigger is almost entirely the back-away retreat (72%), the building-cover retreat (21%) and the crossfire break (7%).",
     "sources": [
       "/tmp/p53/logs/stepa-*.jsonl and /tmp/p53/runs/stepa-*.csv (not committed)"
-    ]
+    ],
+    "t_ge_40_after_fix": {
+      "games_fired": {
+        "2000": 49,
+        "3000": 68,
+        "4000": 61,
+        "5000": 62
+      },
+      "sets": {
+        "2000+3000": "117/192",
+        "4000+5000": "123/192"
+      },
+      "note": "recount of the same Step A logs with the shipped 40 s floor; still PASS"
+    }
   },
-  "screens": [],
+  "screens": [
+    {
+      "sha": "6ff321f code with LOW_HP_BOOST_SAVE_ON=true (= final flip commit)",
+      "seed_set": "0",
+      "fired": 49,
+      "diff_behavior": 49,
+      "diff_score": 12,
+      "sim_delta": -0.052,
+      "sim_se": 0.098,
+      "better": 6,
+      "worse": 6,
+      "drop_ring_arrivals_champ_head": "5/3 (seed 44 lost 2: paths split at 112 s on a withheld retreat boost, champion arrival at 247 s; reported, does not block)",
+      "deaths_lt_40_champ_head": "24/24",
+      "survivors_champ_head": "2/1",
+      "kills_champ_head": "293/294",
+      "boost_share_below_35_champ_head": "34.6% / 22.8%",
+      "pins": "3 pins >= 20 s, all identical to champion, none new, flag never active in them",
+      "verdict": "PASS (FASTER checklist)",
+      "trees": true,
+      "activations_t_lt_10": 0,
+      "activations_t_lt_40": 0,
+      "source": "/tmp/p53/sim (copy of /workspace/builder-sim) --trees --jobs 1, flag-on /tmp copy vs instrumented champion (= /workspace/champ-p48 CSVs 96/96); traces /tmp/p53/traces (not committed)"
+    },
+    {
+      "sha": "6ff321f code with LOW_HP_BOOST_SAVE_ON=true (= final flip commit)",
+      "seed_set": "6000",
+      "fired": 64,
+      "diff_behavior": 64,
+      "diff_score": 21,
+      "sim_delta": 0.104,
+      "sim_se": 0.097,
+      "better": 12,
+      "worse": 9,
+      "drop_ring_arrivals_champ_head": "1/1",
+      "deaths_lt_40_champ_head": "16/16",
+      "survivors_champ_head": "0/0",
+      "kills_champ_head": "358/369",
+      "boost_share_below_35_champ_head": "32.9% / 17.1%",
+      "pins": "2 pins >= 20 s, all identical to champion, none new, flag never active in them",
+      "verdict": "PASS (FASTER checklist)",
+      "trees": true,
+      "activations_t_lt_10": 0,
+      "activations_t_lt_40": 0,
+      "source": "/tmp/p53/sim (copy of /workspace/builder-sim) --trees --jobs 1, flag-on /tmp copy vs instrumented champion (= /workspace/champ-p48 CSVs 96/96); traces /tmp/p53/traces (not committed)"
+    }
+  ],
   "receipt": null,
   "site_score": null,
   "decision": null,
   "blocker": null,
-  "next_action": "Mech Builder builds behind LOW_HP_BOOST_SAVE_ON and runs the FASTER checklist (bases 0, 6000)",
+  "next_action": "Mech Sim Tester: full paired trees-on screen of the flag-ON head vs P48 b9492c6",
   "doug_waiver": false,
   "source": "Coordinator brief 12:25 AM ET Sun Nov 22 (P53 LOW HP BOOST SAVE TASK)",
   "timestamps": {
     "created": "2026-11-22 12:25 AM ET",
-    "updated": "2026-11-22 12:30 AM ET"
+    "updated": "2026-11-22 12:45 AM ET"
   },
   "sources": [
     "Coordinator brief 12:25 AM ET Sun Nov 22",
     "Mech Watcher ladder study (135 top-16 matches)"
-  ]
+  ],
+  "fix_once": "LOW_HP_BOOST_MIN_T 10 -> 40 s (commit 6ff321f): with 10 s, deaths < 40 s were up on base 0 (24 -> 26) and base 6000 (16 -> 17); with 40 s they equal the champion (24/24, 16/16)",
+  "checks": {
+    "eqdrive_flag_off_vs_main": "IDENTICAL: kit check stream action lines 301/301 (cmp); sim CSV + per-match action hash 96/96 on bases 0 and 6000",
+    "check_py": "PASS default (max 3.0 ms) and flag-on (max 2.8 ms)",
+    "merge_base_edb729f": "OK"
+  }
 }

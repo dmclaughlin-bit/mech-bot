@@ -7,7 +7,7 @@
     "EARLY_BACKAWAY_FAR_COVER_ON"
   ],
   "owner": "Mech Builder",
-  "stage": "building",
+  "stage": "retired",
   "branch": "p68-early-backaway-far-cover",
   "base": "bc640a6b98617c66f3b9a3c4df97940bfbdd7b55",
   "champion": "P64 BACKAWAY_LOS_BREAK_ON, bot code 8ada6a4 (merge 297f133), site 3.90 builders-4 BB-0E81A218",
@@ -53,19 +53,21 @@
   "mechanism": "One flag EARLY_BACKAWAY_FAR_COVER_ON (default false) and one value EARLY_BACKAWAY_FAR_MIN_T = 10. When on, farRetreat's time gate is 10 s instead of TREE_RETREAT_MIN_T (40 s); nothing else changes: same branch position (after building cover and tree retreat, before P64 and plain back-away), same drop gate (no drop run/hold, no near-and-reachable drop within DROP_RUN_M), same shooters/seers test, same 4/5/6 s search, latch, 3 s no-progress give-up and skip list. Never at t < 10 s. Legs only; aim/torso/timing untouched (N8).",
   "activation": "Decision-level: mode 'retreat' (plain back-away) at 10 s <= t < 40 s, P60's gates pass with the drop gate, and the far search returns a spot whose heading differs from the back-away heading by > 20 deg (P60's Step A definition). Game-level Step A count = games where this happens at least once, per 192-game set.",
   "disproof": "Fails if Step A fire-and-change < 10/192 on either set (2000+3000, 4000+5000), OR deaths < 40 s rise on either practice base (0, 6000), OR the paired mean vs P64 is lower on both practice bases, OR a NEW >= 20 s pin appears, OR there are 0 activations between 10 s and 40 s that change the move.",
-  "positives": null,
-  "negatives": null,
-  "confidence": "Uncertain (no measurement yet: whether a far spot exists before 40 s was never measured)",
-  "reuse": null,
+  "positives": "Step A fires often (65/192, 51/192) and the changed games are the early-death games (43/48 and 31/38). With the 60 m seer gate: base 6000 deaths < 40 s 16->14 (6045, 6053 saved), base 0 kills 306->316 and survivors 3->4, means +0.104 and +0.000, drops 3->5 and 1->2, no new pins, 0 activations before 10 s.",
+  "negatives": "Ungated (round 1) the early far walk raised deaths < 40 s on both bases (24->29, 16->18) and lowered both means (-0.094, -0.021): 13 and 8 early deaths moved into far-cover mode. Most early back-away fights are lost either way (bucket d / multi-shooter); a 4-6 s walk that is mostly sideways (45-90 deg) at gun range (< 60 m) gives up the range the straight back-away gains. Even with the 60 m gate base 0 kept 2 new early deaths (49, 85) and the gate was tuned on the same practice bases.",
+  "confidence": "Disproven as built (item 5 failed in both rounds on base 0); the >= 60 m sub-cell is Uncertain (9-19 games per base, gate chosen on those bases)",
+  "reuse": "1) Far cover is not free before 40 s: the champion's straight back-away beats a sideways walk when a seer is inside gun near range (60 m). Any early retreat-route change should be gated on seer range. 2) The Step A logger (plain back-away decisions, 40 s gate lifted, P60 gates, heading change > 20 deg) and the passive diag pattern (log angle / nearest seer per far decision) are reusable. 3) The ~60-100 m sub-cell (15 games, place +5, early-death net -2) is the only promising part; a fresh idea would need its own Step A on 2000-5000 with the 60 m gate.",
   "novelty": {
     "vs_P32": "P32 (FIGHT_FADE_ON) changed the engage finish walk (an offensive movement) and failed item 5 (deaths < 40 s 33->35). P68 changes only which spot an existing retreat walks to, in the decisions where the champion already retreats; the pre-40 s death count is the main risk and is a hard disproof here.",
     "vs_P33": "P33 extended retreat duration in mid phase behind an 'any drop on the map' gate and fired 0/96. P68 uses the near-AND-reachable drop gate (drop-gate-rule.txt) and acts in 10-40 s, before most drop windows.",
     "vs_P64": "P64 is the 'no far spot' leftover of the t >= 40 s cell; P68 is the t < 40 s cell, with P60's own search, and leaves P64's gate at 40 s.",
     "vs_P60": "Same mechanism; only the activation window changes (10-40 s added). Not a re-test under a new name: P60 never searched before 40 s."
   },
-  "outcome": "pending",
+  "outcome": "C",
   "timestamps": {
-    "recorded": "2026-11-22 ET (Step 0, before any results)"
+    "recorded": "2026-11-22 ET (Step 0, before any results)",
+    "built": "2026-11-22 ET",
+    "retired": "2026-11-22 ET"
   },
   "sources": [
     "coord/data/synergy_research.md Opportunity 3",
@@ -74,7 +76,10 @@
     "coord/data/ideas/P32.json",
     "coord/data/ideas/P33.json",
     "coord/data/findings.md F16, F18, F20, N8, N9",
-    "/workspace/drop-gate-rule.txt"
+    "/workspace/drop-gate-rule.txt",
+    "/tmp/p68 runs and traces (not committed): main/off/on/on2/off2/diag x 0/6000; stepa-log 2000-5000",
+    "/tmp/p60/tools/buckets.py, eqdrive.py (copied)",
+    "/workspace/tester/hzlib.py (copied: pins, drop arrivals)"
   ],
   "step_a_result": {
     "method": "log-only /tmp copy of champion bot code (8ada6a4 = origin/main bc640a6): in every plain back-away ('retreat') decision, compute P60's gates (drop gate incl. near-and-reachable drop within DROP_RUN_M, shooters else seers, trees-already-hide) and the far search (12 bearings x 4/5/6 s, fresh skip set) with the 40 s gate lifted to 10 s in the logger only, without acting. Trees-on sim (copy of /workspace/wt-tester-trees/tools/sim 22f72a8), --jobs 1, 96 seeds per base",
@@ -113,5 +118,89 @@
     "drop_gate_decisions_10_40": 0,
     "verdict": "PASS (65/192 and 51/192 >= 10/192)",
     "note": "The changed games are mostly the early-death games: 43 of 48 and 31 of 38 champion deaths < 40 s had at least one changed decision. The drop gate never blocked a 10-40 s back-away decision (drops are called from 70 s)."
+  },
+  "decision": "FAILED checklist item 5 after the one allowed fix: deaths < 40 s 24->26 on practice base 0 (new seeds 49, 85). Pushed flag-false. Not ready for Sim Tester.",
+  "values": {
+    "EARLY_BACKAWAY_FAR_MIN_T": 10,
+    "EARLY_BACKAWAY_FAR_MIN_SEER_M": 60
+  },
+  "sha_round1": "23a1afa",
+  "sha_fix": "90554f1",
+  "checklist": {
+    "sim": "trees-on sim copy of /workspace/wt-tester-trees/tools/sim 22f72a8 (passive P60 ground-truth trace variant from /tmp/p60/sim for buckets; CSV rows identical to the plain sim on main base 0, 96/96), --jobs 1, 96 seeds per base; champion baseline = origin/main bc640a6 (bot code 8ada6a4) run the same way",
+    "eqdrive_flag_off_vs_main": "IDENTICAL (kit stream, 301 replies); flag-off rows and per-tick action hashes identical to main 96/96 on bases 0 and 6000 (both rounds)",
+    "check_py": {
+      "default_max_ms": 4.0,
+      "flag_on_max_ms": 3.5,
+      "verdict": "PASS 300/300"
+    },
+    "t_lt_10_activations": {
+      "round1": 0,
+      "fix": 0
+    },
+    "round1_23a1afa": {
+      "0": {
+        "fired_10_40": 34,
+        "diff_behavior": 34,
+        "diff_score": 12,
+        "paired": "-0.094 +/- 0.106",
+        "better_worse": "5/7",
+        "survivors": "3->3",
+        "kills": "306->299",
+        "deaths_lt_40": "24->29 (new 14, 24, 34, 49, 75, 85; removed 48)",
+        "pre40_last_mode": "plain back-away 18->9, building 5->6, far cover 0->13, none 1->1",
+        "drop_ring_arrivals": "3->3",
+        "pins20": "3->3 (41, 43, 79; none new, 0 flag ticks)"
+      },
+      "6000": {
+        "fired_10_40": 20,
+        "diff_behavior": 20,
+        "diff_score": 10,
+        "paired": "-0.021 +/- 0.071",
+        "better_worse": "6/4",
+        "survivors": "2->2",
+        "kills": "365->364",
+        "deaths_lt_40": "16->18 (new 6009, 6020, 6028, 6048; removed 6045, 6053)",
+        "pre40_last_mode": "plain back-away 12->4, building 3->5, far cover 0->8, none 1->1",
+        "drop_ring_arrivals": "1->2",
+        "pins20": "2->2 (6011, 6082; none new, 0 flag ticks)"
+      },
+      "verdict": "item 5 FAIL on both bases; paired mean lower on both bases (disproof clause)"
+    },
+    "diagnosis": "Log-only copy of round 1 (passive, 0/192 diffs): in the 54 fired games, games whose first early far walk started with an enemy that sees us within 60 m: 38 games, place sum -17, early-death net +9; nearest seer 60-100 m: 15 games, place +5, early-death net -2. Far walks 45-90 deg off the back-away heading were the worst bucket (22 games, place -17, early-death net +7). Chosen fix: before 40 s only when every seer is beyond GUN_NEAR_M (60 m; house guns hit 0.8 inside it vs 0.5). The gate was picked on the same practice bases it was then checked on.",
+    "fix_90554f1": {
+      "0": {
+        "fired_10_40": 19,
+        "diff_behavior": 19,
+        "diff_score": 8,
+        "paired": "+0.104 +/- 0.125",
+        "better_worse": "4/4",
+        "survivors": "3->4",
+        "kills": "306->316",
+        "deaths_lt_40": "24->26 (new 49: 46.5->39.2 s, last mode far cover; 85: 65.2->31.25 s, place 11->14, last mode plain back-away after far walks from 20.9 s)",
+        "pre40_last_mode": "plain back-away 18->17, building 5->5, far cover 0->3, none 1->1",
+        "drop_ring_arrivals": "3->5",
+        "pins20": "3->3 (41, 43, 79; none new, 0 flag ticks)",
+        "buckets_main": "tree a9 b1 c2 d11; building a6 b1 c2 d8; back-away a21 b2 c5 d13 (pre-40: building a4 d1; back-away a9 c3 d6)",
+        "buckets_flag": "tree a7 b1 c2 d9; building a5 b2 c2 d7; back-away a20 b5 c5 d15 (pre-40: building a3 c1 d1; back-away a8 b2 c3 d7)",
+        "max_bot_ms": "9245.5 on one tick of seed 64 (1 missed answer; seed 64 dies < 40 s in both builds; check.py max 3.5 ms; main had a 40.6 ms spike on seed 44 in the same conditions: machine shared with P67)"
+      },
+      "6000": {
+        "fired_10_40": 9,
+        "diff_behavior": 9,
+        "diff_score": 5,
+        "paired": "+0.000 +/- 0.059",
+        "better_worse": "4/1",
+        "survivors": "2->2",
+        "kills": "365->365",
+        "deaths_lt_40": "16->14 (removed 6045, 6053; none new)",
+        "pre40_last_mode": "plain back-away 12->11, building 3->2, far cover 0->0, none 1->1",
+        "drop_ring_arrivals": "1->2",
+        "pins20": "2->2 (6011, 6082; none new, 0 flag ticks)",
+        "buckets_main": "tree a5 b1 c3 d5; building a6 b1 c6 d12; back-away a15 b5 c6 d15 (pre-40: building a1 c1 d1; back-away a6 d6)",
+        "buckets_flag": "tree a5 b1 c2 d5; building a6 b1 c6 d11; back-away a13 b6 c7 d16 (pre-40: building a1 c1; back-away a5 d6)"
+      },
+      "verdict": "item 5 FAIL on base 0 (24->26); 6000 passes (16->14); means not lower; no new pins; 10-40 s activations that change the move > 0 on both bases"
+    }
   }
 }

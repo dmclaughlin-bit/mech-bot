@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 20:41 ET",
- "origin_main": "8f0ca4c2c431661509a9e3dc64e7294937e0659a",
+ "generated_at_et": "2026-11-21 20:51 ET",
+ "origin_main": "a882e5410553c8baa4c8a43a6f93a2241bc98f3c",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -75,7 +75,7 @@
  },
  "board": {
   "Idea": 0,
-  "Researched": 26,
+  "Researched": 25,
   "Assigned": 0,
   "Built (PR)": 1,
   "Screened": 15,
@@ -83,12 +83,12 @@
   "Submitted": 0,
   "Scored": 0,
   "Merged": 5,
-  "Retired": 41
+  "Retired": 42
  },
  "board_detail": {
   "Retired_loss": 13,
   "Retired_tie": 3,
-  "Retired_unsubmitted": 25
+  "Retired_unsubmitted": 26
  },
  "items": [
   {
@@ -4214,15 +4214,15 @@
    "screened_before_click": false,
    "postmortems": [],
    "first_mention": null,
-   "sha": null,
+   "sha": "5778086",
    "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",
    "research": [],
    "prs": [],
    "pr_opened": null,
-   "primary_pr": null,
-   "pr_url": null,
+   "primary_pr": 150,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/150",
    "pr_state": null,
-   "head": null,
+   "head": "5778086",
    "pr_closed": null,
    "pr_merged": null,
    "contains_champion": null,
@@ -4631,7 +4631,7 @@
    "kind": "build",
    "source": "PR #145 research-doug-1941 ranked build 1 (brain.ts:1036-1046 on 6182d29; on the P29 champion the hook is brain.ts:1078-1093)",
    "owner": "Mech Builder",
-   "decision": "Builder check failed drop arrivals (5->4, 3->2 on base 0/1000). Doug 8:35 PM ET: send to the full official screen; the drop-ring set-total rule still decides there.",
+   "decision": "8:50 PM ET coordinator: VETO confirmed (own check of screen https://github.com/dmclaughlin-bit/mech-bot/pull/147#issuecomment-7072472836). 2000+3000 drop-arrival set total 8->5 (Doug 7:55 set-total rule; Doug 8:35 said the drop-ring rule decides) and survivors 6->2. 4000+5000 was positive (drops 7->15, survivors 5->7) but a lower set total on either set is a veto. Deaths <40 s unchanged; new pause 5079 meets no stall clause.",
    "changes": 1,
    "changes_basis": "idea record flags",
    "multi": false,
@@ -4659,7 +4659,7 @@
    "pr_merged": null,
    "contains_champion": null,
    "stage_idx": null,
-   "stage": "Researched",
+   "stage": "Retired",
    "outcome": null,
    "blocker": "Drop-ring arrival totals lower on both sets. Every early release that changed a drop game killed its target before any drop was called (46-47 s); the lost arrivals are 150-235 s later in games that diverged. The behavior already never starts while a drop run/hold is possible. Closing the rest within this behavior means turning it off for most of the match. Needs a coordinator / Doug decision (the noise-calibration benchmark and the 7:55 PM ET set-total ruling are the context)",
    "from_idea_record": true
@@ -4686,12 +4686,12 @@
    "postmortems": [],
    "first_mention": null,
    "sha": null,
-   "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",
+   "champion_sha_note": "b6f2f8be91abacbf9f31469ce8b5ad4576c289c9",
    "research": [],
    "prs": [],
    "pr_opened": null,
-   "primary_pr": null,
-   "pr_url": null,
+   "primary_pr": "https://github.com/dmclaughlin-bit/mech-bot/pull/149",
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/https://github.com/dmclaughlin-bit/mech-bot/pull/149",
    "pr_state": null,
    "head": null,
    "pr_closed": null,

@@ -98,3 +98,21 @@ test is arguably closer to the final than the house-bot screen.
 2. #1 next, aimed at the knobs #2 points to.
 3. #4 in parallel, since it's already running.
 4. #3 for builders who need a new behaviour.
+
+## Addendum (9:25 PM ET): three more sources, plus builder count
+5. **Mutations of winners.** Every site KEEP spawns 3-5 neighbour variants: a stronger or weaker value, a wider trigger, the same rule in a related situation. The drop-run family went 4.10 -> 4.17, so winning families have the best site record.
+6. **Rebuilds on the new champion.** After each keep, list builds that beat their own parent on the site but lost on an older base. Example: B104 lost, then won as B107 on a stronger champion. The rules already allow this.
+7. **Behaviour gaps vs top teams (observation only, never their code).** The watcher data (`coord/data/watcher/`) records how top teams play. Compare those stats with the champion's sim stats, for example engage range, hold time and midring share. Each large gap becomes an idea record with evidence.
+8. **Cheap pre-filter before a builder spends time.** Before any full screen, each flagged variant must pass:
+   - trigger count ≥ 10/192
+   - flag-0 identity
+   - the BUILD_CHECKLIST hazard bases 0/1000/6000/7000
+
+   Only survivors reach Grok's queue.
+
+**Builder count (repo timing data):**
+- Each builder makes about 2 builds/hour. At a 25-45% pass rate, today's 2 lanes give about 1 site-ready build/hour, against 6 slots/hour.
+- A 3rd builder is the clearest gain (+50%), but only on its own Claude account (Diego's Mac fits) and in a separate lane, such as economy/drops/upgrades.
+- A 4th builder helps only if ideas aren't running out.
+- Beyond 4, idea quality, brain.ts conflicts, re-screens after every keep and coordinator load eat the gain.
+- Raising the pass rate (items 1, 2 and 8) does more than adding headcount.

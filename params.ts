@@ -164,9 +164,11 @@ export const MIDRING_STUCK_S = 3
  * and no supply drop is listed in obs.drops (so it never starts or runs while a drop is announced, landed, run to or
  * held, and drop run/hold take over on the same tick a drop is called). Every other claim gate is unchanged. A cube
  * walked to without 1 m of progress for CLAIM_WATCHED_STUCK_S is skipped by this rule for the rest of the match.
+ * CLAIM_WATCHED_MIN_T is 40 s (was 10): in the first screen, the extra deaths before 40 s on base 0 (33 -> 36) all
+ * followed watched claims at t 10-20 s, where the walk displaced the opening laser rush or a hiding heal.
  * false = champion behavior exactly.
  */
 export const CLAIM_WATCHED_ON = false
 export const CLAIM_WATCHED_HP = 0.5
-export const CLAIM_WATCHED_MIN_T = 10
+export const CLAIM_WATCHED_MIN_T = 40
 export const CLAIM_WATCHED_STUCK_S = 3

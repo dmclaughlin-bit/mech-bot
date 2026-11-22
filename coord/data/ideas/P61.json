@@ -404,5 +404,6 @@
     "checklist_2": "t < 10 s activations: 0 (base 0) and 0 (base 6000); the behavior is gated at t >= 40 s",
     "archive_bytes": 3829760,
     "contains_32acd3d": true
-  }
+  },
+  "coordinator_ruling": "3:10 AM ET Sun Nov 22: mechanism disproved (outcome C stands for the idea: re-picks ~4% of building-cover decisions; building x a 6->6, 8->8). Build positive on both practice bases (+0.042, +0.031), kills up, no safety vetoes, so the flag-ON build goes forward as a DATA-TEST candidate for the Sim Tester screen and site (per F17/F18/N10)."
 }

@@ -4,7 +4,7 @@
   "family": "loadout / late weapon pickup",
   "flag": "LATE_MORTAR_ON",
   "owner": "Mech Builder",
-  "stage": "step_a",
+  "stage": "step-a-fail (2000+3000 8/192)",
   "source": "Mech Sim Tester death report /workspace/tester/proposals/20261121-2153-0e6fadd.md (ST-2), PR #154",
   "champion": "P34 0e6fadd1a30db4ee30c26114b8198f63d782b7c9 (main 8c130ad)",
   "change": "When still gun-only after LASER_RUSH_S with a free slot, allow a reachable in-zone ground mortar as the lowest-priority pickup, behind laser and lightning (brain.ts loot rule ~:496 and the Build 80 late trip ~:684-700; held-mortar fire code ~:1098 already exists).",
@@ -15,5 +15,39 @@
   "assigned_et": "2026-11-21 10:30 PM ET (coordinator, free Builder session)",
   "pr": null,
   "sha": null,
-  "decision": null
+  "decision": "retired at Step A (Diego's Claude), coordinator may overrule with the 120 m reading",
+  "step_a_result": {
+    "by": "Diego's Claude (P-D-020 item 2)",
+    "measured_et": "2026-11-22 12:05 AM ET",
+    "champion": "P48 b9492c6",
+    "sim": "trees-on, 4b8663e + read-only hazard columns (351758e), 96 seeds per base",
+    "condition": "t >= 45 s (LASER_RUSH_S), gun-only, a free slot, no enemy within 160 m (LOOT_CLEAR), a mortar pickup in view inside the current circle",
+    "games_reach_80m_LOOT_DETOUR": {
+      "2000+3000": "8/192",
+      "4000+5000": "12/192"
+    },
+    "sensitivity_by_distance": {
+      "40m": [
+        6,
+        6
+      ],
+      "80m": [
+        8,
+        12
+      ],
+      "120m": [
+        10,
+        16
+      ],
+      "160m": [
+        12,
+        18
+      ],
+      "any": [
+        14,
+        20
+      ]
+    },
+    "verdict": "Under 10/192 on 2000+3000 at the champion's own 80 m loot detour: retire per the Step A rule. It would pass only if the walk limit for a mortar were raised to 120 m or more, which is a second change."
+  }
 }

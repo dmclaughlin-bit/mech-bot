@@ -23,6 +23,8 @@
  * close to our best weapon's effective range (see STANDOFF_BREAK_S).
  * P-D-003 (drop run): walk to a called supply drop within 150 m, timed to arrive as it lands, and hold its ring
  * (see DROP_RUN_M).
+ * P32 (finish fade, off by default): on the finish walk with a clear gun or laser shot in range, step sideways with a
+ * slight fade instead of walking straight in (see FIGHT_FADE_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
@@ -146,6 +148,21 @@ const LIGHT_AMBUSH_ON = true
 const AMBUSH_MAX_M = 90
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
+/** P32 (fade on the finish walk): while the finish rule would walk us straight at a visible target that we already have
+ * a clear gun or laser shot on in range, keep the target and the fire code as they are but step sideways with a slight
+ * fade (backward component) instead of walking in. Not for a lightning holder (that walk brings the arc into range),
+ * never before FADE_MIN_T, never while any supply drop is called or on the ground, and the step must stay inside the
+ * circle we keep to with a clear line. Shot lost or out of range: the normal finish walk resumes on the same tick. No
+ * progress (under FADE_STUCK_M in FADE_STUCK_S): that target goes on a skip list and gets the normal walk. false = champion. */
+const FIGHT_FADE_ON = false
+const FADE_MIN_T = 10
+/** P32: backward weight against a sideways weight of 1 (normalized), how far ahead (m) the step is checked, and the give-up. */
+const FADE_BACK = 0.3
+const FADE_LOOK_M = 6
+const FADE_STUCK_S = 3
+const FADE_STUCK_M = 2
+/** P32: a fade that has not stepped for this long (s) starts a fresh progress clock. */
+const FADE_GAP_S = 0.5
 /** P-B-001 (standoff break, see STANDOFF_BREAK_S): the lone enemy's distance window (m), no other enemy seen for this
  * long (s), and our HP at least this far above params.retreatHp (fraction of max). */
 const STANDOFF_MIN_M = 45
@@ -306,6 +323,9 @@ function buildBot(hello: Hello): Bot {
   /** Build 14: targets we gave up on (id → time), and where our last kill died, to collect its cubes. */
   const engageGiveUp = new Map<number, number>()
   let claim: { pos: Vec3; until: number } | null = null
+  /** P32: the target we are fading against, the side (+1 left, -1 right), and the progress anchor; targets we gave up on. */
+  let fade: { id: number; side: number; from: Vec3; at: number; last: number } | null = null
+  const fadeSkip = new Set<number>()
   /** P-B-001: the enemy the standoff break walked at last decision (null when it did not run). */
   let standoffId: number | null = null
 
@@ -438,6 +458,56 @@ function buildBot(hello: Hello): Bot {
       }
     }
     return null
+  }
+
+  /** P32 (FIGHT_FADE_ON): the sideways-and-back step that replaces the finish walk this decision, or null for the normal
+   * walk. Only for the finish rule on a visible target (obs.mechs lists only mechs in view) with a clear line and the gun
+   * or a ready laser reaching it. */
+  function fadeStep(
+    me: Observation["self"], muzzle: Vec3, engage: { m: { id: number; pos: Vec3; cubes?: number }; why: "ttk" | "finish"; clear: boolean },
+    t: number, height: number, keepIn: [number[], number], arcHeld: boolean, dropsLive: boolean,
+  ): [number, number] | null {
+    const e = engage.m
+    const ds = span(muzzle, centerOf(e))
+    const reaches = me.weapons.some((w) => !!w && ((w.kind === "gun" && ds <= w.stats.range) || (w.kind === "laser" && (w.cooldown ?? 0) <= 0 && ds <= w.stats.range)))
+    if (t < FADE_MIN_T || dropsLive || arcHeld || engage.why !== "finish" || !engage.clear || !reaches || fadeSkip.has(e.id)) {
+      fade = null
+      return null
+    }
+    // A new target, or a gap since the last fade step: start the progress clock again (keeping the side for the same target).
+    if (fade?.id !== e.id || t - fade.last > FADE_GAP_S) fade = { id: e.id, side: fade?.id === e.id ? fade.side : 0, from: me.pos, at: t, last: t }
+    else if (t - fade.at >= FADE_STUCK_S) {
+      if (flat(me.pos, fade.from) < FADE_STUCK_M) {
+        fadeSkip.add(e.id)
+        fade = null
+        return null
+      }
+      fade.from = me.pos
+      fade.at = t
+    }
+    const n = flat(e.pos, me.pos) || 1
+    const ux = (e.pos[0] - me.pos[0]) / n, uy = (e.pos[1] - me.pos[1]) / n
+    const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
+    const dirOf = (side: number): [number, number] => {
+      const x = -uy * side - ux * FADE_BACK, y = ux * side - uy * FADE_BACK, l = Math.hypot(x, y)
+      return [x / l, y / l]
+    }
+    const room = (dir: [number, number]): number => {
+      const x = me.pos[0] + dir[0] * FADE_LOOK_M, y = me.pos[1] + dir[1] * FADE_LOOK_M
+      const r = Math.hypot(x - keepIn[0][0], y - keepIn[0][1])
+      if (r > keepIn[1]) return -1
+      const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+      if (g === -Infinity || Math.abs(g - me.pos[2]) > 2) return -1
+      return clearLine(solids, from, [x, y, g + height / 2], 0, 0) ? keepIn[1] - r : -1
+    }
+    // Keep the side we are on while it has room; a new fade takes the side that ends nearer the middle of the circle.
+    const sides = fade.side ? [fade.side, -fade.side] : [1, -1]
+    const scored = sides.map((s) => ({ s, room: room(dirOf(s)) })).filter((o) => o.room >= 0)
+    if (!scored.length) return null
+    const pick = fade.side && scored[0].s === fade.side ? scored[0] : scored.sort((a, b) => b.room - a.room)[0]
+    fade.side = pick.s
+    fade.last = t
+    return dirOf(pick.s)
   }
 
   /** Keep track of every enemy mech seen, and of where the last hit came from. */
@@ -764,9 +834,11 @@ function buildBot(hello: Hello): Bot {
         // hits as well at range, and walking in while charging is at half speed.
         const beam = LASER_RUSH_ON ? me.weapons.find((w) => w?.kind === "laser") : undefined
         const standOff = !!beam && engage.clear && d <= (beam.stats.range ?? baseReach.laser)
-        if ((!engage.clear || (engage.why === "finish" && d > close && !standOff)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1])
-          move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
-        mode = `engage, ${engage.why}`
+        const walkIn = (!engage.clear || (engage.why === "finish" && d > close && !standOff)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1]
+        const step = FIGHT_FADE_ON && walkIn ? fadeStep(me, muzzle, engage, obs.t, myHeight, zoneKeep, !!arc, (obs.drops ?? []).length > 0) : null
+        if (step) move = step
+        else if (walkIn) move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
+        mode = step ? "engage, finish fade" : `engage, ${engage.why}`
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && seenAt(me.pos, myHeight, threats, false) && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
         // Retreat (F2, F3, Build 5): hurt and under fire, so head for the nearest in-zone spot out of every visible
         // enemy's line of sight, torso still on the attacker (legs and torso are independent). Boost only above 30% energy.

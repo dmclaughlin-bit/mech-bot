@@ -183,5 +183,5 @@ export const LETHAL_RELEASE_MIN_T = 40
  * false = champion exactly.
  */
 export const CHARGE_LINED_ON = false
-/** Never hold back a charge before this match time (s), so the opening (first ~10 s) equals the champion's. */
-export const CHARGE_LINED_MIN_T = 10
+/** Never hold back a charge before this match time (s): play before it, and so every death before 40 s, equals the champion's (as P34). */
+export const CHARGE_LINED_MIN_T = 40

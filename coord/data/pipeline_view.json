@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 21:14 ET",
- "origin_main": "8f19db1066c2c71a836bfd90bd300bb847d42e56",
+ "generated_at_et": "2026-11-21 21:27 ET",
+ "origin_main": "02b2cd0b3e6ff8ce4426cdf32d8f42123b090f73",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -78,7 +78,7 @@
  },
  "board": {
   "Idea": 0,
-  "Researched": 23,
+  "Researched": 24,
   "Assigned": 0,
   "Built (PR)": 1,
   "Screened": 15,
@@ -4420,6 +4420,45 @@
    "stage": "Built (PR)",
    "outcome": null,
    "blocker": "the single decision and flag are not yet written in the repo. P25b (47d0e6ce) remains on HOLD for new 20 s+ pins pending the stall comparison Doug asked for.",
+   "from_idea_record": true
+  },
+  {
+   "id": "P45",
+   "title": "Midring settle spot quality: when P29 has already decided to settle, pick between 2-3 reachable midring spots by cover, escape-route clearance and zone slack (MIDRING_SPOT_ON)",
+   "kind": "build",
+   "source": "Doug research handoff 2026-11-21 ~9:16 PM ET, option R1 (spatial quality, not radius); selected by coordinator 9:2x PM ET",
+   "owner": "Mech Builder",
+   "decision": null,
+   "changes": 1,
+   "changes_basis": "idea record flags",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": null,
+   "champion_sha_note": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+   "research": [],
+   "prs": [],
+   "pr_opened": null,
+   "primary_pr": null,
+   "pr_url": null,
+   "pr_state": null,
+   "head": null,
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Researched",
+   "outcome": null,
+   "blocker": null,
    "from_idea_record": true
   },
   {

@@ -29,7 +29,7 @@ import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
-  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  NO_SNEAK_ON, NO_SNEAK_QUIET_S, ROOF_JET_ROUTE_ON, ROOF_MAX_H, ROOF_RANGE_M, ROOF_START_S, ROOF_STUCK_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -153,6 +153,26 @@ const STANDOFF_MIN_M = 45
 const STANDOFF_MAX_M = 90
 const STANDOFF_SECOND_S = 3
 const STANDOFF_HP_MARGIN = 0.2
+/** P40 (roof jet route, see ROOF_JET_ROUTE_ON): an item at least this far (m) above the terrain is on a roof. */
+const ROOF_MIN_H = 4
+/** P40: bearings searched from a roof item for the nearest wall edge, and how far (m) out along each. */
+const ROOF_BEARINGS = 16
+const ROOF_EDGE_M = 40
+/** P40: stand this far (m) out from the wall edge to start the climb, and start it within ROOF_AT_BASE_M of that spot. */
+const ROOF_STAND_OFF = 4
+const ROOF_AT_BASE_M = 6
+/** P40: energy for the climb: jets drain 15/s and rise about 9 m/s, so ~1.75 per metre, plus ROOF_JET_SPARE to get over the edge. */
+const ROOF_JET_PER_M = 1.75
+const ROOF_JET_SPARE = 15
+/** P40: seconds of climbing and walking on the roof added to the zone test, the longest wait for energy at the wall,
+ * the longest stand by a crate, and the whole-trip cap (s). Remembered roof items we stand this close to (m) with a clear
+ * line and no longer see are gone. A crate is shot from this far (m); cubes and weapons are walked onto. */
+const ROOF_CLIMB_S = 10
+const ROOF_WAIT_S = 8
+const ROOF_CRATE_S = 10
+const ROOF_TRIP_S = 40
+const ROOF_GONE_M = 40
+const ROOF_CRATE_STAND_M = 6
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -312,6 +332,13 @@ function buildBot(hello: Hello): Bot {
   /** P-D-012 (P29): the midring settle walk in progress, and the hold phases (by shrink_start) it gave up on. */
   let settle: { goal: Vec3; phase: number; best: number; at: number } | null = null
   const settleSkip = new Set<number>()
+  /** P40 (ROOF_JET_ROUTE_ON): roof items seen so far (crates, cubes, weapons are listed only while in view), the roof
+   * trip in progress (target, roof height, the ground spot to climb from, progress for the give-up), and targets given up on. */
+  const roofSeen = new Map<number, { kind: "crate" | "cube" | "laser" | "lightning"; pos: Vec3 }>()
+  let roofRun: {
+    id: number; pos: Vec3; base: Vec3; since: number; phase: string; best: number; bestAt: number; climbing: boolean; waitAt: number | null; standAt: number | null
+  } | null = null
+  const roofSkip = new Set<number>()
 
   /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
    * lightning 0.8 × its range, gun GUN_NEAR_M, laser and mortar their reach. */
@@ -442,6 +469,46 @@ function buildBot(hello: Hello): Bot {
       }
     }
     return null
+  }
+
+  /** P40: true when `p` sits ROOF_MIN_H or more above the terrain on a solid's top (a roof or deck), not on a hill. */
+  function onRoof(p: Vec3): boolean {
+    const m = solids
+    if (!m?.ground) return false
+    const g = groundAt(m, p[0], p[1])
+    const i = Math.floor((p[0] - m.minX) / m.step), j = Math.floor((p[1] - m.minY) / m.step)
+    if (g === -Infinity || i < 0 || j < 0 || i >= m.nx || j >= m.ny) return false
+    return p[2] - g >= ROOF_MIN_H && Math.abs(m.top[j * m.nx + i] - p[2]) < 1.5
+  }
+  /** P40: open ground at (x, y): no solid there, or one low enough to step onto. */
+  function openGround(x: number, y: number): boolean {
+    const m = solids!
+    const i = Math.floor((x - m.minX) / m.step), j = Math.floor((y - m.minY) / m.step)
+    if (i < 0 || j < 0 || i >= m.nx || j >= m.ny) return false
+    const top = m.top[j * m.nx + i]
+    return top === -Infinity || top - groundAt(m, x, y) <= cfg.mech.step_up
+  }
+  /** P40: the ground spot to climb from for a roof item at `p`: walk out from it along ROOF_BEARINGS bearings to the first
+   * open ground (no taller block on the way), step ROOF_STAND_OFF further out, and keep the open spot nearest to `me`. */
+  function roofBase(p: Vec3, me: Vec3): Vec3 | null {
+    const m = solids!
+    let best: Vec3 | null = null, bestD = Infinity
+    for (let b = 0; b < ROOF_BEARINGS; b++) {
+      const ux = Math.cos((2 * Math.PI * b) / ROOF_BEARINGS), uy = Math.sin((2 * Math.PI * b) / ROOF_BEARINGS)
+      for (let r = 1; r <= ROOF_EDGE_M; r++) {
+        const x = p[0] + ux * r, y = p[1] + uy * r
+        const i = Math.floor((x - m.minX) / m.step), j = Math.floor((y - m.minY) / m.step)
+        if (i < 0 || j < 0 || i >= m.nx || j >= m.ny || m.top[j * m.nx + i] > p[2] + cfg.mech.step_up) break
+        if (!openGround(x, y)) continue
+        const bx = x + ux * ROOF_STAND_OFF, by = y + uy * ROOF_STAND_OFF
+        if (openGround(bx, by) && openGround(bx + uy * 2, by - ux * 2) && openGround(bx - uy * 2, by + ux * 2)) {
+          const d = Math.hypot(bx - me[0], by - me[1])
+          if (d < bestD) { bestD = d; best = [bx, by, groundAt(m, bx, by)] }
+        }
+        break
+      }
+    }
+    return best
   }
 
   /** Keep track of every enemy mech seen, and of where the last hit came from. */
@@ -843,6 +910,104 @@ function buildBot(hello: Hello): Bot {
         if (spot) {
           move = heading(spot)
           mode = "hide"
+        }
+      }
+      // Roof jet route (P40, see ROOF_JET_ROUTE_ON): where we would hold, or the farm/loot goal is up on a roof.
+      if (ROOF_JET_ROUTE_ON && solids?.ground) {
+        const eye: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + (me.stats.eye_height ?? cfg.mech.eye_height ?? cfg.mech.height)]
+        for (const k of obs.crates) if (onRoof(k.pos)) roofSeen.set(k.id, { kind: "crate", pos: k.pos })
+        for (const c of obs.cubes) if (onRoof(c.pos)) roofSeen.set(c.id, { kind: "cube", pos: c.pos })
+        for (const p of obs.pickups) if ((p.kind === "laser" || p.kind === "lightning") && onRoof(p.pos)) roofSeen.set(p.id, { kind: p.kind, pos: p.pos })
+        const listed = (id: number) => obs.crates.some((k) => k.id === id) || obs.cubes.some((c) => c.id === id) || obs.pickups.some((p) => p.id === id)
+        for (const [id, x] of roofSeen)
+          if (!listed(id) && flat(x.pos, me.pos) < ROOF_GONE_M && clearLine(solids, eye, [x.pos[0], x.pos[1], x.pos[2] + 1], 0, 0)) roofSeen.delete(id)
+        const held = me.weapons.map((x) => x?.kind ?? null)
+        const canTake = held.includes(null) || ((held.includes("laser") || held.includes("lightning")) && held.includes("gun"))
+        const wanted = (x: { kind: string }) => x.kind === "crate" || x.kind === "cube" || (canTake && !held.includes(x.kind as WeaponKind))
+        const goalUp = (mode === "farm, hunt" || mode === "farm, pickup") && !!farmGoal && onRoof(farmGoal.pos) || (mode === "loot" && !!lootTarget && onRoof(lootTarget))
+        // Drop gate (Coordinator rule): no drop falling within DROP_RUN_M, and no drop run or ring hold. A landed drop in
+        // reach starts the drop run, which ranks above this and takes over on the same tick.
+        const dropBusy = !!dropRun || !!dropMove || dropHold || farmHold ||
+          (obs.drops ?? []).some((x) => x.lands_in > 0 && flat(x.pos, me.pos) <= DROP_RUN_M)
+        const pace = ZONE_WALK * walkSpeed
+        const safe = (p: Vec3) =>
+          flat(p, z.center) < Math.max(0, z.radius - margin) &&
+          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + ROOF_CLIMB_S < timeLeft
+        // A climb already in the air is finished rather than dropped for a farm or loot goal on the ground.
+        const inAir = !!roofRun?.climbing && !me.grounded && (mode === "farm, hunt" || mode === "farm, pickup" || mode === "loot")
+        const can = obs.t >= ROOF_START_S && farmOk && !dropBusy && (mode === "hold" || goalUp || inAir)
+        const fits = (id: number, x: { kind: string; pos: Vec3 }) =>
+          !roofSkip.has(id) && wanted(x) && flat(x.pos, me.pos) <= ROOF_RANGE_M && x.pos[2] - me.pos[2] <= ROOF_MAX_H && safe(x.pos)
+        if (!can) roofRun = null
+        else {
+          // Keep the current target while it is still there and fits; otherwise the nearest one that fits.
+          const cur = roofRun && roofSeen.get(roofRun.id)
+          if (!(roofRun && cur && fits(roofRun.id, cur))) {
+            roofRun = null
+            const next = [...roofSeen].filter(([id, x]) => fits(id, x)).sort((a, b) => flat(a[1].pos, me.pos) - flat(b[1].pos, me.pos))[0]
+            if (next) {
+              const base = roofBase(next[1].pos, me.pos)
+              if (!base) roofSkip.add(next[0])
+              else roofRun = { id: next[0], pos: next[1].pos, base, since: obs.t, phase: "", best: Infinity, bestAt: obs.t, climbing: false, waitAt: null, standAt: null }
+            }
+          }
+        }
+        if (roofRun) {
+          const run = roofRun
+          const top = run.pos[2]
+          const kind = roofSeen.get(run.id)!.kind
+          // On the roof: standing on it (in the air beside the wall we keep jetting until our feet clear the edge).
+          const up = me.grounded && me.pos[2] >= top - 1.5
+          const need = ROOF_JET_PER_M * Math.max(0, top - me.pos[2]) + ROOF_JET_SPARE
+          if (!run.climbing && !up && flat(me.pos, run.base) < ROOF_AT_BASE_M) run.climbing = true
+          let giveUp = obs.t - run.since > ROOF_TRIP_S
+          let roofMove: [number, number] = [0, 0]
+          let roofBoost = false
+          let roofMode = ""
+          // Progress for the give-up: path length left while walking to the wall, else distance plus height left to the item.
+          let left = flat(me.pos, run.pos) + Math.max(0, top - me.pos[2])
+          if (up && kind === "crate" && flat(me.pos, run.pos) <= ROOF_CRATE_STAND_M) {
+            // On the roof by a crate: stand; the farm shot code breaks it, then its cube is the next target.
+            run.standAt ??= obs.t
+            if (obs.t - run.standAt > ROOF_CRATE_S) giveUp = true
+            run.bestAt = obs.t
+            roofMode = "roof, take"
+          } else if (up) {
+            run.standAt = null
+            roofMove = heading(run.pos)
+            roofMode = "roof, top"
+          } else if (!run.climbing) {
+            const go = travel(me.pos, run.base, obs.t, canPlan())
+            if (route && flat(route.goal, run.base) <= ROUTE_GOAL_SHIFT && !route.found) giveUp = true
+            roofMove = go.move
+            left = go.dist
+            roofMode = "roof, walk"
+          } else if (me.grounded && me.energy < need) {
+            // At the wall without the energy for the climb: wait (energy regenerates while we stand).
+            run.waitAt ??= obs.t
+            if (obs.t - run.waitAt > ROOF_WAIT_S) giveUp = true
+            run.bestAt = obs.t
+            roofMode = "roof, wait"
+          } else {
+            // Climb: jump, then jet while in the air, pushing toward the item until our feet clear the roof edge.
+            roofMove = heading(run.pos)
+            if (me.grounded) act.jump = true
+            else roofBoost = me.pos[2] < top + 1.5
+            roofMode = "roof, climb"
+          }
+          // Waiting for energy and climbing count as one phase, so a climb that keeps falling back still gives up.
+          const phase = roofMode === "roof, wait" ? "roof, climb" : roofMode
+          if (phase !== run.phase) { run.phase = phase; run.best = Infinity; run.bestAt = obs.t }
+          if (left < run.best - 1) { run.best = left; run.bestAt = obs.t }
+          if (giveUp || obs.t - run.bestAt > ROOF_STUCK_S) {
+            roofSkip.add(run.id)
+            roofRun = null
+            draw.text("roof give-up")
+          } else {
+            move = roofMove
+            boost = roofBoost
+            mode = roofMode
+          }
         }
       }
       // Midring settle (P-D-012, idea P29, see MIDRING_SETTLE_ON): only where we would hold after a shrink.

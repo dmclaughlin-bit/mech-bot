@@ -13,8 +13,8 @@
  "stage": "building",
  "pr": null,
  "sha": null,
- "branch": "p40c-roof-landing-exit",
- "champion_sha_tested_against": "588557e464dd4946680bff964a7c8e86700b8739",
+ "branch": "p40d-roof-landing-exit",
+ "champion_sha_tested_against": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
  "champion_note": "P40b = rebuild of P40 on the current champion P34 (code 0e6fadd, merged as 8c130ad, main 588557e, LETHAL_RELEASE_ON=true, site 4.38 BB-ABEB42BF). Bot code re-applied from /workspace/patches/p40-bot.diff (old commit 57e4bad, narrow-gate cut on the P29 base), same behavior. All runs TREES-ON (builder-sim-trees --trees), bases 0, 1000, 6000, 7000.",
  "drop_gate": "NARROW gate (Coordinator rule, /workspace/drop-gate-rule.txt): never while a drop run (dropRun/dropMove), drop ring hold (dropHold) or farm capture hold (farmHold) is on, and never while a drop is announced/falling (lands_in > 0) within DROP_RUN_M; a landed claimable drop in reach starts the drop run, which ranks above this and takes over on the same tick. Never 'no drop on the map' (that gate never opens in this sim: an untaken drop sits in obs.drops almost all game; killed P26b, P33, P29b).",
  "brief": "Single change: plan a jet/jump climb onto a roof (≤ ~60 m reachable with 100 energy, protocol.md:282-287) to take crates/loot that spawn on roofs (about a quarter of them), when no enemy is in view and the zone allows. The champion's nav is ground-only (nav.ts:16-17); jets are used only as a stuck escape (brain.ts:875-877). It must be separate from B125's TAC_JET_LOOT (site 3.50 bundled pack): explain how it differs. Early activation count first (stop under 10/192), then the full BUILD_CHECKLIST, with a flag-ON head.",
@@ -188,7 +188,7 @@
  ],
  "decision": "Built and checklist-passed (trees-on, four bases) by Mech Builder; not submitted.",
  "blocker": null,
- "next_action": "Mech Builder: P40c rebuild (roof landing exit) on p40c-roof-landing-exit, diagnosis on seeds 3014, 5083, 1, 1002, then BUILD_CHECKLIST trees-on bases 0/1000/6000/7000.",
+ "next_action": "Mech Builder: P40d = P40c rebuilt on champion P48 (b9492c6/edb729f) on p40d-roof-landing-exit; diagnosis on seeds 3014, 5083, 1, 1002, then BUILD_CHECKLIST trees-on bases 0/1000/6000/7000 vs P48.",
  "doug_waiver": false,
  "source": "mechanics research directive (Doug 8:06 PM ET), coord/next-doug.md 5404931; Doug's idea",
  "created_et": "2026-11-21 20:18",
@@ -197,7 +197,8 @@
   "built": "2026-11-22",
   "p40b_started": "2026-11-22",
   "p40b_built": "2026-11-22",
-  "p40c_started": "2026-11-22"
+  "p40c_started": "2026-11-22",
+  "p40d_started": "2026-11-22"
  },
  "sources": [
   "coord/data/ideas/B125.json",
@@ -232,7 +233,7 @@
   "sim_tester_verdict": "VETO (PR #155 comments 7073238443, 7073245075)"
  },
  "p40c": {
-  "stage": "rebuilding",
+  "stage": "superseded by P40d (rebuilding on P48); never finished",
   "branch": "p40c-roof-landing-exit",
   "base": "a4fa643d6c17d3b1b62c98acb574d98d99a6f666",
   "champion": "588557e464dd4946680bff964a7c8e86700b8739 (main containing P34 merge 8c130ad7f0c81acb03508c40f20c31867f29d358, code 0e6fadd, LETHAL_RELEASE_ON=true, site 4.38)",
@@ -242,6 +243,18 @@
    "Builder P40b checklist also showed NEW pins seed 1 (41-62 s) and seed 1002 (204-245 s), both airborne wall wedges after a roof episode (/workspace/claude-p40b.log)."
   ],
   "planned_fix": "Same single flag ROOF_JET_ROUTE_ON (default false), P40b behavior re-applied exactly from /workspace/patches/p40b-bot.diff, plus ONE rework inside the flag: stop the post-climb wedge. When a roof climb ends or aborts (landed on roof, gave up, or descending off it), run a short exit/unstick step: pick a reachable free nav cell away from the wall and route there before resuming the champion's normal goal; if grounded and not moving for ~1 s within some seconds after a climb, re-route/unstick. Nothing else changes.",
+  "timestamps": {
+   "started": "2026-11-22"
+  },
+  "branch_head": "16c61964205149fdceec6fb1a249448bd9b48f82"
+ },
+ "p40d": {
+  "stage": "rebuilding",
+  "note": "P40c rebuilt on the new champion P48 (tree retreat). P40c code commit 16c6196 conflicted with P48 in brain.ts/params.ts; re-applied by hand from /workspace/patches/p40c-bot.diff, P48 behavior kept (TREE_RETREAT_ON=true, LETHAL_RELEASE_ON=true). Same single flag ROOF_JET_ROUTE_ON, same behavior as P40c.",
+  "branch": "p40d-roof-landing-exit",
+  "base": "9071465e31afe09ccc4e2bd66aaab2e4ce3b8684",
+  "champion": "b9492c6f122c549c705b69402157f078b4a57857 (P48 tree retreat code, merged as edb729fc790c0bd583204fa2a0c6492cc8277ca8, site 4.44, BB-94897D91)",
+  "veto_reasons_carried": "see p40c.veto_reasons (PR #155)",
   "timestamps": {
    "started": "2026-11-22"
   }

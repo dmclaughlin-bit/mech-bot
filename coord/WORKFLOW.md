@@ -117,3 +117,7 @@ Doug approved these four on Sat Nov 21, 6:46 PM ET (his own words). D4, D5 (Sonn
 - **D2. Record-first intake.** Every new idea gets that record, at stage `idea`, before a build starts. Grok sets `stage` and `owner`. Chat is only a notification. A person without repo access can leave a note in `coord/inbox/`; Grok turns it into a record within one 10-minute tick.
 - **D3.** One change per test: the PR template names the idea id, the one behavior changed, the single flag, the champion SHA the branch contains, and whether change-off is identical. `python3 pipeline/q.py eligible --pr <n>` rejects a build whose idea record or PR lists more than one flag or behavior, unless the record has `doug_waiver` set by Doug. The same command also checks that the head contains the champion (`git merge-base --is-ancestor`), that `screens.csv` has both seed sets for that exact SHA, and that no official score is pending.
 - **D6.** Each 10-minute loop tick regenerates `coord/data/pipeline_view.json` with `python3 pipeline/pipeline_view.py` (read-only except for that file). Grok refreshes the pipeline Page from that file.
+
+## Doug 7:00 PM ET: pre-built queue
+
+Doug confirmed Sat Nov 21, 7:00 PM ET (his own words): pre-build 3-4 ahead, each still needs the full paired screen before it's tested; rebuild on top of any new winner.

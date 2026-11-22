@@ -6,7 +6,7 @@
  "flag": null,
  "behaviors": null,
  "owner": "unassigned",
- "stage": "idea",
+ "stage": "retired",
  "pr": null,
  "sha": null,
  "champion_sha_tested_against": null,
@@ -15,16 +15,18 @@
  "receipt": null,
  "site_score": null,
  "score": null,
- "decision": null,
- "blocker": "not assigned; not measured in the sim; final-circle samples too small (SKILLS.md)",
- "next_action": "unassigned; ranks below mode 36 / P25 family",
+ "decision": "superseded by P29 (same idea, now in the pre-built queue)",
+ "blocker": "see P29.json",
+ "next_action": "see P29",
  "doug_waiver": false,
  "source": "Watcher SKILLS.md idea 5; ideas_queue.md item 5 (Medium / Low)",
  "timestamps": {
   "first_mention": "2026-11-21 17:54 ET (ideas_queue.md)",
-  "updated": "2026-11-21 17:54 ET"
+  "updated": "2026-11-21 19:01 ET",
+  "superseded": "2026-11-21 19:01 ET"
  },
  "sources": [
-  "coord/data/ideas_queue.md"
+  "coord/data/ideas_queue.md",
+  "coord/data/ideas/P29.json"
  ]
 }

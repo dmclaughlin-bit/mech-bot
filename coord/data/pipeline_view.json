@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 19:00 ET",
- "origin_main": "fec28eed7960096f4328d3203a3e545637f0cc7f",
+ "generated_at_et": "2026-11-21 19:04 ET",
+ "origin_main": "0022073320930a270542ed4f2b0d79f5ce633030",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -74,20 +74,20 @@
  },
  "board": {
   "Idea": 0,
-  "Researched": 22,
+  "Researched": 20,
   "Assigned": 0,
-  "Built (PR)": 0,
+  "Built (PR)": 3,
   "Screened": 15,
   "READY": 0,
   "Submitted": 0,
   "Scored": 0,
   "Merged": 4,
-  "Retired": 31
+  "Retired": 33
  },
  "board_detail": {
   "Retired_loss": 13,
   "Retired_tie": 3,
-  "Retired_unsubmitted": 15
+  "Retired_unsubmitted": 17
  },
  "items": [
   {
@@ -2878,6 +2878,16 @@
       "exact_sha": true
      },
      {
+      "src": "PR #136 comment",
+      "sets": [
+       "B"
+      ],
+      "at": "2026-11-21 19:03 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/136#issuecomment-7071280544",
+      "after_click": false,
+      "exact_sha": true
+     },
+     {
       "src": "screens.csv P25b",
       "sets": [
        "A"
@@ -3038,9 +3048,10 @@
    "queue_rank": "Medium",
    "queue_pos": 3,
    "stage_idx": 1,
-   "stage": "Researched",
+   "stage": "Retired",
    "outcome": "open",
-   "blocker": "not assigned; queue says P-D-010 should inform this before a build \u2014 P-D-010 found delay rarely changes arrival",
+   "blocker": "see P28.json",
+   "record_decision": "superseded by P28 (same idea, now in the pre-built queue)",
    "from_idea_record": true
   },
   {
@@ -3145,9 +3156,10 @@
    "queue_rank": "Medium / Low",
    "queue_pos": 5,
    "stage_idx": 1,
-   "stage": "Researched",
+   "stage": "Retired",
    "outcome": "open",
-   "blocker": "not assigned; not measured in the sim; final-circle samples too small (SKILLS.md)",
+   "blocker": "see P29.json",
+   "record_decision": "superseded by P29 (same idea, now in the pre-built queue)",
    "from_idea_record": true
   },
   {
@@ -3947,6 +3959,84 @@
    "from_idea_record": true
   },
   {
+   "id": "P25c",
+   "title": "P25 cube-memory follow-up (assigned in the pre-built queue)",
+   "kind": "build",
+   "source": "pre-built queue (Doug 7:00 PM ET); follow-up to P25/P25b PR #136",
+   "owner": "Mech Builder",
+   "decision": null,
+   "changes": null,
+   "changes_basis": "unknown",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": null,
+   "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",
+   "research": [],
+   "prs": [],
+   "pr_opened": null,
+   "primary_pr": null,
+   "pr_url": null,
+   "pr_state": null,
+   "head": null,
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Built (PR)",
+   "outcome": null,
+   "blocker": "the single decision and flag are not yet written in the repo. P25b (47d0e6ce) remains on HOLD for new 20 s+ pins pending the stall comparison Doug asked for.",
+   "from_idea_record": true
+  },
+  {
+   "id": "P28",
+   "title": "Midring patrol when farm is open and the list is empty",
+   "kind": "build",
+   "source": "Watcher SKILLS.md idea 2; ideas_queue.md item 3; assigned after P27 4.13 CLOSE",
+   "owner": "Mech Builder",
+   "decision": null,
+   "changes": null,
+   "changes_basis": "unknown",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": "2026-11-21 17:54 ET (ideas_queue.md)",
+   "sha": null,
+   "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",
+   "research": [],
+   "prs": [],
+   "pr_opened": null,
+   "primary_pr": null,
+   "pr_url": null,
+   "pr_state": null,
+   "head": null,
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Built (PR)",
+   "outcome": null,
+   "blocker": "build in progress; needs a one-flag PR and a complete both-set screen of that exact SHA before any site test. Must not overlap P29 (P28 is when there is nothing to farm and no shrink context).",
+   "from_idea_record": true
+  },
+  {
    "id": "P26",
    "title": "Healthy boost with reserve on long legs to drop/zone (HEALTHY_BOOST_ON)",
    "kind": "build",
@@ -4025,6 +4115,45 @@
    "stage": "Screened",
    "outcome": null,
    "blocker": "Doug must yes before the screening lane changes",
+   "from_idea_record": true
+  },
+  {
+   "id": "P29",
+   "title": "After a shrink, settle in the midring and farm, do not camp the center (MIDRING_SETTLE_ON)",
+   "kind": "build",
+   "source": "Watcher SKILLS.md idea 5; ideas_queue.md item 5; assigned P-D-012 Sat Nov 21 7:00 PM ET",
+   "owner": "Diego's Claude",
+   "decision": null,
+   "changes": 1,
+   "changes_basis": "idea record flags",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": "2026-11-21 17:54 ET (ideas_queue.md)",
+   "sha": null,
+   "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",
+   "research": [],
+   "prs": [],
+   "pr_opened": null,
+   "primary_pr": null,
+   "pr_url": null,
+   "pr_state": null,
+   "head": null,
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Built (PR)",
+   "outcome": null,
+   "blocker": "assigned as P-D-012; record exists; build and both-set screen not started. Must not overlap P28 (P29 is position choice after a shrink; P28 is when nothing to farm and no shrink context); keep the code paths separate.",
    "from_idea_record": true
   }
  ],

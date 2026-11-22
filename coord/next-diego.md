@@ -23,31 +23,43 @@ Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, f
 
 ---
 
-## Current prompt: P-D-011 benchmark #133 path-search shortcut (Grok, Sat Nov 21, 5:58 PM ET; Doug approved 5:57 PM ET)
+## Current prompt: P-D-012 P29 midring settle (`MIDRING_SETTLE_ON`) (Grok, Sat Nov 21, 7:00 PM ET)
 
-Not ACKed. Add `ACK P-D-011 (Diego's Claude) <time ET>` to `coord/log.md` in your first PR. This comes BEFORE P-D-010 (now queued below). Doug decides whether to adopt the shortcut AFTER seeing your results. Don't change the live screening setup and don't merge.
+Not ACKed. Add `ACK P-D-012 (Diego's Claude) <time ET>` to `coord/log.md` in your first PR. This is a bot-code build, one change, one flag. Don't merge, don't submit, don't click anything on the site.
 
-Goal: prove whether item 1 of #133 (`geom.ts`: skip A* when start and goal are in different grid components) gives exactly the same games, and how much faster a complete screen gets.
-Method (run on spare capacity; don't slow the live queue or Mech Sim Tester's machine):
-1. Same build: champion bot code 6182d29 (origin/main bot files). Same seeds: the full screen sets, 2000+3000 AND 4000+5000 (n=192 each). Same hardware: run both versions on one machine, back to back, with the same `--jobs`, and record CPU model, cores and jobs.
-2. Run A uses the current sim (origin/main). Run B is identical except for the #133 `geom.ts` component skip only. Don't include the other #133 items (jobs default, CSV columns, etc.), so the timing isolates the shortcut.
-3. Compare per game: final place and score, plus a per-tick or per-event trace (positions, actions, kills, deaths, pickups, zone damage) for all 15 house bots and ours. Report how many of 384 games match exactly in final result, how many match exactly in the full trace, and describe every difference (game, first diverging tick, what differed, and the likely cause).
-4. Report wall-clock time for a complete screen (both sets) before and after, and also the time per 192-game set.
-Report in a docs PR titled `P-D-011 #133 benchmark` with a table and the raw CSVs/trace hashes in coord/data/benchmarks/. Grok reads it; Doug decides.
+**Idea record first (D2).** `coord/data/ideas/P29.json` already exists. Don't start coding until you've pulled main and confirmed that file is there. Put the idea id on the PR template.
+
+**Base.** Branch `diego/P-D-012-midring-settle` off current `origin/main`. `git merge-base --is-ancestor 6182d29c673d99f5186d742a5f019c0b007234f2 HEAD` must succeed. Flag 0 must be byte-identical to main. A keep requires a site score strictly above 4.17. Champion is still B113, official 4.17, receipt BB-09AE8A68. P27 (drop crossfire skip, PR #137) just scored 4.13 CLOSE (BB-004FA2FF) — do not rebuild that idea.
+
+**The single decision (D3).** One flag, `MIDRING_SETTLE_ON`, default off (0 / false = main, byte-identical). After a shrink, once we are already inside the circle with `farmOk`, prefer a midring sit/patrol (zratio about 0.40–0.70) over camping the center or hugging the edge. Drop run and zone-first travel stay above this rule. Stay off at r ≤ 70. Nothing else changes.
+
+**Do not overlap P28.** P28 (Mech Builder) is a midring *patrol when there is nothing to farm and no shrink context*. P29 is the *position choice after a shrink*. Keep the code paths separate. Don't implement P28 here, and don't share a flag or a helper that also does P28's job.
+
+**Evidence (from Watcher SKILLS.md / ideas_queue.md item 5; do not invent new numbers).** Among mechs alive ≥ 60 s, the 20–40% center-time bin has mean place 4.14 and 12.01 cubes vs 6.29 and 7.42 at ≥ 60% center time (115 mech-matches, 66 matches). Most high-team cubes are midring (909) not center (638). Overall center share is a tie (36.9% vs 37.4%). Final-circle samples are too small, which is why the rule stays off at r ≤ 70.
+
+**Closest previous test.** No official center-camp or midring-settle receipt. Zone-early timing (P-D-007 Step B, PR #125) failed in sim and got no slot — that was when to leave, not where to stand. P27 was a drop-run interrupt, not this.
+
+**What would disprove it.** Midring sits miss drops or the next shrink, add 20 s+ pins, raise deaths before 40 s, or fire in under about 10/192 games on the official screen; or a site score ≤ 4.17.
+
+**Deliver** a PR titled `P29 midring settle (MIDRING_SETTLE_ON)` with:
+- the idea id, the one behavior, the single flag, the champion SHA the branch contains, and change-off identical (yes/no) filled in on the PR template;
+- `check.py --map-dir arena` PASS, max under 30 ms;
+- flag 0 byte-identical to main (eqdrive / cmp);
+- a 96-game base-0 hazard: games fired, different behavior, different score, 20 s+ pins, drop-ring arrivals, deaths before 40 s;
+- the full 40-character SHA in the PR body;
+- rows appended to `coord/data/screens.csv` only if you run an official both-set screen (the Sim Tester's paired screen on 2000+3000 and 4000+5000 of this exact SHA is still required before any site test).
+
+No site submits. The 10-minute loop is the only submitter, and only after that full paired screen.
 
 **Backup builder (Doug approved 5:57 PM ET):** if Grok's computer's Claude hits its usage limit, Grok will hand you a named build here, with branch, last verified result and next action. Take one only when it appears as the Current prompt.
 
-## Queued: P-D-010 en-route travel delay (Grok, Sat Nov 21, 5:50 PM ET)
+## Past: P-D-011 #133 benchmark (done, PR #139) (Grok, Sat Nov 21, 5:58 PM ET; Doug approved 5:57 PM ET)
 
-Not ACKed. Add `ACK P-D-010 (Diego's Claude) <time ET>` to `coord/log.md` in your first PR. MEASUREMENT FIRST; stop early if it rules the idea out.
+Done. ACK at 6:16 PM ET. PR #139 (Digs22, opened 6:16 PM ET): with the `geom.ts` component skip alone, a full 384-game screen ran 2.38× faster (256.4 s → 107.9 s) on a 4-core Xeon, `--jobs 4`, champion 6182d29. Final results matched 384/384; full traces matched 383/384 (seed 2031 diverged under load in the current sim's own run, not caused by the shortcut). Doug decides on adoption after the same-machine confirm on Sim Tester. Don't change the live screening setup and don't merge.
 
-Question (Doug's overhaul, 5:38 PM ET): when the champion is healthy and not engaged, travelling to a safe objective (next zone circle, a drop ring, a cube or laser), where does it lose time, and does that delay ever change whether it arrives in time or survives? A general "move faster" isn't buildable; we need the single decision that costs time.
-Evidence: Watcher Top-16 (`coord/data/watcher/SKILLS.md`, `movement.md`) shows top teams travel faster when healthy and unengaged and boost more (8.1% vs 1.8% of those ticks); the champion's boost/energy policy and route planning may waste time.
-Step A (sim only, champion 6182d29 = origin/main bot code, seeds 2000+3000 and 4000+5000, n=192 each): for every healthy (HP >= 90%), unengaged travel leg, log the objective type, straight-line vs path distance, time taken vs ideal at max walk speed, time stopped/turning/replanning, boost use and energy, and whether the leg ended late (zone damage taken, drop ring missed, enemy reached the drop first) or with a death within 20 s. Report: total delay seconds, where it comes from (replan cadence, detours, stop-and-turn, no boost), and in how many games/192 the delay changed arrival or survival.
-Step B ONLY if the delay changes arrival or survival in ~10/192 games or more on both sets: propose (don't build) the single decision to change, with expected games affected. Grok assigns any build.
-Don't touch drop logic directly; the drop family is tapped out on the site.
+## Past: P-D-010 en-route travel delay (done, PR #140, no Step B) (Grok, Sat Nov 21, 5:50 PM ET)
 
-Results since your last prompt: P-D-008 (#131, laserSkip comeback 4/192, 3/192, no Step B) and P-D-009 (#132, rare disagreement, no build) are both DONE, logged, and get no slot. Site since 5 PM: P24 heal-in-cover 3.79, P23b late idle farm 4.00, B125 six-tactic package 3.50, all closed. Champion is still 4.17.
+Done. PR #140: the delay changes zone arrival in 6/192 and 2/192 games, and drop captures in 0, below the ~10/192 bar. No Step B and no travel-speed flag.
 
 ## DONE (no slot): P-D-008 laserSkip expiry (#131) and P-D-009 two-horizon race (#132)
 

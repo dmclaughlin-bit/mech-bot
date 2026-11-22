@@ -1,0 +1,35 @@
+{
+ "id": "P28",
+ "title": "Midring patrol when farm is open and the list is empty",
+ "family": "farm",
+ "flags": [],
+ "flag": null,
+ "behaviors": [
+  "when farmOk and nothing is in view (or in memory), walk a short zone-safe midring path (zratio about 0.40-0.70) instead of holding, and break for zone, drop, engage, or a new item"
+ ],
+ "owner": "Mech Builder",
+ "stage": "building",
+ "pr": null,
+ "sha": null,
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": null,
+ "blocker": "build in progress; needs a one-flag PR and a complete both-set screen of that exact SHA before any site test. Must not overlap P29 (P28 is when there is nothing to farm and no shrink context).",
+ "next_action": "Mech Builder delivers a one-flag PR on origin/main containing 6182d29; then Sim Tester runs both seed sets",
+ "doug_waiver": false,
+ "source": "Watcher SKILLS.md idea 2; ideas_queue.md item 3; assigned after P27 4.13 CLOSE",
+ "timestamps": {
+  "first_mention": "2026-11-21 17:54 ET (ideas_queue.md)",
+  "assigned": "2026-11-21 19:00 ET",
+  "updated": "2026-11-21 19:01 ET"
+ },
+ "sources": [
+  "coord/data/ideas_queue.md",
+  "coord/data/watcher/SKILLS.md",
+  "coord/data/ideas/SKILLS-2.json"
+ ]
+}

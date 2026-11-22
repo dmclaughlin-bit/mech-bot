@@ -8,21 +8,94 @@
   ],
   "flag": "TREE_HEAL_ON",
   "behaviors": [
-    "in the champion's standing 'heal' mode (HP < 90%), t >= 10, when an enemy in view sees us by the champion's own test (seenAt cone=true) and trees+buildings do not already hide us from all of them: walk to the nearest in-zone spot 1, 2 or 3 s of walking away (12 bearings, nearest first, straight-line walkable, no closer to any of those enemies) that trees+buildings hide from all of them, then heal there; give up after 3 s without 1 m of progress; off when a drop is near and reachable or a drop run/hold is on"
+    "in the champion's standing 'heal' mode (HP < 90%, the champion found no building hide spot), t >= 40 (TREE_HEAL_MIN_T; record said 10, raised once to fix deaths < 40 s on bases 0 and 6000), when an enemy in view sees us by the heal's own test (seenAt cone=true) and trees+buildings do not already hide us from all of them: walk (silent cap as 'heal, hiding') to the nearest in-zone spot 1, 2 or 3 s of walking away (12 bearings, nearest first, straight-line walkable, no closer to any of those enemies) that trees+buildings hide from all of them, then heal there; give up after 3 s without 1 m of progress (per-phase skip list); off when a drop is near and reachable or a drop run/hold is on"
   ],
   "owner": "Mech Builder",
-  "stage": "building",
+  "stage": "built",
   "pr": null,
   "sha": null,
   "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
   "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
-  "screens": [],
+  "screens": [
+    {
+      "sha": "flag-on copy of 131a852156ef6926d0859b608fc7978774aa9e03 (TREE_HEAL_ON=true, /tmp/p49/on), passive wrapper",
+      "seed_set": "0 trees-on (builder checklist, 96 games, --jobs 1, copy of /workspace/builder-sim tools/sim) vs champion P48 b9492c6 (instrumented run of origin/main, non-timing columns equal /workspace/champ-p48/trees-b9492c6-0.csv on 96/96)",
+      "fired": 47,
+      "diff_behavior": 47,
+      "diff_score": 19,
+      "sim_delta": 0.625,
+      "sim_se": 0.238,
+      "better": 14,
+      "worse": 5,
+      "drop_ring_arrivals": "5 -> 6 (lost seed 44: 2 -> 0; gained 34, 38, 61)",
+      "died_before_40": "24 -> 24",
+      "survivors": "2 -> 6",
+      "kills": "293 -> 345",
+      "pins": "champ 3 pin games, head 4: seeds 41, 43, 79 same as champion (0 flag ticks); NEW seed 38 51 s t=207-258 at (171,93), 0 flag ticks, game better (place 11 -> 1, drop 0 -> 1)",
+      "verdict": "PASS (builder checklist)",
+      "source": "builder run 2026-11-22 00:05-00:20 ET, /tmp/p49 (not committed)"
+    },
+    {
+      "sha": "flag-on copy of 131a852156ef6926d0859b608fc7978774aa9e03 (TREE_HEAL_ON=true, /tmp/p49/on), passive wrapper",
+      "seed_set": "1000 trees-on (builder checklist, 96 games, --jobs 1, copy of /workspace/builder-sim tools/sim) vs champion P48 b9492c6 (instrumented run of origin/main, non-timing columns equal /workspace/champ-p48/trees-b9492c6-1000.csv on 96/96)",
+      "fired": 54,
+      "diff_behavior": 54,
+      "diff_score": 25,
+      "sim_delta": 0.24,
+      "sim_se": 0.136,
+      "better": 17,
+      "worse": 8,
+      "drop_ring_arrivals": "1 -> 4 (gained 1015, 1025, 1037)",
+      "died_before_40": "15 -> 15",
+      "survivors": "2 -> 4",
+      "kills": "369 -> 389",
+      "pins": "champ 5 pins in 4 games, head 3 in 2 (1005 x2, 1018), all same as champion, 0 flag ticks; none new",
+      "verdict": "PASS (builder checklist)",
+      "source": "builder run 2026-11-22 00:05-00:20 ET, /tmp/p49 (not committed)"
+    },
+    {
+      "sha": "flag-on copy of 131a852156ef6926d0859b608fc7978774aa9e03 (TREE_HEAL_ON=true, /tmp/p49/on), passive wrapper",
+      "seed_set": "6000 trees-on (builder checklist, 96 games, --jobs 1, copy of /workspace/builder-sim tools/sim) vs champion P48 b9492c6 (instrumented run of origin/main, non-timing columns equal /workspace/champ-p48/trees-b9492c6-6000.csv on 96/96)",
+      "fired": 55,
+      "diff_behavior": 55,
+      "diff_score": 34,
+      "sim_delta": 0.031,
+      "sim_se": 0.123,
+      "better": 21,
+      "worse": 13,
+      "drop_ring_arrivals": "1 -> 1",
+      "died_before_40": "16 -> 16",
+      "survivors": "0 -> 0",
+      "kills": "358 -> 360",
+      "pins": "champ 2 pin games, head 1: NEW seed 6082 28 s t=49-77 at (-357.2,45.7), 7 flag ticks (t=49.0-49.6, the first 0.7 s; then champion modes laser rush/heal/hold). The champion freezes at exactly that point on the same seed (t=50-55, laser rush) before break crossfire frees it. Place 12 -> 14, death 102.75 -> 109.10, drops 0 -> 0.",
+      "verdict": "PASS (builder checklist)",
+      "source": "builder run 2026-11-22 00:05-00:20 ET, /tmp/p49 (not committed)"
+    },
+    {
+      "sha": "flag-on copy of 131a852156ef6926d0859b608fc7978774aa9e03 (TREE_HEAL_ON=true, /tmp/p49/on), passive wrapper",
+      "seed_set": "7000 trees-on (builder checklist, 96 games, --jobs 1, copy of /workspace/builder-sim tools/sim) vs champion P48 b9492c6 (instrumented run of origin/main, non-timing columns equal /workspace/champ-p48/trees-b9492c6-7000.csv on 96/96)",
+      "fired": 50,
+      "diff_behavior": 50,
+      "diff_score": 28,
+      "sim_delta": 0.115,
+      "sim_se": 0.176,
+      "better": 14,
+      "worse": 14,
+      "drop_ring_arrivals": "4 -> 5 (lost 7045: 1 -> 0; gained 7007, 7042)",
+      "died_before_40": "22 -> 22",
+      "survivors": "2 -> 4",
+      "kills": "371 -> 381",
+      "pins": "champ 1 pin game (7065), head 1: same, 0 flag ticks; none new",
+      "verdict": "PASS (builder checklist)",
+      "source": "builder run 2026-11-22 00:05-00:20 ET, /tmp/p49 (not committed)"
+    }
+  ],
   "receipt": null,
   "site_score": null,
   "score": null,
   "decision": null,
   "blocker": null,
-  "next_action": "Mech Builder: build TREE_HEAL_ON on p49-tree-heal (base eb51e4e) and run the 4-base trees-on BUILD_CHECKLIST vs P48 b9492c6.",
+  "next_action": "Coordinator: hand the flag-ON head of p49-tree-heal to Mech Sim Tester for the full trees-on paired screen (2000+3000, 4000+5000) vs P48 b9492c6. Note the base-6000 NEW pin (seed 6082, 7 flag ticks, at a champion stall point) for the stall rule.",
   "doug_waiver": false,
   "single_decision": "Where we stand while healing when seen. Today 'heal' (brain.ts:825-830) stands still; its hide walk runs only while hurt (!noSneak) and only toward building cover (hideSpot, brain.ts:425, building-only seenAt brain.ts:405). This adds one destination type: a tree-hidden spot, used where the champion would stand in the open.",
   "trigger": "TREE_HEAL_ON AND obs.t >= 10 AND mode === 'heal' (brain.ts:830, standing) AND threats seeing us by seenAt(me.pos, myHeight, [e], true) is non-empty AND NOT (trees+buildings hide us from every such enemy already) AND a tree spot exists (see behavior) AND NOT (near-and-reachable drop OR dropMove OR dropHold).",
@@ -70,7 +143,7 @@
   "source": "Doug 8:58 PM ET follow-up (tree-aware ideas): trees-on passive sim log of the P34 champion.",
   "timestamps": {
     "created": "2026-11-21 21:55 ET",
-    "updated": "2026-11-21 23:46 ET"
+    "updated": "2026-11-22 00:25 ET"
   },
   "sources": [
     "/workspace/mechfight-kit/protocol.md:317, :369-372, :452",
@@ -82,7 +155,10 @@
     "Trees-on recheck (Doug 8:58 PM ET, coord/WORKFLOW.md 475eb09): copies of the current champion bot files from origin/main 8c130ad (P34 merge; bot code identical to 0e6fadd) under /tmp/p4144t/bot and /tmp/p4144t/bot2 with passive per-decision CSV logging before act.move (no action changed; the tree sight model is copied read-only from /tmp/builder-sim-trees/geom.ts treeBlocks and loaded from the kit's arena/v2/world.json). Run: `cd /tmp/builder-sim-trees && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144t/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column equals /workspace/tester/runs/trees-0e6fadd-<s>.csv on 96/96 games per base for both runs (768 games). Logs in /tmp (not committed).",
     "git show 8e623eb:coord/data/ideas/P45.json (research record)",
     "/workspace/tester/runs/trees-b9492c6-{2000,3000,4000,5000}.csv (Sim Tester reference rows)",
-    "Step A on P48: /tmp/stepa2 (instrumented bot, sim copy, logs; not committed)"
+    "Step A on P48: /tmp/stepa2 (instrumented bot, sim copy, logs; not committed)",
+    "Builder checklist run 2026-11-22 /tmp/p49 (wrapper /tmp/p49/harness, sim copy /tmp/p49/sim, analysis /tmp/p49/cmp.py; not committed)",
+    "/workspace/champ-p48/trees-b9492c6-{0,1000,6000,7000}.csv",
+    "coord/data/ideas/P24.json, P37b.json, P48.json"
   ],
   "priority_rank": 5,
   "step_a_result": {
@@ -114,5 +190,22 @@
   },
   "base": "eb51e4e",
   "champion": "P48 b9492c6 (merge edb729f)",
-  "branch": "p49-tree-heal"
+  "branch": "p49-tree-heal",
+  "flagoff_sha": "131a852156ef6926d0859b608fc7978774aa9e03",
+  "sha_note": "Flag-ON head = the final commit on branch p49-tree-heal that only flips TREE_HEAL_ON to true (its SHA is printed as PUSHED by the builder; it cannot be written into its own parent). Flag-off code = 131a852156ef6926d0859b608fc7978774aa9e03.",
+  "fix_round": "One fix used: TREE_HEAL_MIN_T 10 -> 40. Round 1 (t >= 10) failed BUILD_CHECKLIST item 5 on bases 0 (24 -> 25) and 6000 (16 -> 19); every flipped early death had P49 ticks from 10-40 s (both directions). Round 1 drops were OK (5->6, 1->3, 1->1, 4->8); paired +0.792/+0.281/-0.021/+0.375. Same fix P48 used (TREE_RETREAT_MIN_T 10 -> 40). All four bases rerun after the fix (numbers below).",
+  "checklist": {
+    "early_activation_0+1000": "round 1 (t >= 10): 74 + 80 = 154/192; final (t >= 40): 47 + 54 = 101/192",
+    "eqdrive": "flag-off 131a852156ef6926d0859b608fc7978774aa9e03 vs origin/main (bot code = b9492c6): per-seed action-stream hash and every non-timing CSV column identical on 96/96 per base, bases 0, 1000, 6000, 7000 (384/384)",
+    "check_py": "PASS default (max 3.4 ms) and flag-on (max 3.2 ms); check.py's 300 observations end before t = 40 so P49 never runs in it. Sim wrapper per-decision max with P49 on: 12.1 / 7.5 / 20.2 / 6.3 ms (champion 15.2 / 5.0 / 7.7 / 5.6, flag-off 25.6 / 7.4 / 5.9 / 7.1: machine load), 0 answers over 50 ms",
+    "t_lt_10_activations": 0,
+    "totals_384": "fired 206/384, diff behavior 206, diff score 106, paired +0.253 +/- 0.087 (better 66, worse 40), drop-ring arrivals 11 -> 16, deaths < 40 s 77 -> 77, survivors 6 -> 14, kills 1391 -> 1475"
+  },
+  "heal_counts": {
+    "definition": "wrapper ticks whose mode starts with 'heal' ('heal', 'heal, hiding', 'heal, trees'); open = a mech in view sees us (range, near ring or fov cone, building+tree lines to center or top), hidden = none; HP healed / damage taken = sum of +/- hp steps on those ticks",
+    "champion_384": "open 5501 s, hidden 3142 s, HP healed 72438, damage taken while healing 308673 (35.7/s of heal time)",
+    "flag_on_384": "open 5293 s, hidden 3676 s, HP healed 73938, damage taken while healing 291238 (32.5/s)",
+    "per_base": "0: open 1308->1301 s, hidden 625->875 s, healed 13594->16327, dmg 76305->70091; 1000: 1479->1424, 849->922, 19670->19694, 77170->71385; 6000: 1357->1281, 850->947, 17743->18667, 74777->71715; 7000: 1357->1288, 817->932, 21431->19250, 80421->78047"
+  },
+  "novelty_note": "Differs from P48 TREE_RETREAT (champion, site 4.44; brain.ts treeRetreat, 'retreat, trees'): P48 triggers in the RETREAT branch (HP < retreatHp, hit by a mech in the last 2 s, no building hideSpot), uses the no-cone seen test (seenAt cone=false), boosts above 30% energy, and replaces the champion's straight back-away; P49 triggers only in the lower-ranked standing HEAL branch (HP < 90%, not hit in the last 2 s or above the retreat line, so the retreat branches did not fire), uses the heal's cone test (seenAt cone=true), walks under the silent cap (no boost), replaces standing still, and has its own spot state and per-phase skip list (healRun/healSkip; P48's treeRun/treeSkip are untouched). It reuses P48's treeSpot/treeHidden geometry. The two can never act on the same tick (exclusive branches of one if-chain): same-tick overlap 0. Games where both fired: 22 / 23 / 35 / 28 = 108/384 (bases 0/1000/6000/7000); P49 ticks within 3 s after a P48 tick: 99 / 156 / 157 / 178 (of 1501 / 1979 / 1937 / 1893 P49 ticks). Differs from P24 HEAL_COVER=2 (site 3.79 CLOSE vs 4.17): P24 walked to BUILDING cover (hideSpot, building-only LOS) before healing and also closed the noSneak gap (two behaviors); P49 adds only a tree-hidden destination where the champion would otherwise stand in sight, after the champion's own building search fails, and only from t >= 40. P24's screen: fired 85/192, 52 diff score, sim -0.286 +/- 0.133 (34 worse vs 18 better); P49 here: fired 206/384, 106 diff score, +0.253 +/- 0.087 (66 better vs 40 worse; per base 14/5, 17/8, 21/13, 14/14). Differs from P37b HEAL_PICKUP (vetoed on drop losses, base 0 5 -> 3 in its builder run; 8 -> 3 on the 4000+5000 screen): P37b walked to a CUBE while healing unseen (farmOk); P49 walks only while seen, to a hiding spot 1-3 s away, never toward items. Drop-ring arrivals with P49: 5->6, 1->4, 1->1, 4->5 (no base lower; lost-seed arrivals 44 and 7045 offset by gains). Sim-only evidence: the official screen (2000-5000) and the site decide."
 }

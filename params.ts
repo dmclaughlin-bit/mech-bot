@@ -164,5 +164,5 @@ export const MIDRING_STUCK_S = 3
  * not yet taken). Movement, aim and fire are unchanged. false = champion behavior exactly. Quiet is 2 s (first try
  * 1 s: a clear target came back during 18 of 25 lull reloads in the base 0+1000 hazard run).
  */
-export const LULL_RELOAD_ON = false
+export const LULL_RELOAD_ON = true
 export const LULL_RELOAD_QUIET_S = 2

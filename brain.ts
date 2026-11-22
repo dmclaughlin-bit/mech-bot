@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  BACKAWAY_FAR_COVER_ON, BACKAWAY_FAR_STEPS_S, BACKAWAY_LOS_BREAK_ON, BACKAWAY_LOS_STEPS_S, DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  BACKAWAY_FAR_COVER_ON, BACKAWAY_FAR_STEPS_S, BACKAWAY_LOS_BREAK_ON, BACKAWAY_LOS_STEPS_S, DROP_RUN_M, FAR_COVER_LATCH_HOLD_ON, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
@@ -893,6 +893,24 @@ function buildBot(hello: Hello): Bot {
         if (best) losRun = { spot: best, key: treeKey(best[0], best[1]), best: flat(me.pos, best), bestAt: obs.t, used: obs.t, n: bestN }
         return best
       }
+      // P67 (FAR_COVER_LATCH_HOLD_ON): the far spot P60 has latched (refreshed within 0.5 s) if it still passes P60's gates
+      // and latch rules, else null. Checked after building cover and ahead of the tree, P64 LOS-break and plain back-away
+      // retreat branches so they cannot preempt the walk; P60's give-up (no progress, arrived, outside the circle we keep to, no longer hidden) is unchanged.
+      const farHold = (): Vec3 | null => {
+        if (!FAR_COVER_LATCH_HOLD_ON || !farRun || obs.t - farRun.used > 0.5) return null
+        if (!BACKAWAY_FAR_COVER_ON || !trees || obs.t < TREE_RETREAT_MIN_T || dropMove || dropHold || dropReach()) return (farRun = null)
+        const seen = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        const shooters = seen.filter((e) => obs.t - (mechHitBy.get(e.id) ?? -Infinity) < THREAT_HIT_S)
+        const seers = shooters.length ? shooters : seen
+        const run = farRun
+        const d = flat(me.pos, run.spot)
+        if (d < run.best - 0.5) { run.best = d; run.bestAt = obs.t }
+        const stuck = obs.t - run.bestAt > TREE_RETREAT_STUCK_S || d < 1.5
+        const still = !stuck && flat(run.spot, zoneKeep[0]) <= zoneKeep[1] && seers.every((e) => treeHidden(run.spot, myHeight, e))
+        if (still) { run.used = obs.t; return run.spot }
+        if (stuck) farSkip.add(run.key)
+        return (farRun = null)
+      }
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -926,6 +944,12 @@ function buildBot(hello: Hello): Bot {
         move = heading(spot)
         boost = me.energy > 0.3 * me.max_energy
         mode = "retreat to cover"
+      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && (spot = farHold())) {
+        // P67 (FAR_COVER_LATCH_HOLD_ON): keep walking to P60's latched far spot; tree, LOS break and back-away can't preempt it
+        // (building cover above still can: fix round, the 4093 save is a building-cover exit from a far walk).
+        move = heading(spot)
+        boost = me.energy > 0.3 * me.max_energy
+        mode = "retreat, far cover"
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && (spot = treeRetreat())) {
         // P48 (TREE_RETREAT_ON): no building cover in reach, but trees can hide us from every enemy that sees us: walk
         // there instead of backing straight away (no closer to any of them), torso still on the attacker.

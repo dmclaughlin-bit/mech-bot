@@ -1,0 +1,347 @@
+{
+ "id": "P67",
+ "title": "FAR_COVER_LATCH_HOLD_ON: while P60's far-cover target is latched and still valid, the tree-cover, P64 LOS-break and plain back-away retreat modes cannot preempt the walk (building cover still can)",
+ "family": "retreat / movement",
+ "flag": "FAR_COVER_LATCH_HOLD_ON",
+ "flags": [
+  "FAR_COVER_LATCH_HOLD_ON"
+ ],
+ "owner": "Mech Builder",
+ "stage": "built",
+ "branch": "p67-far-cover-latch-hold",
+ "base": "bc640a6b98617c66f3b9a3c4df97940bfbdd7b55",
+ "champion": "P64 BACKAWAY_LOS_BREAK_ON (bot code 8ada6a4, main merge 297f133, site 3.90 builders-4, BB-0E81A218)",
+ "champion_sha_tested_against": "8ada6a4005cfe94e640e1f27c7108c05133255be",
+ "champion_main": "297f1332c190b034be1248662460716a437d54c3",
+ "builds_on": [
+  "F16",
+  "F18",
+  "F20",
+  "synergy_research opp 2 (158/192 episodes < 1 s, median 2.2 m vs 47-70 m)",
+  "P63 note 92/142 < 1 s"
+ ],
+ "interacts_with": [
+  {
+   "mechanics": [
+    "P60 far-cover walk (mode 'retreat, far cover')",
+    "building-cover retreat (mode 'retreat to cover')"
+   ],
+   "interaction": "interference: building cover is checked first in the retreat chain, so a 1-3 s building spot that appears mid-walk ends the far-cover walk; far-cover is within 1 s of building-cover in 34 official walk games",
+   "source": "coord/data/synergy_research.md opportunity 2 (official P60 traces, 384 games)"
+  },
+  {
+   "mechanics": [
+    "P60 far-cover walk",
+    "P48 tree retreat (mode 'retreat, trees')"
+   ],
+   "interaction": "interference: tree retreat is checked before far cover, so a 1-3 s tree spot ends the walk; within 1 s of each other in 43 official walk games",
+   "source": "coord/data/synergy_research.md opportunity 2"
+  },
+  {
+   "mechanics": [
+    "P60 far-cover walk",
+    "plain back-away (mode 'retreat')"
+   ],
+   "interaction": "interference: P60's farRetreat drops the latch and falls to plain back-away when no seer is in view or trees already hide us from the seers at our current position; within 1 s of each other in 62 official walk games",
+   "source": "coord/data/synergy_research.md opportunity 2; brain.ts farRetreat (afb6f26)"
+  },
+  {
+   "mechanics": [
+    "P60 far-cover walk",
+    "P64 back-away LOS break (mode 'retreat, los break')"
+   ],
+   "interaction": "P64's LOS break is checked after P60's far cover and runs only when farRetreat returns null, so it can follow a far-cover episode (6+6 episode ends on the screen sets) but never preempted a still-VALID latch in Step A (0 ticks). The hold sits ahead of it as part of the same single rule (no other retreat mode preempts a valid far latch); it never blocks P64 when P60's latch has dropped.",
+   "source": "P67 Step A on P64 (this record, step_a_result)"
+  }
+ ],
+ "hypothesis": "P60's far-cover walk (4-6 s, 47-70 m) won on the site (F18) but is almost never delivered: 158/192 official episodes last < 1 s (median 2.2 m traveled) because the three other retreat modes preempt it on a sub-second scale (synergy_research opp 2; P63 92/142 < 1 s). Holding a still-valid latched far spot through those preemptions lets the walk reach cover from the shooters, which is how the documented saves (2073, 4093) worked, so fewer retreats end in death.",
+ "mechanism": "One flag FAR_COVER_LATCH_HOLD_ON (default false). In the retreat condition only (hit in the last 2 s and HP < RETREAT_HP, unchanged), checked right AFTER the building-cover branch and ahead of P48 tree, P60 far search, P64 LOS break and plain back-away: if P60's far-cover run is latched (farRun exists, refreshed within 0.5 s) and P60's own gates pass (t >= 40 s, no drop run/hold, no drop near AND reachable within DROP_RUN_M), apply P60's latch rules unchanged (progress update; no progress for TREE_RETREAT_STUCK_S or arrived within 1.5 m -> skip list and drop; spot outside the circle we keep to or no longer hidden from the seers (shooters, else all seers) -> drop). If still valid, keep walking to it (mode 'retreat, far cover', same boost rule). Otherwise the champion chain runs unchanged. Movement/mode precedence only: torso/aim untouched (N8), retreat trigger/timing untouched, no new search. Fix round (the one allowed fix): round 1 placed the hold ahead of building cover too; that lost save 4093 (a building-cover exit from a far walk) and added a NEW 29 s pin on 6034, so the hold now sits after building cover.",
+ "activation": "Decision-level: retreat condition holds, P64's mode is tree retreat, LOS break or plain back-away (building cover excluded after the fix round), the far latch would still be held by the rules above, and the latched heading differs from the move actually taken by > 20 deg. Game-level Step A count = games where this happens at least once (per set of 192: 2000+3000, 4000+5000).",
+ "disproof": "Fails if Step A < 10/192 on either set, OR the paired mean vs P60 is lower on BOTH practice bases, OR deaths <40 s rise on either base, OR a NEW >=20 s pin appears, OR the saves 2073/4093 are lost.",
+ "positives": "Hold lengthens the far walk as intended: far-cover episodes under 1 s 37->30 and 41->31; median episode displacement 1.5->4.3 m and 5.2->8.2 m. Fix round keeps 4093 identical and removes the 6034 pin. Base 6000 +0.010 +/- 0.018, kills 365->366. No opening, drop, early-death or pin regressions. Step A 21/24 per 192 (round 1) and 17/16 (shipped).",
+ "negatives": "Base 0 -0.156 +/- 0.122, kills 306->292, survivors 3->2, driven by seed 6 (1st and survived -> 11th, died 73.55 s; the hold diverged at t 62.5 from a plain back-away and the bot died ~11 s later) and seed 24 (4th -> 10th). Still 0 episodes reach within 10 m of the 47 m spot: the walk is longer but rarely complete, so the 'deliver the walk' mechanism is only partly realised. 'Far cover' becomes the last retreat mode in more deaths (8->12, 7->14), mostly moved from tree retreat (23->21, 14->8). 2073 one place below the champion.",
+ "confidence": "Uncertain (practice bases only; base 0 negative and base 6000 flat, both within ~1.3 SE)",
+ "reuse": "1) Fire-and-change Step A for precedence changes must also count same-heading preemptions: 4093 was blocked at a 0 deg heading difference and then diverged, so the >20 deg rule undercounts what changes. 2) A building-cover exit from a far walk is the documented 4093 save: building cover should keep priority over far-cover latches. 3) P63's sim trace patch has an if/else bug (the trace line splits `if (action) ... else`): untraced runs on a patched sim count every answer missed (fixed in /tmp/p67/sim/run.ts).",
+ "outcome": "pending (built; checklist passed after the one allowed fix; needs the full paired trees-on screen vs P64)",
+ "source": "Coordinator brief 2026-11-22 03:36 AM ET (P67 FAR COVER LATCH HOLD); coord/data/synergy_research.md opportunity 2",
+ "novelty": {
+  "vs_P61": "P61 latched building-cover re-picks (outcome C). P67 does not change building cover; it only stops building cover from interrupting a latched far-cover walk.",
+  "vs_P63": "P63 filters which far spot is legal (may cut walks). P67 keeps P60's spot choice and lengthens the walk.",
+  "vs_P64": "P64 acts only when no far spot exists. P67 acts only when one is latched.",
+  "vs_P33": "P33 kept any retreat going until the nearest enemy was ~120 m away (retired, barely fired). P67 adds no retreat time; it only changes which retreat mode moves the legs inside the champion's existing retreat window."
+ },
+ "timestamps": {
+  "recorded": "2026-11-22 03:45 ET",
+  "built": "2026-11-22 04:25 ET"
+ },
+ "sources": [
+  "coord/data/synergy_research.md opportunity 2",
+  "coord/data/findings.md F3, F16, F18, N8, N9, N10",
+  "coord/data/ideas/P60.json",
+  "/workspace/wt-p63/coord/data/ideas/P63.json (read-only)",
+  "brain.ts farRetreat / retreat chain at afb6f26",
+  "coord/data/ideas/P64.json and findings F20 on origin/main bc640a6",
+  "/workspace/tester/runs/trees-8ada6a4-{2000,3000,4000,5000}.csv"
+ ],
+ "step_a_result_p60_superseded": {
+  "note": "Step A first run on P60 afb6f26 before the champion changed (passive 384/384): 22/192 and 22/192. Superseded by step_a_result on P64.",
+  "2000+3000": 22,
+  "4000+5000": 22
+ },
+ "step_a_result": {
+  "method": "log-only /tmp copy of P64 (origin/main bc640a6 bot files = 8ada6a4) with a pure would-hold check evaluated before the retreat chain (no state change) and a per-decision trace; trees-on sim copy of /workspace/wt-tester-trees/tools/sim with a passive ground-truth trace, --jobs 1, 96 seeds per base",
+  "passivity": "CSV rows identical to /workspace/tester/runs/trees-8ada6a4-{2000,3000,4000,5000}.csv on every non-timing field, 384/384",
+  "fire_def": "retreat condition (hit < 2 s, HP < RETREAT_HP); P60's chosen mode is building cover, tree retreat, P64 LOS break or plain back-away; farRun latched (used within 0.5 s), P60 gates pass (t >= 40 s, no drop run/hold/near-reachable drop) and P60 latch rules hold (progress, not arrived, in the circle we keep to, hidden from shooters else seers); latched heading differs from the move taken by > 20 deg",
+  "2000+3000": {
+   "fired_and_changes_games": 21,
+   "any_preempt_of_valid_latch_games": 29,
+   "games_by_preempting_mode": {
+    "tree": 12,
+    "building": 7,
+    "los_break": 0,
+    "back_away": 6
+   },
+   "ticks": 73,
+   "ticks_by_mode": {
+    "tree": 42,
+    "building": 25,
+    "los_break": 0,
+    "back_away": 6
+   },
+   "heading_diff_median_deg": 61,
+   "champion_far_episodes": 85,
+   "episodes_lt_1s": 71,
+   "episode_dur_median_s": 0.4,
+   "episode_dur_max_s": 2.7,
+   "episode_displacement_median_m": 3.0,
+   "episode_displacement_max_m": 29.2,
+   "spot_dist_at_start_median_m": 46.8,
+   "episodes_ending_within_10m_of_spot": 0,
+   "episode_ended_by": {
+    "retreat, trees": 23,
+    "retreat": 17,
+    "end/gap (death or no decision)": 15,
+    "retreat to cover": 11,
+    "heal": 10,
+    "retreat, los break": 6,
+    "other": 2
+   },
+   "episodes_whose_next_tick_is_a_hold_blockable_preempt": 25,
+   "games": [
+    2014,
+    2053,
+    2072,
+    2073,
+    2074,
+    2082,
+    2087,
+    3003,
+    3005,
+    3011,
+    3013,
+    3017,
+    3021,
+    3039,
+    3053,
+    3058,
+    3077,
+    3079,
+    3084,
+    3087,
+    3093
+   ]
+  },
+  "4000+5000": {
+   "fired_and_changes_games": 24,
+   "any_preempt_of_valid_latch_games": 35,
+   "games_by_preempting_mode": {
+    "tree": 10,
+    "building": 10,
+    "los_break": 0,
+    "back_away": 6
+   },
+   "ticks": 76,
+   "ticks_by_mode": {
+    "tree": 38,
+    "building": 32,
+    "los_break": 0,
+    "back_away": 6
+   },
+   "heading_diff_median_deg": 90,
+   "champion_far_episodes": 103,
+   "episodes_lt_1s": 81,
+   "episode_dur_median_s": 0.5,
+   "episode_dur_max_s": 2.5,
+   "episode_displacement_median_m": 3.8,
+   "episode_displacement_max_m": 41.7,
+   "spot_dist_at_start_median_m": 46.9,
+   "episodes_ending_within_10m_of_spot": 0,
+   "episode_ended_by": {
+    "retreat to cover": 26,
+    "end/gap (death or no decision)": 22,
+    "retreat, trees": 19,
+    "retreat": 17,
+    "heal": 10,
+    "retreat, los break": 6,
+    "other": 3
+   },
+   "episodes_whose_next_tick_is_a_hold_blockable_preempt": 28,
+   "games": [
+    4001,
+    4004,
+    4005,
+    4008,
+    4009,
+    4017,
+    4029,
+    4045,
+    4052,
+    4068,
+    4073,
+    4076,
+    5002,
+    5014,
+    5018,
+    5038,
+    5040,
+    5045,
+    5051,
+    5062,
+    5072,
+    5083,
+    5087,
+    5093
+   ]
+  },
+  "verdict": "PASS (21/192 and 24/192 >= 10/192)",
+  "notes": "Tree and building are the main preempters of a still-valid latch; plain back-away is small (6 games per set) because most back-away exits follow P60's own latch drop (spot no longer hidden from the current shooters), which the hold keeps. 'heal' episode ends (retreat window closed) are untouched. 2073 and 4001 are fire games; 4093 and 5024 are not.",
+  "fix_round_counts": {
+   "note": "Same traces and pure check, excluding building-cover preemptions (the shipped build)",
+   "2000+3000": 17,
+   "4000+5000": 16,
+   "games_2000_3000": [
+    2014,
+    2072,
+    2073,
+    2074,
+    2082,
+    3003,
+    3005,
+    3011,
+    3013,
+    3021,
+    3039,
+    3053,
+    3058,
+    3077,
+    3079,
+    3087,
+    3093
+   ],
+   "games_4000_5000": [
+    4001,
+    4005,
+    4009,
+    4029,
+    4045,
+    4068,
+    4073,
+    4076,
+    5002,
+    5014,
+    5038,
+    5040,
+    5045,
+    5062,
+    5087,
+    5093
+   ],
+   "verdict": "PASS (17/192 and 16/192)"
+  }
+ },
+ "sha_fix_flag_false": "a8e5d8dab6ae4e72086823f6075c13b41be16a64",
+ "checklist": {
+  "sim": "copy of /workspace/wt-tester-trees/tools/sim at /tmp/p67/sim with a passive trace patch (P63's, with its if/else placement bug fixed: untraced runs had counted every answer missed), --trees --jobs 1, 96 seeds per base; P64 baselines are the traced champion copy (rows identical to plain origin/main on base 0, 96/96)",
+  "1_eqdrive_check": "eqdrive (kit stream, 301 replies) flag-off vs origin/main bc640a6: IDENTICAL; flag-on also IDENTICAL (stream never reaches the retreat branch). Sim-level: flag-off vs plain origin/main, base 0, 96/96 rows identical. check.py --map-dir arena PASS: default max 3.4 ms, flag-on max 3.2 ms. git archive 3,891,200 bytes",
+  "2_opening": "0 far-cover ticks at t < 10 s on both bases (hold gated at t >= 40 s)",
+  "per_base": {
+   "0": {
+    "paired": "-0.156 +/- 0.122 (better 1, worse 2)",
+    "p64_mean": 3.552,
+    "p67_mean": 3.396,
+    "diff_behavior": 7,
+    "diff_score": 3,
+    "hold_branch_games_upper_bound": 24,
+    "survivors": "3->2",
+    "kills": "306->292",
+    "deaths_lt_40": "24->24",
+    "drop_ring_arrivals": "3->3",
+    "retreat_deaths": "81->82",
+    "pins_ge_20s": "3->3 (41, 43, 79: same P64 pins, 0 far ticks; none new)",
+    "far_episodes": "47->50; <1 s 37->30; duration median 0.30->0.60 s, mean 0.54->0.85, max 2.2->2.8; displacement median 1.5->4.3 m, mean 5.9->10.9; ending within 10 m of the spot 0->0",
+    "retreat_deaths_by_last_mode": {
+     "P64": {
+      "retreat": 30,
+      "far cover": 8,
+      "trees": 23,
+      "to cover": 17,
+      "los break": 3
+     },
+     "P67": {
+      "retreat": 29,
+      "far cover": 12,
+      "trees": 21,
+      "to cover": 16,
+      "los break": 4
+     }
+    },
+    "score_changes": "6: 1st survived 14 kills -> 11th died 73.55 s 5 kills; 24: 4th 77.45 s -> 10th 53.65 s; 83: 12th -> 11th"
+   },
+   "6000": {
+    "paired": "+0.010 +/- 0.018 (better 2, worse 1)",
+    "p64_mean": 3.958,
+    "p67_mean": 3.969,
+    "diff_behavior": 9,
+    "diff_score": 3,
+    "hold_branch_games_upper_bound": 31,
+    "survivors": "2->2",
+    "kills": "365->366",
+    "deaths_lt_40": "16->16",
+    "drop_ring_arrivals": "1->1",
+    "retreat_deaths": "80->80",
+    "pins_ge_20s": "2->2 (6011, 6082: same P64 pins, 0 far ticks; none new)",
+    "far_episodes": "58->56; <1 s 41->31; duration median 0.65->0.80 s, mean 0.73->1.02, max 3.4->3.4; displacement median 5.2->8.2 m, mean 6.5->10.9; ending within 10 m of the spot 0->0",
+    "retreat_deaths_by_last_mode": {
+     "P64": {
+      "far cover": 7,
+      "to cover": 25,
+      "trees": 14,
+      "retreat": 32,
+      "los break": 2
+     },
+     "P67": {
+      "far cover": 14,
+      "to cover": 25,
+      "retreat": 30,
+      "trees": 8,
+      "los break": 3
+     }
+    },
+    "score_changes": "6007: 5th -> 6th; 6023: 8th -> 7th; 6091: 12th -> 11th"
+   }
+  },
+  "seed_reruns_place_death_kills": {
+   "2073": "P48 12/59.55/4; P64 7/127.05/9; P67 8/118.80/8 (save kept vs P48, -1 place vs P64)",
+   "4093": "P48 10/65.95/6; P64 5/182.50/10; P67 5/182.50/10 (identical)",
+   "5024": "P64 13/51.60/3; P67 13/51.60/3",
+   "4001": "P64 13/124.70/3; P67 14/122.10/2"
+  },
+  "round_1_before_fix": {
+   "base_0": "-0.156 +/- 0.122, pins 3->3",
+   "base_6000": "+0.042 +/- 0.036, kills 365->369, NEW 29 s pin on 6034 (t 89-118 at (-115,74), 0 far ticks in window, 3 m from the P64 6011 pin; game improved 10th->7th)",
+   "4093": "5th 182.5 s 10 kills -> 11th 81.1 s 5 kills (hold blocked a building-cover exit at t 60.4)",
+   "2073": "8th 118.8 s 8 kills"
+  },
+  "blocks": "PASS: deaths <40 s equal on both bases; paired mean lower on base 0 only (not both); no new >=20 s pin; saves kept (4093 identical, 2073 -1 place)"
+ }
+}

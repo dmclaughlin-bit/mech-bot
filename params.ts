@@ -209,3 +209,12 @@ export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]
  */
 export const BACKAWAY_LOS_BREAK_ON = true
 export const BACKAWAY_LOS_STEPS_S = [1, 2, 3]
+
+/**
+ * P68 (early back-away far cover): P60's far-cover search/walk (farRetreat) fires from EARLY_BACKAWAY_FAR_MIN_T (10 s)
+ * instead of TREE_RETREAT_MIN_T (40 s). Nothing else changes: same branch position, drop gate, shooters test, 4-6 s
+ * search, latch, give-up and skip list. Tree retreat, building cover and P64's LOS break keep their own gates. Never at
+ * t < 10 s. Legs only (N8). false = champion behavior exactly.
+ */
+export const EARLY_BACKAWAY_FAR_COVER_ON = false
+export const EARLY_BACKAWAY_FAR_MIN_T = 10

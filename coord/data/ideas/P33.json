@@ -1,0 +1,11 @@
+{
+  "id": "P33",
+  "title": "Mid-game hurt retreat distance: in mid phase with HP < 35%, keep the existing retreat going until the nearest visible enemy is at least ~120 m before stopping to heal (HURT_RETREAT_FAR_ON)",
+  "family": "evasion",
+  "flag": "HURT_RETREAT_FAR_ON",
+  "owner": "Mech Builder",
+  "stage": "building",
+  "source": "coord/data/watcher/RANKED.md rule 11 (nearest enemy while HP<35%, mid phase, 119 vs 95 m)",
+  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "created_et": "2026-11-21 19:35"
+}

@@ -1,30 +1,30 @@
 {
- "id": "SKILLS-4",
- "title": "Orbit and fade in a gun or laser fight with a clear shot",
- "family": "evasion",
- "flags": [],
- "flag": null,
- "behaviors": null,
- "owner": "unassigned",
- "stage": "idea",
- "pr": null,
- "sha": null,
- "champion_sha_tested_against": null,
- "champion_sha": null,
- "screens": [],
- "receipt": null,
- "site_score": null,
- "score": null,
- "decision": null,
- "blocker": "ranked Low; recently failed cousins in the movement/evasion family; park until a screen can isolate this exact fade",
- "next_action": "leave parked",
- "doug_waiver": false,
- "source": "Watcher SKILLS.md idea 4; ideas_queue.md item 6 (Low)",
- "timestamps": {
-  "first_mention": "2026-11-21 17:54 ET (ideas_queue.md)",
-  "updated": "2026-11-21 17:54 ET"
- },
- "sources": [
-  "coord/data/ideas_queue.md"
- ]
+  "id": "SKILLS-4",
+  "title": "Orbit and fade in a gun or laser fight with a clear shot",
+  "family": "evasion",
+  "flags": [],
+  "flag": null,
+  "behaviors": null,
+  "owner": "Mech Builder",
+  "stage": "promoted",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": null,
+  "champion_sha": null,
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": "ranked Low; recently failed cousins in the movement/evasion family; park until a screen can isolate this exact fade",
+  "next_action": "built as P32",
+  "doug_waiver": false,
+  "source": "Watcher SKILLS.md idea 4; ideas_queue.md item 6 (Low)",
+  "timestamps": {
+    "first_mention": "2026-11-21 17:54 ET (ideas_queue.md)",
+    "updated": "2026-11-21 17:54 ET"
+  },
+  "sources": [
+    "coord/data/ideas_queue.md"
+  ]
 }

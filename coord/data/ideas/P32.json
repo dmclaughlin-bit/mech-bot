@@ -1,0 +1,11 @@
+{
+  "id": "P32",
+  "title": "Fade in a clear-shot fight: when we have a clear gun or laser shot on a visible target and are not in a lightning commit, finish walk, standoff break or retreat, add a sideways offset with a slight fade instead of walking straight in (FIGHT_FADE_ON)",
+  "family": "evasion",
+  "flag": "FIGHT_FADE_ON",
+  "owner": "Mech Builder",
+  "stage": "building",
+  "source": "coord/data/watcher/SKILLS.md idea 4 (radial speed -1.12 vs +0.53 m/s while engaged); was SKILLS-4",
+  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "created_et": "2026-11-21 19:35"
+}

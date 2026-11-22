@@ -1,0 +1,35 @@
+{
+ "id": "P-D-007B",
+ "title": "ZONE_EARLY_S zone-travel timing",
+ "family": "zone",
+ "flags": [
+  "ZONE_EARLY_S"
+ ],
+ "flag": "ZONE_EARLY_S",
+ "behaviors": null,
+ "owner": "Diego's Claude",
+ "stage": "retired",
+ "pr": 125,
+ "sha": "889233e9b617e4f8e9fcf18737c09d9fd6976fa6",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "fails in sim; PR recommends no slot",
+ "blocker": null,
+ "next_action": "do not site-test / do not resubmit",
+ "doug_waiver": false,
+ "source": "Diego research (P-D-007 Step B)",
+ "timestamps": {
+  "first_mention": "2026-11-21 16:15 ET",
+  "pr_opened": "2026-11-21 16:09 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

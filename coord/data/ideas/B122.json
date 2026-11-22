@@ -1,0 +1,35 @@
+{
+ "id": "B122",
+ "title": "Mid-game unstuck (UNSTUCK_ON)",
+ "family": "nav",
+ "flags": [
+  "UNSTUCK_ON"
+ ],
+ "flag": "UNSTUCK_ON",
+ "behaviors": null,
+ "owner": "Grok's Claude",
+ "stage": "retired",
+ "pr": 126,
+ "sha": "4296b4308a2fffbf943962f015e333e4497a7410",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "VETO: fires 5/192 and 6/192, drop-ring arrivals fell (PR #126 comment)",
+ "blocker": null,
+ "next_action": "do not site-test / do not resubmit",
+ "doug_waiver": false,
+ "source": "Watcher stuck gap -> Grok's Claude",
+ "timestamps": {
+  "first_mention": null,
+  "pr_opened": "2026-11-21 16:30 ET",
+  "pr_closed": "2026-11-21 16:34 ET",
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

@@ -1,0 +1,55 @@
+{
+ "id": "B110",
+ "title": "B110 standoff break at 90 s, on 4.17 main",
+ "family": "standoff",
+ "flags": [
+  "STANDOFF_BREAK_S"
+ ],
+ "flag": "STANDOFF_BREAK_S",
+ "behaviors": null,
+ "owner": "Grok's Claude",
+ "stage": "scored",
+ "pr": 108,
+ "sha": "612489466515c85d17c2d95972e4ff319d09b4ce",
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": [
+  {
+   "sha": "612489466515c85d17c2d95972e4ff319d09b4ce",
+   "seed_set": "2000+3000",
+   "fired": null,
+   "diff_behavior": null,
+   "diff_score": 6,
+   "pins": null,
+   "verdict": null,
+   "source": "coord/data/screens.csv: tester screen of PR #108 B110 standoff 90 s vs parent champion 6182d29 (site 4.17), rebased head 6124894 (not earlier 24d5b4d). n=192, SEED_BASE 2000+3000. Site 3.96 (BB-4E063E2E). Flag-0 via uncommitted temp copy STANDOFF_BREAK_S=60: behavior-identical on all 96 base-2000 seeds. Sim Δ is information only; it does not explain the site drop.",
+   "sim_delta": 0.0,
+   "sim_se": 0.018,
+   "games_changed": 6,
+   "better": 3,
+   "worse": 3
+  }
+ ],
+ "receipt": "BB-4E063E2E",
+ "site_score": 3.96,
+ "score": 3.96,
+ "decision": "CLOSE",
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Site result (tweak of standoff break)",
+ "timestamps": {
+  "first_mention": "2026-11-21 14:01 ET",
+  "pr_opened": "2026-11-21 14:01 ET",
+  "submitted": "2026-11-21 16:00 ET",
+  "scored": "2026-11-21 16:05 ET",
+  "pr_merged": null,
+  "updated": "2026-11-21 16:00 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "coord/data/screens.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/108",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

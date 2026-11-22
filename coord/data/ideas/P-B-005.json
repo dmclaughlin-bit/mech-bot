@@ -1,0 +1,33 @@
+{
+ "id": "P-B-005",
+ "title": "Gun lead during laser charge (H02)",
+ "family": "aim",
+ "flags": [],
+ "flag": null,
+ "behaviors": null,
+ "owner": "Mech Builder (ACK)",
+ "stage": "hold",
+ "pr": 106,
+ "sha": "8bb6d107fabc5c6def7cb7a87af2ec2ae2df2a1f",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "HOLD",
+ "blocker": "no complete screen on both seed sets for the current head",
+ "next_action": "re-screen both sets vs 6182d29 or park",
+ "doug_waiver": false,
+ "source": "Diego research (audit H02)",
+ "timestamps": {
+  "first_mention": "2026-11-21 13:10 ET",
+  "pr_opened": "2026-11-21 13:42 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

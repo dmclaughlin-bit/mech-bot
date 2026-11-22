@@ -1,0 +1,73 @@
+{
+ "id": "P23b",
+ "title": "P23b late idle farm: torso sweep only while still in hold after 60 s + 3 s no-progress farm-walk abort (all game) (LATE_FARM_ON)",
+ "family": "farm",
+ "flags": [
+  "LATE_FARM_ON"
+ ],
+ "flag": "LATE_FARM_ON",
+ "behaviors": [
+  "late-farm torso sweep only while still in hold after 60 s",
+  "3 s no-progress farm-walk abort"
+ ],
+ "owner": "Mech Builder (ACK P23b)",
+ "stage": "scored",
+ "pr": 134,
+ "sha": "cf96cf514b464271830454b63b3bf96dc3a70feb",
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": [
+  {
+   "sha": "cf96cf514b464271830454b63b3bf96dc3a70feb",
+   "seed_set": "2000+3000",
+   "fired": null,
+   "diff_behavior": null,
+   "diff_score": 19,
+   "pins": "PASS: seed 90 and seed 30 pins that vetoed 76c3fa8 are gone (pin windows 190 to 108, longest 49 s, 20 s+ pin games 6 to 2, oscillation games 12 to 8).",
+   "verdict": "PASS",
+   "source": "coord/data/screens.csv: tester screen of PR #134 P23b late farm sweep only while stationary + 3 s no-progress abort (LATE_FARM_ON) vs champion 6182d29 (site 4.17), n=192, SEED_BASE 2000+3000. PASS: seed 90 and seed 30 pins that vetoed 76c3fa8 are gone (pin windows 190 to 108, longest 49 s, 20 s+ pin games 6 to 2, oscillation games 12 to 8). Flag-0 via uncommitted temp copy LATE_FARM_ON=false: behavior-identical on all 96 base-2000 seeds. No crashes or missed answers. Sim delta is information only.",
+   "sim_delta": -0.083,
+   "sim_se": 0.057,
+   "games_changed": 19,
+   "better": 8,
+   "worse": 11
+  },
+  {
+   "sha": "cf96cf514b464271830454b63b3bf96dc3a70feb",
+   "seed_set": "4000+5000",
+   "fired": null,
+   "diff_behavior": null,
+   "diff_score": 19,
+   "pins": null,
+   "verdict": "PASS",
+   "source": "coord/data/screens.csv: tester screen of PR #134 P23b vs champion 6182d29 (site 4.17), held-out n=192, SEED_BASE 4000+5000. Same PASS as the 2000+3000 row. Sim delta is information only.",
+   "sim_delta": 0.026,
+   "sim_se": 0.082,
+   "games_changed": 19,
+   "better": 10,
+   "worse": 9
+  }
+ ],
+ "receipt": "BB-AEFC0FA8",
+ "site_score": 4.0,
+ "score": 4.0,
+ "decision": "CLOSE",
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Builder diagnosis (instrumented main)",
+ "timestamps": {
+  "first_mention": "2026-11-21 17:40 ET",
+  "pr_opened": "2026-11-21 16:37 ET",
+  "submitted": "2026-11-21 17:24 ET",
+  "scored": "2026-11-21 17:28 ET",
+  "pr_merged": null,
+  "updated": "2026-11-21 17:24 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "coord/data/screens.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/134",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

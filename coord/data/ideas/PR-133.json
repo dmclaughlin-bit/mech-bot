@@ -1,0 +1,29 @@
+{
+ "id": "PR-133",
+ "title": "PR #133 sim-effectiveness recommendations (docs only)",
+ "family": "sim-tooling",
+ "flags": [],
+ "flag": null,
+ "behaviors": null,
+ "owner": "unknown",
+ "stage": "hold",
+ "pr": 133,
+ "sha": "1703c0c58c72c3b7e1f95f03c2006efa64399e98",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "HOLD (not a bot candidate; screening-lane change only after a benchmark and Doug's yes). Benchmark is P-D-011.",
+ "blocker": "Doug must yes before the screening lane changes",
+ "next_action": "see P-D-011; Doug decides after results",
+ "doug_waiver": false,
+ "source": "ready_ledger.md",
+ "timestamps": {
+  "updated": "2026-11-21 17:50 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md"
+ ]
+}

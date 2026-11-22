@@ -1,0 +1,33 @@
+{
+ "id": "P-B-002",
+ "title": "Laser-charge react (break LOS when a laser charges at us)",
+ "family": "combat",
+ "flags": [],
+ "flag": null,
+ "behaviors": null,
+ "owner": "Grok's Claude (Build 105)",
+ "stage": "hold",
+ "pr": 113,
+ "sha": "0e4985aadf6dd40eb38d8da1ffe732108e594d23",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "HOLD",
+ "blocker": "no complete screen on both seed sets for the current head",
+ "next_action": "re-screen both sets vs 6182d29 or park",
+ "doug_waiver": false,
+ "source": "Grok strategy report S6",
+ "timestamps": {
+  "first_mention": "2026-11-21 12:41 ET",
+  "pr_opened": "2026-11-21 13:03 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

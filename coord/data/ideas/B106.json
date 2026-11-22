@@ -1,0 +1,38 @@
+{
+ "id": "B106",
+ "title": "P-B-003 lightning ambush also with an uncharged laser (AMBUSH_WITH_LASER_ON), built on B103",
+ "family": "lightning",
+ "flags": [
+  "AMBUSH_WITH_LASER_ON"
+ ],
+ "flag": "AMBUSH_WITH_LASER_ON",
+ "behaviors": null,
+ "owner": "Grok's Claude (Build 106)",
+ "stage": "scored",
+ "pr": 97,
+ "sha": "cd4245d4681b6f61c2f2e8787004b7fccd833fe9",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": "BB-EC8326F0",
+ "site_score": 3.85,
+ "score": 3.85,
+ "decision": "CLOSE",
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Grok queue (P-B-003, from PR #94 data)",
+ "timestamps": {
+  "first_mention": "2026-11-21 13:13 ET",
+  "pr_opened": "2026-11-21 12:54 ET",
+  "submitted": "2026-11-21 12:58 ET",
+  "scored": "2026-11-21 12:59 ET",
+  "pr_merged": null,
+  "updated": "2026-11-21 12:58 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/97",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

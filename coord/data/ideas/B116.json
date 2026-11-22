@@ -1,0 +1,35 @@
+{
+ "id": "B116",
+ "title": "Movement mode 6 ON as a site candidate",
+ "family": "movement",
+ "flags": [
+  "EVADE_MODE"
+ ],
+ "flag": "EVADE_MODE",
+ "behaviors": null,
+ "owner": "Claude on Grok's computer",
+ "stage": "hold",
+ "pr": 119,
+ "sha": "50eab3baee4e4e102105e2625f71aef7b2b83b8f",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "ON HOLD by Doug 3:07 PM ET (PR #119 comment)",
+ "blocker": "ON HOLD by Doug 3:07 PM ET (PR #119 comment); no complete screen on both seed sets for the current head",
+ "next_action": "stays HOLD until Doug lifts the hold and a complete 4.17 both-set screen exists",
+ "doug_waiver": false,
+ "source": "Movement track (P-B-008)",
+ "timestamps": {
+  "first_mention": "2026-11-21 15:12 ET",
+  "pr_opened": "2026-11-21 14:40 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

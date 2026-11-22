@@ -1,0 +1,55 @@
+{
+ "id": "B111",
+ "title": "B111 ambush far edge 100 m, on 4.17 main",
+ "family": "ambush",
+ "flags": [
+  "AMBUSH_MAX_M"
+ ],
+ "flag": "AMBUSH_MAX_M",
+ "behaviors": null,
+ "owner": "Grok's Claude",
+ "stage": "scored",
+ "pr": 109,
+ "sha": "e2ca93d6e81d9fcc0a1d3fe631ffd5643978dbf0",
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": [
+  {
+   "sha": "e2ca93d6e81d9fcc0a1d3fe631ffd5643978dbf0",
+   "seed_set": "2000+3000",
+   "fired": null,
+   "diff_behavior": null,
+   "diff_score": 6,
+   "pins": null,
+   "verdict": null,
+   "source": "coord/data/screens.csv: tester screen of PR #109 B111 ambush max 100 m vs parent champion 6182d29 (site 4.17), rebased head e2ca93d. n=192, SEED_BASE 2000+3000. Site 4.10 (BB-D985B698). Flag-0 via uncommitted temp copy AMBUSH_MAX_M=90: behavior-identical on all 96 base-2000 seeds. Sim Δ is information only.",
+   "sim_delta": -0.042,
+   "sim_se": 0.029,
+   "games_changed": 6,
+   "better": 2,
+   "worse": 4
+  }
+ ],
+ "receipt": "BB-D985B698",
+ "site_score": 4.1,
+ "score": 4.1,
+ "decision": "CLOSE",
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Site result (tweak of lightning ambush)",
+ "timestamps": {
+  "first_mention": "2026-11-21 14:03 ET",
+  "pr_opened": "2026-11-21 14:01 ET",
+  "submitted": "2026-11-21 16:05 ET",
+  "scored": "2026-11-21 16:07 ET",
+  "pr_merged": null,
+  "updated": "2026-11-21 16:05 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "coord/data/screens.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/109",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

@@ -1,19 +1,68 @@
 {
  "id": "P25b",
- "title": "Cube memory plus no-progress drop",
+ "title": "Cube memory plus no-progress drop (CUBE_MEMORY_ON)",
  "family": "farm",
+ "flags": [
+  "CUBE_MEMORY_ON"
+ ],
  "flag": "CUBE_MEMORY_ON",
+ "behaviors": null,
  "owner": "Mech Builder",
- "stage": "HOLD",
+ "stage": "hold",
  "pr": 136,
  "sha": "47d0e6cecbe5df5432b6e604897a0bad9fd40f73",
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
- "screens": {
-  "2000+3000": "fired 30 / diff behavior 30 / diff score 17, delta -0.109 +/- 0.063; seed 3043 pin gone; seed 72 pin 20 s (no memory in window)",
-  "4000+5000": "fired 32 / diff behavior 32 / diff score 22, delta +0.062 +/- 0.101; new 20 s+ pins 4091 (26 s), 5048 (25 s), 5054 (20 s), no memory in window"
- },
+ "screens": [
+  {
+   "sha": "47d0e6cecbe5df5432b6e604897a0bad9fd40f73",
+   "seed_set": "2000+3000",
+   "fired": 30,
+   "diff_behavior": 30,
+   "diff_score": 17,
+   "pins": "Pin windows 166 to 85. Seed 3043 pin gone; seed 72 pin now 20 s at t=85-105 (was 30 s), no memory in window.",
+   "verdict": "PASS",
+   "source": "coord/data/screens.csv: tester screen of PR #136 head 47d0e6c (P25b cube memory plus no-progress drop, CUBE_MEMORY_ON) vs champion 6182d29 (site 4.17), n=192, SEED_BASE 2000+3000. PASS. Flag-0 via uncommitted temp copy CUBE_MEMORY_ON=false: behavior-identical on all 96 base-2000 seeds. No crashes or missed answers. Cube memory fired in 30 games; different behavior 30; different score 17. Pin windows 166 to 85. Seed 3043 pin gone; seed 72 pin now 20 s at t=85-105 (was 30 s), no memory in window. Sim delta is information only.",
+   "sim_delta": -0.109,
+   "sim_se": 0.063,
+   "games_changed": 17,
+   "better": 6,
+   "worse": 11
+  },
+  {
+   "sha": "47d0e6cecbe5df5432b6e604897a0bad9fd40f73",
+   "seed_set": "4000+5000",
+   "fired": 32,
+   "diff_behavior": 32,
+   "diff_score": 22,
+   "pins": "Pin windows 185 to 181; new 20 s+ pins 4091 (26 s), 5048 (25 s), 5054 (20 s), no memory in any window.",
+   "verdict": "PASS",
+   "source": "coord/data/screens.csv: tester screen of PR #136 head 47d0e6c vs champion 6182d29 (site 4.17), held-out n=192, SEED_BASE 4000+5000. Same PASS as the 2000+3000 row. Cube memory fired in 32 games; different behavior 32; different score 22. Pin windows 185 to 181; new 20 s+ pins 4091 (26 s), 5048 (25 s), 5054 (20 s), no memory in any window. Sim delta is information only.",
+   "sim_delta": 0.062,
+   "sim_se": 0.101,
+   "games_changed": 22,
+   "better": 11,
+   "worse": 11
+  }
+ ],
  "receipt": null,
+ "site_score": null,
  "score": null,
- "decision": "HOLD: rule (6) new 20 s+ pins (72, 4091, 5048, 5054) - Doug decides; D3 check: memory + no-progress drop may be two behaviors under one flag",
- "updated": "2026-11-21 18:55 ET"
+ "decision": "HOLD: rule (6) new 20 s+ pins (72, 4091, 5048, 5054) — Doug decides; ready_ledger also notes a D3 question: memory + no-progress drop may be two behaviors under one flag",
+ "blocker": "new 20 s+ pins on the official sets (memory not active in those windows). Doug decides whether they veto. D3 question also pending.",
+ "next_action": "Doug's answer on the pin rule and the D3 question",
+ "doug_waiver": false,
+ "source": "Watcher SKILLS.md idea 1; pin fix of P25",
+ "timestamps": {
+  "pr_opened": "2026-11-21 17:47 ET",
+  "head_moved": "2026-11-21 18:15 ET",
+  "screened": "2026-11-21 18:47 ET",
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/screens.csv",
+  "coord/data/ready_ledger.md (Loop 6:55 PM ET)",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/136#issuecomment-7071108537",
+  "coord/data/ideas/P25b.json (loop stub 6:55 PM ET)"
+ ]
 }

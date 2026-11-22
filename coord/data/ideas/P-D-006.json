@@ -1,0 +1,35 @@
+{
+ "id": "P-D-006",
+ "title": "Cook-off target bonus (H09)",
+ "family": "combat",
+ "flags": [
+  "COOKOFF_BONUS_ON"
+ ],
+ "flag": "COOKOFF_BONUS_ON",
+ "behaviors": null,
+ "owner": "Grok's Claude (Build 109)",
+ "stage": "hold",
+ "pr": 114,
+ "sha": "e8538894fca010420da9676f9ea48179ee39c622",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "HOLD",
+ "blocker": "no complete screen on both seed sets for the current head",
+ "next_action": "re-screen both sets vs 6182d29 or park",
+ "doug_waiver": false,
+ "source": "Diego research (audit H09)",
+ "timestamps": {
+  "first_mention": "2026-11-21 13:21 ET",
+  "pr_opened": "2026-11-21 13:23 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

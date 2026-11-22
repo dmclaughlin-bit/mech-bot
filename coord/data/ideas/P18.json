@@ -1,0 +1,35 @@
+{
+ "id": "P18",
+ "title": "Standoff max 120 m",
+ "family": "standoff",
+ "flags": [
+  "STANDOFF_MAX_M"
+ ],
+ "flag": "STANDOFF_MAX_M",
+ "behaviors": null,
+ "owner": "unknown",
+ "stage": "hold",
+ "pr": 111,
+ "sha": "c6597c254b2ff1954732051ba8fe326d8e21a2e2",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "HOLD",
+ "blocker": "no complete screen on both seed sets for the current head",
+ "next_action": "re-screen both sets vs 6182d29 or park",
+ "doug_waiver": false,
+ "source": "Site result (tweak of standoff break)",
+ "timestamps": {
+  "first_mention": "2026-11-21 14:47 ET",
+  "pr_opened": "2026-11-21 14:04 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

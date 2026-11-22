@@ -1,0 +1,58 @@
+{
+ "id": "P24",
+ "title": "P24 heal in cover (HEAL_COVER=2): when hurt and seen, walk to a short in-zone hide spot while firing before healing; noSneak gap closed",
+ "family": "heal",
+ "flags": [
+  "HEAL_COVER"
+ ],
+ "flag": "HEAL_COVER",
+ "behaviors": [
+  "noSneak-gap fix (HEAL_COVER level 1)",
+  "LOS-breaking hide walk (HEAL_COVER=2)"
+ ],
+ "owner": "Mech Builder (ACK P24)",
+ "stage": "scored",
+ "pr": 130,
+ "sha": "184bc1c2ed94e01b7cb6aaa24dfcad339d4ee8f2",
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": [
+  {
+   "sha": "184bc1c2ed94e01b7cb6aaa24dfcad339d4ee8f2",
+   "seed_set": "2000+3000",
+   "fired": 85,
+   "diff_behavior": null,
+   "diff_score": 52,
+   "pins": null,
+   "verdict": "PASS",
+   "source": "coord/data/screens.csv: tester screen and post-mortem of PR #130 P24 heal in cover (HEAL_COVER=2) vs parent champion 6182d29 (site 4.17), n=192, SEED_BASE 2000+3000. Site 3.79 (BB-BE220066). Gate PASS (96/96, missed 0, no crashes). Flag-0 via uncommitted temp copy HEAL_COVER=0: behavior-identical on all 96 base-2000 seeds. Heal-cover rule fired in 85 games; different behavior in 85 games; different score in 52 games (18 better, 34 worse). Sim Δ −0.286 ± 0.133 is information only; it is in the same direction as the site drop.",
+   "sim_delta": -0.286,
+   "sim_se": 0.133,
+   "games_changed": 52,
+   "better": 18,
+   "worse": 34
+  }
+ ],
+ "receipt": "BB-BE220066",
+ "site_score": 3.79,
+ "score": 3.79,
+ "decision": "CLOSE",
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Grok research (heal positioning, Doug's question)",
+ "timestamps": {
+  "first_mention": "2026-11-21 17:40 ET",
+  "pr_opened": "2026-11-21 17:05 ET",
+  "submitted": "2026-11-21 17:15 ET",
+  "scored": "2026-11-21 17:20 ET",
+  "pr_merged": null,
+  "updated": "2026-11-21 17:15 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "coord/data/screens.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/130",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

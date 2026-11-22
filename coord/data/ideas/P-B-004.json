@@ -1,0 +1,33 @@
+{
+ "id": "P-B-004",
+ "title": "Zone unpin (outside-zone nav pin)",
+ "family": "nav",
+ "flags": [],
+ "flag": null,
+ "behaviors": null,
+ "owner": "Mech Builder (ACK)",
+ "stage": "hold",
+ "pr": 104,
+ "sha": "7a822c42436e54183fbf4ee552cde35ded10661c",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "HOLD",
+ "blocker": "no complete screen on both seed sets for the current head",
+ "next_action": "re-screen both sets vs 6182d29 or park",
+ "doug_waiver": false,
+ "source": "Wild Sim hazard screen",
+ "timestamps": {
+  "first_mention": "2026-11-21 12:58 ET",
+  "pr_opened": "2026-11-21 13:20 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

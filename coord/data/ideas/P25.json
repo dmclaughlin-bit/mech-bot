@@ -1,0 +1,69 @@
+{
+ "id": "P25",
+ "title": "Cube memory: walk to remembered cubes out to 150 m (CUBE_MEMORY_ON)",
+ "family": "farm",
+ "flags": [
+  "CUBE_MEMORY_ON"
+ ],
+ "flag": "CUBE_MEMORY_ON",
+ "behaviors": null,
+ "owner": "Mech Builder (ACK P25)",
+ "stage": "retired",
+ "pr": 136,
+ "sha": "b34271c15df17bac4fda4275a7928643034f5e83",
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": [
+  {
+   "sha": "b34271c15df17bac4fda4275a7928643034f5e83",
+   "seed_set": "2000+3000",
+   "fired": 30,
+   "diff_behavior": 30,
+   "diff_score": 15,
+   "pins": "Pin windows 166 to 93; one new 20 s+ pin (none on 2000; 3043 21 s with cube memory active).",
+   "verdict": "PASS",
+   "source": "coord/data/screens.csv: tester screen of PR #136 P25 cube memory (CUBE_MEMORY_ON) vs champion 6182d29 (site 4.17), n=192, SEED_BASE 2000+3000. PASS. Flag-0 via uncommitted temp copy CUBE_MEMORY_ON=false: behavior-identical on all 96 base-2000 seeds. No crashes or missed answers. Cube memory fired in 30 games; different behavior 30; different score 15. Pin windows 166 to 93; one new 20 s+ pin (none on 2000; 3043 21 s with cube memory active). Sim delta is information only.",
+   "sim_delta": -0.073,
+   "sim_se": 0.057,
+   "games_changed": 15,
+   "better": 7,
+   "worse": 8
+  },
+  {
+   "sha": "b34271c15df17bac4fda4275a7928643034f5e83",
+   "seed_set": "4000+5000",
+   "fired": 32,
+   "diff_behavior": 32,
+   "diff_score": 23,
+   "pins": "New 20 s+ pins 4091 (26 s) and 5048 (25 s), no cube memory in either window.",
+   "verdict": "PASS",
+   "source": "coord/data/screens.csv: tester screen of PR #136 P25 vs champion 6182d29 (site 4.17), held-out n=192, SEED_BASE 4000+5000. Same PASS as the 2000+3000 row. Cube memory fired in 32 games; different behavior 32; different score 23. New 20 s+ pins 4091 (26 s) and 5048 (25 s), no cube memory in either window. Sim delta is information only.",
+   "sim_delta": 0.036,
+   "sim_se": 0.102,
+   "games_changed": 23,
+   "better": 10,
+   "worse": 13
+  }
+ ],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "superseded by P25b (47d0e6ce). Full screen of b34271c was HOLD: new change-caused 21 s pin on seed 3043 (ready_ledger.md 6:05 PM ET).",
+ "blocker": "superseded; do not submit this SHA",
+ "next_action": "see P25b",
+ "doug_waiver": false,
+ "source": "Watcher SKILLS.md idea 1",
+ "timestamps": {
+  "first_mention": "2026-11-21 17:45 ET",
+  "pr_opened": "2026-11-21 17:47 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:15 ET",
+  "screened": "2026-11-21 18:03 ET"
+ },
+ "sources": [
+  "coord/data/screens.csv",
+  "coord/data/ready_ledger.md",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/136#issuecomment-7070616608",
+  "coord/data/screens.csv"
+ ]
+}

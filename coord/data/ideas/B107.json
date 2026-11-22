@@ -1,0 +1,55 @@
+{
+ "id": "B107",
+ "title": "P-D-003 supply-drop run on 4.06 main (DROP_RUN_M=150), rebuilt from B104",
+ "family": "drops",
+ "flags": [
+  "DROP_RUN_M"
+ ],
+ "flag": "DROP_RUN_M",
+ "behaviors": null,
+ "owner": "Grok's Claude",
+ "stage": "scored",
+ "pr": 99,
+ "sha": "4d6e71bf3e2aa823e0c8c24dbc0e155d03f36971",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [
+  {
+   "sha": "4d6e71bf3e2aa823e0c8c24dbc0e155d03f36971",
+   "seed_set": "2000",
+   "fired": null,
+   "diff_behavior": null,
+   "diff_score": 0,
+   "pins": null,
+   "verdict": null,
+   "source": "coord/data/screens.csv: tester screen of PR #99 P-D-003 drop run vs then-champion 42a19d7 (P-B-001), n=96, SEED_BASE 2000 only (later bases not run after the site result). Flag-0 via uncommitted temp copy DROP_RUN_M=0: behavior-identical on all 96 seeds. Site score 4.10, new champion.",
+   "sim_delta": 0.0,
+   "sim_se": 0.0,
+   "games_changed": 0,
+   "better": 0,
+   "worse": 0
+  }
+ ],
+ "receipt": "BB-DA9AC664",
+ "site_score": 4.1,
+ "score": 4.1,
+ "decision": "KEEP (merged 2026-11-21 13:59 ET)",
+ "blocker": null,
+ "next_action": null,
+ "doug_waiver": false,
+ "source": "Site result (rebuild of B104 on a stronger champion, P-D-003)",
+ "timestamps": {
+  "first_mention": "2026-11-21 14:01 ET",
+  "pr_opened": "2026-11-21 13:01 ET",
+  "submitted": "2026-11-21 13:55 ET",
+  "scored": "2026-11-21 13:59 ET",
+  "pr_merged": "2026-11-21 13:59 ET",
+  "updated": "2026-11-21 13:55 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "coord/data/screens.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/99",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

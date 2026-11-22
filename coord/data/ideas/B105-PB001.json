@@ -1,0 +1,38 @@
+{
+ "id": "B105-PB001",
+ "title": "P-B-001 standoff break (STANDOFF_BREAK_S=60), built on B103",
+ "family": "standoff",
+ "flags": [
+  "STANDOFF_BREAK_S"
+ ],
+ "flag": "STANDOFF_BREAK_S",
+ "behaviors": null,
+ "owner": "Mech Builder (ACK 12:43 PM ET)",
+ "stage": "scored",
+ "pr": 96,
+ "sha": "ba521035278fb260f5685551366ee42bd1cb59f8",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": "BB-6EA7D518",
+ "site_score": 4.06,
+ "score": 4.06,
+ "decision": "KEEP (merged 2026-11-21 12:59 ET)",
+ "blocker": null,
+ "next_action": null,
+ "doug_waiver": false,
+ "source": "Grok queue (build on the 3.92 win)",
+ "timestamps": {
+  "first_mention": null,
+  "pr_opened": "2026-11-21 12:53 ET",
+  "submitted": "2026-11-21 12:55 ET",
+  "scored": "2026-11-21 13:00 ET",
+  "pr_merged": "2026-11-21 12:59 ET",
+  "updated": "2026-11-21 12:55 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/96",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

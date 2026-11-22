@@ -1,0 +1,35 @@
+{
+ "id": "B123",
+ "title": "Late-game hurt kiting (HURT_KITE_ON)",
+ "family": "evasion",
+ "flags": [
+  "HURT_KITE_ON"
+ ],
+ "flag": "HURT_KITE_ON",
+ "behaviors": null,
+ "owner": "Grok's Claude",
+ "stage": "retired",
+ "pr": 128,
+ "sha": "dbc5f3b247aa72d02c89d0849cf3a87357acfc15",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "VETO per PR title: do not site-test",
+ "blocker": null,
+ "next_action": "do not site-test / do not resubmit",
+ "doug_waiver": false,
+ "source": "Grok's Claude candidate",
+ "timestamps": {
+  "first_mention": null,
+  "pr_opened": "2026-11-21 16:38 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

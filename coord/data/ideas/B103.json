@@ -1,0 +1,70 @@
+{
+ "id": "B103",
+ "title": "Lightning ambush (H1): holder of lightning and no laser, seen by exactly one enemy at 45–90 m, steps out of sight and waits (LIGHT_AMBUSH_ON)",
+ "family": "lightning",
+ "flags": [
+  "LIGHT_AMBUSH_ON"
+ ],
+ "flag": "LIGHT_AMBUSH_ON",
+ "behaviors": null,
+ "owner": "Doug's Claude (H1; WORKFLOW.md)",
+ "stage": "scored",
+ "pr": 94,
+ "sha": "ed2cbbd06051c92a23c40a2ef2317576175e9ea2",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [
+  {
+   "sha": "ed2cbbd06051c92a23c40a2ef2317576175e9ea2",
+   "seed_set": "2000+3000",
+   "fired": null,
+   "diff_behavior": null,
+   "diff_score": 16,
+   "pins": null,
+   "verdict": null,
+   "source": "coord/data/screens.csv: PR #94 body. Games-changed is reported as 16 (2 / 5); 2+5 does not equal 16, recorded as written, not adjusted.",
+   "sim_delta": -0.016,
+   "sim_se": 0.019,
+   "games_changed": 16,
+   "better": 2,
+   "worse": 5
+  },
+  {
+   "sha": "ed2cbbd06051c92a23c40a2ef2317576175e9ea2",
+   "seed_set": "4000+5000",
+   "fired": null,
+   "diff_behavior": null,
+   "diff_score": 14,
+   "pins": null,
+   "verdict": null,
+   "source": "coord/data/screens.csv: PR #94 body (held-out). Games-changed is reported as 14 (6 / 3); 6+3 does not equal 14, recorded as written, not adjusted.",
+   "sim_delta": 0.021,
+   "sim_se": 0.03,
+   "games_changed": 14,
+   "better": 6,
+   "worse": 3
+  }
+ ],
+ "receipt": "BB-DE1ADA05",
+ "site_score": 3.92,
+ "score": 3.92,
+ "decision": "KEEP (merged 2026-11-21 12:48 ET)",
+ "blocker": null,
+ "next_action": null,
+ "doug_waiver": false,
+ "source": "Diego research (audit H1)",
+ "timestamps": {
+  "first_mention": "2026-11-21 12:07 ET",
+  "pr_opened": "2026-11-21 12:37 ET",
+  "submitted": "2026-11-21 12:39 ET",
+  "scored": "2026-11-21 12:48 ET",
+  "pr_merged": "2026-11-21 12:48 ET",
+  "updated": "2026-11-21 12:39 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "coord/data/screens.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/94",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

@@ -1,0 +1,35 @@
+{
+ "id": "B114",
+ "title": "Drop reach 150->110 m",
+ "family": "drops",
+ "flags": [
+  "DROP_RUN_M"
+ ],
+ "flag": "DROP_RUN_M",
+ "behaviors": null,
+ "owner": "Grok's Claude",
+ "stage": "retired",
+ "pr": 117,
+ "sha": "79854a67e4e5e73b44ee888af4aee36e87064832",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "superseded by B113 4.17 (shorter reach is the losing direction)",
+ "blocker": null,
+ "next_action": "do not site-test / do not resubmit",
+ "doug_waiver": false,
+ "source": "Site result (tweak of the drop-run win)",
+ "timestamps": {
+  "first_mention": "2026-11-21 14:28 ET",
+  "pr_opened": "2026-11-21 14:27 ET",
+  "pr_closed": "2026-11-21 14:48 ET",
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

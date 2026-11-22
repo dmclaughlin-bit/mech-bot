@@ -1,0 +1,70 @@
+{
+ "id": "B104",
+ "title": "Supply-drop run ON (DROP_RUN_M=150). Flag-on version of PR #93.",
+ "family": "drops",
+ "flags": [
+  "DROP_RUN_M"
+ ],
+ "flag": "DROP_RUN_M",
+ "behaviors": null,
+ "owner": "Diego's Claude (P-D-001)",
+ "stage": "scored",
+ "pr": 95,
+ "sha": "60df7c079a1d9c14f82d22879d36c0b353e7aa57",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [
+  {
+   "sha": "60df7c079a1d9c14f82d22879d36c0b353e7aa57",
+   "seed_set": "2000+3000",
+   "fired": null,
+   "diff_behavior": null,
+   "diff_score": 3,
+   "pins": null,
+   "verdict": null,
+   "source": "coord/data/screens.csv: PR #93 screen table (DROP_RUN_M=150), cited by PR #95 as the screen for this flag-on commit",
+   "sim_delta": -0.042,
+   "sim_se": 0.026,
+   "games_changed": 3,
+   "better": 0,
+   "worse": 3
+  },
+  {
+   "sha": "60df7c079a1d9c14f82d22879d36c0b353e7aa57",
+   "seed_set": "4000+5000",
+   "fired": null,
+   "diff_behavior": null,
+   "diff_score": 8,
+   "pins": null,
+   "verdict": null,
+   "source": "coord/data/screens.csv: PR #93 screen table (DROP_RUN_M=150, held-out), cited by PR #95",
+   "sim_delta": 0.026,
+   "sim_se": 0.023,
+   "games_changed": 8,
+   "better": 5,
+   "worse": 3
+  }
+ ],
+ "receipt": "BB-A6C704B4",
+ "site_score": 3.88,
+ "score": 3.88,
+ "decision": "CLOSE",
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Diego research (P-D-001 Step B)",
+ "timestamps": {
+  "first_mention": "2026-11-21 12:41 ET",
+  "pr_opened": "2026-11-21 12:36 ET",
+  "submitted": "2026-11-21 12:47 ET",
+  "scored": "2026-11-21 12:59 ET",
+  "pr_merged": null,
+  "updated": "2026-11-21 12:47 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "coord/data/screens.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/95",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

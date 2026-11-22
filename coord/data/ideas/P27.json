@@ -1,17 +1,52 @@
 {
  "id": "P27",
- "title": "Drop crossfire skip: keep the drop run / ring hold when 2+ enemies see us but none hit us in 2 s",
+ "title": "Drop crossfire skip: while a drop run or ring hold is active, skip break-crossfire unless hit in the last 2 s (DROP_CROSSFIRE_SKIP_ON)",
  "family": "drops",
+ "flags": [
+  "DROP_CROSSFIRE_SKIP_ON"
+ ],
  "flag": "DROP_CROSSFIRE_SKIP_ON",
+ "behaviors": [
+  "skip break-crossfire during an active drop run or ring hold unless a mech damaged us in the last 2 s"
+ ],
  "owner": "Mech Builder",
  "stage": "scored",
  "pr": 137,
  "sha": "7df3a4a6ab809aae28ef4e63e6629db5b9aedd81",
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
- "screens": {
-  "2000+3000": "fired 11 / diff behavior 11 / diff score 6, delta -0.010 +/- 0.029, died<40s 56->56, no new 20 s+ pin (champion 3062 44 s pin gone)",
-  "4000+5000": "fired 11 / diff behavior 11 / diff score 8, delta -0.021 +/- 0.038, no new 20 s+ pin"
- },
+ "screens": [
+  {
+   "sha": "7df3a4a6ab809aae28ef4e63e6629db5b9aedd81",
+   "seed_set": "2000+3000",
+   "fired": 11,
+   "diff_behavior": 11,
+   "diff_score": 6,
+   "pins": "Pin windows 166 to 137; no new 20 s+ pin (champion 3062 44 s pin gone).",
+   "verdict": "PASS",
+   "source": "coord/data/screens.csv: tester screen of PR #137 P27 drop crossfire skip (DROP_CROSSFIRE_SKIP_ON) vs champion 6182d29 (site 4.17), n=192, SEED_BASE 2000+3000. PASS. Flag-0 via uncommitted temp copy DROP_CROSSFIRE_SKIP_ON=0: behavior-identical on all 96 base-2000 seeds. No crashes or missed answers. Rule fired in 11 games; different behavior 11; different score 6. Pin windows 166 to 137; no new 20 s+ pin (champion 3062 44 s pin gone). Sim delta is information only.",
+   "sim_delta": -0.01,
+   "sim_se": 0.029,
+   "games_changed": 6,
+   "better": 3,
+   "worse": 3
+  },
+  {
+   "sha": "7df3a4a6ab809aae28ef4e63e6629db5b9aedd81",
+   "seed_set": "4000+5000",
+   "fired": 11,
+   "diff_behavior": 11,
+   "diff_score": 8,
+   "pins": "Pin windows 185 to 189; no new 20 s+ pin.",
+   "verdict": "PASS",
+   "source": "coord/data/screens.csv: tester screen of PR #137 P27 vs champion 6182d29 (site 4.17), held-out n=192, SEED_BASE 4000+5000. Same PASS as the 2000+3000 row. Rule fired in 11 games; different behavior 11; different score 8. Pin windows 185 to 189; no new 20 s+ pin. Sim delta is information only.",
+   "sim_delta": -0.021,
+   "sim_se": 0.038,
+   "games_changed": 8,
+   "better": 4,
+   "worse": 4
+  }
+ ],
  "checks": {
   "contains_champion": "PASS (merge-base --is-ancestor)",
   "flag0_identical": "PASS (tester temp copy flag 0 identical on 96 base-2000 seeds; diff guarded by flag, 0 short-circuits)",
@@ -20,7 +55,26 @@
   "novelty": "closest prior: P21 drop contest (BB-1D97890A, tie), P20 drop-when-hurt (BB-36A427E0, tie); different trigger (2+ enemies in sight, no hit in 2 s, drop active) and action (skip crossfire hide)"
  },
  "receipt": "BB-004FA2FF",
+ "site_score": 4.13,
  "score": 4.13,
  "decision": "CLOSE (-0.04 vs 4.17)",
- "updated": "2026-11-21 18:54 ET"
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Movement track (PR #129 mode 36) cut as a one-flag site SHA; ideas_queue.md top choice",
+ "timestamps": {
+  "pr_opened": "2026-11-21 17:56 ET",
+  "screened": "2026-11-21 18:29 ET",
+  "ready": "2026-11-21 18:55 ET",
+  "submitted": "2026-11-21 18:50 ET",
+  "updated": "2026-11-21 18:54 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "coord/data/screens.csv",
+  "coord/data/ready_ledger.md",
+  "coord/data/postmortems/P27-drop-crossfire-skip.md",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/137",
+  "coord/data/ideas/P27.json (loop 6:54 PM ET)"
+ ]
 }

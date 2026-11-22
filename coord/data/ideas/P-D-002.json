@@ -1,0 +1,38 @@
+{
+ "id": "P-D-002",
+ "title": "P-D-002 second-hunter threat forecast (FORECAST2_S=60), built on 4.06",
+ "family": "threat-forecast",
+ "flags": [
+  "FORECAST2_S"
+ ],
+ "flag": "FORECAST2_S",
+ "behaviors": null,
+ "owner": "Diego's Claude (P-D-002)",
+ "stage": "scored",
+ "pr": 102,
+ "sha": "4c421706be9133a9408c0e8ff3f3ac158eada9c0",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": "BB-8DA0CF9D",
+ "site_score": 3.79,
+ "score": 3.79,
+ "decision": "CLOSE",
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Grok strategy report S2",
+ "timestamps": {
+  "first_mention": "2026-11-21 12:34 ET",
+  "pr_opened": "2026-11-21 13:17 ET",
+  "submitted": "2026-11-21 13:48 ET",
+  "scored": "2026-11-21 13:59 ET",
+  "pr_merged": null,
+  "updated": "2026-11-21 13:48 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/102",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

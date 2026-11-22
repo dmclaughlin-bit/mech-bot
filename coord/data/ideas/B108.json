@@ -1,0 +1,38 @@
+{
+ "id": "B108",
+ "title": "P-D-004 H01 finish burst: finish rule compares target HP to summed magazines in reach (FINISH_BURST_ON), built on 4.06",
+ "family": "engage",
+ "flags": [
+  "FINISH_BURST_ON"
+ ],
+ "flag": "FINISH_BURST_ON",
+ "behaviors": null,
+ "owner": "Grok's Claude (Build 108)",
+ "stage": "scored",
+ "pr": 101,
+ "sha": "aeb6f85a12f319f2881281071332f9685871080a",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": "BB-26BA2735",
+ "site_score": 3.75,
+ "score": 3.75,
+ "decision": "CLOSE",
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Diego research (audit H01, P-D-004)",
+ "timestamps": {
+  "first_mention": "2026-11-21 13:43 ET",
+  "pr_opened": "2026-11-21 13:14 ET",
+  "submitted": "2026-11-21 13:39 ET",
+  "scored": "2026-11-21 13:43 ET",
+  "pr_merged": null,
+  "updated": "2026-11-21 13:39 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/101",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

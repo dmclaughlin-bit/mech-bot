@@ -1,0 +1,35 @@
+{
+ "id": "P-B-008",
+ "title": "Movement and evasion track (sim-only, modes 1-6)",
+ "family": "movement",
+ "flags": [
+  "EVADE_MODE"
+ ],
+ "flag": "EVADE_MODE",
+ "behaviors": null,
+ "owner": "Claude on Grok's computer",
+ "stage": "hold",
+ "pr": 115,
+ "sha": "c23c739ba06b73b22490aaeaf52467bbb80e5dbe",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "Movement & evasion track (sim-only, modes 1-6)",
+ "blocker": "sim-only track, not a site candidate; head does not contain the champion 6182d29 (stale); no complete screen on both seed sets for the current head",
+ "next_action": "do not site-test this SHA; sim-only",
+ "doug_waiver": false,
+ "source": "Doug request (1:52 PM ET)",
+ "timestamps": {
+  "first_mention": "2026-11-21 13:57 ET",
+  "pr_opened": "2026-11-21 14:11 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

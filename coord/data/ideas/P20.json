@@ -1,0 +1,38 @@
+{
+ "id": "P20",
+ "title": "P20 drop run when hurt and unseen (DROP_HURT_ON), on 4.17 main",
+ "family": "drops",
+ "flags": [
+  "DROP_HURT_ON"
+ ],
+ "flag": "DROP_HURT_ON",
+ "behaviors": null,
+ "owner": "Mech Builder (ACK P20)",
+ "stage": "scored",
+ "pr": 121,
+ "sha": "dd18a74e97fd3aa972a54474000472105cc48dc8",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": "BB-36A427E0",
+ "site_score": 4.17,
+ "score": 4.17,
+ "decision": "CLOSE",
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Site result (drop-family follow-up)",
+ "timestamps": {
+  "first_mention": "2026-11-21 14:59 ET",
+  "pr_opened": "2026-11-21 14:58 ET",
+  "submitted": "2026-11-21 15:07 ET",
+  "scored": "2026-11-21 15:12 ET",
+  "pr_merged": null,
+  "updated": "2026-11-21 15:07 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/121",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

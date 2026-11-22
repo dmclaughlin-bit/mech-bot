@@ -1,0 +1,38 @@
+{
+ "id": "P21",
+ "title": "P21 contest a lone enemy's drop (DROP_CONTEST_ON), on 4.17 main",
+ "family": "drops",
+ "flags": [
+  "DROP_CONTEST_ON"
+ ],
+ "flag": "DROP_CONTEST_ON",
+ "behaviors": null,
+ "owner": "Mech Builder (ACK P21)",
+ "stage": "scored",
+ "pr": 122,
+ "sha": "1b692c91cc6c95dc205a1c6432b8826dc79a5434",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": "BB-1D97890A",
+ "site_score": 4.17,
+ "score": 4.17,
+ "decision": "CLOSE",
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Site result (drop-family follow-up)",
+ "timestamps": {
+  "first_mention": "2026-11-21 14:59 ET",
+  "pr_opened": "2026-11-21 14:58 ET",
+  "submitted": "2026-11-21 15:55 ET",
+  "scored": "2026-11-21 16:05 ET",
+  "pr_merged": null,
+  "updated": "2026-11-21 15:55 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/122",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

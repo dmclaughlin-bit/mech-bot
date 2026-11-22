@@ -1,0 +1,38 @@
+{
+ "id": "B113",
+ "title": "B113 drop reach DROP_RUN_M 150 -> 200, on 4.10 drop-run main",
+ "family": "drops",
+ "flags": [
+  "DROP_RUN_M"
+ ],
+ "flag": "DROP_RUN_M",
+ "behaviors": null,
+ "owner": "Grok's Claude",
+ "stage": "scored",
+ "pr": 116,
+ "sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": "BB-09AE8A68",
+ "site_score": 4.17,
+ "score": 4.17,
+ "decision": "KEEP (merged 2026-11-21 14:44 ET)",
+ "blocker": null,
+ "next_action": "current champion",
+ "doug_waiver": false,
+ "source": "Site result (tweak of the drop-run win)",
+ "timestamps": {
+  "first_mention": "2026-11-21 14:28 ET",
+  "pr_opened": "2026-11-21 14:27 ET",
+  "submitted": "2026-11-21 14:40 ET",
+  "scored": "2026-11-21 14:43 ET",
+  "pr_merged": "2026-11-21 14:44 ET",
+  "updated": "2026-11-21 14:40 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/116",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

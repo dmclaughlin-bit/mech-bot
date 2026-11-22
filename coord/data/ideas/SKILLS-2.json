@@ -1,0 +1,30 @@
+{
+ "id": "SKILLS-2",
+ "title": "Midring patrol when farm is open and the list is empty",
+ "family": "farm",
+ "flags": [],
+ "flag": null,
+ "behaviors": null,
+ "owner": "unassigned",
+ "stage": "idea",
+ "pr": null,
+ "sha": null,
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": null,
+ "blocker": "not assigned; queue says P-D-010 should inform this before a build — P-D-010 found delay rarely changes arrival",
+ "next_action": "Grok assigns only if still ranked after P-D-010",
+ "doug_waiver": false,
+ "source": "Watcher SKILLS.md idea 2; ideas_queue.md item 3",
+ "timestamps": {
+  "first_mention": "2026-11-21 17:54 ET (ideas_queue.md)",
+  "updated": "2026-11-21 17:54 ET"
+ },
+ "sources": [
+  "coord/data/ideas_queue.md"
+ ]
+}

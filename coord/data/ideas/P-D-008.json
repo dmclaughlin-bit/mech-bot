@@ -1,0 +1,33 @@
+{
+ "id": "P-D-008",
+ "title": "laserSkip expiry comeback (H12)",
+ "family": "laser",
+ "flags": [],
+ "flag": null,
+ "behaviors": null,
+ "owner": "Diego's Claude (ACK P-D-008)",
+ "stage": "retired",
+ "pr": 131,
+ "sha": "65e04bf9d6c441e88a4e36ee1656b5e8a06fe546",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "comeback 4/192 and 3/192, below the ~10/192 bar; no Step B",
+ "blocker": null,
+ "next_action": "do not site-test / do not resubmit",
+ "doug_waiver": false,
+ "source": "Diego research (audit H12)",
+ "timestamps": {
+  "first_mention": "2026-11-21 15:43 ET",
+  "pr_opened": "2026-11-21 17:08 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

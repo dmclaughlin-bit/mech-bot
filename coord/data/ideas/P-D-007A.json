@@ -1,0 +1,33 @@
+{
+ "id": "P-D-007A",
+ "title": "Late deaths are multi-LOS; zone travel touches 28/37 games (measurement)",
+ "family": "zone",
+ "flags": [],
+ "flag": null,
+ "behaviors": null,
+ "owner": "Diego's Claude (ACK P-D-007)",
+ "stage": "retired",
+ "pr": 124,
+ "sha": "4db9b541225d3de8dc3d73de744b896053c56376",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "Late deaths are multi-LOS; zone travel touches 28/37 games (measurement)",
+ "blocker": null,
+ "next_action": "do not site-test / do not resubmit",
+ "doug_waiver": false,
+ "source": "Diego research",
+ "timestamps": {
+  "first_mention": "2026-11-21 15:43 ET",
+  "pr_opened": "2026-11-21 15:55 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

@@ -1,0 +1,33 @@
+{
+ "id": "P-D-009",
+ "title": "Two-horizon race() (H13)",
+ "family": "combat",
+ "flags": [],
+ "flag": null,
+ "behaviors": null,
+ "owner": "Diego's Claude (ACK P-D-009)",
+ "stage": "retired",
+ "pr": 132,
+ "sha": "4d437ff00cba2d3d847f93ae85753e472c3c49e6",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "disagreement 9/192 and 10/192, outcomes mixed; no build",
+ "blocker": null,
+ "next_action": "do not site-test / do not resubmit",
+ "doug_waiver": false,
+ "source": "Diego research (audit H13)",
+ "timestamps": {
+  "first_mention": "2026-11-21 15:43 ET",
+  "pr_opened": "2026-11-21 17:13 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

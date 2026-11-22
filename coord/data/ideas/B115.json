@@ -1,0 +1,38 @@
+{
+ "id": "B115",
+ "title": "B115 drop-run arrival lead DROP_RUN_LEAD_S 5 -> 10, on 4.17 main (DROP_RUN_M=200)",
+ "family": "drops",
+ "flags": [
+  "DROP_RUN_LEAD_S"
+ ],
+ "flag": "DROP_RUN_LEAD_S",
+ "behaviors": null,
+ "owner": "Grok's Claude",
+ "stage": "scored",
+ "pr": 118,
+ "sha": "cbf2dae6232ec66078d624cc39d84805c42c3a4a",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": "BB-D76FEDCF",
+ "site_score": 4.13,
+ "score": 4.13,
+ "decision": "CLOSE",
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Site result (tweak of the drop-run win)",
+ "timestamps": {
+  "first_mention": "2026-11-21 14:28 ET",
+  "pr_opened": "2026-11-21 14:27 ET",
+  "submitted": "2026-11-21 14:54 ET",
+  "scored": "2026-11-21 14:59 ET",
+  "pr_merged": null,
+  "updated": "2026-11-21 14:54 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/118",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

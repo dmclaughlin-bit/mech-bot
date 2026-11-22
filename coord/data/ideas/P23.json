@@ -1,0 +1,67 @@
+{
+ "id": "P23",
+ "title": "Late-game idle torso sweep (LATE_FARM_ON)",
+ "family": "farm",
+ "flags": [
+  "LATE_FARM_ON"
+ ],
+ "flag": "LATE_FARM_ON",
+ "behaviors": null,
+ "owner": "Mech Builder (ACK P23)",
+ "stage": "retired",
+ "pr": 127,
+ "sha": "76c3fa88991caa699830d0dc3e6d9f1562a454ca",
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": [
+  {
+   "sha": "76c3fa88991caa699830d0dc3e6d9f1562a454ca",
+   "seed_set": "2000+3000",
+   "fired": null,
+   "diff_behavior": null,
+   "diff_score": 13,
+   "pins": "VETO: new in-zone pin on base-0 seed 90 (64 s longest vs 10 s champion; pin windows 190 to 271; starts t=62 s after LATE_FARM_S=60).",
+   "verdict": "VETO",
+   "source": "coord/data/screens.csv: tester screen of PR #127 P23 late idle torso sweep (LATE_FARM_ON) vs champion 6182d29 (site 4.17; merge-base, parent 1781116 has identical bot code), n=192, SEED_BASE 2000+3000. VETO: new in-zone pin on base-0 seed 90 (64 s longest vs 10 s champion; pin windows 190 to 271; starts t=62 s after LATE_FARM_S=60). Flag-0 via uncommitted temp copy LATE_FARM_ON=false: behavior-identical on all 96 base-2000 seeds. No crashes or missed answers; answers over 50 ms are load (champion 6 games, head 1). Sim delta is information only.",
+   "sim_delta": 0.005,
+   "sim_se": 0.058,
+   "games_changed": 13,
+   "better": 7,
+   "worse": 6
+  },
+  {
+   "sha": "76c3fa88991caa699830d0dc3e6d9f1562a454ca",
+   "seed_set": "4000+5000",
+   "fired": null,
+   "diff_behavior": null,
+   "diff_score": 16,
+   "pins": "Same VETO as the 2000+3000 row (hazard: seed 90 pin).",
+   "verdict": "VETO",
+   "source": "coord/data/screens.csv: tester screen of PR #127 P23 late idle torso sweep (LATE_FARM_ON) vs champion 6182d29 (site 4.17), held-out n=192, SEED_BASE 4000+5000. Same VETO as the 2000+3000 row (hazard: seed 90 pin). Sim delta is information only.",
+   "sim_delta": -0.057,
+   "sim_se": 0.061,
+   "games_changed": 16,
+   "better": 6,
+   "worse": 10
+  }
+ ],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "Tester VETO 5:09 PM ET (new in-zone pin, seed 90); rebuilt as P23b",
+ "blocker": null,
+ "next_action": "do not site-test / do not resubmit",
+ "doug_waiver": false,
+ "source": "Builder diagnosis (instrumented main)",
+ "timestamps": {
+  "first_mention": null,
+  "pr_opened": "2026-11-21 16:37 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json",
+  "coord/data/screens.csv"
+ ]
+}

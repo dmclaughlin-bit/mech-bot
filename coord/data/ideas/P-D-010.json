@@ -1,0 +1,33 @@
+{
+ "id": "P-D-010",
+ "title": "En-route travel delay (healthy, unengaged travel): measurement first",
+ "family": "movement",
+ "flags": [],
+ "flag": null,
+ "behaviors": null,
+ "owner": "Diego's Claude (ACK P-D-010; PR #140)",
+ "stage": "retired",
+ "pr": 140,
+ "sha": "dd28d770070216d4779f86993b79264c32183d58",
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "no Step B: delay changes zone arrival in 6/192 and 2/192, drop captures in 0, below the ~10/192 bar (PR #140)",
+ "blocker": null,
+ "next_action": "do not cut a travel-speed flag from this measurement",
+ "doug_waiver": false,
+ "source": "Watcher SKILLS (healthy boost/travel) + Doug 5:38 PM overhaul; ideas_queue.md item 8",
+ "timestamps": {
+  "assigned": "2026-11-21 17:50 ET",
+  "pr_opened": "2026-11-21 18:17 ET",
+  "updated": "2026-11-21 18:17 ET"
+ },
+ "sources": [
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/140",
+  "coord/data/ideas_queue.md",
+  "coord/next-diego.md"
+ ]
+}

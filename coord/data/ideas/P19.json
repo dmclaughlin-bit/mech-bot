@@ -1,0 +1,35 @@
+{
+ "id": "P19",
+ "title": "Standoff HP margin 0.2->0.1",
+ "family": "standoff",
+ "flags": [
+  "STANDOFF_HP_MARGIN"
+ ],
+ "flag": "STANDOFF_HP_MARGIN",
+ "behaviors": null,
+ "owner": "unknown",
+ "stage": "hold",
+ "pr": 112,
+ "sha": "0135384951864bc1e4f19e73dfea961d74046bc6",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "HOLD",
+ "blocker": "no complete screen on both seed sets for the current head",
+ "next_action": "re-screen both sets vs 6182d29 or park",
+ "doug_waiver": false,
+ "source": "Site result (tweak of standoff break)",
+ "timestamps": {
+  "first_mention": "2026-11-21 14:07 ET",
+  "pr_opened": "2026-11-21 14:04 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

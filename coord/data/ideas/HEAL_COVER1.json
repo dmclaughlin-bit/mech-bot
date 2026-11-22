@@ -1,0 +1,33 @@
+{
+ "id": "HEAL_COVER1",
+ "title": "HEAL_COVER=1 (noSneak gap only, c3a5d11)",
+ "family": "heal",
+ "flags": [
+  "HEAL_COVER"
+ ],
+ "flag": "HEAL_COVER",
+ "behaviors": null,
+ "owner": "unassigned (no PR)",
+ "stage": "hold",
+ "pr": null,
+ "sha": "c3a5d11a11c51ebc2caaca9469a91044c0b4fdb1",
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "HOLD / parked: same family as P24 official 3.79 CLOSE (BB-BE220066); no official paired screen of this SHA",
+ "blocker": "family just lost 0.38 official; no both-set screen of c3a5d11; no PR",
+ "next_action": "leave parked unless Grok still wants a cause-isolation screen",
+ "doug_waiver": false,
+ "source": "P24 follow-up; ideas_queue.md item 7 (Low); ready_ledger HOLD",
+ "timestamps": {
+  "first_mention": "2026-11-21 17:54 ET (ideas_queue.md)",
+  "updated": "2026-11-21 17:54 ET"
+ },
+ "sources": [
+  "coord/data/ideas_queue.md",
+  "coord/data/ready_ledger.md"
+ ]
+}

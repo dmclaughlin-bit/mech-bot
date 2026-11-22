@@ -1,0 +1,38 @@
+{
+ "id": "P-B-006",
+ "title": "P-B-006 STANDOFF_BREAK_S 60->45, on 4.10 drop-run main",
+ "family": "standoff",
+ "flags": [
+  "STANDOFF_BREAK_S"
+ ],
+ "flag": "STANDOFF_BREAK_S",
+ "behaviors": null,
+ "owner": "Mech Builder (ACK)",
+ "stage": "scored",
+ "pr": 107,
+ "sha": "049787d6996c6262667ec3425442bbd16483fe22",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": "BB-A1312E8D",
+ "site_score": 4.02,
+ "score": 4.02,
+ "decision": "CLOSE",
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Site result (tweak of the 4.06 win)",
+ "timestamps": {
+  "first_mention": "2026-11-21 13:43 ET",
+  "pr_opened": "2026-11-21 13:44 ET",
+  "submitted": "2026-11-21 14:04 ET",
+  "scored": "2026-11-21 14:07 ET",
+  "pr_merged": null,
+  "updated": "2026-11-21 14:04 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/107",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

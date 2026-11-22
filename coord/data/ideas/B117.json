@@ -1,0 +1,55 @@
+{
+ "id": "B117",
+ "title": "B117 loadout/HP matchup range, on 4.17 main",
+ "family": "loadout",
+ "flags": [
+  "MATCHUP_ON"
+ ],
+ "flag": "MATCHUP_ON",
+ "behaviors": null,
+ "owner": "unknown (no ACK in PR or log)",
+ "stage": "scored",
+ "pr": 123,
+ "sha": "4e393894ef69450a72dc67360bb532af1bbb74b6",
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": [
+  {
+   "sha": "4e393894ef69450a72dc67360bb532af1bbb74b6",
+   "seed_set": "2000+3000",
+   "fired": null,
+   "diff_behavior": null,
+   "diff_score": 11,
+   "pins": null,
+   "verdict": null,
+   "source": "coord/data/screens.csv: tester screen of PR #123 B117 loadout/HP matchup range vs parent champion 6182d29 (site 4.17), n=192, SEED_BASE 2000+3000. Site 4.08 (BB-A84FCC28). Flag-0 via uncommitted temp copy MATCHUP_ON=false: behavior-identical on all 96 base-2000 seeds. Sim Δ is information only; it does not explain the site drop.",
+   "sim_delta": 0.073,
+   "sim_se": 0.087,
+   "games_changed": 11,
+   "better": 6,
+   "worse": 5
+  }
+ ],
+ "receipt": "BB-A84FCC28",
+ "site_score": 4.08,
+ "score": 4.08,
+ "decision": "CLOSE",
+ "blocker": null,
+ "next_action": "do not resubmit",
+ "doug_waiver": false,
+ "source": "Doug request (2:38 PM ET: loadout and HP)",
+ "timestamps": {
+  "first_mention": "2026-11-21 15:12 ET",
+  "pr_opened": "2026-11-21 15:10 ET",
+  "submitted": "2026-11-21 15:44 ET",
+  "scored": "2026-11-21 15:47 ET",
+  "pr_merged": null,
+  "updated": "2026-11-21 15:44 ET"
+ },
+ "sources": [
+  "coord/data/site_results.csv",
+  "coord/data/screens.csv",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/123",
+  "coord/data/pipeline_view.json (from repo + gh)"
+ ]
+}

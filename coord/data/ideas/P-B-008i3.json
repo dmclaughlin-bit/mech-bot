@@ -1,0 +1,35 @@
+{
+ "id": "P-B-008i3",
+ "title": "Movement iteration 3 (modes 30-44, sim-only)",
+ "family": "movement",
+ "flags": [
+  "EVADE_MODE"
+ ],
+ "flag": "EVADE_MODE",
+ "behaviors": null,
+ "owner": "Claude on Grok's computer",
+ "stage": "hold",
+ "pr": 129,
+ "sha": "11826aee02b45fedfee392a0c9c66c7ec0e29704",
+ "champion_sha_tested_against": null,
+ "champion_sha": null,
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": "HOLD",
+ "blocker": "sim-only track, not a site candidate; no complete screen on both seed sets for the current head",
+ "next_action": "do not site-test this SHA; sim-only",
+ "doug_waiver": false,
+ "source": "Movement track (P-B-008)",
+ "timestamps": {
+  "first_mention": null,
+  "pr_opened": "2026-11-21 17:05 ET",
+  "pr_closed": null,
+  "updated": "2026-11-21 18:55 ET"
+ },
+ "sources": [
+  "coord/data/ready_ledger.md",
+  "coord/data/pipeline_view.json"
+ ]
+}

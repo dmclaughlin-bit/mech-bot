@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  BACKAWAY_FAR_COVER_ON, BACKAWAY_FAR_STEPS_S, DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  BACKAWAY_FAR_COVER_ON, BACKAWAY_FAR_STEPS_S, DROP_RUN_M, FAR_COVER_SAFE_ON, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
@@ -465,10 +465,11 @@ function buildBot(hello: Hello): Bot {
   /**
    * P48: hideSpot's search (straight walk 1-3 s, inside `keepIn`, no closer to any seer), where trees + buildings hide
    * us from every seer. Skips spots on the give-up list. Null when there is none or the deadline is near.
+   * P63: `avoid` (default: the seers) is the list the spot may be no closer to.
    */
   function treeSpot(
     me: Observation["self"], height: number, walk: number, seers: { pos: Vec3; cubes?: number }[], keepIn: [number[], number], timeOk: () => boolean,
-    steps: number[] = HIDE_STEPS_S, skip: Set<string> = treeSkip,
+    steps: number[] = HIDE_STEPS_S, skip: Set<string> = treeSkip, avoid: { pos: Vec3 }[] = seers,
   ): Vec3 | null {
     const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
     for (const s of steps) {
@@ -481,7 +482,7 @@ function buildBot(hello: Hello): Bot {
         const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
         if (g === -Infinity) continue
         const p: Vec3 = [x, y, g]
-        if (seers.some((e) => flat(e.pos, p) < flat(e.pos, me.pos))) continue
+        if (avoid.some((e) => flat(e.pos, p) < flat(e.pos, me.pos))) continue
         if (!clearLine(solids, from, [x, y, g + height / 2], 0, 0)) continue
         if (seers.every((e) => treeHidden(p, height, e))) return p
       }
@@ -839,7 +840,8 @@ function buildBot(hello: Hello): Bot {
           if (stuck) farSkip.add(run.key)
           farRun = null
         }
-        const p = treeSpot(me, myHeight, walkSpeed, seers, zoneKeep, canPlan, BACKAWAY_FAR_STEPS_S, farSkip)
+        // P63 (FAR_COVER_SAFE_ON): the far spot may be no closer to ANY enemy in view, not only to the shooters it hides from.
+        const p = treeSpot(me, myHeight, walkSpeed, seers, zoneKeep, canPlan, BACKAWAY_FAR_STEPS_S, farSkip, FAR_COVER_SAFE_ON ? threats : seers)
         if (p) farRun = { spot: p, key: treeKey(p[0], p[1]), best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
         return p
       }

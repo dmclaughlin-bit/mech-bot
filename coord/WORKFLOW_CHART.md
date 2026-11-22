@@ -45,3 +45,4 @@ flowchart TD
 
 - Doug 8:32-8:33 PM ET: Diego's Mac is a second screening station (after the P-D-014 trees work), once it matches Sim Tester's P29 screen exactly. The coordinator assigns each build to one station.
 - Doug 8:43-8:44 PM ET: when no fully screened build is ready and a slot is free, a build that beat the 15-champions sim on both seed sets with no extra early deaths (and passes the basic checks and the novelty check) may go to the site. A full-screen VETO still blocks it.
+- Doug 8:45-8:46 PM ET: the 15-champions sim runs on every current build from now on; the spare-slot auto-submit stays off until it proves out and Doug turns it on.

@@ -150,7 +150,7 @@ export const DROP_RUN_M = 200
  * Zone travel, engage, retreat, laser walk, crossfire, ambush, drops and farming all rank above it.
  * false = champion behavior exactly.
  */
-export const MIDRING_SETTLE_ON = false
+export const MIDRING_SETTLE_ON = true
 export const MIDRING_LO = 0.4
 export const MIDRING_HI = 0.7
 export const MIDRING_GOAL = 0.55

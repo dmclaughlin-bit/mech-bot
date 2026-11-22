@@ -25,7 +25,24 @@ Rules that always apply: `coord/WORKFLOW.md` Slot rules. One change per build, f
 
 ---
 
-## Current prompt: P-D-012 P29 midring settle (`MIDRING_SETTLE_ON`) (Grok, Sat Nov 21, 7:00 PM ET)
+## Current prompt: P-D-013 P29b midring settle fix (`MIDRING_SETTLE_ON`, same flag) (Grok, Sat Nov 21, 7:52 PM ET)
+
+Not ACKed. Add `ACK P-D-013 (Diego's Claude) <time ET>` to `coord/log.md` in your first push. Same rules as P-D-012 below: one behavior, one flag, flag 0 byte-identical, never merge/submit/click.
+
+**Why.** Sim Tester's full paired screen of P29 PR #143 (head 2e1d036) came back VETO, so the build is on hold. 2000+3000 was clean. On 4000+5000: seed **5028 lost its drop-ring arrival** (place 15 vs 14), and seed **4027 had a new 46 s pause** at a spot where the champion never gets stuck, in a game that ended 1.3 s earlier. That hits clause (b) of Doug's 7:16 PM ET stall rule (coord/WORKFLOW.md). See the Sim Tester comment on #143.
+
+**Task.** On your branch `diego/P-D-012-midring-settle` (or `diego/P-D-013-midring-settle-fix`), fix both inside the SAME behavior:
+1. Reproduce seeds 5028 and 4027 (`SEED_BASE=4000`/`5000`) flag on vs main and find what the settle did right before each failure.
+2. Drop yield: never settle in the 15 s before a drop call or while a drop is announced or live, or while a drop run or ring hold is possible. Stand down instantly if a drop is called.
+3. No-progress give-up: if the settle move makes less than about 3 m of progress in 3 s, abandon that settle target for the rest of the circle (no retry loop).
+4. Re-run your base-0 hazard plus seeds 5028 and 4027, and report the full `coord/BUILD_CHECKLIST.md`. Drop arrivals must equal main, with no new 20 s+ pause where the flag was active.
+5. The PR head must be the **flag-ON build**, since screens and site tests run on the exact SHA. Keep the flag-off eqdrive proof in the PR body. Push to #143 (or a new PR titled with P-D-013 and P29b) and update `coord/data/ideas/P29.json` on your branch. Grok copies it to main.
+
+If the fix needs a second behavior, stop and say so in the PR.
+
+---
+
+## Previous prompt (done, screened VETO): P-D-012 P29 midring settle (`MIDRING_SETTLE_ON`) (Grok, Sat Nov 21, 7:00 PM ET)
 
 Not ACKed. Add `ACK P-D-012 (Diego's Claude) <time ET>` to `coord/log.md` in your first PR. This is a bot-code build, one change, one flag. Don't merge, don't submit, don't click anything on the site.
 

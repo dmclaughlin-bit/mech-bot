@@ -24,12 +24,12 @@
  * P-D-003 (drop run): walk to a called supply drop within 150 m, timed to arrive as it lands, and hold its ring
  * (see DROP_RUN_M).
  */
-import { clearLine, groundAt, loadMap } from "./map.ts"
+import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
-  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -80,6 +80,8 @@ const HEAL_HP = 0.9
 /** F3, Q2 hiding spots: this many bearings around us, at the distances we walk in 1, 2 and 3 s, nearest first. */
 const HIDE_BEARINGS = 12
 const HIDE_STEPS_S = [1, 2, 3]
+/** P48: give-up list key for a tree spot (4 m cells). */
+const treeKey = (x: number, y: number) => `${Math.round(x / 4)},${Math.round(y / 4)}`
 /** Build 12 (farm): no farming for this long (s) after damage from anything but a drone. */
 const FARM_QUIET_S = 3
 /** Build 12: known enemies seen this recently (s) count against the FARM_ENEMY_M ring. */
@@ -263,6 +265,8 @@ function fallbackBot(): Bot {
 function buildBot(hello: Hello): Bot {
   const cfg = hello.config
   const solids = loadMap(hello)
+  /** P48: map trees (sight only), read only when TREE_RETREAT_ON. */
+  const trees = TREE_RETREAT_ON ? loadTrees(hello) : null
   const growth = Number(cfg.cubes.size_per_cube ?? 0.05)
   const minPitch = cfg.mech.min_pitch ?? -0.7
   const maxPitch = cfg.mech.max_pitch ?? 1.3
@@ -289,6 +293,9 @@ function buildBot(hello: Hello): Bot {
   /** P-D-003: the drop we are walking to, and drops we gave up on. */
   let dropRun: { id: number; since: number } | null = null
   const dropSkip = new Set<number>()
+  /** P48: the tree spot we are retreating to (with its best distance so far, for the no-progress give-up) and spots we gave up on. */
+  let treeRun: { spot: Vec3; key: string; best: number; bestAt: number; used: number } | null = null
+  const treeSkip = new Set<string>()
   /** Build 14 (engage): each weapon's DPS and reach from hello.config, read once here. */
   const baseDps = {} as Record<WeaponKind, number>
   const baseReach = {} as Record<WeaponKind, number>
@@ -439,6 +446,40 @@ function buildBot(hello: Hello): Bot {
         if (threats.some((e) => flat(e.pos, p) < flat(e.pos, me.pos))) continue
         if (!clearLine(solids, from, [x, y, p[2] + height / 2], 0, 0)) continue
         if (!seenAt(p, height, threats, cone)) return p
+      }
+    }
+    return null
+  }
+
+  /** P48: is a mech standing at `p` hidden from `e` by buildings or trees? Both its center and top lines must be blocked; canopy counts only beyond near_range. */
+  function treeHidden(p: Vec3, height: number, e: { pos: Vec3; cubes?: number }): boolean {
+    const eye: Vec3 = [e.pos[0], e.pos[1], e.pos[2] + (cfg.mech.eye_height ?? cfg.mech.height) * scale(e.cubes)]
+    const canopy = span(eye, p) > cfg.vision.near_range
+    const sees = (q: Vec3) => clearLine(solids, eye, q, 0, 0) && !treeBlocks(trees!, eye, q, canopy)
+    return !sees([p[0], p[1], p[2] + height / 2]) && !sees([p[0], p[1], p[2] + height])
+  }
+
+  /**
+   * P48: hideSpot's search (straight walk 1-3 s, inside `keepIn`, no closer to any seer), where trees + buildings hide
+   * us from every seer. Skips spots on the give-up list. Null when there is none or the deadline is near.
+   */
+  function treeSpot(
+    me: Observation["self"], height: number, walk: number, seers: { pos: Vec3; cubes?: number }[], keepIn: [number[], number], timeOk: () => boolean,
+  ): Vec3 | null {
+    const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
+    for (const s of HIDE_STEPS_S) {
+      for (let b = 0; b < HIDE_BEARINGS; b++) {
+        if (!timeOk()) return null
+        const yaw = (2 * Math.PI * b) / HIDE_BEARINGS
+        const x = me.pos[0] + Math.cos(yaw) * walk * s, y = me.pos[1] + Math.sin(yaw) * walk * s
+        if (Math.hypot(x - keepIn[0][0], y - keepIn[0][1]) > keepIn[1]) continue
+        if (treeSkip.has(treeKey(x, y))) continue
+        const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
+        if (g === -Infinity) continue
+        const p: Vec3 = [x, y, g]
+        if (seers.some((e) => flat(e.pos, p) < flat(e.pos, me.pos))) continue
+        if (!clearLine(solids, from, [x, y, g + height / 2], 0, 0)) continue
+        if (seers.every((e) => treeHidden(p, height, e))) return p
       }
     }
     return null
@@ -744,6 +785,34 @@ function buildBot(hello: Hello): Bot {
           else dropRun = null
         }
       }
+      // P48 (TREE_RETREAT_ON): the tree spot for the no-cover retreat, or null (champion back-away). Called only from that
+      // branch. Off before TREE_RETREAT_MIN_T (40 s), while a drop run/hold is on, and while a drop is near AND reachable (the
+      // drop run's own candidate filter above, without its state gates); off when trees already hide us from every seer.
+      const treeRetreat = (): Vec3 | null => {
+        const pace = ZONE_WALK * walkSpeed
+        const dropSafe = (p: number[], stay: number) =>
+          flat(p, z.center) < Math.max(0, z.radius - margin) &&
+          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
+        const dropReach = () => DROP_RUN_M > 0 && (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
+          flat(x.pos, me.pos) <= DROP_RUN_M && dropSafe(x.pos, x.lands_in + x.capture_s - x.progress))
+        if (!TREE_RETREAT_ON || !trees || obs.t < TREE_RETREAT_MIN_T || dropMove || dropHold || dropReach()) return (treeRun = null)
+        const seers = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        if (!seers.length || seers.every((e) => treeHidden(me.pos, myHeight, e))) return (treeRun = null)
+        if (treeRun && obs.t - treeRun.used > 0.5) treeRun = null
+        if (treeRun) {
+          const run = treeRun
+          const d = flat(me.pos, run.spot)
+          if (d < run.best - 0.5) { run.best = d; run.bestAt = obs.t }
+          const stuck = obs.t - run.bestAt > TREE_RETREAT_STUCK_S || d < 1.5
+          const still = !stuck && flat(run.spot, zoneKeep[0]) <= zoneKeep[1] && seers.every((e) => treeHidden(run.spot, myHeight, e))
+          if (still) { run.used = obs.t; return run.spot }
+          if (stuck) treeSkip.add(run.key)
+          treeRun = null
+        }
+        const p = treeSpot(me, myHeight, walkSpeed, seers, zoneKeep, canPlan)
+        if (p) treeRun = { spot: p, key: treeKey(p[0], p[1]), best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
+        return p
+      }
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -777,6 +846,12 @@ function buildBot(hello: Hello): Bot {
         move = heading(spot)
         boost = me.energy > 0.3 * me.max_energy
         mode = "retreat to cover"
+      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && (spot = treeRetreat())) {
+        // P48 (TREE_RETREAT_ON): no building cover in reach, but trees can hide us from every enemy that sees us: walk
+        // there instead of backing straight away (no closer to any of them), torso still on the attacker.
+        move = heading(spot)
+        boost = me.energy > 0.3 * me.max_energy
+        mode = "retreat, trees"
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp) {
         // Retreat (F2, F3) with no cover in reach, or hit by someone we can't see: back away from the attacker with the torso still on it.
         // Lean toward the center near the circle's edge; boost only above 30% energy.

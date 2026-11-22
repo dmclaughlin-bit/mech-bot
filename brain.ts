@@ -28,7 +28,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LULL_RELOAD_ON, LULL_RELOAD_QUIET_S, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -308,6 +308,8 @@ function buildBot(hello: Hello): Bot {
   let claim: { pos: Vec3; until: number } | null = null
   /** P-B-001: the enemy the standoff break walked at last decision (null when it did not run). */
   let standoffId: number | null = null
+  /** P38 (LULL_RELOAD_ON): the last decision our gun fired, our target had a clear line, or a visible enemy could see us. */
+  let lullContact = -Infinity
   /** P-D-012 (P29): the midring settle walk in progress, and the hold phases (by shrink_start) it gave up on. */
   let settle: { goal: Vec3; phase: number; best: number; at: number } | null = null
   const settleSkip = new Set<number>()
@@ -1081,6 +1083,16 @@ function buildBot(hello: Hello): Bot {
         }
         if (mortar >= 0 && leading === "mortar" && w(mortar).cooldown <= 0 && onTarget(aim[0], aim[1], 0.012)) fire[mortar] = true
         if (gun >= 0 && (w(gun).ammo ?? 1) === 0 && (w(gun).reload ?? 0) <= 0) act.reload = true
+        // P38 (LULL_RELOAD_ON): top up a part-empty gun in a lull: no gun fire, no clear line to our target and no
+        // visible enemy seeing us for LULL_RELOAD_QUIET_S. Never before 10 s or while a supply drop is listed.
+        if (LULL_RELOAD_ON) {
+          const contact = (gun >= 0 && fire[gun]) || clear || (enemies.length > 0 && seenAt(me.pos, myHeight, threats, false))
+          if (contact) lullContact = obs.t
+          else if (!farmShot && gun >= 0 && !act.reload && obs.t >= 10 && obs.t - lullContact >= LULL_RELOAD_QUIET_S && !(obs.drops ?? []).length) {
+            const g = w(gun)
+            if ((g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0) act.reload = true
+          }
+        }
 
         draw.line(muzzle, c, clear ? "#ff5040" : "#888888")
         label += ` · ${farmShot ? "farm " : ""}${leading} at ${m.id} ${d.toFixed(0)}m${clear ? "" : " (behind cover)"}${pickNote}`
@@ -1098,6 +1110,8 @@ function buildBot(hello: Hello): Bot {
           fire[beamSlot] = !(other?.on && beamFull !== null)
         }
         if (lastHit && obs.t - lastHit.t < 2) aim = [lastHit.bearing, 0]
+        // P38 (LULL_RELOAD_ON): with no target, contact is only a visible enemy that can see us.
+        if (LULL_RELOAD_ON && enemies.length > 0 && seenAt(me.pos, myHeight, threats, false)) lullContact = obs.t
         const g = me.weapons.find((x) => x?.kind === "gun")
         if (g && (g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0) act.reload = true
       }

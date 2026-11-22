@@ -156,3 +156,12 @@ export const MIDRING_HI = 0.7
 export const MIDRING_GOAL = 0.55
 export const MIDRING_MIN_R = 70
 export const MIDRING_STUCK_S = 3
+
+/**
+ * P38 (lull reload): with an enemy mech as target, send reload when the gun holds fewer than half a magazine, is not
+ * reloading, and for at least LULL_RELOAD_QUIET_S we have not fired it, our target has had no clear line, and no
+ * visible enemy has line of sight to us. Never before t = 10 s, and never while a supply drop is listed (called and
+ * not yet taken). Movement, aim and fire are unchanged. false = champion behavior exactly.
+ */
+export const LULL_RELOAD_ON = false
+export const LULL_RELOAD_QUIET_S = 1

@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 22:06 ET",
- "origin_main": "3d08872ebdf373f0c18fe34e9a27a258a341c73b",
+ "generated_at_et": "2026-11-21 22:19 ET",
+ "origin_main": "93b8e70c1c92416742655ff991abd7d7fe285687",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -27,7 +27,7 @@
   ],
   "slots": {
    "limit": 6,
-   "used_rolling_60": 3,
+   "used_rolling_60": 1,
    "used_clock_hour": 1,
    "last_submit": "2026-11-21 22:00 ET"
   },
@@ -79,7 +79,7 @@
  },
  "board": {
   "Idea": 0,
-  "Researched": 26,
+  "Researched": 28,
   "Assigned": 0,
   "Built (PR)": 1,
   "Screened": 15,
@@ -1817,6 +1817,17 @@
       "at": "2026-11-21 20:49 ET",
       "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/147#issuecomment-7072472836",
       "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "PR #147 comment",
+      "sets": [
+       "A",
+       "B"
+      ],
+      "at": "2026-11-21 22:12 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/147#issuecomment-7073394832",
+      "after_click": true,
       "exact_sha": true
      },
      {
@@ -4298,6 +4309,45 @@
    "from_idea_record": true
   },
   {
+   "id": "P37b",
+   "title": "P37 heal pickup re-applied on champion P34, with a near-and-reachable drop gate (HEAL_PICKUP_ON)",
+   "kind": "build",
+   "source": "P37 PR #149 Sim Tester veto (https://github.com/dmclaughlin-bit/mech-bot/pull/149#issuecomment-7072563191: drop-ring arrivals 8->7 and 7->4, all lost arrivals in fired games; survival 6->5 from seed 3012) + Coordinator drop-gate rule (gate on a drop near and reachable within DROP_RUN_M, never on 'any drop exists')",
+   "owner": "Mech Builder",
+   "decision": "VETO on trees-on screen vs P34 0e6fadd (4 vetoes incl. drop-ring arrivals 8 to 3 on 4000+5000). Fails more than one veto: NOT an eligible near miss. Off the pool. Coordinator 10:22 PM ET.",
+   "changes": 1,
+   "changes_basis": "idea record flags",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": "4275d890f3de79e602e33469cc5d6cc97db1914f",
+   "champion_sha_note": "588557e464dd4946680bff964a7c8e86700b8739",
+   "research": [],
+   "prs": [],
+   "pr_opened": null,
+   "primary_pr": 156,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/156",
+   "pr_state": null,
+   "head": "4275d890f3de79e602e33469cc5d6cc97db1914f",
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Researched",
+   "outcome": null,
+   "blocker": "The drop losses come from trajectory divergence after detours taken while no drop is within DROP_RUN_M (often none listed at all). The only gate that blocks them is 'any drop listed', which the Coordinator rule forbids, and P37 had exactly that gate and still lost 4 arrivals on the screen.",
+   "from_idea_record": true
+  },
+  {
    "id": "P-D-011",
    "title": "P-D-011 #133 path-search shortcut benchmark (geom.ts component skip)",
    "kind": "build",
@@ -4375,6 +4425,45 @@
    "stage": "Retired",
    "outcome": null,
    "blocker": "Never fires in the house sim. Only 10/192 games reach 4 or fewer alive (4 on base 0, 6 on base 2000); all 116 late (2-4 alive) retreat ticks had a supply drop announced or landed, so the required drop gate blocks every one. The champion's retreat already boosts above 30% energy; P31 only adds ground boost at 15-30% energy, and only 25 late retreat ticks (base 2000) were in that band on the ground, before the drop gate.",
+   "from_idea_record": true
+  },
+  {
+   "id": "P48",
+   "title": "Retreat behind trees: when hurt, being hit and no building cover is reachable, retreat to a spot within 3 s that trees hide from every enemy seeing us, instead of backing straight away (TREE_RETREAT_ON)",
+   "kind": "build",
+   "source": "Doug 8:58 PM ET follow-up (break line of sight while disengaging): trees-on passive sim log of the P34 champion.",
+   "owner": "Mech Builder",
+   "decision": "PR #157 opened 10:16 PM ET; checklist in PR body; waiting for Sim Tester trees-on paired screen vs P34 0e6fadd. Record copied from branch by Coordinator 10:22 PM ET.",
+   "changes": 1,
+   "changes_basis": "idea record flags",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": "b9492c6f122c549c705b69402157f078b4a57857",
+   "champion_sha_note": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+   "research": [],
+   "prs": [],
+   "pr_opened": null,
+   "primary_pr": 157,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/157",
+   "pr_state": null,
+   "head": "b9492c6f122c549c705b69402157f078b4a57857",
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Researched",
+   "outcome": null,
+   "blocker": null,
    "from_idea_record": true
   },
   {

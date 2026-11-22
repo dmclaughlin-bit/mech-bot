@@ -1,0 +1,69 @@
+{
+  "id": "P63",
+  "title": "FAR_COVER_SAFE_ON: P60's far-cover search must not pick a spot closer to any enemy in view than we are now (P60 checks that only for the enemies that just hit us)",
+  "family": "retreat / movement",
+  "flag": "FAR_COVER_SAFE_ON",
+  "flags": ["FAR_COVER_SAFE_ON"],
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "stage_on": "P60",
+  "branch": "p63-far-cover-arrival-safe",
+  "base": "b2d0b06be25261dda7ba576a438ca5eb8a99b74c",
+  "champion": "P60 BACKAWAY_FAR_COVER_ON, bot code afb6f26, main merge 32acd3d, site 3.88 builders-4 (BB-6F449E11)",
+  "champion_sha_tested_against": "afb6f263972480e03d381d5dbb32f56954e8ae73",
+  "champion_main": "32acd3dfd643c3bc46d7f2d96e8db2431d207ba0",
+  "builds_on": [
+    "F16",
+    "F18",
+    "N8",
+    "N9",
+    "P60 Sim Tester refine B (5024, 4001)",
+    "NEW: P63 Step 1 counts (trees-on 2000-5000, P60 afb6f26 vs P48 b9492c6, 116 games with a far-cover walk): condition 'a far spot picked closer to an enemy in view (not one of the enemies the spot is checked against) than our current position' in collapses (lost >= 2 places after a walk) 4/4 (3017, 4001, 4043, 5024) vs saves (gained places) 3/13 (2058, 3085, 5040; in 5040 only at the last walk t=118.2, not the saving walk t=86.6; 2073 and 4093 0); lost 1 place 6/12; same place 45/87"
+  ],
+  "source": "Coordinator order 2026-11-22 (P60 refine B): keep the legs-only far-cover walk, fix the mid-game collapses right after a walk",
+  "step1": {
+    "method": "log-only /tmp copies of P60 afb6f26 and P48 b9492c6 with a per-decision trace (mode, spot, latched far spot, hp, pos, each enemy in view with sees-us / hit-us-in-2-s / tree-hidden flags) and the trees-on sim copy (/workspace/wt-tester-trees tools/sim) with P60's passive ground-truth trace (damage by attacker, every house mech within 200 m with LOS). --jobs 1, 96 seeds per base",
+    "passivity": "CSV rows identical to /workspace/tester/runs/trees-{afb6f26,b9492c6}-{2000,3000,4000,5000}.csv on every outcome field 768/768 (only bot_ms_mean and late_over_50ms differ, on 3 rows, machine load)",
+    "fired_games": "116 (53 on 2000+3000, 63 on 4000+5000; same as the Sim Tester screen), 142 far-cover episodes (decisions chained <= 2 s apart); 92 of them last under 1 s and none gets within 10 m of its spot while in far-cover mode",
+    "collapses": {
+      "5024": "P48 2nd death 143.25 s 14 kills -> P60 13th 51.60 s 3 kills. t=46.6 shooter #12 south at 90 m; P48 backed away north and 0.4 s later found building cover (hideSpot) to the NW; P60 walked east across #12's view (spot also slightly closer to non-shooter #13, 122 -> 118 m) in the open for 3.5 s, #12 kept LOS and chased; healed standing still in its view at t=49, died 1.5 s after the last far tick",
+      "4001": "P48 7th 183.55 s 9 kills -> P60 13th 124.70 s 3 kills. Both walks (t=120.3, 123.6) hid from shooter #12 only; the spots were toward enemy #9, which saw us but had not hit us (44 -> 24 m; second spot ~5 m from #9). #9 killed us 0.8 s after the last far tick (walked into a third party)",
+      "4043": "P48 4th 110.75 s 10 kills -> P60 7th 88.55 s 8 kills. Laser #1 at 40 m; the first far spot (south) was replaced 0.1 s later by one NE that is closer to seer #15 (145 -> 132 m): the reversal left us almost stationary for 0.6 s under laser hits (124 per hit vs 50 while P48 backed away), died 0.1 s after",
+      "3017": "P48 11th 84.55 s -> P60 13th 73.05 s. Short walks (0.9 s) toward a spot closer to #5 (in view, not yet seeing us; 105 -> 93 m); #5 killed us 8 s later during a laser rush. Weakest of the four (downstream divergence)"
+    },
+    "saves": "2073 (12th 59.55 s -> 7th 127.90 s), 4093 (10th -> 5th), 5040 (11th -> 9th), 2058, 2087, 3013, 3034, 3085, 4024, 4037, 5018, 5046, 5062: in every save except 2058, 3085 and 5040's last walk, the far spot was no closer to any enemy in view",
+    "condition_tested": {
+      "A spot closer to a non-checked enemy in view": "collapses 4/4, saves 3/13, lost-1 6/12, same 45/87  <- chosen",
+      "A10 same, by > 10 m": "collapses 3/4, saves 2/13",
+      "walk heading > 60 deg off away-from-shooter": "collapses 4/4, saves 9/13 (not separating)",
+      "walk heading > 90 deg off": "collapses 3/4, saves 7/13 (not separating)",
+      "spot reversal > 90 deg between ticks": "collapses 1/4, saves 1/13",
+      "a non-checked enemy in view at all": "collapses 4/4, saves 12/13 (not separating)"
+    }
+  },
+  "hypothesis": "P60's fix round hides the far spot only from the enemies that hit us in the last 2 s, and its 'no closer to the enemy' test uses the same short list, so the 47-70 m walk can head toward a third enemy that is in view but has not shot yet (4001: killed by that enemy; 5024, 4043, 3017: walked across or toward another enemy). Rejecting far spots that are closer to ANY enemy in view than we are now (the rule P48's tree retreat and hideSpot already apply to all seers) removes those walks; with no other spot the champion's back-away runs, which P48 shows survives those games.",
+  "mechanism": "FAR_COVER_SAFE_ON (params.ts, default false). Only inside P60's farRetreat search (treeSpot with BACKAWAY_FAR_STEPS_S): a candidate far spot is skipped when it is closer than our current position to any enemy in view (threats, the nearest LOS_TARGETS mechs in obs), not only to the shooters; the hidden-from-shooters test is unchanged. The search then takes the next candidate (12 bearings x 4/5/6 s) or returns null -> champion back-away. Latch, give-up, gates, boost and torso/aim unchanged (legs only, N8). Flag off: byte-identical behavior to P60.",
+  "activation": "Decision-level: a far-cover search (no latched spot kept) whose result differs with the flag on (another spot or none). Game-level Step A count = P60 games where that happens at least once.",
+  "disproof": "Fails if the change fires in < 10/192 on either set, or the saves (2073, 4093) are lost, or deaths <40 s rise on either base, or the paired mean vs P60 is lower on both practice bases, or a NEW >=20 s pin appears.",
+  "positives": null,
+  "negatives": null,
+  "confidence": "Uncertain (4 collapses; condition also present in 51 games that did not collapse)",
+  "reuse": "1) P63 trace tooling (bot per-decision enemy list with sees/hit/hidden flags next to P60's ground-truth trace) explains a collapse in a few lines. 2) 92/142 P60 far-cover episodes are under 1 s and none gets within 10 m of its spot in far-cover mode: the walk mostly changes the first second of the retreat direction, not where we end up.",
+  "novelty": {
+    "vs_P60": "P60 searches far spots no closer to the shooters; P63 keeps that search and only adds 'no closer to any enemy in view' for the far spot. Same legs-only walk, same gates, same latch.",
+    "vs_P57_N8": "No torso/aim change.",
+    "vs_P59_N9": "Not a tree-spot choice in the 1-3 s tree retreat; only the 4-6 s far spot."
+  },
+  "outcome": "pending",
+  "pr": null,
+  "sha": null,
+  "timestamps": {
+    "recorded": "2026-11-22 ET (after Step 1, before Step A)"
+  },
+  "sources": [
+    "coord/data/findings.md (F16, F18, N8, N9)",
+    "coord/data/ideas/P60.json",
+    "https://github.com/dmclaughlin-bit/mech-bot/issues/comments/7075869202 (P60 Sim Tester screen, refine B)",
+    "/tmp/p63 traces (not committed)"
+  ]
+}

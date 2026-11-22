@@ -1,11 +1,35 @@
 {
-  "id": "P31",
-  "title": "Late hurt boost: with 2-4 alive and HP < 35% and under fire, use jet boost on the retreat leg (LATE_HURT_BOOST_ON)",
-  "family": "evasion",
-  "flag": "LATE_HURT_BOOST_ON",
-  "owner": "Mech Builder",
-  "stage": "building",
-  "source": "coord/data/watcher/RANKED.md rule 3 (speed while HP<35%, alive 2-4)",
-  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
-  "created_et": "2026-11-21 19:20"
+ "id": "P31",
+ "title": "Late hurt boost: with 2-4 alive, HP < 35% and under fire (the champion's retreat already active), ground-boost the retreat leg down to an energy reserve (LATE_HURT_BOOST_ON)",
+ "family": "evasion",
+ "flags": [
+  "LATE_HURT_BOOST_ON"
+ ],
+ "flag": "LATE_HURT_BOOST_ON",
+ "behaviors": [
+  "while the champion's existing retreat ('retreat to cover' or 'retreat') is active with 2-4 alive, HP < 35% of max and damaged in the last 2 s, on the ground, boost on that leg while energy is above LATE_HURT_BOOST_RESERVE of max; retreat target/path, heal, drop run/hold, zone and combat unchanged; air/jet left to the champion"
+ ],
+ "owner": "Mech Builder",
+ "stage": "building",
+ "pr": null,
+ "sha": null,
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": null,
+ "blocker": null,
+ "next_action": "Mech Builder implements on branch p31-late-hurt-boost (flag default false), check.py, eqdrive, base-0 96-game hazard",
+ "doug_waiver": false,
+ "source": "coord/data/watcher/RANKED.md rule 3 (speed while HP<35%, alive 2-4)",
+ "timestamps": {
+  "created": "2026-11-21 19:20 ET",
+  "updated": "2026-11-22"
+ },
+ "sources": [
+  "coord/data/watcher/RANKED.md",
+  "coord/data/ideas/P31.json (1a95fd3)"
+ ]
 }

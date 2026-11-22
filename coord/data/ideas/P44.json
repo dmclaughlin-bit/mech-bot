@@ -10,7 +10,7 @@
     "when the laser would take the lead and start a new charge (charge 0) on a target whose visible weapons include lightning and that is within 54 m, the laser does not lead; lightning or the gun lead and fire as usual; t >= 10; champion behavior on drop run/hold ticks"
   ],
   "owner": "Mech Builder",
-  "stage": "hold",
+  "stage": "retired",
   "pr": null,
   "sha": null,
   "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
@@ -141,7 +141,7 @@
     "why": "In the champion, 939 of the 1074 would-fire ticks (87%; 41 of 68 games) came within 2 s of a short on us, when the charge cannot start anyway. The first build fired 4412 ticks (4x): once it held the laser back it kept doing so after the short ended and gave up laser shots that could start. Damage dealt to lightning holders within 54 m fell 202279 -> 183973 and kills 1391 -> 1340 (4 bases), while shorts on us fell only 544 -> 528."
   },
   "novelty_vs_P34_lethal_release": {
-    "lethal_release_code": "brain.ts (main 9071465, P48 b9492c6) inside `if (laser >= 0) { ... if (charge > 0) {`: LETHAL_RELEASE_ON && !full && lined (leading === 'laser' && beamOn) && !other (no re-aim rescue) && !farmShot && m.kind === 'mech' && m.hp != null && obs.t >= LETHAL_RELEASE_MIN_T (40 s) && !dropOpen() (no dropRun, no drop held by nobody/us within DROP_RUN_M). It computes the partial-charge damage (protocol §7 min_frac curve x cube bonus x cookoff if the target holds a mortar); if LETHAL_RELEASE_MARGIN 0.8 x that >= the target's shown hp, fire[laser] = false lets go of the charge NOW instead of waiting for a full charge.",
+    "lethal_release_code": "brain.ts (main 9071465, P48 b9492c6) inside `if (laser >= 0) { ... if (charge > 0) {`: LETHAL_RELEASE_ON && !full && lined (leading === 'laser' && beamOn) && !other (no re-aim rescue) && !farmShot && m.kind === 'mech' && m.hp != null && obs.t >= LETHAL_RELEASE_MIN_T (40 s) && !dropOpen() (no dropRun, no drop held by nobody/us within DROP_RUN_M). It computes the partial-charge damage (protocol \u00a77 min_frac curve x cube bonus x cookoff if the target holds a mortar); if LETHAL_RELEASE_MARGIN 0.8 x that >= the target's shown hp, fire[laser] = false lets go of the charge NOW instead of waiting for a full charge.",
     "lethal_release": "Trigger: a charge is ALREADY in progress (charge > 0), lined up on a mech whose shown hp the partial shot would kill, t >= 40 s. Action: RELEASE that existing charge early. Any target loadout.",
     "P44": "Trigger: NO charge in progress (charge == 0) and the laser would take the lead to START one; target seen holding lightning within 54 m; t >= 10 s; (fix 1) a short on us within short_s. Action: the laser does not lead, so no new charge starts and lightning/gun aim leads. It never touches a charge in progress, so it never decides a release.",
     "same_tick": "0 by construction (charge == 0 vs charge > 0) and measured 0 on every base in both runs.",
@@ -157,7 +157,7 @@
         "fired": 18,
         "diff_behavior": 18,
         "diff_score": 8,
-        "paired": "-0.052 ± 0.045",
+        "paired": "-0.052 \u00b1 0.045",
         "drop_ring": "3 vs 5 FAIL",
         "died_lt40": "24 vs 24",
         "kills": "291 vs 293",
@@ -167,7 +167,7 @@
         "fired": 13,
         "diff_behavior": 13,
         "diff_score": 8,
-        "paired": "-0.208 ± 0.116",
+        "paired": "-0.208 \u00b1 0.116",
         "drop_ring": "1 vs 1",
         "died_lt40": "15 vs 15",
         "kills": "350 vs 369",
@@ -177,7 +177,7 @@
         "fired": 18,
         "diff_behavior": 18,
         "diff_score": 6,
-        "paired": "+0.010 ± 0.050",
+        "paired": "+0.010 \u00b1 0.050",
         "drop_ring": "3 vs 1",
         "died_lt40": "16 vs 16",
         "kills": "359 vs 358",
@@ -187,7 +187,7 @@
         "fired": 19,
         "diff_behavior": 19,
         "diff_score": 10,
-        "paired": "-0.333 ± 0.131",
+        "paired": "-0.333 \u00b1 0.131",
         "drop_ring": "3 vs 4 FAIL",
         "died_lt40": "22 vs 22",
         "kills": "340 vs 371",
@@ -202,7 +202,7 @@
         "fired": 12,
         "diff_behavior": 12,
         "diff_score": 2,
-        "paired": "+0.010 ± 0.023",
+        "paired": "+0.010 \u00b1 0.023",
         "drop_ring": "3 vs 5 FAIL",
         "died_lt40": "24 vs 24",
         "kills": "295 vs 293",
@@ -214,7 +214,7 @@
         "fired": 6,
         "diff_behavior": 6,
         "diff_score": 0,
-        "paired": "+0.000 ± 0.000",
+        "paired": "+0.000 \u00b1 0.000",
         "drop_ring": "1 vs 1",
         "died_lt40": "15 vs 15",
         "kills": "369 vs 369",
@@ -226,7 +226,7 @@
         "fired": 11,
         "diff_behavior": 11,
         "diff_score": 0,
-        "paired": "+0.000 ± 0.000",
+        "paired": "+0.000 \u00b1 0.000",
         "drop_ring": "1 vs 1",
         "died_lt40": "16 vs 16",
         "kills": "358 vs 358",
@@ -238,7 +238,7 @@
         "fired": 12,
         "diff_behavior": 12,
         "diff_score": 0,
-        "paired": "+0.000 ± 0.000",
+        "paired": "+0.000 \u00b1 0.000",
         "drop_ring": "4 vs 4",
         "died_lt40": "21 vs 22",
         "kills": "371 vs 371",
@@ -257,5 +257,10 @@
     },
     "check": "check.py --map-dir arena PASS: default max 2.8 ms, flag-on (fix 1) max 3.0 ms (first build 2.8 ms); eqdrive (kit stream, 301 replies) flag-off vs origin/main IDENTICAL (cmp) for 169e5e4 and bb2f5b4; merge-base --is-ancestor edb729f OK"
   },
-  "compare_old_P34_based": "The P34-based build (9b211fd) was never screened (no screens in its record). Its research counts on the P34 champion were trees-off 15/192 and 16/192, trees-on 'reach' gate 27/192 (2000+3000) and 34/192 (4000+5000). On P48 trees-on the first build fired 31/192 on 0+1000 and 37/192 on 6000+7000, about the same rate. Fix 1 fires 18/192 and 23/192."
+  "compare_old_P34_based": "The P34-based build (9b211fd) was never screened (no screens in its record). Its research counts on the P34 champion were trees-off 15/192 and 16/192, trees-on 'reach' gate 27/192 (2000+3000) and 34/192 (4000+5000). On P48 trees-on the first build fired 31/192 on 0+1000 and 37/192 on 6000+7000, about the same rate. Fix 1 fires 18/192 and 23/192.",
+  "retired": {
+    "when": "2026-11-22 00:20 ET",
+    "by": "Mech Builder, per Coordinator",
+    "why": "P44b fix-1 build on P48 has near-zero effect (score differs in 2/96 games on base 0, 0 elsewhere; paired +0.010/0/0/0) and failed base 0 drop-ring 3 vs 5; no flip, no PR"
+  }
 }

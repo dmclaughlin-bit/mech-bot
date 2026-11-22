@@ -44,3 +44,4 @@ flowchart TD
 - Doug 7:55 PM ET: drop-arrival veto judged by set totals; a ~1.3 s earlier death at the same place is not "worse" under stall clause (b).
 
 - Doug 8:32-8:33 PM ET: Diego's Mac is a second screening station (after the P-D-014 trees work), once it matches Sim Tester's P29 screen exactly. The coordinator assigns each build to one station.
+- Doug 8:43-8:44 PM ET: when no fully screened build is ready and a slot is free, a build that beat the 15-champions sim on both seed sets with no extra early deaths (and passes the basic checks and the novelty check) may go to the site. A full-screen VETO still blocks it.

@@ -140,3 +140,9 @@ Doug, exact words: "Pass P29: judge drop-ring arrivals by set totals, and a 1.3 
 
 ## Doug 8:32-8:33 PM ET (Sat Nov 21): second screening station
 Diego's Mac becomes a second screening station after its tree-sim work (P-D-014), and before that only P29b. Its screens count only after it reproduces Sim Tester's recorded P29 screen exactly on the same sim. The coordinator assigns each build to one station; the eligibility rules don't change.
+
+## Doug 8:43-8:44 PM ET (Sat Nov 21): 15-champions sim can fill spare slots
+Doug asked that a build beating the 15-champions sim (P-D-016, Diego's Mac) go to the site automatically, and told the coordinator to use whatever it recommends. The rule, as recommended:
+- SPARE-SLOT CANDIDATE: when a site slot is free and NO fully screened READY build is waiting, the loop may submit a build that (1) beat the 15-champions sim, meaning its average score per game is higher than the champion's own 15-champions baseline on BOTH 2000+3000 and 4000+5000 on the exact SHA, (2) has no rise in deaths before 40 s on either set in that run, and (3) passes eligibility checks 1, 2, 3, 5 and 7 (contains champion, byte-identical with the flag off, check.py max under 30 ms, activation about 10/192 or more, one change), plus the novelty and never-resubmit rules.
+- Fully screened READY builds always go first. A build the full paired screen already VETOED is not a spare-slot candidate.
+- Everything else (sole submitter, receipts first, one at a time, PRE-CLICK CHECK) is unchanged.

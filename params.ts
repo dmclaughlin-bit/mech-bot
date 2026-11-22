@@ -152,7 +152,9 @@ export const DROP_RUN_M = 200
  * hunt, standoff break) ranks first, so any of them ends the patrol at once. No-progress guard: a leg with no path, a
  * path over PATROL_PATH_MAX_M, or no closing for PATROL_STALL_S is dropped and the direction flips; PATROL_FAILS failed
  * legs in a row, or PATROL_PIN_S of patrol with under PATROL_PIN_M of movement, rest the patrol (plain hold) for
- * PATROL_REST_S. Off in a circle under PATROL_MIN_R. false = champion (B113) behavior exactly.
+ * PATROL_REST_S. Off in a circle under PATROL_MIN_R. P28b: off before PATROL_START_S, off while any drop the drop run
+ * could take exists (its own skip/holder filter, any range) or a drop run/hold is on, and a leg given up for no progress
+ * (or the pin guard) marks its waypoint and our spot sticky for the game (PATROL_STICKY_M). false = champion (B113) behavior exactly.
  */
 export const MIDRING_PATROL_ON = false
 /** Patrol band as a fraction of the kept circle's radius. */
@@ -167,8 +169,12 @@ export const PATROL_PATH_MAX_M = 90
 export const PATROL_END_M = 12
 /** No patrol when the kept circle is smaller than this (m): final circles stay on the champion's hold. */
 export const PATROL_MIN_R = 70
-/** Drop a leg that has not closed by 1 m for this long (s). */
-export const PATROL_STALL_S = 2
+/** Drop a leg that has not closed by 1 m for this long (s); P28b: its waypoint and our spot then count as sticky. */
+export const PATROL_STALL_S = 3
+/** P28b: no patrol before this game time (s), so the opening (spawn scan, first laser walks) plays as the champion's. */
+export const PATROL_START_S = 10
+/** P28b: skip waypoints within this distance (m) of a sticky point, and start no leg from within it. */
+export const PATROL_STICKY_M = 15
 /** After this many failed legs in a row, rest (hold) for PATROL_REST_S. */
 export const PATROL_FAILS = 3
 export const PATROL_REST_S = 10

@@ -32,7 +32,7 @@ import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, MIDRING_PATROL_ON, NO_SNEAK_ON, NO_SNEAK_QUIET_S, PATROL_END_M, PATROL_FAILS,
   PATROL_LEG_M, PATROL_LEG_MAX_M, PATROL_MIN_R, PATROL_PATH_MAX_M, PATROL_PIN_M, PATROL_PIN_S, PATROL_RATIO_MAX, PATROL_RATIO_MIN,
-  PATROL_REST_S, PATROL_STALL_S, PATROL_ZIG_M, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  PATROL_REST_S, PATROL_STALL_S, PATROL_START_S, PATROL_STICKY_M, PATROL_ZIG_M, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -317,6 +317,8 @@ function buildBot(hello: Hello): Bot {
   let patrol: { wp: Vec3; best: number; bestAt: number; since: number; seen: number } | null = null
   let patrolLeg = 0, patrolDir = 1, patrolFails = 0, patrolRestUntil = -Infinity
   const patrolTrail: [number, number, number, number][] = []
+  /** P28b: waypoints given up for no progress and the spots we stood on when it happened, skipped for the rest of the game. */
+  const patrolSticky: Vec3[] = []
 
   /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
    * lightning 0.8 × its range, gun GUN_NEAR_M, laser and mortar their reach. */
@@ -879,7 +881,17 @@ function buildBot(hello: Hello): Bot {
       // B12/B13 to walk to, walk a short zone-safe leg round the midring of the circle we keep to. Every branch above wins.
       if (MIDRING_PATROL_ON) {
         let going = false
-        if (mode === "hold" && farmOk && noSneak && !farmGoal && !farmHold && !lootTarget && obs.t >= patrolRestUntil) {
+        // P28b: no patrol in the opening (PATROL_START_S), and none while the drop run could still take a drop: any called
+        // or landed drop that passes the drop run's own skip and holder filter (at any range), or a run/hold in progress.
+        // Drops then play as the champion's. Nor from a spot where a leg already stuck (patrolSticky).
+        const dropLive = dropRun !== null || dropMove !== null || dropHold ||
+          (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot))
+        const nearSticky = (p: number[]) => patrolSticky.some((q) => flat(p, q) < PATROL_STICKY_M)
+        if (dropLive) patrol = null
+        if (
+          mode === "hold" && farmOk && noSneak && !farmGoal && !farmHold && !lootTarget && obs.t >= patrolRestUntil &&
+          obs.t >= PATROL_START_S && !dropLive && !nearSticky(me.pos)
+        ) {
           const inNext = toEnter === 0
           const C = inNext ? z.next_center : z.center
           const R = inNext ? z.next_radius : z.radius
@@ -898,9 +910,11 @@ function buildBot(hello: Hello): Bot {
             let p: Vec3 = [C[0] + rho * Math.cos(a), C[1] + rho * Math.sin(a), me.pos[2]]
             const d = flat(me.pos, p)
             if (d > PATROL_LEG_MAX_M) p = [me.pos[0] + ((p[0] - me.pos[0]) * PATROL_LEG_MAX_M) / d, me.pos[1] + ((p[1] - me.pos[1]) * PATROL_LEG_MAX_M) / d, me.pos[2]]
-            return safe(p) ? p : null
+            return safe(p) && !nearSticky(p) ? p : null
           }
-          const fail = () => {
+          const fail = (stuck = false) => {
+            // P28b: a leg given up for no progress marks its waypoint and where we stand as sticky for the rest of the game.
+            if (stuck && patrol) patrolSticky.push(patrol.wp, [me.pos[0], me.pos[1], me.pos[2]])
             patrol = null
             patrolDir = -patrolDir
             if (++patrolFails >= PATROL_FAILS) {
@@ -944,7 +958,7 @@ function buildBot(hello: Hello): Bot {
                   leg.best = go.dist
                   leg.bestAt = obs.t
                 }
-                if (obs.t - leg.bestAt > PATROL_STALL_S || obs.t - leg.since > (2 * PATROL_LEG_MAX_M) / walkSpeed + 5) fail()
+                if (obs.t - leg.bestAt > PATROL_STALL_S || obs.t - leg.since > (2 * PATROL_LEG_MAX_M) / walkSpeed + 5) fail(true)
                 else {
                   move = go.move
                   mode = "farm, patrol"
@@ -961,6 +975,8 @@ function buildBot(hello: Hello): Bot {
           const share = patrolTrail.reduce((a, x) => a + x[3], 0) / patrolTrail.length
           const [, x0, y0] = patrolTrail[0]
           if (share >= 0.5 && patrolTrail.every(([, x, y]) => Math.hypot(x - x0, y - y0) < PATROL_PIN_M)) {
+            if (patrol) patrolSticky.push(patrol.wp)
+            patrolSticky.push([me.pos[0], me.pos[1], me.pos[2]])
             patrol = null
             patrolFails = 0
             patrolRestUntil = obs.t + PATROL_REST_S

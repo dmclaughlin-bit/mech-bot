@@ -12,13 +12,14 @@
  *   hp    : 1 − hp / max_hp
  *   weak  : 1 − threat, the DPS of the weapons it is seen holding over the best two-weapon DPS in the config
  *   alone : 1 when no other enemy is within TARGET_ALONE_M of it
+ *   unseen: P35, UNSEEN_TARGET_W when brain.ts marks it unseen (facing away from us, beyond its proximity ring; params.ts)
  * Our DPS and each enemy's weapon threat come from brain.ts (Build 14's ourDps and baseDps), which read
  * hello.config.weapons, so the pick and the fight-or-flee test share one estimate.
  *
  * Zone rule: an enemy outside the current circle can be picked only while we can shoot it from where we stand, so a
  * pick never asks us to leave the zone. This module only picks; it never moves the bot.
  */
-import { TARGET_ALONE_M, TARGET_LOST_S, TARGET_TTK_REF_S, TARGET_W } from "./params.ts"
+import { TARGET_ALONE_M, TARGET_LOST_S, TARGET_TTK_REF_S, TARGET_W, UNSEEN_TARGET_W } from "./params.ts"
 
 export type Candidate = {
   id: number
@@ -32,6 +33,8 @@ export type Candidate = {
   maxHp: number
   /** 0 to 1: the DPS of the weapons it is seen holding over the best two-weapon DPS in the config (0.5 when never seen) */
   threat: number
+  /** P35: in view, facing away from us and beyond its proximity ring (only set while UNSEEN_TARGET_ON) */
+  unseen?: boolean
 }
 export type Scored = Candidate & {
   /** clear line and a weapon of ours reaches it */
@@ -60,7 +63,8 @@ export function scoreTargets(cands: Candidate[], others: { id: number; pos: numb
       TARGET_W.ttk * (shot ? 1 / (1 + ttk / TARGET_TTK_REF_S) : 0) +
       TARGET_W.hp * (1 - Math.min(1, c.hp / (c.maxHp || 1))) +
       TARGET_W.weak * (1 - c.threat) +
-      TARGET_W.alone * Number(alone)
+      TARGET_W.alone * Number(alone) +
+      (c.unseen ? UNSEEN_TARGET_W : 0)
     return { ...c, shot, ttk, alone, eligible: inZone || shot, score }
   })
 }

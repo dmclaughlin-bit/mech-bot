@@ -140,3 +140,38 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P28 (midring patrol): Watcher Top-16 (coord/data/watcher/SKILLS.md) high teams hold 24.6% of ticks vs 40.1% for low
+ * teams (mid-phase 28.5% vs 48.2%) and pick up idle cubes faster, mostly in the midring. Where the champion would stand
+ * in "hold" with the Build 12 farm gate open, not hurt (Build 19's noSneak), and no B12/B13 cube, drop, drone or crate
+ * to walk to, walk a short nav leg along a zig-zag patrol at PATROL_RATIO_MIN–MAX of the circle we keep to (the next
+ * circle once inside its inner ring, else the current one with the farm zone-safety test), so the view wedge sweeps new
+ * ground. No boost (and no jet on a nav.stuck hop while patrolling). Everything above hold (zone escape, leaving for the
+ * next circle, engage, retreat, collect, laser walk, crossfire, ambush, drop hold/run, heal, loot, farm capture/pickup/
+ * hunt, standoff break) ranks first, so any of them ends the patrol at once. No-progress guard: a leg with no path, a
+ * path over PATROL_PATH_MAX_M, or no closing for PATROL_STALL_S is dropped and the direction flips; PATROL_FAILS failed
+ * legs in a row, or PATROL_PIN_S of patrol with under PATROL_PIN_M of movement, rest the patrol (plain hold) for
+ * PATROL_REST_S. Off in a circle under PATROL_MIN_R. false = champion (B113) behavior exactly.
+ */
+export const MIDRING_PATROL_ON = false
+/** Patrol band as a fraction of the kept circle's radius. */
+export const PATROL_RATIO_MIN = 0.45
+export const PATROL_RATIO_MAX = 0.65
+/** Each leg: about this much along the ring (m), with this much radial zig (m), and never more than PATROL_LEG_MAX_M straight. */
+export const PATROL_LEG_M = 35
+export const PATROL_ZIG_M = 15
+export const PATROL_LEG_MAX_M = 60
+/** A planned leg longer than this (m) of path, or ending more than PATROL_END_M from its waypoint, is not walked. */
+export const PATROL_PATH_MAX_M = 90
+export const PATROL_END_M = 12
+/** No patrol when the kept circle is smaller than this (m): final circles stay on the champion's hold. */
+export const PATROL_MIN_R = 70
+/** Drop a leg that has not closed by 1 m for this long (s). */
+export const PATROL_STALL_S = 2
+/** After this many failed legs in a row, rest (hold) for PATROL_REST_S. */
+export const PATROL_FAILS = 3
+export const PATROL_REST_S = 10
+/** Pin guard: patrol most of the last PATROL_PIN_S (s) with under PATROL_PIN_M (m) of movement also rests it. */
+export const PATROL_PIN_S = 6
+export const PATROL_PIN_M = 4

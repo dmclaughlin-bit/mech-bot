@@ -4,7 +4,7 @@
  "family": "farm",
  "flag": "MIDRING_PATROL_ON",
  "owner": "Mech Builder",
- "stage": "building",
+ "stage": "built (smoke/hazard only; needs Sim Tester full screen)",
  "pr": null,
  "sha": null,
  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
@@ -12,10 +12,18 @@
  "evidence": "coord/data/watcher/SKILLS.md (93 showdown matches, T01-T04 vs T13-T16): hold 24.6% vs 40.1% of ticks (d=-0.34), mid-phase hold 28.5% vs 48.2% (d=-0.42; 6231/5574 ticks, 54/56 matches); speed while healthy and not engaged 7.21 vs 4.35 m/s (d=0.55); idle cube rate 3.94 vs 2.27 /min, mid-phase 5.11 vs 3.12; most high-team cubes are gained in the midring (909) not the center (638); best place/cubes in the 20-40% center-share bin. Champion gap 2 in SKILLS.md: the champion holds when nothing is in the 80 m cube / 150 m hunt window. Correlation in exhibition FFA, not house-bot proof. ideas_queue.md item 3 (Medium) and item 5.",
  "closest_prior": "No official receipt for a midring patrol. P23 late idle torso sweep (76c3fa8, VETO: new 64 s in-zone pin on base-0 seed 90, vision-flicker loop) and P23b sweep + 3 s farm-walk abort (cf96cf5, official 4.00, BB-AEFC0FA8, CLOSE): standing torso sweep / abort, not a foot patrol; P28 adds no sweep and does not touch B12/B13 give-up. B122 mid-game unstuck (4296b43, VETO, do not site-test): sidestep+hop on stalled travel moves; P28 has no sidestep, no hop, no jet and does not change nav.stuck outside patrol mode. P25 cube memory (PR #136, HOLD): different target (remembered cubes); P28 does not depend on it.",
  "disprove": "Full paired screen (2000+3000 and 4000+5000) fires in under ~10/192 games, adds new 20 s+ in-zone pins with patrol active in the window, loses drop-ring arrivals, or raises deaths before 40 s by more than 3/192; or an official site score at or below 4.17.",
- "screens": {},
- "checks": {},
+ "screens": {
+  "base-0 hazard (builder smoke, 96 games, flag ON copy vs origin/main fec28ee = bot code 6182d29)": "fired 45 / diff behavior 45 / diff score 37; paired +0.094 +/- 0.264 (24 better / 59 tied / 13 worse, info only); pin windows 190->171, longest 49->51 s; 20 s+ pin seeds main 16,41,43,78,79,92 vs P28 41,42,43,63,79: NEW 42 (51 s, t=187-238, starts as champion zone travel + B12 pickup stuck at (160,21), patrol 3 s at 225-228 then guard rest, 7.4% of window) and 63 (36 s, champion drop run stuck 44 m from the drop, patrol 0%), neither patrol-caused; gone 16,78,92. Drop-ring arrivals 3 games/5 -> 0/0 (seeds 63, 89, 94: divergence, patrol never active near the drop run; 89/94 diverge from patrol ticks at t=0-6 s, 94 dies at 57.8 s before the drop) - HAZARD FLAG. Died<40 s 33->34. Hold share of ticks 31.7%->23.5%. Cubes at end 229 (2.39)->223 (2.32). Kills 303->323. In-bot answer max 11.6 / 18.7 ms, none over 50 ms; sim CSV late_over_50ms 3 / 1 (load)."
+ },
+ "checks": {
+  "contains_champion": "PASS (merge-base --is-ancestor 6182d29)",
+  "check_py": "PASS 300/300: flag ON copy p99 1.0 / max 3.9 ms; committed default p99 0.9 / max 3.4 ms",
+  "flag0_identical": "PASS (eqdrive cmp identical vs origin/main fec28ee)",
+  "single_change": "brain.ts one gated block after the mode chain + no jet on nav.stuck in patrol mode; params.ts one flag (default false) + patrol knobs"
+ },
  "receipt": null,
  "score": null,
- "decision": null,
- "updated": "2026-11-21 18:58 ET"
+ "decision": "not ready: drop-ring arrivals 5->0 in the 96-game hazard needs the full 2000+3000 / 4000+5000 screen before any slot",
+ "updated": "2026-11-21 19:03 ET",
+ "branch": "p28-midring-patrol"
 }

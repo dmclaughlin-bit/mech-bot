@@ -23,12 +23,16 @@
  * close to our best weapon's effective range (see STANDOFF_BREAK_S).
  * P-D-003 (drop run): walk to a called supply drop within 150 m, timed to arrive as it lands, and hold its ring
  * (see DROP_RUN_M).
+ * P28 (midring patrol, off by default): where we would hold with the farm gate open and nothing to walk to, walk a short
+ * zone-safe midring patrol instead (see MIDRING_PATROL_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, MIDRING_PATROL_ON, NO_SNEAK_ON, NO_SNEAK_QUIET_S, PATROL_END_M, PATROL_FAILS,
+  PATROL_LEG_M, PATROL_LEG_MAX_M, PATROL_MIN_R, PATROL_PATH_MAX_M, PATROL_PIN_M, PATROL_PIN_S, PATROL_RATIO_MAX, PATROL_RATIO_MIN,
+  PATROL_REST_S, PATROL_STALL_S, PATROL_ZIG_M, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -308,6 +312,11 @@ function buildBot(hello: Hello): Bot {
   let claim: { pos: Vec3; until: number } | null = null
   /** P-B-001: the enemy the standoff break walked at last decision (null when it did not run). */
   let standoffId: number | null = null
+  /** P28 (MIDRING_PATROL_ON): the leg we are walking, the leg count (zig side), the walk direction round the ring, failed
+   * legs in a row, the end of a rest, and (t, x, y, patrolling) for the last PATROL_PIN_S of decisions. */
+  let patrol: { wp: Vec3; best: number; bestAt: number; since: number; seen: number } | null = null
+  let patrolLeg = 0, patrolDir = 1, patrolFails = 0, patrolRestUntil = -Infinity
+  const patrolTrail: [number, number, number, number][] = []
 
   /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
    * lightning 0.8 × its range, gun GUN_NEAR_M, laser and mortar their reach. */
@@ -866,6 +875,100 @@ function buildBot(hello: Hello): Bot {
         }
         standoffId = foe?.id ?? null
       }
+      // Midring patrol (P28, see MIDRING_PATROL_ON): where we would hold with the farm gate open, not hurt, and nothing for
+      // B12/B13 to walk to, walk a short zone-safe leg round the midring of the circle we keep to. Every branch above wins.
+      if (MIDRING_PATROL_ON) {
+        let going = false
+        if (mode === "hold" && farmOk && noSneak && !farmGoal && !farmHold && !lootTarget && obs.t >= patrolRestUntil) {
+          const inNext = toEnter === 0
+          const C = inNext ? z.next_center : z.center
+          const R = inNext ? z.next_radius : z.radius
+          const pace = ZONE_WALK * walkSpeed
+          // Same zone test as farming: inside the current circle with margin, and inside the next inner ring once we are
+          // in it (so the patrol never undoes Z1), else back to it before the shrink ends with the usual buffer.
+          const safe = (p: number[]) =>
+            flat(p, z.center) < Math.max(0, z.radius - margin) &&
+            (inNext ? flat(p, z.next_center) < inner : (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER < timeLeft)
+          const pick = (dir: number): Vec3 | null => {
+            const dx = me.pos[0] - C[0], dy = me.pos[1] - C[1], r0 = Math.hypot(dx, dy)
+            const theta = r0 > 1 ? Math.atan2(dy, dx) : me.aim[0]
+            const zig = patrolLeg % 2 ? PATROL_ZIG_M : -PATROL_ZIG_M
+            const rho = clamp(r0 + zig, PATROL_RATIO_MIN * R, PATROL_RATIO_MAX * R)
+            const a = theta + dir * Math.min(0.8, PATROL_LEG_M / Math.max(rho, 1))
+            let p: Vec3 = [C[0] + rho * Math.cos(a), C[1] + rho * Math.sin(a), me.pos[2]]
+            const d = flat(me.pos, p)
+            if (d > PATROL_LEG_MAX_M) p = [me.pos[0] + ((p[0] - me.pos[0]) * PATROL_LEG_MAX_M) / d, me.pos[1] + ((p[1] - me.pos[1]) * PATROL_LEG_MAX_M) / d, me.pos[2]]
+            return safe(p) ? p : null
+          }
+          const fail = () => {
+            patrol = null
+            patrolDir = -patrolDir
+            if (++patrolFails >= PATROL_FAILS) {
+              patrolFails = 0
+              patrolRestUntil = obs.t + PATROL_REST_S
+            }
+          }
+          if (R >= PATROL_MIN_R) {
+            if (patrol && flat(me.pos, patrol.wp) < WAYPOINT_REACHED + 2) {
+              patrolFails = 0
+              patrolLeg++
+              patrol = null
+            }
+            if (patrol && !safe(patrol.wp)) patrol = null
+            if (patrol && obs.t - patrol.seen > 0.5) {
+              // Back after another branch ran: the leg is kept, its stall clock restarts.
+              patrol.best = Infinity
+              patrol.bestAt = obs.t
+            }
+            if (!patrol) {
+              let wp = pick(patrolDir)
+              if (!wp && (wp = pick(-patrolDir))) patrolDir = -patrolDir
+              if (wp) patrol = { wp, best: Infinity, bestAt: obs.t, since: obs.t, seen: obs.t }
+              else fail()
+            }
+            if (patrol) {
+              const leg = patrol
+              leg.seen = obs.t
+              const straight = flat(me.pos, leg.wp)
+              const go = travel(me.pos, leg.wp, obs.t, canPlan())
+              const r = route as typeof route
+              const planned = !!r && flat(r.goal, leg.wp) <= ROUTE_GOAL_SHIFT
+              const end = planned ? r!.points[r!.points.length - 1] : leg.wp
+              if (planned && r!.at === obs.t && (!r!.found || go.dist > Math.min(PATROL_PATH_MAX_M, 1.5 * straight + 15) || flat(end, leg.wp) > PATROL_END_M)) fail()
+              else if (planned && go.dist < WAYPOINT_REACHED + 1) {
+                patrolFails = 0
+                patrolLeg++
+                patrol = null
+              } else if (planned) {
+                if (go.dist < leg.best - 1) {
+                  leg.best = go.dist
+                  leg.bestAt = obs.t
+                }
+                if (obs.t - leg.bestAt > PATROL_STALL_S || obs.t - leg.since > (2 * PATROL_LEG_MAX_M) / walkSpeed + 5) fail()
+                else {
+                  move = go.move
+                  mode = "farm, patrol"
+                  going = true
+                }
+              }
+            }
+          }
+        }
+        // Pin guard: mostly patrolling for the last PATROL_PIN_S and still within PATROL_PIN_M of where that began: rest.
+        patrolTrail.push([obs.t, me.pos[0], me.pos[1], going ? 1 : 0])
+        while (patrolTrail.length && obs.t - patrolTrail[0][0] > PATROL_PIN_S) patrolTrail.shift()
+        if (going && obs.t - patrolTrail[0][0] >= PATROL_PIN_S - 0.25) {
+          const share = patrolTrail.reduce((a, x) => a + x[3], 0) / patrolTrail.length
+          const [, x0, y0] = patrolTrail[0]
+          if (share >= 0.5 && patrolTrail.every(([, x, y]) => Math.hypot(x - x0, y - y0) < PATROL_PIN_M)) {
+            patrol = null
+            patrolFails = 0
+            patrolRestUntil = obs.t + PATROL_REST_S
+            move = [0, 0]
+            mode = "hold"
+          }
+        }
+      }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.
@@ -875,7 +978,7 @@ function buildBot(hello: Hello): Bot {
       // decision. Jump, jet if already in the air, and plan a fresh route next decision.
       if (nav.stuck(me, move)) {
         if (me.grounded) act.jump = true
-        else if (me.energy > 15) boost = true
+        else if (me.energy > 15 && !(MIDRING_PATROL_ON && mode === "farm, patrol")) boost = true
         route = null
       }
       let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]

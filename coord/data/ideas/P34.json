@@ -10,7 +10,7 @@
     "while charging the laser at the locked enemy mech with the torso lined up (existing `lined` test, no re-aim, not a farm shot), let go as soon as 0.8 x partial-charge damage (protocol \u00a77: damage x (min_frac + (1 - min_frac) x max(charge, min_charge) / full) x cube bonus x (1 + cookoff) if it holds a mortar) >= its shown hp; never before 40 s and never while a drop run/hold is possible (dropRun set, or a called drop not held by another mech within DROP_RUN_M)"
   ],
   "owner": "Mech Builder",
-  "stage": "waiting for screen",
+  "stage": "retired",
   "pr": 147,
   "sha": "c281bf59e6276ffda376cc84a0c95f620331485e",
   "champion_sha_tested_against": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
@@ -65,7 +65,7 @@
   "gate": "check.py --map-dir arena PASS: default max 6.7 ms, flag-on max 2.9 ms; eqdrive flag-off vs origin/main IDENTICAL (cmp); merge-base --is-ancestor b6f2f8b OK; sim decision max 11.4 ms flag-on",
   "receipt": null,
   "site_score": null,
-  "decision": "Builder check failed drop arrivals (5->4, 3->2 on base 0/1000). Doug 8:35 PM ET: send to the full official screen; the drop-ring set-total rule still decides there.",
+  "decision": "8:50 PM ET coordinator: VETO confirmed (own check of screen https://github.com/dmclaughlin-bit/mech-bot/pull/147#issuecomment-7072472836). 2000+3000 drop-arrival set total 8->5 (Doug 7:55 set-total rule; Doug 8:35 said the drop-ring rule decides) and survivors 6->2. 4000+5000 was positive (drops 7->15, survivors 5->7) but a lower set total on either set is a veto. Deaths <40 s unchanged; new pause 5079 meets no stall clause.",
   "blocker": "Drop-ring arrival totals lower on both sets. Every early release that changed a drop game killed its target before any drop was called (46-47 s); the lost arrivals are 150-235 s later in games that diverged. The behavior already never starts while a drop run/hold is possible. Closing the rest within this behavior means turning it off for most of the match. Needs a coordinator / Doug decision (the noise-calibration benchmark and the 7:55 PM ET set-total ruling are the context)",
   "next_action": "Grok/Doug: decide whether a 1-arrival set-total drop from knock-on divergence vetoes P34; if not, Sim Tester full screen 2000+3000 and 4000+5000 on the pushed head",
   "doug_waiver": false,
@@ -79,5 +79,6 @@
     "PR #145 (coord/research-doug-1941.md)",
     "/workspace/mechfight-kit/protocol.md:305, :319",
     "builder hazard runs /tmp/p34-{main,on}-{0,1000}.csv and /tmp/p34-logs, analyzed with /tmp/p34-harness/analyze.py and /tmp/paired.py"
-  ]
+  ],
+  "status": "retired"
 }

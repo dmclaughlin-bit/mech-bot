@@ -23,11 +23,13 @@
  * close to our best weapon's effective range (see STANDOFF_BREAK_S).
  * P-D-003 (drop run): walk to a called supply drop within 150 m, timed to arrive as it lands, and hold its ring
  * (see DROP_RUN_M).
+ * P30 (front-arc facing): retreating, healing or hiding after a hit from a mech in view, keep it inside the torso's
+ * front arc on ticks we fire nothing (see FACE_ATTACKER_ON).
  */
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FACE_ATTACKER_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -152,6 +154,11 @@ const STANDOFF_MIN_M = 45
 const STANDOFF_MAX_M = 90
 const STANDOFF_SECOND_S = 3
 const STANDOFF_HP_MARGIN = 0.2
+/** P30 (front-arc facing, see FACE_ATTACKER_ON): not before this match time (s), the modes it runs in, and the most the
+ * attacker may sit off the commanded aim yaw (rad): 45° leaves 45° of the 90° half arc and 15° of the 60° half view. */
+const FACE_OPEN_S = 10
+const FACE_MODES = new Set(["retreat to cover", "retreat", "heal", "heal, hiding", "hide"])
+const FACE_KEEP = Math.PI / 4
 
 /** L4: plating > armor > nanites > sensors > weapon upgrade > mobility, matched on the ids in hello.config.upgrades. */
 const UPGRADE_FIRST = ["plating", "armor", "nanites", "sensors"]
@@ -1071,11 +1078,31 @@ function buildBot(hello: Hello): Bot {
         if (g && (g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0) act.reload = true
       }
 
+      // P30 (FACE_ATTACKER_ON): retreating, healing or hiding, firing nothing this tick, and the mech that hit us last
+      // (within 2 s) is in view but more than FACE_KEEP off the aim: turn the torso just enough to bring it inside.
+      let faced = false
+      if (FACE_ATTACKER_ON && obs.t >= FACE_OPEN_S && !fire[0] && !fire[1] && FACE_MODES.has(mode) && !(obs.drops ?? []).length) {
+        let attacker: (typeof enemies)[number] | undefined
+        let at = -Infinity
+        for (const e of enemies) {
+          const h = mechHitBy.get(e.id)
+          if (h !== undefined && obs.t - h < THREAT_HIT_S && h > at) (at = h), (attacker = e)
+        }
+        if (attacker) {
+          const toward = yawTo(me.pos, attacker.pos)
+          const off = wrap(aim[0] - toward)
+          if (Math.abs(off) > FACE_KEEP) {
+            aim = [wrap(toward + Math.sign(off) * FACE_KEEP), aim[1]]
+            faced = true
+          }
+        }
+      }
+
       act.move = move
       act.boost = boost
       act.aim = [aim[0], clamp(aim[1], minPitch, maxPitch)]
       act.fire = fire
-      draw.label(`${label} · ${mode}`)
+      draw.label(`${label} · ${mode}${faced ? " · face" : ""}`)
       const took = performance.now() - started
       if (took > DEADLINE_MS) log(`decision at tick ${obs.tick} took ${took.toFixed(1)} ms`)
       return act

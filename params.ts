@@ -140,3 +140,15 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P30 (front-arc facing): hits from outside the torso's front arc (mech.front_arc_deg 180°, centered on the aim yaw) do
+ * mech.rear_mult (×1.5) damage, and the legs are independent of the torso (protocol §6 `move`, §7 Rear armor). While we
+ * retreat, heal or hide (modes "retreat to cover", "retreat", "heal", "heal, hiding", "hide") and a mech that damaged us
+ * in the last 2 s is in view, on a tick where we fire nothing, turn the torso just enough that this attacker is within
+ * 45° of the aim (inside the front arc, and inside the 120° view so it stays visible). The move, the path, the retreat and
+ * heal thresholds, the target pick and every firing tick are unchanged. Never before 10 s of match time and never while a
+ * supply drop is called and not taken (so never during a drop run or ring hold), and never in zone travel, engage,
+ * crossfire break, ambush, standoff break, farm or loot. false = champion behavior exactly.
+ */
+export const FACE_ATTACKER_ON = false

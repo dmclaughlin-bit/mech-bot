@@ -1168,10 +1168,12 @@ function buildBot(hello: Hello): Bot {
             // P56 (HELD_CHARGE_EARLY_RELEASE_ON): let go now if the mech we are lined up on is about to leave the line or laser range.
             let early = false
             if (HELD_CHARGE_EARLY_RELEASE_ON && !full && !lethal && lined && !other && !farmShot && m.kind === "mech" && obs.t >= LETHAL_RELEASE_MIN_T && !dropOpen()) {
-              const h = HELD_CHARGE_EARLY_RELEASE_H
-              const mp: Vec3 = [muzzle[0] + me.vel[0] * h, muzzle[1] + me.vel[1] * h, muzzle[2]]
-              const cp: Vec3 = [c[0] + vel[0] * h, c[1] + vel[1] * h, c[2]]
-              early = span(mp, cp) > l.stats.range || !clearLine(solids, mp, cp)
+              // Broken at the horizon AND at half of it: the line goes now and stays gone (a short occluder the beam would clear does not count).
+              early = [HELD_CHARGE_EARLY_RELEASE_H / 2, HELD_CHARGE_EARLY_RELEASE_H].every((h) => {
+                const mp: Vec3 = [muzzle[0] + me.vel[0] * h, muzzle[1] + me.vel[1] * h, muzzle[2]]
+                const cp: Vec3 = [c[0] + vel[0] * h, c[1] + vel[1] * h, c[2]]
+                return span(mp, cp) > l.stats.range || !clearLine(solids, mp, cp)
+              })
             }
             fire[laser] = !((full || lethal || early) && lined)
           } else if (leading === "laser") fire[laser] = true

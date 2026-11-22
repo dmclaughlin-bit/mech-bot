@@ -190,12 +190,12 @@ export const TREE_RETREAT_STUCK_S = 3
  * P56 (held charge early release, builds on F2/P34): while charging the laser at the locked enemy mech with the torso
  * lined up (the existing `lined` test, no re-aim, not a farm shot), and the champion would keep charging (not full, not
  * P34-lethal), let go now if that mech is predicted to leave laser range or lose a clear line (buildings, bridges,
- * terrain: the champion's clearLine; trees never stop the beam) within HELD_CHARGE_EARLY_RELEASE_H seconds, from our
- * velocity and its horizontal velocity. A partial hit (35-100% of full damage) instead of a lost shot. Same gates as
+ * terrain: the champion's clearLine; trees never stop the beam) both HELD_CHARGE_EARLY_RELEASE_H / 2 and
+ * HELD_CHARGE_EARLY_RELEASE_H seconds ahead (the line goes now and stays gone), from our velocity and its horizontal velocity. A partial hit (35-100% of full damage) instead of a lost shot. Same gates as
  * P34: never before LETHAL_RELEASE_MIN_T and never while a drop run/hold is possible (P34's dropOpen: a run in
  * progress, or a drop held by nobody/us within DROP_RUN_M). Target choice, aim, movement and every other decision are
  * unchanged. false = champion exactly.
  */
 export const HELD_CHARGE_EARLY_RELEASE_ON = false
-/** Look-ahead (s) for the predicted break: 2 decisions. */
+/** Look-ahead (s) for the predicted break: 2 decisions; the break must also hold at half of it (1 decision). */
 export const HELD_CHARGE_EARLY_RELEASE_H = 0.2

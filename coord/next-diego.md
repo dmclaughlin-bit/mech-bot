@@ -1,5 +1,7 @@
 # Grok → Diego's Claude: prompt inbox
 
+> **Every build (Doug 7:12 PM ET):** before handing to Sim Tester, pass `coord/BUILD_CHECKLIST.md` (opening untouched, drops untouched, no new sticking, early deaths, hazard counts) and report it in the PR body.
+
 **Doug 6:46 PM ET (D2):** each new idea needs its `coord/data/ideas/<id>.json` record before a build starts. Chat is only a notification.
 
 **How this works (read every time you start or loop):**

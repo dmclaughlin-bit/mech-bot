@@ -182,6 +182,6 @@ export const LETHAL_RELEASE_MIN_T = 40
  * is near AND reachable within DROP_RUN_M (the drop run's own candidate filter) or a drop run/hold is on. A spot with
  * no progress for TREE_RETREAT_STUCK_S goes on a skip list. false = champion behavior exactly.
  */
-export const TREE_RETREAT_ON = false
+export const TREE_RETREAT_ON = true
 export const TREE_RETREAT_MIN_T = 40
 export const TREE_RETREAT_STUCK_S = 3

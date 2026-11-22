@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  BACKAWAY_FAR_COVER_ON, BACKAWAY_FAR_STEPS_S, DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  BACKAWAY_FAR_COVER_ON, BUILDING_COVER_COMMIT_ON, BACKAWAY_FAR_STEPS_S, DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
@@ -82,6 +82,13 @@ const HIDE_BEARINGS = 12
 const HIDE_STEPS_S = [1, 2, 3]
 /** P48: give-up list key for a tree spot (4 m cells). */
 const treeKey = (x: number, y: number) => `${Math.round(x / 4)},${Math.round(y / 4)}`
+/** P61: a building cover spot with no progress (COVER_PROGRESS_M) for this long (s) goes on the retreat's skip list. Fix
+ * round: 0.6 s, not 3 s (a latched spot can be body-blocked at an edge the zero-radius line test passes; at ~11.7 m/s
+ * walk, 3 s pinned under fire was lethal, e.g. practice seed 6024). */
+const COVER_STUCK_S = 0.6
+const COVER_PROGRESS_M = 0.5
+/** P61: hideSpot candidates within this many m of a skipped spot are skipped. */
+const COVER_SKIP_M = 3
 /** Build 12 (farm): no farming for this long (s) after damage from anything but a drone. */
 const FARM_QUIET_S = 3
 /** Build 12: known enemies seen this recently (s) count against the FARM_ENEMY_M ring. */
@@ -299,6 +306,10 @@ function buildBot(hello: Hello): Bot {
   /** P60: the far cover spot the back-away retreat walks to (same shape as treeRun) and far spots we gave up on. */
   let farRun: { spot: Vec3; key: string; best: number; bestAt: number; used: number } | null = null
   const farSkip = new Set<string>()
+  /** P61: the building cover spot we are retreating to (best distance so far, for the no-progress give-up), spots given up on this retreat, and the last building-cover decision. */
+  let coverRun: { spot: Vec3; best: number; bestAt: number; used: number } | null = null
+  const coverSkip: Vec3[] = []
+  let coverLast = -Infinity
   /** Build 14 (engage): each weapon's DPS and reach from hello.config, read once here. */
   const baseDps = {} as Record<WeaponKind, number>
   const baseReach = {} as Record<WeaponKind, number>
@@ -434,7 +445,7 @@ function buildBot(hello: Hello): Bot {
    */
   function hideSpot(
     me: Observation["self"], height: number, walk: number, threats: { pos: Vec3; aim: [number, number]; cubes?: number }[],
-    cone: boolean, keepIn: [number[], number], timeOk: () => boolean,
+    cone: boolean, keepIn: [number[], number], timeOk: () => boolean, skip?: Vec3[],
   ): Vec3 | null {
     const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
     for (const s of HIDE_STEPS_S) {
@@ -443,6 +454,7 @@ function buildBot(hello: Hello): Bot {
         const yaw = (2 * Math.PI * b) / HIDE_BEARINGS
         const x = me.pos[0] + Math.cos(yaw) * walk * s, y = me.pos[1] + Math.sin(yaw) * walk * s
         if (Math.hypot(x - keepIn[0][0], y - keepIn[0][1]) > keepIn[1]) continue
+        if (skip && skip.some((q) => Math.hypot(x - q[0], y - q[1]) < COVER_SKIP_M)) continue
         const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
         if (g === -Infinity) continue
         const p: Vec3 = [x, y, g]
@@ -843,6 +855,32 @@ function buildBot(hello: Hello): Bot {
         if (p) farRun = { spot: p, key: treeKey(p[0], p[1]), best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
         return p
       }
+      // P61 (BUILDING_COVER_COMMIT_ON): given the champion's building cover spot this decision, the spot to walk to. Keeps
+      // the spot chosen earlier in this retreat while it is in the circle we keep to, no closer to any threat, unseen and
+      // not reached; no progress for COVER_STUCK_S puts it on the retreat's skip list. Off before TREE_RETREAT_MIN_T, in a
+      // drop run/hold and while a drop is near AND reachable (P48's test): then the champion's spot.
+      const coverCommit = (champ: Vec3): Vec3 => {
+        if (obs.t - coverLast > 2) coverSkip.length = 0
+        coverLast = obs.t
+        if (obs.t < TREE_RETREAT_MIN_T || dropMove || dropHold || dropReach()) return ((coverRun = null), champ)
+        if (coverRun && obs.t - coverRun.used > 0.5) coverRun = null
+        if (coverRun) {
+          const run = coverRun
+          const d = flat(me.pos, run.spot)
+          if (d < run.best - COVER_PROGRESS_M) { run.best = d; run.bestAt = obs.t }
+          const stuck = obs.t - run.bestAt > COVER_STUCK_S
+          const still = !stuck && d > 1.5 && flat(run.spot, zoneKeep[0]) <= zoneKeep[1] &&
+            !threats.some((e) => flat(e.pos, run.spot) < flat(e.pos, me.pos)) && !seenAt(run.spot, myHeight, threats, false)
+          if (still) { run.used = obs.t; return run.spot }
+          if (stuck) coverSkip.push(run.spot)
+          coverRun = null
+        }
+        const p = coverSkip.some((q) => flat(q, champ) < COVER_SKIP_M)
+          ? hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan, coverSkip) ?? champ
+          : champ
+        coverRun = { spot: p, best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
+        return p
+      }
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -873,6 +911,8 @@ function buildBot(hello: Hello): Bot {
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && seenAt(me.pos, myHeight, threats, false) && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
         // Retreat (F2, F3, Build 5): hurt and under fire, so head for the nearest in-zone spot out of every visible
         // enemy's line of sight, torso still on the attacker (legs and torso are independent). Boost only above 30% energy.
+        // P61: keep the spot chosen first in this retreat (see coverCommit).
+        if (BUILDING_COVER_COMMIT_ON) spot = coverCommit(spot)
         move = heading(spot)
         boost = me.energy > 0.3 * me.max_energy
         mode = "retreat to cover"

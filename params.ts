@@ -218,4 +218,4 @@ export const BACKAWAY_LOS_STEPS_S = [1, 2, 3]
  * trigger; legs only (N8).
  * false = champion behavior exactly.
  */
-export const FAR_COVER_LATCH_HOLD_ON = false
+export const FAR_COVER_LATCH_HOLD_ON = true

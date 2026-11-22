@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_RUN_M, HEAL_PICKUP_ON, HEAL_PICKUP_STUCK_S, HEAL_PICKUP_T, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
@@ -312,6 +312,9 @@ function buildBot(hello: Hello): Bot {
   /** P-D-012 (P29): the midring settle walk in progress, and the hold phases (by shrink_start) it gave up on. */
   let settle: { goal: Vec3; phase: number; best: number; at: number } | null = null
   const settleSkip = new Set<number>()
+  /** P37b: the cube the heal pickup walks to (best distance so far and when it last improved), and cubes it gave up on. */
+  let healPick: { id: number; best: number; at: number } | null = null
+  const healSkip = new Set<number>()
 
   /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
    * lightning 0.8 × its range, gun GUN_NEAR_M, laser and mortar their reach. */
@@ -744,6 +747,25 @@ function buildBot(hello: Hello): Bot {
           else dropRun = null
         }
       }
+      // P37b (HEAL_PICKUP_ON): we would stand still to heal with nobody around (farmOk) and the farm has a visible cube
+      // to walk to: walk to it instead. Not before HEAL_PICKUP_T. Drop gate: never while a drop run/hold is on or a
+      // free drop is near and reachable (within DROP_RUN_M, the lethal release's dropOpen test), never in a farm capture,
+      // and farmOk already excludes the walk to the next circle. A cube with no 1 m of progress for HEAL_PICKUP_STUCK_S is skipped.
+      let healCube: Vec3 | null = null
+      if (HEAL_PICKUP_ON) {
+        const dropNear = dropRun !== null || dropHold || !!dropMove ||
+          (obs.drops ?? []).some((x) => (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M)
+        const c = obs.t >= HEAL_PICKUP_T && farmOk && farmGoal && !farmHunt && !farmHold && me.hp < HEAL_HP * me.max_hp &&
+          !dropNear && !healSkip.has(farmGoal.id) && obs.cubes.includes(farmGoal as (typeof obs.cubes)[number]) ? farmGoal : null
+        if (!c) healPick = null
+        else {
+          const left = flat(me.pos, c.pos)
+          if (healPick?.id !== c.id) healPick = { id: c.id, best: left, at: obs.t }
+          else if (left < healPick.best - 1) { healPick.best = left; healPick.at = obs.t }
+          if (obs.t - healPick.at > HEAL_PICKUP_STUCK_S) { healSkip.add(c.id); healPick = null }
+          else healCube = c.pos
+        }
+      }
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -822,6 +844,10 @@ function buildBot(hello: Hello): Bot {
       } else if (dropMove) {
         move = dropMove
         mode = "drop, run"
+      } else if (healCube) {
+        // P37b: the farm's cube instead of standing still to heal (same walk as "farm, pickup").
+        move = travel(me.pos, healCube, obs.t, canPlan()).move
+        mode = "heal, pickup"
       } else if (me.hp < HEAL_HP * me.max_hp) {
         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
         // Build 19: the walk to a hiding spot only while hurt.
@@ -845,6 +871,7 @@ function buildBot(hello: Hello): Bot {
           mode = "hide"
         }
       }
+      if (HEAL_PICKUP_ON && mode !== "heal, pickup") healPick = null
       // Midring settle (P-D-012, idea P29, see MIDRING_SETTLE_ON): only where we would hold after a shrink.
       if (MIDRING_SETTLE_ON) {
         const phase = z.shrink_start

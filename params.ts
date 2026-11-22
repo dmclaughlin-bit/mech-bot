@@ -173,3 +173,17 @@ export const LETHAL_RELEASE_ON = true
 export const LETHAL_RELEASE_MARGIN = 0.8
 /** Never release early before this match time (s): play before it, and so every death before 40 s, equals the champion's. */
 export const LETHAL_RELEASE_MIN_T = 40
+
+/**
+ * P37b (heal pickup with a drop gate; P37 #149 re-applied on P34): where the champion would stand still to heal (HP
+ * under 90%, nothing above the heal branch active) and farming is open (farmOk: nobody in view or known within
+ * FARM_ENEMY_M, no mech hit for FARM_QUIET_S, in the zone, not leaving for the next circle), walk to the visible
+ * zone-safe cube the Build 12 farm already chose instead of standing. Walking does not stop regen. Never before
+ * HEAL_PICKUP_T s. Drop gate: never starts or continues while a drop run or ring hold is on, in a farm capture, or while
+ * a called drop not held by another mech is within DROP_RUN_M (near and reachable; the lethal release's dropOpen
+ * test), and it ranks below drop hold/run so a drop wins on the same tick. Gives up on a cube after
+ * HEAL_PICKUP_STUCK_S s without 1 m of progress and skips it for the rest of the match. false = champion exactly.
+ */
+export const HEAL_PICKUP_ON = true
+export const HEAL_PICKUP_T = 10
+export const HEAL_PICKUP_STUCK_S = 3

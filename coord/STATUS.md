@@ -159,3 +159,8 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 ## Loop 2:00 AM ET Sun
 - P48 builders-4 baseline scored 3.75 (BB-5727119F) = champion bar; P49b 3.49 LOSS.
 - Submitted P53b #178 52c2862 (BB-9617EF60, queued). Site tests last 60 min: 3 (P49b 1:09, P48 1:44, P53b 1:59). Rules text says 4/hour; counter 6/hour; loop caps at 4. Next: P41 near miss #173 c21d23b after BB-9617EF60 scores (4th slot until ~2:09).
+
+## Loop 2:10 AM ET Sun
+- BB-9617EF60 (P53b) still queued (#3 of 28 at ~2:08). Counter 3 of 6 left; rules text 4/hour.
+- Near-miss pool now EMPTY: P41 #173 was retired 12:50 AM ET (Sim Tester stall b+c vetoes); 96-fresh-game advisory 2:03 AM: P41 3.708 vs P48 3.740, delta -0.031 +/- 0.056. Loop rechecks of c21d23b (check.py max 3.9 ms, archive 3,584,000) are moot.
+- Unused slot reason: no READY build and no eligible near miss after P53b. Closest: Mech Builder P60 (no branch yet; last builder commit P59 1:48 AM).

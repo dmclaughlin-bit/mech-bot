@@ -1,0 +1,63 @@
+{
+  "id": "P34",
+  "title": "Reload the gun in a quiet lull instead of running it dry in the next exchange (LULL_RELOAD_ON)",
+  "family": "weapon handling",
+  "flags": [
+    "LULL_RELOAD_ON"
+  ],
+  "flag": "LULL_RELOAD_ON",
+  "behaviors": [
+    "with an enemy mech as target, send reload when the gun holds fewer than half a magazine, is not reloading, and for at least 1 s we have not fired it, the target has had no clear line, and no visible enemy has line of sight to us; t >= 10 s and no drop listed"
+  ],
+  "owner": "unassigned (research P34-37; Grok assigns)",
+  "stage": "idea",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Grok: assign or park. If built: one flag LULL_RELOAD_ON default false (+LULL_RELOAD_QUIET_S 1), base-0 hazard with fired/diff/score and the clear-target-while-reloading count.",
+  "doug_waiver": false,
+  "single_decision": "Extend the champion's existing early reload (brain.ts:1071 reloads at < half a magazine when no enemy is known) to the 'enemy known but no line either way for 1 s' lull. Movement, aim and fire are unchanged.",
+  "trigger": "target is an enemy mech (not a farm shot) AND !target.clear AND gun ammo < mag/2 AND gun reload == 0 AND the gun is not set to fire this tick AND no threat has seenAt(cone=false) LOS to us AND the last tick with gun fire, a clear target or LOS on us is >= LULL_RELOAD_QUIET_S (1 s) ago AND obs.t >= 10 AND obs.drops.length === 0",
+  "hook": "brain.ts act(), target branch: next to the forced reload at brain.ts:1052 (`if (gun >= 0 && (w(gun).ammo ?? 1) === 0 && (w(gun).reload ?? 0) <= 0) act.reload = true`), after the fire decisions at brain.ts:1024-1027. One closure variable next to standoffId (brain.ts:310) holds the last contact time. Compare the no-target branch brain.ts:1070-1071. Flag + LULL_RELOAD_QUIET_S in params.ts.",
+  "observable_inputs": [
+    "self.weapons[gun].ammo / reload / stats.mag (protocol.md:184)",
+    "obs.mechs enemy pos/aim + map clearLine",
+    "obs.t",
+    "obs.drops",
+    "action reload (protocol.md:231)"
+  ],
+  "gates": "Cannot start before t = 10 s (explicit obs.t >= 10). Never starts while any supply drop is listed in obs.drops (called and not yet taken; protocol.md:359 every mech sees it from the moment it is called), so it never runs while a drop is announced/active and can never displace drop run/hold (those need a listed drop). Off = champion exactly (flag false short-circuits). No movement change at all.",
+  "evidence": {
+    "sim_forced_reloads": "Champion auto-reloads at 0 ammo with an enemy target 791 times in 181/192 games; the gun is reloading while a clear enemy target is present for 27,562 decisions (~2,756 s) in 190/192 games.",
+    "sim_trigger_state": "Spec trigger (1 s quiet): 52 reload starts in 31/192 games. All lull decisions without the quiet gate (1,657 in 70/192 games): ammo median 3 of 12 (p10 1, p90 5), target distance median 70 m (p10 42, p90 163), alive median 15, t median 35.0 s (p10 15.2, p90 58.6).",
+    "sim_tradeoff": "Of the 52 starts, a clear target came back inside the 2.4 s reload in 27 (52%) - the cost case - and the champion later had a forced reload at 0 ammo with a clear target within 10 s in 21 (40%) - the case P34 removes. Without the 1 s quiet gate: 143 starts in 67 games but 76% see a clear target within 2.4 s, which is why the gate is in the spec; with 2 s quiet: 32 starts in 20 games, 41% / 34%.",
+    "protocol": "Gun: mag 12 at 0.24 s (2.88 s of fire), reload 2.4 s, early reload allowed (protocol.md:303, :231); the sim models it (tools/sim/engine.ts:349).",
+    "showdown_first_fights": "PR #145 coord/research-doug-1941.md: first hit decides first fights (KILL/DIED 309/171 when ours vs 129/297); median first-fight duration 4.5-4.8 s, longer than one magazine, so a fight entered with ~3 rounds contains a 2.4 s reload.",
+    "watcher": "No reload metric in coord/data/watcher (not measured)."
+  },
+  "estimated_activation": "~31/192 games on 2000+3000 (52 starts; champion code + passive sim log). Held-out set not measured.",
+  "closest_prior_test": "None on reload timing. Nearest fire-handling tests: B15 aim lead + fire discipline LOSS (2.65 vs 2.98) and B7 drop the 100 m gun gate LOSS (2.04 vs 2.38); both changed when we shoot, P34 changes only when an idle gun refills. Not in the B125 package list (TAC_SPACE_EARLY, TAC_FIRE_MOVE, TAC_DODGE, TAC_JET_LOOT, TAC_LASER_REACH, TAC_FINISH_AMMO).",
+  "what_would_disprove": "Paired screen: decisions with a clear enemy target while reloading not lower in fired games, or first-3-s damage dealt after re-contact lower, or deaths in the 10 s after an activation higher than the champion; fired < 10/192. The 52% 'target back within 2.4 s' share is the main way this loses.",
+  "risks": "Pins: none (no movement). Drops: no movement, and gated on obs.drops empty. Combat: a reload started just before the target reappears delays the first shot by up to 2.4 s (52% of starts in the champion log); the reload makes a 60 m sound (protocol.md sound list). Lightning/laser holders keep their other weapon, so the cost is smaller for them.",
+  "id_note": "ID collision: origin/main d7d6ef8 (19:57 ET, after this branch was cut from d7fca14) already uses P34 for a different idea ('Lethal release' LETHAL_RELEASE_ON, from PR #145). This record was written under the P34-P37 file whitelist for this research task; the coordinator should renumber it (next free P id) when copying it to main. Do not overwrite main's P34.json.",
+  "source": "Research P34-37 (this run): champion reload rules brain.ts:1052/1071 + passive sim log; PR #145 first-fight table",
+  "timestamps": {
+    "created": "2026-11-21 19:55 ET",
+    "updated": "2026-11-21 19:55 ET"
+  },
+  "sources": [
+    "brain.ts (origin/main d7fca14 = 6182d29 bot code)",
+    "/workspace/mechfight-kit/protocol.md",
+    "tools/sim/engine.ts",
+    "coord/data/site_results.csv",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/145 (coord/research-doug-1941.md)",
+    "Instrumented champion sim (this research run): a copy of the champion bot files from origin/main d7fca14 (bot code identical to 6182d29: git diff 6182d29 HEAD on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p3437/bot, with passive per-decision CSV logging appended before act.move (no action changed). Run: bun tools/sim/run.ts --worker --seed-list 2000-2095,3000-3095 (one job, 192 games, ~5 min). Sanity: mean 16-place 3.531 vs 3.542 for the same seeds in coord/data/research/heal-positioning.md; deaths < 40 s 56/192. Logs are in /tmp (not committed). Held-out 4000+5000 not run (kept light)."
+  ]
+}

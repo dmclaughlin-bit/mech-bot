@@ -1,0 +1,63 @@
+{
+  "id": "P35",
+  "title": "Regen guard: while healing, do not shoot drones or crates that are not shooting us (REGEN_GUARD_ON)",
+  "family": "fire control (NPC targets)",
+  "flags": [
+    "REGEN_GUARD_ON"
+  ],
+  "flag": "REGEN_GUARD_ON",
+  "behaviors": [
+    "while HP < 90% of max, t >= 10 s and no drop listed, the Build 12 farm-shot target list skips drones and crates, except a drone that damaged us in the last 2 s; enemy mechs are targeted and fired at exactly as today"
+  ],
+  "owner": "unassigned (research P34-37; Grok assigns)",
+  "stage": "idea",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Grok: assign or park (lowest rank of P34-37). If built: one flag REGEN_GUARD_ON default false; base-0 hazard with fired/diff/score, HP at next contact, cubes at end.",
+  "doug_waiver": false,
+  "single_decision": "Filter the farm-shot marks (drones/crates) while HP < 90% so dealing damage to them does not keep resetting the 5 s regen delay. Mech targeting, aim and fire are unchanged; laser 'rescue' re-aim of a held full charge is unchanged.",
+  "trigger": "no enemy mech target AND farmOk AND me.hp >= RETREAT_HP (champion farm-shot gate) AND me.hp < HEAL_HP 0.9 * max_hp AND obs.t >= 10 AND obs.drops.length === 0; marks removed = drones/crates whose id has not damaged us in the last 2 s (hitBy)",
+  "hook": "brain.ts act(), farm targets block brain.ts:955-969 (`if (!target && farmOk && me.hp >= RETREAT_HP * me.max_hp) {` ... `farmShot = !!target`): add a guarded filter on `marks` using hitBy (brain.ts:271, :465) and THREAT_HIT_S (brain.ts:102). With no mark left the champion's no-target branch (brain.ts:1056-1072) runs as it does today. Flag in params.ts next to FARM_ON.",
+  "observable_inputs": [
+    "self.hp/max_hp",
+    "obs.mechs kind npc + obs.crates",
+    "obs.events damaged.by (drone ids 100+)",
+    "obs.t",
+    "obs.drops"
+  ],
+  "gates": "Cannot start before t = 10 s (explicit obs.t >= 10). Never starts while any supply drop is listed in obs.drops (called and not yet taken; protocol.md:359 every mech sees it from the moment it is called), so it never runs while a drop is announced/active and can never displace drop run/hold (those need a listed drop). Off = champion exactly (flag false short-circuits). No movement change.",
+  "evidence": {
+    "sim_trigger_state": "Champion farm shots while HP < 90% (t >= 10, no drop listed, mark not a drone hitting us): 68 episodes in 42/192 games (2104 decisions in 50 games before those filters); HP median 0.58 (p10 0.31, p90 0.84); target crate 56% / drone 44%; episode median 1.6 s (p90 6.1 s); alive median 14, t median 32.2 s (p10 14.0, p90 68.3).",
+    "sim_where_it_pays": "Next enemy came into view a median 2.2 s after the episode (mean 18 s): only 27/68 episodes in 11/192 games had > 7 s of quiet afterwards, the case where an earlier start of the 5 s regen delay (then 45 HP/s) shows up. HP at the next enemy contact median 0.71 (p10 0.37).",
+    "protocol": "Regen needs 5 s without dealing OR taking damage (protocol.md:291); hits on NPCs and crates are dealt damage (protocol.md:202); drones shoot whoever attacks them (protocol.md:325). The sim models all three: dealer lastCombat on any hit (tools/sim/engine.ts:195), drone retarget (:183), regen (:584).",
+    "heal_context": "coord/data/research/heal-positioning.md: heal 'in contact' is a stand-and-trade (579 damaged episodes mean -243.8 HP); undamaged heal episodes gain +43.0 HP mean in 2.4 s, so regen time is short and worth protecting.",
+    "showdown_first_fights": "PR #145 coord/research-doug-1941.md: under 70% HP at the first hit KILL/DIED 2/20 (n=40)."
+  },
+  "estimated_activation": "~42/192 games change behavior on 2000+3000 (68 episodes; champion code + passive sim log), but the regen benefit can only show in ~11/192 games (long quiet after the episode). Expect a small effect; held-out set not measured.",
+  "closest_prior_test": "B5 (F4 fire gate: no firing while healing) 2.04 vs B3 2.23, and B5b (same heal without the gate) 2.38 KEEP: that gate stopped fire at ENEMY MECHS; P35 never touches mech fire, only drone/crate shots, which the heal rule cannot need for defense (a drone that is shooting us stays a target). HEAL_COVER1 / P24 are heal positioning, not fire.",
+  "what_would_disprove": "Paired screen: HP at the next enemy contact not higher in fired games, or cubes at end lower (crates/drones left unbroken), or more damage from drones; fired < 10/192. If diff_score is mostly ties, it is the low-impact outcome predicted by the 11/192 figure and should not take a site slot.",
+  "risks": "Pins: none (no movement). Drops: no movement, gated on obs.drops empty. Cubes: a deferred drone may wander off within its 30 m leash and an enemy may arrive first (median 2.2 s), so some cubes are lost rather than deferred. Aim: with no mark, the torso follows the move direction/next center instead of a crate, which changes the vision wedge.",
+  "id_note": "ID collision: origin/main d7d6ef8 (19:57 ET, after this branch was cut from d7fca14) already uses P35 for a different idea ('Unseen target first' UNSEEN_TARGET_ON, from PR #145). This record was written under the P34-P37 file whitelist for this research task; the coordinator should renumber it (next free P id) when copying it to main. Do not overwrite main's P35.json.",
+  "source": "Research P34-37 (this run): regen rule protocol.md:291 vs farm-shot gate brain.ts:955 + passive sim log",
+  "timestamps": {
+    "created": "2026-11-21 19:55 ET",
+    "updated": "2026-11-21 19:55 ET"
+  },
+  "sources": [
+    "brain.ts (origin/main d7fca14 = 6182d29 bot code)",
+    "/workspace/mechfight-kit/protocol.md",
+    "tools/sim/engine.ts",
+    "coord/data/research/heal-positioning.md",
+    "coord/data/site_results.csv",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/145 (coord/research-doug-1941.md)",
+    "Instrumented champion sim (this research run): a copy of the champion bot files from origin/main d7fca14 (bot code identical to 6182d29: git diff 6182d29 HEAD on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p3437/bot, with passive per-decision CSV logging appended before act.move (no action changed). Run: bun tools/sim/run.ts --worker --seed-list 2000-2095,3000-3095 (one job, 192 games, ~5 min). Sanity: mean 16-place 3.531 vs 3.542 for the same seeds in coord/data/research/heal-positioning.md; deaths < 40 s 56/192. Logs are in /tmp (not committed). Held-out 4000+5000 not run (kept light)."
+  ]
+}

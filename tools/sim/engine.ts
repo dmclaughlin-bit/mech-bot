@@ -620,12 +620,13 @@ export function tick(S: Sim, first: boolean) {
     if (S.t < d.lands) continue
     if (!d.landed) { d.landed = true; sound(S, "drop", d.pos, -1) }
     const inRing = S.mechs.filter((m: Mech) => m.alive && hdist(m.pos, d.pos) <= cfg.drops.radius && Math.abs(m.pos[2] - d.pos[2]) < 6)
+    if (S.me.alive) { const st = ((S.dropSt ??= {})[d.id] ??= { arrived: S.t, meIn: 0, contested: 0 }); if (inRing.includes(S.me)) st.meIn += DT; if (inRing.length > 1) st.contested += DT }
     if (inRing.length === 1) {
       if (d.holder !== inRing[0].id) { d.holder = inRing[0].id; d.progress = 0 }
       d.progress += DT
       if (d.progress >= cfg.drops.capture_s) {
         const m = inRing[0]
-        gainCubes(S, m, cfg.drops.cubes); m.hp = m.maxHp; m.energy = m.stats.energy; d.taken = true
+        gainCubes(S, m, cfg.drops.cubes); m.hp = m.maxHp; m.energy = m.stats.energy; d.taken = true; (S.dropLog ??= []).push({ id: d.id, by: m === S.me ? "me" : "house", t: S.t })
         if (m === S.me) S.events.push({ type: "drop", id: d.id, cubes: m.cubes })
       }
     } else if (inRing.length === 0) { d.holder = null; d.progress = 0 }

@@ -119,3 +119,13 @@ fit, not a measurement.
 - Nothing here reproduces a nav bug that depends on the real collision rules (roof edges, eaves, slopes).
 - 48 matches give a standard error of about 0.2 on a mean, and the real builds differ by 0.03 to 0.44. Compare
   builds seed by seed (same seeds, paired difference), and treat a paired difference under about 0.3 as noise.
+
+## Hazard columns (diego/mac-hazard-sim, read-only, for Mac screens)
+Adds CSV columns only; no game logic changes (rows match 4b8663e on every existing column).
+- `drop_arrivals`: supply drops that landed while our mech was alive.
+- `drop_me_in`: of those, how many rings our mech stood in for at least one tick.
+- `drop_claims`: drops our mech claimed.
+- `pins20`: windows (start-end s) where we asked to move (>0.5) but stayed within 5 m for 20 s or more.
+- `SIM_HASH_DIR=<dir>`: writes one per-tick state hash file per seed (for flag-off identity checks).
+- `INSTR_DIR=<dir>`: passes `INSTR_FILE=<dir>/<seed>.jsonl` to the bot process (for a probe build to log activations).
+These definitions may differ from Sim Tester's wrapper; compare Mac build vs Mac champion only.

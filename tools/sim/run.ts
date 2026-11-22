@@ -27,7 +27,7 @@ class BotProc {
   wake: (() => void) | null = null
   dead = false
   constructor(path: string) {
-    this.proc = Bun.spawn(["bun", path], { cwd: dirname(path), stdin: "pipe", stdout: "pipe", stderr: "ignore" })
+    this.proc = Bun.spawn(["bun", path], { cwd: dirname(path), stdin: "pipe", stdout: "pipe", stderr: "ignore", env: { ...process.env, INSTR_FILE: process.env.INSTR_DIR ? process.env.INSTR_DIR + "/" + (globalThis as any).__SEED + ".jsonl" : "" } })
     this.pump()
   }
   async pump() {
@@ -69,6 +69,7 @@ class BotProc {
 async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena: string) {
   const S = createSim(geo, cfg, seed)
   const me = S.me
+  ;(globalThis as any).__SEED = seed
   const bot = new BotProc(botPath)
   bot.send({ type: "hello", protocol: "mechfight/1", slot: S.meId, seed: (Math.imul(S.meId + 1, 2654435761) >>> 0), map: { dir: arena, files: ["v2/world.json", "v2/terrain.i16"] }, config: cfg })
   let ready = false
@@ -81,6 +82,8 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
   const maxTick = cfg.match.duration_s * cfg.match.tick_hz
   let late = 0, missed = 0, botMs = 0, decisions = 0, missedRun = 0
   const trace = !!process.env.SIM_TRACE
+  const HASH = process.env.SIM_HASH_DIR, hashes: string[] = []
+  const pins: [number, number][] = []; let pinA: number[] | null = null, pinT = 0
   const houseAlive = () => S.mechs.filter((m: any) => m.alive && m.tier).length
   while (me.alive && S.tick < maxTick && houseAlive() > 0) {
     const obs = buildObs(S)
@@ -107,6 +110,10 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
     squadDecide(S)
     tick(S, true)
     tick(S, false)
+    { const mv = Math.hypot(me.act?.move?.[0] ?? 0, me.act?.move?.[1] ?? 0)
+      if (me.alive && mv > 0.5) { if (!pinA || hdist(pinA, me.pos) > 5) { if (pinA && S.t - pinT >= 20) pins.push([pinT, S.t]); pinA = me.pos.slice(); pinT = S.t } }
+      else { if (pinA && S.t - pinT >= 20) pins.push([pinT, S.t]); pinA = null } }
+    if (HASH) hashes.push(Bun.hash(JSON.stringify([S.tick, S.mechs.map((m: any) => [m.id, m.alive, m.pos, m.vel, m.hp, m.energy, m.cubes, m.weapons?.map((w: any) => w?.kind), m.kills]), me.act, S.deaths.length, (S.drops ?? []).map((d: any) => [d.taken, d.holder])])).toString(16))
     if (trace && S.tick % 100 === 0) {
       const near = S.mechs.filter((m: any) => m.alive && m.tier).map((m: any) => hdist(m.pos, me.pos)).sort((a: number, b: number) => a - b)
       console.error(`t=${S.t.toFixed(0)} hp=${me.hp.toFixed(0)}/${me.maxHp.toFixed(0)} pos=${me.pos.map((x: number) => x.toFixed(0))} cubes=${me.cubes} w=${me.weapons.map((w: any) => w?.kind)} hunters=${S.huntersNow} nearest=${near.slice(0, 3).map((x: number) => x.toFixed(0))} alive=${houseAlive() + 1} inZone=${me.inZone} deaths=${JSON.stringify(S.deaths)}`)
@@ -115,9 +122,13 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
   let place: number
   if (!me.alive) place = me.place
   else place = 1 + S.mechs.filter((m: any) => m.alive && m !== me && m.hp > me.hp).length
+  if (HASH) require("node:fs").writeFileSync(`${HASH}/${seed}.trace`, hashes.join("\n") + "\n")
   await bot.close({ type: "end", place, kills: me.kills })
+  if (pinA && S.t - pinT >= 20) pins.push([pinT, S.t])
   const k = me.killer
   return {
+    drop_arrivals: Object.keys(S.dropSt ?? {}).length, drop_claims: (S.dropLog ?? []).filter((x: any) => x.by === "me").length, drop_me_in: Object.values(S.dropSt ?? {}).filter((x: any) => x.meIn > 0).length,
+    pins20: pins.map(([a, b]) => `${a.toFixed(0)}-${b.toFixed(0)}`).join(" "),
     seed, slot: S.meId, place, score: 16 - place, death_t: me.alive ? "" : me.deathT.toFixed(2),
     killer: me.alive ? "" : k ? (k.kind === "npc" ? "npc" : `house:${k.tier}#${k.id}`) : me.killWeapon ?? "", killer_weapon: me.alive ? "" : me.killWeapon ?? "",
     kills: me.kills, damage_dealt: Math.round(me.dmgDealt), damage_taken: Math.round(me.dmgTaken), cubes: me.cubes, upgrades: me.upList.join("+"),

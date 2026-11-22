@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 23:25 ET",
- "origin_main": "41de5cb70e6e3913247e391d0604425928e8ea34",
+ "generated_at_et": "2026-11-21 23:30 ET",
+ "origin_main": "e1e0a7faf486e38d9c3d46461e020e590fa15180",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -27,7 +27,7 @@
   ],
   "slots": {
    "limit": 6,
-   "used_rolling_60": 1,
+   "used_rolling_60": 0,
    "used_clock_hour": 0,
    "last_submit": "2026-11-21 22:27 ET"
   },
@@ -5285,7 +5285,7 @@
    "kind": "build",
    "source": "Sim Tester death report 20261121-2153-0e6fadd (ST-1)",
    "owner": "Diego's Claude",
-   "decision": "Checklist item 3 fails: drop-ring totals 11 -> 10 across 4 bases (down 1 on bases 0 and 7000, late knock-on). Builder stopped; ruling asked of Doug 11:30 PM ET.",
+   "decision": "Doug 11:28 PM ET: yes, send P50 to the full paired trees-on screen vs P48 despite the checklist drop-ring dip (11 -> 10 across 4 bases). All screen vetoes still apply. Sim Tester told to screen it first after re-running the P48 baseline. Never site-tested.",
    "changes": 1,
    "changes_basis": "idea record flags",
    "multi": false,

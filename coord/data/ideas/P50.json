@@ -5,12 +5,12 @@
   "flag": "CHARGE_LINED_ON",
   "owner": "Diego's Claude",
   "prompt": "P-D-018",
-  "stage": "checklist: waiting for Doug ruling",
+  "stage": "waiting for screen",
   "source": "Sim Tester death report 20261121-2153-0e6fadd (ST-1)",
   "champion_sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
-  "decision": "Checklist item 3 fails: drop-ring totals 11 -> 10 across 4 bases (down 1 on bases 0 and 7000, late knock-on). Builder stopped; ruling asked of Doug 11:30 PM ET.",
+  "decision": "Doug 11:28 PM ET: yes, send P50 to the full paired trees-on screen vs P48 despite the checklist drop-ring dip (11 -> 10 across 4 bases). All screen vetoes still apply. Sim Tester told to screen it first after re-running the P48 baseline. Never site-tested.",
   "created_et": "2026-11-21 10:03 PM ET",
   "pr": 161,
   "sha": "424029b",
-  "updated_et": "2026-11-21 11:30 PM ET"
+  "updated_et": "2026-11-21 11:40 PM ET"
 }

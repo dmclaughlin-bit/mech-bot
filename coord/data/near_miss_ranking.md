@@ -106,3 +106,6 @@ Older HOLD rows remain in `coord/data/ready_ledger.md` and the pipeline view (P-
 - No fabricated official or sim scores. Where a screen or checklist was never run, the file says so.
 - No trees-on official 2000+3000 / 4000+5000 numbers for P25b, P26, P30, P35, P37, or P38. Those reruns have not been done.
 - Archive-size figures for the older near-miss SHAs are not in the repo; they must be measured on any rebased head before a submit.
+
+## Coordinator ruling, Sun Nov 22 1:29 AM ET: P41 #173 (c21d23b) back in the pool
+Mech Builder's P41b Step 1 trace log (branch p41b-sound-look-no-stall c3a5bef): the sound look was OFF during both veto pauses. 2021 (120-144 s) is a midring-settle/farm-pickup oscillation that P48 also does at the same time ~33 m away (P48 moves 3.08 m per 10 s, just above the 3 m pause counter). 5036 (271-300 s) happened only because P41 survived 166 s longer (8th to 2nd). So stall (b) does not apply (the champion does get stuck there and the game got better; the change was not active, so (a) fails too). Remaining veto: stall (c) only (pause games 2 to 3 on both sets). Mac means +0.052 / +0.005, deaths<40 48 to 47. P41 now fails exactly one veto, so it is an eligible near miss (the loop re-runs check.py + archive on c21d23b before any submit; the #173 head must be the flag-ON build). Ruling made under autonomous mode by the rules' intent.

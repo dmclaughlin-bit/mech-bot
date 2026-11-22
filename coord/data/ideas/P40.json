@@ -10,7 +10,7 @@
   "Roof jet route: where the champion would only hold (or its farm/loot goal is itself on a roof) and farmOk holds, from t >= 10 s, with no supply drop announced/falling within DROP_RUN_M (200 m) and never in a drop run, drop ring hold or farm capture hold, walk to the ground beside the roof item's wall, jump and jet onto the roof (climbs capped at 48 m above our feet), and take the crate (broken by the existing farm shot), cube or wanted weapon. 3 s no-progress give-up per phase, wait/crate/trip caps, skip list."
  ],
  "owner": "Mech Builder",
- "stage": "building",
+ "stage": "built",
  "pr": null,
  "sha": null,
  "branch": "p40d-roof-landing-exit",
@@ -186,9 +186,9 @@
    "verdict": "PASS items 2, 3, 5; item 4 reported"
   }
  ],
- "decision": "Built and checklist-passed (trees-on, four bases) by Mech Builder; not submitted.",
+ "decision": "P40d built and checklist-passed (trees-on, four bases vs P48) by Mech Builder; not submitted.",
  "blocker": null,
- "next_action": "Mech Builder: P40d = P40c rebuilt on champion P48 (b9492c6/edb729f) on p40d-roof-landing-exit; diagnosis on seeds 3014, 5083, 1, 1002, then BUILD_CHECKLIST trees-on bases 0/1000/6000/7000 vs P48.",
+ "next_action": "Grok: decide on a Sim Tester full screen of the P40d flag-on head (2000+3000, 4000+5000) vs P48; note seed 5083 early death is unchanged by design (no climb).",
  "doug_waiver": false,
  "source": "mechanics research directive (Doug 8:06 PM ET), coord/next-doug.md 5404931; Doug's idea",
  "created_et": "2026-11-21 20:18",
@@ -198,7 +198,8 @@
   "p40b_started": "2026-11-22",
   "p40b_built": "2026-11-22",
   "p40c_started": "2026-11-22",
-  "p40d_started": "2026-11-22"
+  "p40d_started": "2026-11-22",
+  "p40d_built": "2026-11-22"
  },
  "sources": [
   "coord/data/ideas/B125.json",
@@ -209,7 +210,8 @@
   "git show 57e4bad:coord/data/ideas/P40.json",
   "builder runs /tmp/p40b-{main,on}-b{0,1000,6000,7000}.csv, /tmp/p40b-logs (not committed)",
   "gh pr view 155 comments 7073238443, 7073245075 (read-only)",
-  "/workspace/claude-p40b.log"
+  "/workspace/claude-p40b.log",
+  "builder runs /tmp/p40d (not committed): trees sim copy of /workspace/wt-tester-trees tools/sim, passive logger, runs/haz"
  ],
  "screens_summary": {
   "pooled_384": "+0.039 +/- 0.043 (better 16, worse 14)",
@@ -249,14 +251,245 @@
   "branch_head": "16c61964205149fdceec6fb1a249448bd9b48f82"
  },
  "p40d": {
-  "stage": "rebuilding",
+  "stage": "built",
   "note": "P40c rebuilt on the new champion P48 (tree retreat). P40c code commit 16c6196 conflicted with P48 in brain.ts/params.ts; re-applied by hand from /workspace/patches/p40c-bot.diff, P48 behavior kept (TREE_RETREAT_ON=true, LETHAL_RELEASE_ON=true). Same single flag ROOF_JET_ROUTE_ON, same behavior as P40c.",
   "branch": "p40d-roof-landing-exit",
   "base": "9071465e31afe09ccc4e2bd66aaab2e4ce3b8684",
   "champion": "b9492c6f122c549c705b69402157f078b4a57857 (P48 tree retreat code, merged as edb729fc790c0bd583204fa2a0c6492cc8277ca8, site 4.44, BB-94897D91)",
   "veto_reasons_carried": "see p40c.veto_reasons (PR #155)",
   "timestamps": {
-   "started": "2026-11-22"
-  }
+   "started": "2026-11-22",
+   "built": "2026-11-22"
+  },
+  "code_sha": "a515753 (bot code, flag off; same bot files in the flag-off record head)",
+  "champion_sha_tested_against": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
+  "sim": "TREES-ON. /workspace/builder-sim (main tools/sim) has no --trees and ignores SEED_BASE (hardcoded 1000), so the assigned command runs seeds 1000-1095 trees-off for every base; /workspace/champ-p48/trees-b9492c6-{0,1000,6000,7000}.csv are all seeds 1000-1095 trees-off (identical scores, total 317.0) and were NOT used. All runs here used a private copy of the tester trees sim (/workspace/wt-tester-trees tools/sim: P-D-014 --trees + SEED_BASE env + #133 component shortcut), --jobs 1, one sim at a time, with a passive pass-through logger (bot code untouched; eqdrive replies identical through it). Champion runs: worktree of origin/main e1e0a7f (bot code identical to edb729f). It reproduced all four P40b veto cases exactly on the P34 code (3014 wedge 15-35 s at (-40,-216), 5083 death 31.10 s, seed 1 pin 41-62 s, seed 1002 pin 204-245 s).",
+  "gate": "eqdrive (own minimal equivalent: kit check stream, one obs at a time, replies cmp) flag-off vs main IDENTICAL (301 lines). check.py --map-dir arena PASS: default max 5.2 ms (p99 4.7), flag-on max 5.4 ms (p99 3.1). Roof-tick max in the sim 5.0 ms.",
+  "early_activation": "16/192 on base 0+1000 (9 + 7), 0 roof ticks at t < 10 s: continue",
+  "diagnosis": {
+   "3014": "wedge GONE: landing exit fired at 13.2 s, post-climb stuck 1 s (P40b on P34 and on P48: 17 s, 20 s pin 15-35 s); game diverges: death 69.05 s vs champion 102.65 s (P40b 125.50 s); not an early death",
+   "5083": "early death NOT gone: 31.10 s vs champion 51.35 s; no climb (0.3 s roof walk 10.8-11.1 s), so the exit never applies; pure downstream divergence (same in P40b and P40c)",
+   "1": "pin 41-62 s at (-68,-199,17) NOT gone; no climb (roof walk 23.5-28.1 s only), exit never applies; same in P40b and P40c",
+   "1002": "no pin (on P48 the P40b-on-P48 game also has none; P40b on P34 had 204-245 s); 2 climbs, 2 landing exits, post-climb stuck 2 s vs 11 s for P40b-on-P48",
+   "p40c_on_p34": "P40c 16c6196 flag-on gives the same diagnosis outcome on all four seeds as P40d (3014 69.05 s, 5083 31.10 s, seed 1 pin, 1002 no pin)"
+  },
+  "screens": [
+   {
+    "sha": "a515753 + ROOF_JET_ROUTE_ON=true (flag-on copy, = the flipped head)",
+    "seed_set": "0, 1000, 6000, 7000 (96 each, TREES-ON)",
+    "kind": "BUILD_CHECKLIST hazard vs champion P48",
+    "per_base": {
+     "0": {
+      "fired": 9,
+      "diff_behavior": 9,
+      "diff_score": 5,
+      "sim_delta": -0.094,
+      "sim_se": 0.077,
+      "better": 2,
+      "worse": 3,
+      "ring_arrivals_champ_cand": [
+       5,
+       5
+      ],
+      "deaths_lt_40s_champ_cand": [
+       24,
+       24
+      ],
+      "pins_ge20s_champ_cand": [
+       3,
+       4
+      ],
+      "new_pins": 1,
+      "kills_champ_cand": [
+       293,
+       285
+      ],
+      "survivors_champ_cand": [
+       2,
+       2
+      ],
+      "t_lt_10s_roof_ticks": 0,
+      "roof": {
+       "episodes": 11,
+       "climbs": 7,
+       "on_roof": 1,
+       "give_ups": 0,
+       "exit_steps": 10,
+       "exit_landed": 7,
+       "exit_stall": 3,
+       "post_climb_stuck_s": 5
+      },
+      "p40b_on_p48_same_base": {
+       "sim_delta": -0.115,
+       "sim_se": 0.066,
+       "ring": 5,
+       "deaths_lt_40s": 24,
+       "pins_ge20s": 4,
+       "kills": 283,
+       "climbs": 8,
+       "post_climb_stuck_s": 4
+      }
+     },
+     "1000": {
+      "fired": 7,
+      "diff_behavior": 6,
+      "diff_score": 4,
+      "sim_delta": 0.052,
+      "sim_se": 0.048,
+      "better": 3,
+      "worse": 1,
+      "ring_arrivals_champ_cand": [
+       1,
+       2
+      ],
+      "deaths_lt_40s_champ_cand": [
+       15,
+       14
+      ],
+      "pins_ge20s_champ_cand": [
+       5,
+       5
+      ],
+      "new_pins": 0,
+      "kills_champ_cand": [
+       369,
+       374
+      ],
+      "survivors_champ_cand": [
+       2,
+       2
+      ],
+      "t_lt_10s_roof_ticks": 0,
+      "roof": {
+       "episodes": 10,
+       "climbs": 6,
+       "on_roof": 3,
+       "give_ups": 6,
+       "exit_steps": 4,
+       "exit_landed": 3,
+       "exit_stall": 1,
+       "post_climb_stuck_s": 8
+      },
+      "p40b_on_p48_same_base": {
+       "sim_delta": 0.135,
+       "sim_se": 0.075,
+       "ring": 2,
+       "deaths_lt_40s": 14,
+       "pins_ge20s": 5,
+       "kills": 382,
+       "climbs": 6,
+       "post_climb_stuck_s": 13
+      }
+     },
+     "6000": {
+      "fired": 18,
+      "diff_behavior": 19,
+      "diff_score": 15,
+      "sim_delta": 0.281,
+      "sim_se": 0.161,
+      "better": 9,
+      "worse": 6,
+      "ring_arrivals_champ_cand": [
+       1,
+       2
+      ],
+      "deaths_lt_40s_champ_cand": [
+       16,
+       16
+      ],
+      "pins_ge20s_champ_cand": [
+       2,
+       2
+      ],
+      "new_pins": 1,
+      "kills_champ_cand": [
+       358,
+       383
+      ],
+      "survivors_champ_cand": [
+       0,
+       1
+      ],
+      "t_lt_10s_roof_ticks": 0,
+      "roof": {
+       "episodes": 25,
+       "climbs": 13,
+       "on_roof": 5,
+       "give_ups": 1,
+       "exit_steps": 13,
+       "exit_landed": 10,
+       "exit_stall": 3,
+       "post_climb_stuck_s": 11
+      },
+      "p40b_on_p48_same_base": {
+       "sim_delta": 0.177,
+       "sim_se": 0.138,
+       "ring": 1,
+       "deaths_lt_40s": 16,
+       "pins_ge20s": 1,
+       "kills": 374,
+       "climbs": 12,
+       "post_climb_stuck_s": 16
+      }
+     },
+     "7000": {
+      "fired": 7,
+      "diff_behavior": 7,
+      "diff_score": 3,
+      "sim_delta": -0.031,
+      "sim_se": 0.018,
+      "better": 0,
+      "worse": 3,
+      "ring_arrivals_champ_cand": [
+       4,
+       5
+      ],
+      "deaths_lt_40s_champ_cand": [
+       22,
+       22
+      ],
+      "pins_ge20s_champ_cand": [
+       1,
+       1
+      ],
+      "new_pins": 0,
+      "kills_champ_cand": [
+       371,
+       370
+      ],
+      "survivors_champ_cand": [
+       2,
+       2
+      ],
+      "t_lt_10s_roof_ticks": 0,
+      "roof": {
+       "episodes": 9,
+       "climbs": 5,
+       "on_roof": 3,
+       "give_ups": 1,
+       "exit_steps": 6,
+       "exit_landed": 4,
+       "exit_stall": 2,
+       "post_climb_stuck_s": 10
+      },
+      "p40b_on_p48_same_base": {
+       "sim_delta": -0.042,
+       "sim_se": 0.025,
+       "ring": 4,
+       "deaths_lt_40s": 22,
+       "pins_ge20s": 1,
+       "kills": 371,
+       "climbs": 4,
+       "post_climb_stuck_s": 5
+      }
+     }
+    },
+    "pooled_384": "+0.052 +/- 0.047 (better 14, worse 13); P40b-on-P48 (exit off) +0.039 +/- 0.043",
+    "totals": "fired 41, diff behavior 41, diff score 27; ring arrivals 11 -> 14; deaths < 40 s 77 -> 76; kills 1391 -> 1412; survivors 6 -> 7; pins >= 20 s 11 -> 12 (2 NEW, 1 champion pin gone); climbs 31, exit steps 33 (24 landed, 9 stall); post-climb stuck 34 s (P40b-on-P48 38 s)",
+    "source": "builder runs /tmp/p40d/runs, /tmp/p40d/haz (not committed); not a Sim Tester screen"
+   }
+  ],
+  "build_checklist": "TREES-ON, bases 0/1000/6000/7000 vs P48. 1 PASS; 2 PASS (0 t<10 s roof ticks on every base); 3 PASS (ring arrivals 5=5, 1<2, 1<2, 4<5); 4 reported: 2 NEW pins, both 0 flag ticks: seed 1 41-62 s (no climb, walk ended 13 s before; also in P40b/P40c), seed 6039 44-66 s (ground heal <-> laser rush flip-flop 30 s after a climb whose landing exit had already run at 12.3 s); champion pin 6011 64-85 s gone; 5 PASS (24=24, 15>14, 16=16, 22=22); 6 reported. No fix round used (2, 3, 5 pass; the new pins have no flag ticks and are not post-climb wedges).",
+  "caveats": "Sim only (screen, not a predictor). Exit stops post-climb wedges (3014, 1002) but not the two non-climb cases from the veto (5083 early death, seed 1 pin), which are trajectory divergence after a short roof walk. Base 0 and 7000 negative (-0.094, -0.031). Full Sim Tester screen (2000+3000, 4000+5000) not run. P40c itself never finished, so there are no old P40c four-base numbers; the comparison is P40b on P34 (record) and P40b-on-P48 (exit off, run here)."
  }
 }

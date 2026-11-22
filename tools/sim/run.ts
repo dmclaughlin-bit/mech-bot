@@ -84,6 +84,7 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
   const trace = !!process.env.SIM_TRACE
   const HASH = process.env.SIM_HASH_DIR, hashes: string[] = []
   const pins: [number, number][] = []; let pinA: number[] | null = null, pinT = 0
+  const smp: { t: number; x: number; y: number; h: number; z: boolean; mv: number }[] = []
   const houseAlive = () => S.mechs.filter((m: any) => m.alive && m.tier).length
   while (me.alive && S.tick < maxTick && houseAlive() > 0) {
     const obs = buildObs(S)
@@ -113,6 +114,7 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
     { const mv = Math.hypot(me.act?.move?.[0] ?? 0, me.act?.move?.[1] ?? 0)
       if (me.alive && mv > 0.5) { if (!pinA || hdist(pinA, me.pos) > 5) { if (pinA && S.t - pinT >= 20) pins.push([pinT, S.t]); pinA = me.pos.slice(); pinT = S.t } }
       else { if (pinA && S.t - pinT >= 20) pins.push([pinT, S.t]); pinA = null } }
+    smp.push({ t: S.t, x: me.pos[0], y: me.pos[1], h: me.pos[2], z: !!me.inZone, mv: Math.hypot(me.act?.move?.[0] ?? 0, me.act?.move?.[1] ?? 0) })
     if (HASH) hashes.push(Bun.hash(JSON.stringify([S.tick, S.mechs.map((m: any) => [m.id, m.alive, m.pos, m.vel, m.hp, m.energy, m.cubes, m.weapons?.map((w: any) => w?.kind), m.kills]), me.act, S.deaths.length, (S.drops ?? []).map((d: any) => [d.taken, d.holder])])).toString(16))
     if (trace && S.tick % 100 === 0) {
       const near = S.mechs.filter((m: any) => m.alive && m.tier).map((m: any) => hdist(m.pos, me.pos)).sort((a: number, b: number) => a - b)
@@ -128,6 +130,17 @@ async function runMatch(geo: any, cfg: any, seed: number, botPath: string, arena
   const k = me.killer
   return {
     drop_arrivals: Object.keys(S.dropSt ?? {}).length, drop_claims: (S.dropLog ?? []).filter((x: any) => x.by === "me").length, drop_me_in: Object.values(S.dropSt ?? {}).filter((x: any) => x.meIn > 0).length,
+    pause20: (() => { // Sim Tester's pins(): every 10 samples a 10 s window; true if in zone at start, max displacement < 3 m, mean move cmd > 0.3; runs of r windows last r+9 s
+      const W = Math.round(10 / 0.1), out: string[] = []; let run = 0, t0 = 0
+      const flush = () => { if (run && run + 9 >= 20) out.push(`${t0.toFixed(0)}-${(t0 + run + 9).toFixed(0)}`); run = 0 }
+      for (let i = 0; i + W <= smp.length; i += 10) {
+        const a = smp[i]; let ok = a.z, mv = 0
+        if (ok) for (let j = i; j < i + W; j++) { const b = smp[j]; mv += b.mv; if (Math.hypot(b.x - a.x, b.y - a.y, b.h - a.h) >= 3) { ok = false; break } }
+        ok = ok && mv / W > 0.3
+        if (ok) { if (!run) t0 = a.t; run++ } else flush()
+      }
+      flush(); return out.join(" ")
+    })(),
     pins20: pins.map(([a, b]) => `${a.toFixed(0)}-${b.toFixed(0)}`).join(" "),
     seed, slot: S.meId, place, score: 16 - place, death_t: me.alive ? "" : me.deathT.toFixed(2),
     killer: me.alive ? "" : k ? (k.kind === "npc" ? "npc" : `house:${k.tier}#${k.id}`) : me.killWeapon ?? "", killer_weapon: me.alive ? "" : me.killWeapon ?? "",

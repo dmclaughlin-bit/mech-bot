@@ -129,3 +129,4 @@ Adds CSV columns only; no game logic changes (rows match 4b8663e on every existi
 - `SIM_HASH_DIR=<dir>`: writes one per-tick state hash file per seed (for flag-off identity checks).
 - `INSTR_DIR=<dir>`: passes `INSTR_FILE=<dir>/<seed>.jsonl` to the bot process (for a probe build to log activations).
 These definitions may differ from Sim Tester's wrapper; compare Mac build vs Mac champion only.
+- `pause20` (added for P-D-021): Sim Tester's `pins()` as described on PR #157 comment 7074238509. Every 10 decisions (1 s), take a 10 s window. The window is true if we are in the zone at its start, stay within 3 m, and have a mean move command > 0.3. A run of r windows lasts r+9 s, and runs of 20 s or more are listed. On P48, cloud baseline, 2000-5000: it matches all 4 official pause games exactly, plus 2 extra (2021, 4061) that Sim Tester's wrapper does not report.

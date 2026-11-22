@@ -24,12 +24,12 @@
   "novelty": "P60 and P48 only act when ONE spot hides us from every shooter; P64 acts exactly in the cases they return null (the 56 deaths without a far spot) and accepts partial cover.",
   "weakness_to_watch": "Partial cover can pull us sideways and slow the escape; the straight back-away at least increases range from every shooter. The spot must be no closer to any shooter.",
   "disproof": "On practice bases 0 and 6000 vs P60: back-away, no-cover-reached deaths do not fall, OR the mean (16 - place) is lower on both bases; or deaths < 40 s rise, or Step A under 10/192 on either set.",
-  "positives": "Mean positive on both bases (+0.094, +0.010), 5 better vs 1 worse, kills 298->306, early deaths and drops flat.",
-  "negatives": "Small (12 games change per base). New pin on 6000 (180-211 s) occurred with the flag inactive. Per-mode death buckets (back-away, no cover reached) were not measured in this run.",
+  "positives": "Activates as designed (matches Step A), 0 ticks before 40 s, early deaths/drops/survivors unchanged; 3066 14th->10th, 3017, 5044, 5047, 5054 each up.",
+  "negatives": "Official means flat (+0.000/+0.005), kills unchanged, worse games slightly outnumber better on 2000+3000 (5 vs 2); new 20 s pause in 3066 with the flag inactive.",
   "confidence": "Uncertain",
   "reuse": null,
-  "outcome": null,
-  "stage": "checklist_pass_pr_open",
+  "outcome": "B/C (Tester: refine B; official gain is flat, so rank last unless the stall explanation holds)",
+  "stage": "screened_veto",
   "step_a_result": {
     "verdict": "PASS",
     "sim": "cloud x86 hazard sim (trees on, jobs 4), 96 seeds per base",
@@ -81,5 +81,14 @@
     "pins20": "2->2 and 1->2 (new: 6000 180-211 s, flag ticks 0 in that window)",
     "check_py": "PASS, max 4.6 ms",
     "archive_bytes": 3829760
+  },
+  "official_screen": {
+    "by": "Sim Tester, PR #184 comment 7076592562",
+    "vetoes": "1: stall (c) on 2000+3000, pause20 games 2->3 (new 3066; 0 los-break ticks in the pause, last 13.8 s earlier; the game improved 14th->10th)",
+    "paired_vs_P60": {
+      "2000+3000": "+0.000+/-0.024 (2/185/5), kills 684=684, drops 7=7, died<40 48=48, surv 2=2",
+      "4000+5000": "+0.005+/-0.012 (3/187/2), kills 727=727, drops 6=6, died<40 38=38, surv 3=3"
+    },
+    "activation": "23 games/25 episodes/168 ticks and 24 games/33 episodes/176 ticks; 0 before 40 s"
   }
 }

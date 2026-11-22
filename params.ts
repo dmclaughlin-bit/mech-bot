@@ -209,3 +209,12 @@ export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]
  */
 export const BACKAWAY_LOS_BREAK_ON = true
 export const BACKAWAY_LOS_STEPS_S = [1, 2, 3]
+
+/**
+ * P67 (far-cover latch hold): while P60's far-cover spot is latched (refreshed within 0.5 s) and still passes P60's own
+ * gates and latch rules (40 s, no drop run/hold or near-and-reachable drop; no progress for TREE_RETREAT_STUCK_S or
+ * arrived: skip list; outside the circle we keep to or no longer hidden from the seers: drop), the building-cover, tree,
+ * P64 LOS-break and plain back-away retreat branches cannot preempt the walk. Same retreat trigger; legs only (N8).
+ * false = champion behavior exactly.
+ */
+export const FAR_COVER_LATCH_HOLD_ON = false

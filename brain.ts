@@ -29,7 +29,7 @@ import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
-  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_HEAL_MAX_S, TREE_HEAL_MIN_T, TREE_HEAL_ON, TREE_HEAL_PROGRESS_M, TREE_HEAL_STUCK_S, TREE_RETREAT_MIN_T, TREE_RETREAT_ON,
+  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_HEAL_MAX_S, TREE_HEAL_CLOSE_MPS, TREE_HEAL_LATE_SAFE_ON, TREE_HEAL_MIN_T, TREE_HEAL_ON, TREE_HEAL_PROGRESS_M, TREE_HEAL_STUCK_S, TREE_RETREAT_MIN_T, TREE_RETREAT_ON,
   TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -862,6 +862,20 @@ function buildBot(hello: Hello): Bot {
         if (!TREE_HEAL_ON || !trees || healUsed || obs.t < TREE_HEAL_MIN_T || weaponWalk || dropMove || dropHold || healDropReach()) return (healRun = null)
         const seers = threats.filter((e) => seenAt(me.pos, myHeight, [e], true))
         if (!seers.length || seers.every((e) => treeHidden(me.pos, myHeight, e))) return (healRun = null)
+        // P49c (TREE_HEAL_LATE_SAFE_ON): every enemy that sees us is still beyond near range and walking at us. Hiding from
+        // it is short-lived, so stand and heal as the champion does: no tree-heal walk, and an attempt in progress ends
+        // (spot skip-listed, attempt spent for this heal phase, as at P49b's cap). Seeds 5053, 5032, 5024.
+        if (TREE_HEAL_LATE_SAFE_ON && seers.every((e) => {
+          const d = flat(e.pos, me.pos)
+          return d > cfg.vision.near_range && ((e.vel[0] * (me.pos[0] - e.pos[0]) + e.vel[1] * (me.pos[1] - e.pos[1])) / d) >= TREE_HEAL_CLOSE_MPS
+        })) {
+          if (healTry) {
+            healSkip.add(healRun?.key ?? healTry.key)
+            healTry = null
+            healUsed = true
+          }
+          return (healRun = null)
+        }
         if (healRun && obs.t - healRun.used > 0.5) healRun = null
         if (healRun) {
           const run = healRun

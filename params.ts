@@ -209,3 +209,12 @@ export const TREE_HEAL_PROGRESS_M = 1
  * off while the champion's weapon walk could start (no laser held, a free slot, before LASER_RUSH_S or gun-only after).
  */
 export const TREE_HEAL_MAX_S = 8
+/**
+ * P49c (guard inside TREE_HEAL_ON): when EVERY enemy that sees us is beyond vision.near_range (45 m) and closing on us at
+ * TREE_HEAL_CLOSE_MPS or more (from its vel), the tree heal does not start, and an attempt in progress ends (spot
+ * skip-listed, attempt spent for this heal phase). The champion's standing heal runs instead. Step 1: P49b's 5000-seed
+ * regressions 5053, 5032, 5024 all started the tree heal with a lone hunter 83-199 m out walking straight at us.
+ * false = P49b exactly.
+ */
+export const TREE_HEAL_LATE_SAFE_ON = false
+export const TREE_HEAL_CLOSE_MPS = 6

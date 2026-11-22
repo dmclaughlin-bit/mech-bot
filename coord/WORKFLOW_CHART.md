@@ -47,3 +47,46 @@ flowchart TD
 - Doug 8:43-8:44 PM ET: when no fully screened build is ready and a slot is free, a build that beat the 15-champions sim on both seed sets with no extra early deaths (and passes the basic checks and the novelty check) may go to the site. A full-screen VETO still blocks it.
 - Doug 8:45-8:46 PM ET: the 15-champions sim runs on every current build from now on; the spare-slot auto-submit stays off until it proves out and Doug turns it on.
 - Doug 8:58 PM ET: official screens switch to trees ON once the sim's trees and buildings are checked against the real site map (Mech Watcher footage) and the champion baseline is re-run with trees.
+
+- Doug 9:47 PM ET (Sat Nov 21, confirmed): near-miss pathway added as a separate section below. The chart and bullets above are unchanged. All existing simulation thresholds, vetoes, required screens, the 6-per-hour limit, the loop as the only submitter, and champion preservation stay in force. No new agents.
+
+## Near-miss pathway (Doug confirmed Sat Nov 21 9:47 PM ET)
+
+This is a **separate pathway**, not a replacement for the official process drawn above. Simulation grading thresholds, rejection rules (vetoes), required screens, the 6-per-hour site-test limit, the 10-minute loop as the only submitter, champion preservation (keep only if the official score is strictly above the current champion), and the primary READY submission path are unchanged. No new agents.
+
+**When (spare-slot formula, run at every 10-minute check):**
+
+`spare = (6 - U) - (R + 1)`
+
+- `U` is official site tests used in the last 60 minutes.
+- `R` is how many builds are expected to finish the Builder checklist (about 40 minutes) and the full paired screen (about 10 minutes) before the oldest used slot frees.
+- The `+1` is a reserved extra spot for an unexpected passing build.
+- If spare is 1 or more, no official score is pending, and no normal READY build is waiting, the loop may submit the top eligible near miss, one at a time. Normal READY builds always go first.
+
+**What (ranked pool, at most 5):** recorded in `coord/data/near_miss_ranking.md`. Rank by evidence: closeness to existing simulation thresholds, real behavior change, whether champion strengths are kept, absence of serious regressions, and novelty versus past site tests. Never rank by sim score alone, and never use fabricated estimates.
+
+A candidate must be all of the following:
+
+- a valid single-flag build that has never been site-tested and is not equivalent to an already-tested behavior
+- contain the current champion (P34, main `8c130ad`)
+- eqdrive byte-identical with the flag off
+- `check.py` max under 30 ms
+- archive under 15,000,000 bytes
+- flag-ON head
+- a full paired trees-on screen on 2000+3000 and 4000+5000 versus the current champion
+- activation of at least about 10 of 192 games
+- fail **exactly one** veto (never a crash, never a lower overall mean on both seed sets)
+
+Old trees-off rejects need a trees-on rerun first. A build that does not already contain the current champion must be rebased onto current main before that screen.
+
+**Result handling:** log the submission as a "near-miss data test" with the veto it failed. It becomes champion only if the official score is strictly above the current best. A win is recorded as a confirmed sim false negative.
+
+```mermaid
+flowchart TD
+    NM[Near-miss pool, max 5, ranked by evidence] --> SP{spare = (6 - U) - (R + 1) at least 1, and no score pending, and no READY build waiting?}
+    SP -- no --> WAIT[Wait; the normal path above is unchanged]
+    SP -- yes --> SUB[Loop submits the top eligible near miss, one at a time, logged as a near-miss data test]
+    SUB --> SC{Official score strictly above champion?}
+    SC -- yes --> WIN[New champion; record a confirmed sim false negative]
+    SC -- no --> LOG[Champion unchanged; log the official result]
+```

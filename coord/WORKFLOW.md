@@ -157,3 +157,14 @@ Doug asked that a build beating the 15-champions sim (P-D-016, Diego's Mac) go t
 ## Doug 9:06 PM ET (Sat Nov 21): one-time exception, P34 to the site
 Doug approved ONE site test of P34 #147 (c281bf59e6276ffda376cc84a0c95f620331485e) despite its full-screen VETO, using an idle slot (6 of 6 open, nothing READY). It's submitted once by the coordinator on Doug's direct order. This is not a precedent: the "only fully passing builds" rule is otherwise unchanged.
 - UPDATE 9:09 PM ET (Doug): the 9:07 P34 submission was rejected for repo size, not scored. Doug approved ONE submission of the rebuilt P34, meaning the same single change as c281bf5 on top of main 00e9ff1, once it passes the archive size check. It's submitted by the coordinator on Doug's direct order, not by the loop.
+
+
+## Doug 9:47 PM ET (Sat Nov 21): near-miss pathway (separate from the normal screen)
+
+Doug confirmed the merged near-miss rule (his spare-slot timing formula plus Diego's ranked pool and unchanged grading standards). This is a **separate pathway**, not a replacement. The locked chart is `coord/WORKFLOW_CHART.md`; the section added there is the official wording. The ranking lives at `coord/data/near_miss_ranking.md`.
+
+- Unchanged: all simulation thresholds and vetoes, required full paired screens, the 6-per-hour limit, the 10-minute loop as the only submitter, champion preservation (keep only if the official score is strictly above the current champion), and the primary READY path. No new agents.
+- Spare formula, at every 10-minute check: `spare = (6 - U) - (R + 1)`. `U` is site tests used in the last 60 minutes. `R` is builds expected to finish the Builder checklist (about 40 minutes) and the full paired screen (about 10 minutes) before the oldest used slot frees. The `+1` is a reserved extra spot. If spare is 1 or more, no score is pending, and no normal READY build is waiting, the loop may submit the top eligible near miss, one at a time. Normal READY builds always go first.
+- Pool: at most 5, ranked by evidence (closeness to thresholds, real behavior change, keeps champion strengths, no serious regressions, novelty versus past site tests). Never by sim score alone, and never with fabricated estimates.
+- Eligibility: a valid single-flag build never site-tested and not equivalent to a tested behavior; contains the current champion (P34, main `8c130ad`); eqdrive flag-off byte-identical; `check.py` max under 30 ms; archive under 15,000,000 bytes; flag-ON head; full paired trees-on screen on 2000+3000 and 4000+5000 versus the current champion; activation at least about 10 of 192 games; fails exactly one veto (never a crash, never a lower overall mean on both seed sets). Old trees-off rejects need a trees-on rerun first.
+- Log each submission as a "near-miss data test" with the failed veto. Champion only if the official score is strictly above the current best. A win records a confirmed sim false negative.

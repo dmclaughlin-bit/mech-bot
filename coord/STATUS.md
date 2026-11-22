@@ -88,3 +88,8 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 ## 9:29 PM ET: Doug on PR #153
 - Option A: no knob sweeps; keep the current queue and the full two-set screen. Revisit a specific setting only if replay evidence shows changing it produces a genuinely different behavior.
 - 10:07 PM ET slot: the loop submits the highest-ranked eligible (fully screened) build if one is ready and no score is pending; if the slot goes unused, log what held it up in this file.
+
+
+## 9:53 PM ET: near-miss pathway confirmed (Doug 9:47 PM ET)
+- Doug confirmed the merged near-miss pathway. Official text is the additive section in `coord/WORKFLOW_CHART.md` (existing chart untouched) and the matching section in `coord/WORKFLOW.md`. First ranking: `coord/data/near_miss_ranking.md`.
+- At this check: U = 2 (P34 `c281bf5` rejected 9:07 PM ET, BB-FB8CB5AE; P34 `0e6fadd` submitted 9:10 PM ET, scored 4.38, BB-ABEB42BF; `coord/data/site_results.csv`). R = 1 (P40b PR #155 handed off 9:47 PM ET after a trees-on four-base checklist; official screen comment not posted yet as of 9:53 PM ET; if Sim Tester started promptly the screen can finish before 10:07). spare = (6 - 2) - (1 + 1) = 2. Next slot frees 10:07 PM EST. No normal READY build. No near miss is eligible to submit yet: none has a trees-on official screen on main `8c130ad`. Best candidate is P35; it still needs a rebase onto current main and a trees-on official screen (see the ranking file).

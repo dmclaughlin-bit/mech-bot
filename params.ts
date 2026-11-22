@@ -185,3 +185,24 @@ export const LETHAL_RELEASE_MIN_T = 40
 export const TREE_RETREAT_ON = true
 export const TREE_RETREAT_MIN_T = 40
 export const TREE_RETREAT_STUCK_S = 3
+
+/**
+ * P40 (roof jet route): the champion's nav is ground-only (nav.ts: no jets), so crates, cubes and weapons on roofs
+ * (about a quarter of crates and floor loot, protocol §7) are never taken: the farm hunt shoots a roof crate from the
+ * ground and leaves its cube up there, and a roof cube or weapon is chased on the ground until the chase times out.
+ * With this on, where the champion would only hold, or its farm/loot goal is itself on a roof, and farming is allowed
+ * (farmOk: in the zone, not leaving, no enemy mech in view or known within FARM_ENEMY_M, no mech damage for 3 s), from
+ * ROOF_START_S on: pick the nearest roof crate, cube or wanted weapon (laser/lightning we can take) seen so far, at most
+ * ROOF_RANGE_M away and ROOF_MAX_H above our feet, zone-safe; walk along a nav path to the ground beside its building
+ * wall, wait there for the energy the climb needs, jump and jet up the wall until our feet clear the roof, walk to it,
+ * and stand by a crate while the farm shot code breaks it. A climb already in the air is finished rather than dropped
+ * for a ground farm/loot goal. Gives up on a target (skip list) after ROOF_STUCK_S without 1 m of progress, a missing
+ * path, or a capped trip. Never while a supply drop is falling within DROP_RUN_M, or during a drop run or ring hold
+ * (those modes rank above it and take over on the same tick). Ranks above the midring settle.
+ * Not B125's TAC_JET_LOOT (see coord/data/ideas/P40.json). false = champion behavior exactly.
+ */
+export const ROOF_JET_ROUTE_ON = false
+export const ROOF_START_S = 10
+export const ROOF_RANGE_M = 100
+export const ROOF_MAX_H = 48
+export const ROOF_STUCK_S = 3

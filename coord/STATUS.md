@@ -138,3 +138,8 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 - Most important decision changed by the last result: P52's 4.23 confirmed drop-ring loss is real (N3) -> P52b must keep both drop rings; P53 outcome B -> refinement P53b (gate on no enemy in gun range).
 - Learning metrics: active experiments with complete records 4/4 (P49b, P52b, P54, P53b); new assignments citing findings 4/4; refinements from earlier experiments 3 (P49b<-F4, P52b<-F8/F11+N3, P53b<-F9/F14+N5); redundant experiments avoided 2 (P42 N4, P52 rebuild as-is); refinements passing screen 0 so far; refinements improving the official score 0 so far.
 - In flight: P49b PR #177 0c6b134 screening (Sim Tester + Mac); P53b building on diego/p53b-boost-save-safe d3662df; P52b, P54 with Mech Builder (no branch yet).
+
+## Loop 1:18 AM ET Sun
+- P49b #177 0c6b134 on the site as BB-7C26BD16 (submitted 1:09 AM ET), queued; PENDING row added. Near-miss data test: Sim Tester VETO 1 (stall c), Mac PASS; own checks pass (check.py max 4.7 ms, archive 3.55 MB).
+- SITE BANNER CHANGED: "Mech Royale is being rescored on 96 fresh random seeds!" Older receipts now show "Scored under a previous version". Parked for Doug: whether the champion/standing changes after the rescore (watch the site for new scores; the champion only changes by a strictly higher site score).
+- Counter at 1:18: 1 of 6 left, next frees 1:20 AM EST.

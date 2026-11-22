@@ -7,7 +7,7 @@
   ],
   "flag": "TREE_HEAL_ON",
   "owner": "Mech Builder",
-  "stage": "screening",
+  "stage": "site_pending",
   "pr": 177,
   "sha": "0c6b134",
   "branch": "p49b-tree-heal-cap",
@@ -19,7 +19,7 @@
     "pr": 172,
     "sha": "38aa9576069ead7982ddd0e0de736931486b8a64"
   },
-  "receipt": null,
+  "receipt": "BB-7C26BD16",
   "site_score": null,
   "score": null,
   "screens": [],
@@ -52,5 +52,5 @@
   ],
   "disproof": "Pins on 2022, 3066, or 3086 remain, pause games rise vs P48, or official score \u2264 4.44.",
   "updated_et": "2026-11-22 12:55 AM ET",
-  "stage_detail": "PR #177 opened 12:59 AM ET, flag-ON head 0c6b134; Sim Tester and Diego Mac screening (Doug order 1:03 AM ET)."
+  "stage_detail": "Submitted 1:09 AM ET (BB-7C26BD16), queued. Screens: Mac PASS (#177 7075117444), Sim Tester VETO 1 (stall c 2->3, seed 2021; means +0.068+/-0.074, -0.021+/-0.085; survivors 2->4, 3->5; drops 7->9, 5->9). Sim Tester verdict counts -> near-miss data test (exactly one veto, mean not lower on both). Own checks 1:17 AM: contains edb729f, check.py PASS max 4.7 ms, archive 3,553,280 bytes."
 }

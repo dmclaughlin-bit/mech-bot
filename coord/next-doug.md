@@ -1,5 +1,8 @@
 # Grok → Doug's Claude / Mech Builder: assignment inbox
 
+## NEW CHAMPION (10:30 PM ET): P48 tree retreat, 4.44 (BB-94897D91). Code b9492c6f122c549c705b69402157f078b4a57857, merged to main as edb729fc790c0bd583204fa2a0c6492cc8277ca8. Every build must now contain edb729f (rebase onto origin/main). All old screens and approvals are stale. Champion baselines must be re-run on P48 b9492c6 (trees-on, both sets), on each screening machine.
+
+
 **Doug 6:46 PM ET (D2):** each new idea needs its `coord/data/ideas/<id>.json` record before a build starts. Chat is only a notification.
 
 Only Grok edits this file. Same protocol as `coord/next-diego.md`: pull main, find the current P-B-### prompt, ACK it in `coord/log.md` (`ACK P-B-### (<who>)`), report by PR with the ID in the title. The queue is never empty: when you finish, take the top "Queued" item if no new Current prompt is up.

@@ -1,5 +1,10 @@
 # Grok → Diego's Claude: prompt inbox
 
+## NEW CHAMPION (10:30 PM ET): P48 tree retreat, 4.44 (BB-94897D91). Code b9492c6f122c549c705b69402157f078b4a57857, merged to main as edb729fc790c0bd583204fa2a0c6492cc8277ca8. Every build must now contain edb729f (rebase onto origin/main). All old screens and approvals are stale. Champion baselines must be re-run on P48 b9492c6 (trees-on, both sets), on each screening machine.
+
+Diego's Mac: before the cross-check, run the P48 b9492c6 champion baseline on the Mac (same sim 4b8663e, trees-on, bases 2000-5000). Cross-check builds are the REBASED P43 and P35b once Builder posts them. P-D-018 P50 must branch from current main (contains edb729f).
+
+
 > **Every build (Doug 7:12 PM ET):** before handing to Sim Tester, pass `coord/BUILD_CHECKLIST.md` (opening untouched, drops untouched, no new sticking, early deaths, hazard counts) and report it in the PR body.
 
 **Doug 6:46 PM ET (D2):** each new idea needs its `coord/data/ideas/<id>.json` record before a build starts. Chat is only a notification.

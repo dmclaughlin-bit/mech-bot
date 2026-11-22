@@ -164,7 +164,7 @@ export const MIDRING_STUCK_S = 3
  * (step/boost/jet/gun/laser/laser_charge/lightning/reload/mortar) heard in the last EARS_AGE_S s when it is more than
  * EARS_MIN_DEG off the champion's aim. Legs, path, fire rules and target pick are unchanged. false = champion exactly.
  */
-export const EARS_LOOK_ON = false
+export const EARS_LOOK_ON = true
 export const EARS_ALIVE = 12
 export const EARS_AGE_S = 2
 export const EARS_MIN_DEG = 30

@@ -156,3 +156,16 @@ export const MIDRING_HI = 0.7
 export const MIDRING_GOAL = 0.55
 export const MIDRING_MIN_R = 70
 export const MIDRING_STUCK_S = 3
+
+/**
+ * P37 (heal pickup): where the champion would stand still to heal (HP under 90%, nothing above the heal branch
+ * active) and farming is open (farmOk: nobody in view or known within FARM_ENEMY_M, no mech hit for FARM_QUIET_S),
+ * walk to the visible zone-safe cube the Build 12 farm already chose instead of standing. Walking does not stop regen
+ * (protocol: regen needs only 5 s without dealing or taking damage). Never before HEAL_PICKUP_T s, never while any
+ * supply drop is listed (so never during an announced/active drop, a drop run or a ring hold). Gives up on a cube after
+ * HEAL_PICKUP_STUCK_S s without 1 m of progress and skips it for the rest of the match (heal pickup only; the farm's
+ * own choice is unchanged). false = champion behavior exactly.
+ */
+export const HEAL_PICKUP_ON = false
+export const HEAL_PICKUP_T = 10
+export const HEAL_PICKUP_STUCK_S = 3

@@ -1,0 +1,19 @@
+{
+  "id": "P51",
+  "title": "ST-2 late mortar fallback for gun-only bots after 45 s",
+  "family": "loadout / late weapon pickup",
+  "flag": "LATE_MORTAR_ON",
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "source": "Mech Sim Tester death report /workspace/tester/proposals/20261121-2153-0e6fadd.md (ST-2), PR #154",
+  "champion": "P34 0e6fadd1a30db4ee30c26114b8198f63d782b7c9 (main 8c130ad)",
+  "change": "When still gun-only after LASER_RUSH_S with a free slot, allow a reachable in-zone ground mortar as the lowest-priority pickup, behind laser and lightning (brain.ts loot rule ~:496 and the Build 80 late trip ~:684-700; held-mortar fire code ~:1098 already exists).",
+  "why": "Gun-only is 141/384 games (36.7%) at slice score 1.82, the weakest loadout; the champion's top loss is no laser at the end.",
+  "risks": "Holding a mortar takes +60% laser damage (cook-off); laser beats mortar; slow shells may do worse on the site than in the sim.",
+  "step_a": "Log only, trees-on on P34: count gun-only-after-45 s games with a reachable in-zone mortar seen and no enemy within 160 m, on 2000+3000 and 4000+5000. Fewer than 10/192 on either set: retire, no build.",
+  "novelty": "No prior site test picks up a mortar (EXPERIMENTS.md has no mortar entries).",
+  "assigned_et": "2026-11-21 10:30 PM ET (coordinator, free Builder session)",
+  "pr": null,
+  "sha": null,
+  "decision": null
+}

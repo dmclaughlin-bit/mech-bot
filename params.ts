@@ -158,18 +158,6 @@ export const MIDRING_MIN_R = 70
 export const MIDRING_STUCK_S = 3
 
 /**
- * P41 (sound-cued look): with EARS_ALIVE or fewer mechs alive, from t = 10 s, with no target (no enemy and no farm mark),
- * not hit in the last 2 s, no laser charge in progress, no drop run/hold and no drop near AND reachable within DROP_RUN_M
- * (the drop run's own candidate filter): turn the torso (yaw only, pitch 0) to the bearing of the newest mech-made sound
- * (step/boost/jet/gun/laser/laser_charge/lightning/reload/mortar) heard in the last EARS_AGE_S s when it is more than
- * EARS_MIN_DEG off the champion's aim. Legs, path, fire rules and target pick are unchanged. false = champion exactly.
- */
-export const EARS_LOOK_ON = true
-export const EARS_ALIVE = 12
-export const EARS_AGE_S = 2
-export const EARS_MIN_DEG = 30
-
-/**
  * P34 (lethal release, PR #145 build 1): while charging the laser at the locked enemy mech with the torso lined up
  * (the existing `lined` test, no re-aim), let go as soon as the charge already in is lethal instead of waiting for a
  * full charge. Damage at the current charge follows protocol §7: damage × (min_frac + (1 − min_frac) × charge / full),
@@ -197,3 +185,16 @@ export const LETHAL_RELEASE_MIN_T = 40
 export const TREE_RETREAT_ON = true
 export const TREE_RETREAT_MIN_T = 40
 export const TREE_RETREAT_STUCK_S = 3
+
+/**
+ * P60 (back-away far cover): in the champion's back-away retreat (mode "retreat": hurt, hit in the last 2 s, no building
+ * hide spot and no P48 tree spot within a 1-3 s walk), from t = TREE_RETREAT_MIN_T (40 s), never in a drop run/hold or
+ * while a drop is near AND reachable within DROP_RUN_M, when an enemy in view sees us and trees + buildings don't already
+ * hide us from it: walk (same boost rule) to the nearest in-zone spot BACKAWAY_FAR_STEPS_S of straight walk away, no
+ * closer to any of those enemies, that trees + buildings hide from all of them (those that hit us in the last 2 s, or
+ * every seer if none did), instead of backing straight away. Latched
+ * like P48's tree run (no progress for TREE_RETREAT_STUCK_S: skip list). Legs only; torso and aim unchanged (N8).
+ * false = champion behavior exactly.
+ */
+export const BACKAWAY_FAR_COVER_ON = true
+export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]

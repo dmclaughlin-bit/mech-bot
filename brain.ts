@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, EARS_AGE_S, EARS_ALIVE, EARS_LOOK_ON, EARS_MIN_DEG, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  BACKAWAY_FAR_COVER_ON, BACKAWAY_FAR_STEPS_S, DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
@@ -149,8 +149,6 @@ const LIGHT_AMBUSH_ON = true
 const AMBUSH_MAX_M = 90
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
-/** P41 (EARS_LOOK_ON): sound kinds only a mech makes (not npc_gun, crate, explosion, death or drop). */
-const EARS_KINDS = new Set(["step", "boost", "jet", "gun", "laser", "laser_charge", "lightning", "reload", "mortar"])
 /** P-B-001 (standoff break, see STANDOFF_BREAK_S): the lone enemy's distance window (m), no other enemy seen for this
  * long (s), and our HP at least this far above params.retreatHp (fraction of max). */
 const STANDOFF_MIN_M = 45
@@ -274,8 +272,6 @@ function buildBot(hello: Hello): Bot {
   const maxPitch = cfg.mech.max_pitch ?? 1.3
   const known = new Map<number, Known>()
   let lastHit: { bearing: number; t: number } | null = null
-  /** P41 (EARS_LOOK_ON): the newest mech-made sound heard (bearing, when it was made). */
-  let lastSound: { bearing: number; at: number } | null = null
   /** attacker id → last time it damaged us */
   const hitBy = new Map<number, number>()
   const nav = createNav(hello)
@@ -300,6 +296,9 @@ function buildBot(hello: Hello): Bot {
   /** P48: the tree spot we are retreating to (with its best distance so far, for the no-progress give-up) and spots we gave up on. */
   let treeRun: { spot: Vec3; key: string; best: number; bestAt: number; used: number } | null = null
   const treeSkip = new Set<string>()
+  /** P60: the far cover spot the back-away retreat walks to (same shape as treeRun) and far spots we gave up on. */
+  let farRun: { spot: Vec3; key: string; best: number; bestAt: number; used: number } | null = null
+  const farSkip = new Set<string>()
   /** Build 14 (engage): each weapon's DPS and reach from hello.config, read once here. */
   const baseDps = {} as Record<WeaponKind, number>
   const baseReach = {} as Record<WeaponKind, number>
@@ -469,15 +468,16 @@ function buildBot(hello: Hello): Bot {
    */
   function treeSpot(
     me: Observation["self"], height: number, walk: number, seers: { pos: Vec3; cubes?: number }[], keepIn: [number[], number], timeOk: () => boolean,
+    steps: number[] = HIDE_STEPS_S, skip: Set<string> = treeSkip,
   ): Vec3 | null {
     const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
-    for (const s of HIDE_STEPS_S) {
+    for (const s of steps) {
       for (let b = 0; b < HIDE_BEARINGS; b++) {
         if (!timeOk()) return null
         const yaw = (2 * Math.PI * b) / HIDE_BEARINGS
         const x = me.pos[0] + Math.cos(yaw) * walk * s, y = me.pos[1] + Math.sin(yaw) * walk * s
         if (Math.hypot(x - keepIn[0][0], y - keepIn[0][1]) > keepIn[1]) continue
-        if (treeSkip.has(treeKey(x, y))) continue
+        if (skip.has(treeKey(x, y))) continue
         const g = solids?.ground ? groundAt(solids, x, y) : me.pos[2]
         if (g === -Infinity) continue
         const p: Vec3 = [x, y, g]
@@ -516,11 +516,6 @@ function buildBot(hello: Hello): Bot {
       if (e.type === "damaged") lastDamaged = obs.t
     }
     for (const [id, k] of known) if (obs.t - k.lastSeen > 30) known.delete(id)
-    if (EARS_LOOK_ON) for (const s of obs.sounds ?? []) {
-      if (!EARS_KINDS.has(s.kind)) continue
-      const at = obs.t - (s.age ?? 0)
-      if (!lastSound || at >= lastSound.at) lastSound = { bearing: s.bearing, at }
-    }
   }
 
   return {
@@ -797,13 +792,12 @@ function buildBot(hello: Hello): Bot {
       // P48 (TREE_RETREAT_ON): the tree spot for the no-cover retreat, or null (champion back-away). Called only from that
       // branch. Off before TREE_RETREAT_MIN_T (40 s), while a drop run/hold is on, and while a drop is near AND reachable (the
       // drop run's own candidate filter above, without its state gates); off when trees already hide us from every seer.
+      const dropSafe = (p: number[], stay: number) =>
+        flat(p, z.center) < Math.max(0, z.radius - margin) &&
+        (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / (ZONE_WALK * walkSpeed) + ZONE_BUFFER + stay < timeLeft
+      const dropReach = () => DROP_RUN_M > 0 && (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
+        flat(x.pos, me.pos) <= DROP_RUN_M && dropSafe(x.pos, x.lands_in + x.capture_s - x.progress))
       const treeRetreat = (): Vec3 | null => {
-        const pace = ZONE_WALK * walkSpeed
-        const dropSafe = (p: number[], stay: number) =>
-          flat(p, z.center) < Math.max(0, z.radius - margin) &&
-          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
-        const dropReach = () => DROP_RUN_M > 0 && (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
-          flat(x.pos, me.pos) <= DROP_RUN_M && dropSafe(x.pos, x.lands_in + x.capture_s - x.progress))
         if (!TREE_RETREAT_ON || !trees || obs.t < TREE_RETREAT_MIN_T || dropMove || dropHold || dropReach()) return (treeRun = null)
         const seers = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
         if (!seers.length || seers.every((e) => treeHidden(me.pos, myHeight, e))) return (treeRun = null)
@@ -820,6 +814,33 @@ function buildBot(hello: Hello): Bot {
         }
         const p = treeSpot(me, myHeight, walkSpeed, seers, zoneKeep, canPlan)
         if (p) treeRun = { spot: p, key: treeKey(p[0], p[1]), best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
+        return p
+      }
+      // P60 (BACKAWAY_FAR_COVER_ON): the far cover spot for the back-away retreat, or null (champion back-away). Called only
+      // from that branch; the same gates as treeRetreat (40 s, no drop run/hold, no near-and-reachable drop, a seer in view
+      // that trees don't already hide us from; hidden from the seers that hit us, else all seers), searched
+      // BACKAWAY_FAR_STEPS_S out, latched with the same give-up.
+      const farRetreat = (): Vec3 | null => {
+        if (!BACKAWAY_FAR_COVER_ON || !trees || obs.t < TREE_RETREAT_MIN_T || dropMove || dropHold || dropReach()) return (farRun = null)
+        const seen = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        // Fix round: hide from the seers that hit us in the last THREAT_HIT_S (all seers if none did): a spot hidden from
+        // every one of 2-8 seers rarely exists (P60 Step A: "no far spot" in 37 of 79 target deaths).
+        const shooters = seen.filter((e) => obs.t - (mechHitBy.get(e.id) ?? -Infinity) < THREAT_HIT_S)
+        const seers = shooters.length ? shooters : seen
+        if (!seers.length || seers.every((e) => treeHidden(me.pos, myHeight, e))) return (farRun = null)
+        if (farRun && obs.t - farRun.used > 0.5) farRun = null
+        if (farRun) {
+          const run = farRun
+          const d = flat(me.pos, run.spot)
+          if (d < run.best - 0.5) { run.best = d; run.bestAt = obs.t }
+          const stuck = obs.t - run.bestAt > TREE_RETREAT_STUCK_S || d < 1.5
+          const still = !stuck && flat(run.spot, zoneKeep[0]) <= zoneKeep[1] && seers.every((e) => treeHidden(run.spot, myHeight, e))
+          if (still) { run.used = obs.t; return run.spot }
+          if (stuck) farSkip.add(run.key)
+          farRun = null
+        }
+        const p = treeSpot(me, myHeight, walkSpeed, seers, zoneKeep, canPlan, BACKAWAY_FAR_STEPS_S, farSkip)
+        if (p) farRun = { spot: p, key: treeKey(p[0], p[1]), best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
         return p
       }
       let spot: Vec3 | null = null
@@ -861,6 +882,12 @@ function buildBot(hello: Hello): Bot {
         move = heading(spot)
         boost = me.energy > 0.3 * me.max_energy
         mode = "retreat, trees"
+      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && (spot = farRetreat())) {
+        // P60 (BACKAWAY_FAR_COVER_ON): no building or tree spot within 1-3 s, but one 4-6 s out hides us from every
+        // enemy that sees us: walk there instead of backing straight away, torso still on the attacker (legs only, N8).
+        move = heading(spot)
+        boost = me.energy > 0.3 * me.max_energy
+        mode = "retreat, far cover"
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp) {
         // Retreat (F2, F3) with no cover in reach, or hit by someone we can't see: back away from the attacker with the torso still on it.
         // Lean toward the center near the circle's edge; boost only above 30% energy.
@@ -995,18 +1022,6 @@ function buildBot(hello: Hello): Bot {
         route = null
       }
       let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
-      // P41 (EARS_LOOK_ON): the rest of the sound-cued look's trigger (called only with no target and no recent hit).
-      // Off with a drop run/hold or a drop near AND reachable within DROP_RUN_M (the drop run's own candidate filter).
-      const earsLook = (yaw: number): boolean => {
-        if (obs.t < 10 || obs.alive > EARS_ALIVE || beamCharge > 0 || dropMove || dropHold) return false
-        if (!lastSound || obs.t - lastSound.at > EARS_AGE_S || Math.abs(wrap(lastSound.bearing - yaw)) <= (EARS_MIN_DEG * Math.PI) / 180) return false
-        const pace = ZONE_WALK * walkSpeed
-        const safe = (p: number[], stay: number) =>
-          flat(p, z.center) < Math.max(0, z.radius - margin) &&
-          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
-        return !(DROP_RUN_M > 0 && (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
-          flat(x.pos, me.pos) <= DROP_RUN_M && safe(x.pos, x.lands_in + x.capture_s - x.progress)))
-      }
 
       // Target: the nearest enemy mech with a clear shot, else the nearest one we know is there (Build 16 re-picks below).
       const slotOf = (kind: WeaponKind) => me.weapons.findIndex((w) => w?.kind === kind)
@@ -1209,10 +1224,6 @@ function buildBot(hello: Hello): Bot {
           fire[beamSlot] = !(other?.on && beamFull !== null)
         }
         if (lastHit && obs.t - lastHit.t < 2) aim = [lastHit.bearing, 0]
-        else if (EARS_LOOK_ON && earsLook(aim[0])) {
-          aim = [lastSound!.bearing, 0]
-          label += " (ears)"
-        }
         const g = me.weapons.find((x) => x?.kind === "gun")
         if (g && (g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0) act.reload = true
       }

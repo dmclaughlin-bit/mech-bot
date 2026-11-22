@@ -19,6 +19,11 @@ Rules:
 - F6 Upgrade DPS tier (P43b): site 4.35, a loss. Treat it as a negative finding: don't build on it.
 - F7 Rooftop jet route (P40d, P40b): site 4.35 and 4.29, losses. Negative finding: don't build on it.
 
+## Diego's Mac station adds (hazard sim f67a491, vs Mac P48 baseline; sim signals)
+- F4 (Mac cross-check, P49 38aa957): held-out 4000+5000 kills 748→768 and survivors 3→6 (best held-out yet); died<40 flat 48/38. The veto came from 2000+3000 drop rings 8→7 and a new pause20 game in 3066 (heal-hold, t=61–86 s). This supports P49b's heal cap.
+- F5 (Mac cross-check, P41 c21d23b): Mac PASS. 2000+3000 kills 673→683, died<40 48→47, pause20 2→1, none new; held-out flat (748→747). 0 turns over 50 ms. The only cost is one end-game survivor (2052, 1st→7th).
+- F11 Retreat is where P48 dies (P-D-024, #152): 60% of deaths vs 15×P48 and 67% vs house; a tree blocked a sightline in 42–49% of deaths. Feeds the P-D-024 proposals: RETREAT_FACE_ON builds_on F3+F11 (keep firing at a single laser seer while retreating); EARLY_RETREAT_HIDE_ON builds_on F3+F10+F11 (under 40 s, retreat to tree/building cover instead of straight back).
+
 ## Signals from real matches (Mech Watcher ladder, correlation only)
 - F8 Early farming (medium confidence): winners alive at 60 s had 4.2 cubes vs 2.2 and 1.9 upgrades vs 1.2. Feeds P52.
 - F9 Saving boost at low HP: winners boost below 35% HP 19% of the time vs 37%. Feeds P53.

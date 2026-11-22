@@ -195,6 +195,6 @@ export const TREE_RETREAT_STUCK_S = 3
  * drop run/hold is possible (the P34 dropOpen test). No-progress guard: at most TREE_ROTATE_MAX_S of rotating in a row,
  * then TREE_ROTATE_MAX_S on the champion's route. false = champion exactly.
  */
-export const TREE_ROTATE_ON = false
+export const TREE_ROTATE_ON = true
 export const TREE_ROTATE_FROM_S = 10
 export const TREE_ROTATE_MAX_S = 3

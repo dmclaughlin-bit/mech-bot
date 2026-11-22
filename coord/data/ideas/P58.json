@@ -1,0 +1,38 @@
+{
+  "id": "P58",
+  "title": "SETTLE_FARM_COMMIT: once midring settle or farm pickup is chosen, hold it for a minimum time so the bot stops flip-flopping between them",
+  "family": "movement / zone positioning (Lane A)",
+  "flag": "SETTLE_FARM_COMMIT_ON",
+  "flags": ["SETTLE_FARM_COMMIT_ON"],
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "base": "9646f43",
+  "champion": "P48 b9492c6f122c549c705b69402157f078b4a57857 / merge edb729fc790c0bd583204fa2a0c6492cc8277ca8 (TREE_RETREAT_ON=true, site 4.44)",
+  "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
+  "branch": "p58-settle-farm-commit",
+  "builds_on": [
+    "F1",
+    "NEW: P41b Step 1, P48 settle/farm oscillation 91 switches on 2021 120-144 s"
+  ],
+  "evidence": "origin/p41b-sound-look-no-stall coord/data/ideas/P41b.json step1.table[0]: on seed 2021 the champion itself alternates 'midring settle' (move ~S) <-> 'farm, pickup' (move ~NW) at t 121-154 (52 heading flips, 10 s displacement 3.08 m, just over the 3 m pause threshold); P41 hit the same flip-flop 33 m away with 91 mode switches in 24 s (a counted 24 s pause, 12th death 171 s vs 11th 212 s).",
+  "hypothesis": "P48 sometimes dithers between the F1 midring settle walk and a farm pickup walk, toggling goals every few ticks and covering ~3 m per 10 s. Committing to whichever of the two was chosen for a minimum hold time (or until the farm item is taken or gone) turns that dead time into progress toward one goal, cutting stuck seconds and 20 s+ pause games without touching combat, retreat, zone safety or drops.",
+  "mechanism": "One latch, SETTLE_FARM_COMMIT_ON (default false), hold time SETTLE_FARM_COMMIT_S in params.ts. When the movement goal switches between 'midring settle' and 'farm, pickup', the newly chosen one is latched; while the latch is younger than the hold time, a switch to the other goal is refused and the latched goal keeps driving the move. The latch drops at once when the farm item is taken/gone (not in obs any more, given up, or failing zone safety), the settle walk ends (arrived, stuck give-up, phase change), or any higher-priority mode (engage, retreat, zone escape/next circle, drop run/hold, heal, loot, laser rush, crossfire, farm capture) takes the tick. Nothing else changes.",
+  "activation": "Only while the champion would pick 'midring settle' or 'farm, pickup' and the other one was the goal less than SETTLE_FARM_COMMIT_S ago. Never in the opening (settle needs a shrunk zone; farm switches only matter after the first settle), never during drop run/hold or when a drop is near and reachable within DROP_RUN_M (settle already yields via dropNear; the latch is cleared on any drop run/hold tick).",
+  "positives": null,
+  "negatives": null,
+  "confidence": "Uncertain (one seed, 2021, seen on both P48 and P41; frequency unknown until Step A)",
+  "reuse": "If Step A shows the pattern is common, the same latch idea applies to other goal pairs that can toggle (farm hunt vs hold, hide vs settle).",
+  "disproof": "If Step A shows the switch pattern (>20 settle<->farm switches within 30 s) in < 10/192 games on either set, or practice shows neither fewer >=20 s pause games nor fewer stuck seconds, or deaths <40 s up on either base, or the mean lower on both bases, stop with outcome C/D and no PR.",
+  "success": "Step A >= 10/192 on both sets; on practice bases 0 and 6000: fewer >=20 s pause games or fewer stuck seconds (summed), deaths < 40 s not higher on either base, mean not lower on both bases, no new >=20 s pin with the flag active.",
+  "step_a": null,
+  "step_a_result": null,
+  "screens": [],
+  "pr": null,
+  "sha": null,
+  "outcome": "pending",
+  "timestamps": { "recorded": "2026-11-22 ET (Mech Builder, brief 1:28 AM ET)" },
+  "sources": [
+    "coord/data/findings.md (F1)",
+    "origin/p41b-sound-look-no-stall:coord/data/ideas/P41b.json (step1.table[0])"
+  ]
+}

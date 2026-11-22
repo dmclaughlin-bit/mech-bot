@@ -143,3 +143,9 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 - P49b #177 0c6b134 on the site as BB-7C26BD16 (submitted 1:09 AM ET), queued; PENDING row added. Near-miss data test: Sim Tester VETO 1 (stall c), Mac PASS; own checks pass (check.py max 4.7 ms, archive 3.55 MB).
 - SITE BANNER CHANGED: "Mech Royale is being rescored on 96 fresh random seeds!" Older receipts now show "Scored under a previous version". Parked for Doug: whether the champion/standing changes after the rescore (watch the site for new scores; the champion only changes by a strictly higher site score).
 - Counter at 1:18: 1 of 6 left, next frees 1:20 AM EST.
+
+## Loop 1:29 AM ET Sun
+- P49b BB-7C26BD16 still queued on site (#40 of 80, site queue ~9 min). No builders-4 score for P48 yet; all our rows show "Scored under a previous version". Banner unchanged (rescore on 96 fresh seeds). Counter 2 of 6 left, next frees 1:34 AM EST.
+- P53b #178 52c2862 READY (neutral, Mac screen no veto); held only by the pending P49b score.
+- ChatGPT issue #179 reviewed: APPROVE_WITH_STIPULATIONS, audit result NO-GO / no change; closed.
+- Parked for Doug (once): re-testing builders-3 near-losers P43b, P40d, P47 under builders-4 would resubmit tested code.

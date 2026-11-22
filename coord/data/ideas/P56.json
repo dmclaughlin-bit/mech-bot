@@ -1,0 +1,58 @@
+{
+  "id": "P56",
+  "title": "HELD_CHARGE_EARLY_RELEASE",
+  "family": "weapons / laser timing",
+  "flags": [
+    "HELD_CHARGE_EARLY_RELEASE_ON"
+  ],
+  "flag": "HELD_CHARGE_EARLY_RELEASE_ON",
+  "behaviors": [
+    "while a laser charge is in progress (charge > 0, not yet full, P34 not releasing), lined up on the locked enemy mech, if that target is predicted (from its velocity and ours) to leave laser range or lose a clear line (buildings/terrain, the champion's clearLine solids) within the next short horizon (1-2 decisions), let go now instead of losing the shot"
+  ],
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "base": "ac3e5e71dad2a518ad6e0c24e36a2dfa5bbdb3f2",
+  "champion": "b9492c6/edb729f",
+  "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_merge": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
+  "branch": "p56-held-charge-early-release",
+  "pr": null,
+  "sha": null,
+  "builds_on": [
+    "F2"
+  ],
+  "builds_on_evidence": {
+    "F2": "Lethal laser release (P34) is a site-proven win: site 4.38 (BB-ABEB42BF), +0.03 over P29; in the champion. Releasing a partial laser charge at the right moment converts into kills.",
+    "P55": "P55 Step A on P48 (origin/p55-zone-trip-laser-commit, coord/data/ideas/P55.json) found 0/192 on both sets: the champion already starts every ready charge when a clear enemy is in laser range. Any remaining laser loss is in charges that are started but never land (target leaves line or range before release). P55's record names early release of an already-held charge as the unmeasured alternative."
+  },
+  "novelty": "P34 (F2) releases early only when the partial charge is already lethal on the lined-up locked mech; it never releases a non-lethal partial charge. Build 17 (LASER_RUSH_ON rescue) acts only AFTER the target is lost (re-aims the charge onto another enemy, drone or crate, or holds it). No existing code releases a partial charge because the target is ABOUT to break the line or leave range; today the champion keeps charging to full and the shot is lost or re-aimed. P56 adds that predictive release only; it never releases when P34 or the full-charge release already would, and it changes no targeting, aim or movement.",
+  "hypothesis": "Some champion charges are lined up on the target while charging, then the target moves behind a building or out of laser range before the charge is full, so the shot is lost (re-aimed at something worse, auto-fired at nothing, or wasted on cover). Releasing early when the break is predicted within ~0.2 s lands a partial hit (35-100% of 315 damage) instead of nothing, adding laser hits and kills.",
+  "mechanism": "HELD_CHARGE_EARLY_RELEASE_ON (default false, params.ts; horizon and min-charge constants in params.ts). In act(), in the champion's charging branch (charge > 0), after the champion computes full / lined / other / lethal: if the flag is on, !full, !lethal, lined, !other, !farmShot, target is a mech, t >= the P34 min time and the drop gate (P34's dropOpen) is closed, predict muzzle and target positions h seconds ahead from both velocities; if the predicted distance exceeds laser range or clearLine(solids, predicted muzzle, predicted target centre) fails, set fire[laser] = false (let go now). No other change.",
+  "activation": null,
+  "positives": null,
+  "negatives": null,
+  "confidence": "Uncertain",
+  "reuse": null,
+  "outcome": "pending",
+  "disproof": "if Step A < 10/192 on either set, or practice shows deaths <40 s rising or kills falling on either base, stop with outcome C/D and no PR",
+  "drop_gate": "Uses P34's read-only dropOpen gate (dropRun set, or a drop held by nobody/us within DROP_RUN_M: a drop near AND reachable within DROP_RUN_M), never 'any drop exists'. It only touches the laser trigger, never movement, so it cannot delay a drop run or ring hold.",
+  "step_a_result": null,
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "doug_waiver": false,
+  "source": "Coordinator brief 1:10 AM ET Sun Nov 22 (P56 HELD CHARGE EARLY RELEASE TASK).",
+  "timestamps": {
+    "created": "2026-11-22 01:13 ET",
+    "updated": "2026-11-22 01:13 ET"
+  },
+  "sources": [
+    "coord/data/findings.md (F2)",
+    "coord/data/ideas/P34.json",
+    "origin/p55-zone-trip-laser-commit coord/data/ideas/P55.json (read-only)",
+    "brain.ts charging branch at ac3e5e7 (champion P48 b9492c6 bot code)",
+    "/workspace/mechfight-kit/protocol.md:305 (laser: charge 0.75 s, min_charge 0.15 s, min_frac 35%, range 280 m, hold_s 2 s), :317 and :372 (trees block sight, not shots)"
+  ],
+  "decision": null,
+  "next_action": "Mech Builder: log-only Step A on P48 trees-on, bases 2000-5000"
+}

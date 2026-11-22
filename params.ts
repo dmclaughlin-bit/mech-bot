@@ -188,8 +188,9 @@ export const TREE_RETREAT_STUCK_S = 3
 
 /**
  * P54 (early spacing, finding F10: winners keep the nearest enemy at 145 m in the first 30 s, losers 117 m): from
- * t = 10 s (the opening is untouched) to EARLY_SPACING_T, where the champion would only hold or heal in place, and an
- * enemy mech in view or seen in the last 10 s is within EARLY_SPACING_M: walk (nav path, no boost) to the nearest of
+ * t = 10 s (the opening is untouched) to EARLY_SPACING_T, where the champion would only hold or heal in place, we are
+ * not hurt (Build 19 noSneak: HP at or above params.retreatHp, no damage for NO_SNEAK_QUIET_S), and an enemy mech in
+ * view or seen in the last 10 s is within EARLY_SPACING_M: walk (nav path, no boost) to the nearest of
  * the targets the champion already considers (a remembered laser / lightning it could rush, a zone-safe cube within
  * FARM_PICKUP_M, the next circle's entry point) that lies at least EARLY_SPACING_M from every such enemy and not
  * toward the nearest one. With none, the champion's choice. Engage, retreat, crossfire, ambush, the laser rush, zone

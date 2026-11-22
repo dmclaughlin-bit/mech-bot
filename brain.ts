@@ -992,8 +992,9 @@ function buildBot(hello: Hello): Bot {
         }
       }
       // P54 (EARLY_SPACING_ON, see params.ts): where we would only hold or heal in place early in the match with an enemy
-      // within EARLY_SPACING_M, walk to one of the champion's own targets that keeps that spacing.
-      if (EARLY_SPACING_ON && obs.t >= EARLY_SPACING_MIN_T && obs.t < EARLY_SPACING_T && (mode === "hold" || mode === "heal")) {
+      // within EARLY_SPACING_M, walk to one of the champion's own targets that keeps that spacing. Only while not hurt
+      // (Build 19 noSneak: HP at or above the retreat line, no damage for NO_SNEAK_QUIET_S), so healing under fire is unchanged.
+      if (EARLY_SPACING_ON && noSneak && obs.t >= EARLY_SPACING_MIN_T && obs.t < EARLY_SPACING_T && (mode === "hold" || mode === "heal")) {
         const goal = earlySpacing()
         if (goal) {
           move = travel(me.pos, goal, obs.t, canPlan()).move

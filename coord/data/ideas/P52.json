@@ -10,7 +10,7 @@
   "distinct_from": "B12/B13 (farm gate, no enemy in view), B21 (upgrade order), P23b (late idle farm)",
   "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
   "main": "edb729f",
-  "stage": "building (branch pushed, no PR yet)",
+  "stage": "retired (site-proven loss 4.23 vs 4.44, N3; Coordinator 1:10 AM ET Nov 22)",
   "created_et": "2026-11-22 12:05 AM ET",
   "branch": "p52-early-farm",
   "head_sha": "911a6629edb6e646e6a7d94c62568f22048f5d38",
@@ -21,7 +21,7 @@
     "title": "Early farm with drop safety: P52 early farm (EARLY_FARM_ON) where an active drop run (drop near AND reachable within DROP_RUN_M) always takes priority, and early farm never picks a cube that would put us beyond the drop-run margin from an active drop",
     "flag": "EARLY_FARM_ON",
     "owner": "Mech Builder",
-    "stage": "hold",
+    "stage": "retired (outcome C: tick-identical to P52; Coordinator 1:10 AM ET Nov 22)",
     "branch": "p52b-early-farm-drop-safe",
     "base": "c2b3e1d (contains 4179419 and champion merge edb729f)",
     "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
@@ -73,6 +73,7 @@
     "next_action": "Coordinator: retire, or reassign a different N3 fix. N3's drop loss must come from where early farm leaves us at 60-70 s (position/cubes vs the drop at next_center), not from farming during a drop; a real fix would need a gate on the predicted drop area (next_center) before t=70 s, which is a different behavior.",
     "timestamps": {
       "updated": "2026-11-22 01:05 AM ET"
-    }
+    },
+    "untested_note": "UNTESTED: N3's drop-ring loss may come from where early farm leaves us at 60-70 s relative to the next zone centre (where the 70 s drop is called), not from farming during a drop (no drop exists before 70 s). A placement fix was not built: practice bases 0/6000 show flat drops for P52 as-is, so the sim there cannot show whether it works. No P52c for now."
   }
 }

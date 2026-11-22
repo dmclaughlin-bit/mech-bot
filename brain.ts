@@ -153,7 +153,8 @@ const LASER_REAIM_S = 0.8
  * fade (backward component) instead of walking in. Not for a lightning holder (that walk brings the arc into range),
  * never before FADE_MIN_T, never while any supply drop is called or on the ground, and the step must stay inside the
  * circle we keep to with a clear line. Shot lost or out of range: the normal finish walk resumes on the same tick. No
- * progress (under FADE_STUCK_M in FADE_STUCK_S): that target goes on a skip list and gets the normal walk. false = champion. */
+ * progress (under FADE_STUCK_M in FADE_STUCK_S): that target goes on a skip list and gets the normal walk. Only while no
+ * other enemy has been seen for FADE_SECOND_S. false = champion. */
 const FIGHT_FADE_ON = false
 const FADE_MIN_T = 10
 /** P32: backward weight against a sideways weight of 1 (normalized), how far ahead (m) the step is checked, and the give-up. */
@@ -163,6 +164,9 @@ const FADE_STUCK_S = 3
 const FADE_STUCK_M = 2
 /** P32: a fade that has not stepped for this long (s) starts a fresh progress clock. */
 const FADE_GAP_S = 0.5
+/** P32 fix: fade only in a lone duel: no enemy other than the target seen for this long (s). The first hazard run's
+ * new early deaths followed fades a few seconds after a second enemy was in view (seeds 36 and 83, base 0). */
+const FADE_SECOND_S = 5
 /** P-B-001 (standoff break, see STANDOFF_BREAK_S): the lone enemy's distance window (m), no other enemy seen for this
  * long (s), and our HP at least this far above params.retreatHp (fraction of max). */
 const STANDOFF_MIN_M = 45
@@ -470,7 +474,8 @@ function buildBot(hello: Hello): Bot {
     const e = engage.m
     const ds = span(muzzle, centerOf(e))
     const reaches = me.weapons.some((w) => !!w && ((w.kind === "gun" && ds <= w.stats.range) || (w.kind === "laser" && (w.cooldown ?? 0) <= 0 && ds <= w.stats.range)))
-    if (t < FADE_MIN_T || dropsLive || arcHeld || engage.why !== "finish" || !engage.clear || !reaches || fadeSkip.has(e.id)) {
+    const second = [...known.values()].some((k) => k.id !== e.id && t - k.lastSeen < FADE_SECOND_S)
+    if (t < FADE_MIN_T || dropsLive || arcHeld || second || engage.why !== "finish" || !engage.clear || !reaches || fadeSkip.has(e.id)) {
       fade = null
       return null
     }

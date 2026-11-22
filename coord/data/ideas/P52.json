@@ -21,9 +21,9 @@
     "title": "Early farm with drop safety: P52 early farm (EARLY_FARM_ON) where an active drop run (drop near AND reachable within DROP_RUN_M) always takes priority, and early farm never picks a cube that would put us beyond the drop-run margin from an active drop",
     "flag": "EARLY_FARM_ON",
     "owner": "Mech Builder",
-    "stage": "building",
+    "stage": "hold",
     "branch": "p52b-early-farm-drop-safe",
-    "base": "c2b3e1d",
+    "base": "c2b3e1d (contains 4179419 and champion merge edb729f)",
     "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
     "main": "edb729f",
     "builds_on": [
@@ -45,16 +45,34 @@
     "weakness_fixed_finding": "N3",
     "hypothesis": "P52's early-death gain (F11) can be kept without its drop-ring loss (N3, site 4.23 vs 4.44) if the early farm never pulls us away from a drop the drop run could take.",
     "mechanism": "Same early-farm trigger as P52 (10-60 s, no farm goal, all enemies in view or known in 10 s beyond 145 m, no mech hit for 3 s, nearest zone-safe cube within 120 m). Added inside EARLY_FARM_ON: no early farm while a drop run is on; with a drop near AND reachable within DROP_RUN_M (the drop run's own candidate filter), a cube is allowed only if it stays within DROP_RUN_M of that drop and (me->cube->drop)/walk_speed + 5 s < lands_in, so a landed reachable drop blocks early farm and the drop run always wins.",
-    "activation": null,
-    "positives": null,
-    "negatives": null,
+    "activation": {
+      "base0": {
+        "fired": 8,
+        "diff_behavior": 8,
+        "diff_score": 8,
+        "t_lt_10s": 0
+      },
+      "base6000": {
+        "fired": 9,
+        "diff_behavior": 9,
+        "diff_score": 8,
+        "t_lt_10s": 0
+      }
+    },
+    "positives": "Practice bases, trees-on, vs champion b9492c6: base 0 paired +0.208 +/- 0.107 (7 better / 1 worse), died<40 s 24->23, kills 293->313; base 6000 +0.188 +/- 0.090 (7/1), died<40 s 16->15, survivors 0->1, kills 358->374. Drop-ring arrivals equal (5->5, 1->1).",
+    "negatives": "The drop-safety gate is inert: drops are called at t=70/140/210 s (kit config drops.times) and the early-farm window ends at 60 s, so obs.drops is always empty while early farm can fire. P52b is tick-identical to P52 (74b6ee4) on all 192 practice games (pos, move, dropIn). It cannot fix N3. One new >=20 s pin: base 0 seed 3, t 137-172 s, flag not active in the window (fired 17.9-36.6 s), place 12 vs champion 16.",
     "confidence": "Uncertain",
     "reuse": "Drop-keep gate (stay within DROP_RUN_M and leave time before the drop run starts) can wrap any new movement goal.",
-    "outcome": null,
+    "outcome": "C (unsuccessful: the fix never binds; behavior equals P52, which scored 4.23 vs 4.44)",
     "disproof": "Drop-ring arrivals below the champion on either practice base (0, 6000), or deaths <40 s no better than the champion's (written before the build was measured).",
     "strength_kept": "Early-death gain from early farming (F11: died<40 s 48->45, 38->37 in P52's Mac sim).",
     "weakness_fixed": "N3: P52's drop-ring loss (8->3 on 2000+3000) was real on the site (4.23 vs 4.44).",
     "differs_from_P52": "Same trigger and cube choice, plus the drop-keep gate: P52 could walk to a cube that took us out of drop-run range or made us late; P52b refuses those cubes and never early-farms during a drop run or with a landed reachable drop.",
-    "success": "No drop-ring arrival loss vs the champion on EITHER practice base (0, 6000) while deaths <40 s stay below the champion's."
+    "success": "No drop-ring arrival loss vs the champion on EITHER practice base (0, 6000) while deaths <40 s stay below the champion's.",
+    "blocker": "Flag-on P52b would be the same build as P52 (site LOSS, N3); LEARNING_STANDARD bans re-testing the same mechanism under a new name. Flip commit not made.",
+    "next_action": "Coordinator: retire, or reassign a different N3 fix. N3's drop loss must come from where early farm leaves us at 60-70 s (position/cubes vs the drop at next_center), not from farming during a drop; a real fix would need a gate on the predicted drop area (next_center) before t=70 s, which is a different behavior.",
+    "timestamps": {
+      "updated": "2026-11-22 01:05 AM ET"
+    }
   }
 }

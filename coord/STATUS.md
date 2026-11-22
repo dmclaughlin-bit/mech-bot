@@ -175,3 +175,4 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 - Site tests last 60 min: 4 (P48 1:44, P53b 1:58, P41 2:13, P60 2:23). Cap reached until 2:44 AM ET.
 - Queue is stale: P61 and any new build must be rebuilt on P41 c21d23b and re-screened; Sim Tester needs a P41 trees-on baseline.
 - Learning: F17 (P41 won despite local -0.031) and N10 (96-game estimate missed the sign twice). Because we learned the 96-game estimate does not predict small site effects, we moved one-veto near misses up for site tests and kept the estimate advisory only.
+- 2:27 AM ET: coordinator merged P41 c21d23b to main as 503a53d (no-ff; only conflict was coord/data/ideas/P41.json, kept main version). New champion bar 3.84 builders-4 (BB-0AAB8ADB). All builds must now contain 503a53d (or c21d23b). Queue rebased: P61 rebuild on main; Sim Tester P41 baseline requested.

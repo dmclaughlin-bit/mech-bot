@@ -1,165 +1,165 @@
 {
- "experiment_id": "P41",
- "commit": "c21d23b0c487f2de3acf030f27118520dd0ff07a",
- "merge_commit": null,
- "branch": "PR #173 (EARS_LOOK_ON on P48)",
- "score": 3.84,
- "submission_id": "BB-0AAB8ADB",
- "target_score": 6.0,
- "updated_at": "2026-11-22T02:23:00-05:00",
- "history": [
-  {
-   "experiment_id": "EXP-0000",
-   "commit": "7a22fee",
-   "score": 1.15,
-   "at": null
+  "experiment_id": "P41",
+  "commit": "c21d23b0c487f2de3acf030f27118520dd0ff07a",
+  "merge_commit": "503a53d05a526da6f6507aec22cf9f88f02ad844",
+  "branch": "PR #173 (EARS_LOOK_ON on P48)",
+  "score": 3.84,
+  "submission_id": "BB-0AAB8ADB",
+  "target_score": 6.0,
+  "updated_at": "2026-11-22T02:23:00-05:00",
+  "history": [
+    {
+      "experiment_id": "EXP-0000",
+      "commit": "7a22fee",
+      "score": 1.15,
+      "at": null
+    },
+    {
+      "experiment_id": "EXP-0001",
+      "commit": "76aabfa",
+      "score": 1.67,
+      "at": "2026-11-20T19:50:00-05:00"
+    },
+    {
+      "experiment_id": "EXP-0002",
+      "commit": "4726cfc",
+      "score": 2.17,
+      "at": "2026-11-20T20:55:00-05:00"
+    },
+    {
+      "experiment_id": "EXP-0004",
+      "commit": "406ab9f",
+      "score": 2.23,
+      "at": "2026-11-20T21:27:00-05:00"
+    },
+    {
+      "experiment_id": "EXP-0006",
+      "commit": "100941f",
+      "score": 2.38,
+      "at": "2026-11-20T22:35:00-05:00"
+    },
+    {
+      "experiment_id": "EXP-0012",
+      "commit": "8f2c7c8",
+      "score": 2.44,
+      "at": "2026-11-20T23:48:00-05:00"
+    },
+    {
+      "experiment_id": "B13",
+      "commit": "c2e7f60",
+      "score": 2.54,
+      "at": "2026-11-21T00:16:00-05:00"
+    },
+    {
+      "experiment_id": "B14",
+      "commit": "0ed6ffc",
+      "score": 2.88,
+      "at": "2026-11-21T00:26:00-05:00"
+    },
+    {
+      "experiment_id": "B16",
+      "commit": "8887d80",
+      "score": 2.98,
+      "at": "2026-11-21T00:38:00-05:00"
+    },
+    {
+      "experiment_id": "B19",
+      "commit": "0905b70",
+      "score": 3.08,
+      "at": "2026-11-21T01:16:00-05:00"
+    },
+    {
+      "experiment_id": "B17",
+      "commit": "38ce57b",
+      "score": 3.5,
+      "at": "2026-11-21T01:23:00-05:00"
+    },
+    {
+      "experiment_id": "B30",
+      "commit": "7b71e43",
+      "score": 3.54,
+      "at": "2026-11-21T02:48:00-05:00"
+    },
+    {
+      "experiment_id": "B60",
+      "commit": "b889814",
+      "score": 3.67,
+      "at": "2026-11-21T04:17:00-05:00"
+    },
+    {
+      "experiment_id": "B80",
+      "commit": "28c3acc1a0f58571163e90b562da1c25067085c4",
+      "score": 3.79,
+      "at": "2026-11-21T11:35:00-05:00"
+    },
+    {
+      "experiment_id": "B103",
+      "commit": "ed2cbbd06051c92a23c40a2ef2317576175e9ea2",
+      "score": 3.92,
+      "at": "2026-11-21T12:39:00-05:00"
+    },
+    {
+      "experiment_id": "P-B-001",
+      "commit": "ba521035278fb260f5685551366ee42bd1cb59f8",
+      "score": 4.06,
+      "at": "2026-11-21T12:55:00-05:00"
+    },
+    {
+      "experiment_id": "P-D-003",
+      "commit": "4d6e71bf3e2aa823e0c8c24dbc0e155d03f36971",
+      "score": 4.1,
+      "at": "2026-11-21T13:57:00-05:00"
+    },
+    {
+      "experiment_id": "B113",
+      "commit": "6182d29c673d99f5186d742a5f019c0b007234f2",
+      "score": 4.17,
+      "at": "2026-11-21T14:43:56-05:00"
+    },
+    {
+      "experiment_id": "P29",
+      "commit": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
+      "score": 4.35,
+      "at": "2026-11-21T20:10:00-05:00"
+    },
+    {
+      "experiment_id": "P34",
+      "commit": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+      "score": 4.38,
+      "at": "2026-11-21T21:10:00-05:00"
+    },
+    {
+      "experiment_id": "P48",
+      "commit": "b9492c6f122c549c705b69402157f078b4a57857",
+      "score": 4.44,
+      "at": "2026-11-21T22:29:00-05:00",
+      "scorer_version": "builders-3",
+      "submission_id": "BB-94897D91",
+      "note": "builders-3 official win; kept as history only. Official gains are not compared to this score after the builders-4 cutover."
+    },
+    {
+      "experiment_id": "P48",
+      "commit": "b9492c6f122c549c705b69402157f078b4a57857",
+      "score": 3.75,
+      "at": "2026-11-22T01:55:00-05:00",
+      "scorer_version": "builders-4",
+      "submission_id": "BB-5727119F",
+      "note": "builders-4 bar until P41 scored 3.84"
+    }
+  ],
+  "scorer_version": "builders-4",
+  "scores_by_scorer": {
+    "builders-3": {
+      "score": 4.44,
+      "submission_id": "BB-94897D91",
+      "at": "2026-11-21T22:29:00-05:00"
+    },
+    "builders-4": {
+      "score": 3.84,
+      "submission_id": "BB-0AAB8ADB",
+      "at": "2026-11-22T02:23:00-05:00",
+      "site_status": "Entered in the final (your best score)"
+    }
   },
-  {
-   "experiment_id": "EXP-0001",
-   "commit": "76aabfa",
-   "score": 1.67,
-   "at": "2026-11-20T19:50:00-05:00"
-  },
-  {
-   "experiment_id": "EXP-0002",
-   "commit": "4726cfc",
-   "score": 2.17,
-   "at": "2026-11-20T20:55:00-05:00"
-  },
-  {
-   "experiment_id": "EXP-0004",
-   "commit": "406ab9f",
-   "score": 2.23,
-   "at": "2026-11-20T21:27:00-05:00"
-  },
-  {
-   "experiment_id": "EXP-0006",
-   "commit": "100941f",
-   "score": 2.38,
-   "at": "2026-11-20T22:35:00-05:00"
-  },
-  {
-   "experiment_id": "EXP-0012",
-   "commit": "8f2c7c8",
-   "score": 2.44,
-   "at": "2026-11-20T23:48:00-05:00"
-  },
-  {
-   "experiment_id": "B13",
-   "commit": "c2e7f60",
-   "score": 2.54,
-   "at": "2026-11-21T00:16:00-05:00"
-  },
-  {
-   "experiment_id": "B14",
-   "commit": "0ed6ffc",
-   "score": 2.88,
-   "at": "2026-11-21T00:26:00-05:00"
-  },
-  {
-   "experiment_id": "B16",
-   "commit": "8887d80",
-   "score": 2.98,
-   "at": "2026-11-21T00:38:00-05:00"
-  },
-  {
-   "experiment_id": "B19",
-   "commit": "0905b70",
-   "score": 3.08,
-   "at": "2026-11-21T01:16:00-05:00"
-  },
-  {
-   "experiment_id": "B17",
-   "commit": "38ce57b",
-   "score": 3.5,
-   "at": "2026-11-21T01:23:00-05:00"
-  },
-  {
-   "experiment_id": "B30",
-   "commit": "7b71e43",
-   "score": 3.54,
-   "at": "2026-11-21T02:48:00-05:00"
-  },
-  {
-   "experiment_id": "B60",
-   "commit": "b889814",
-   "score": 3.67,
-   "at": "2026-11-21T04:17:00-05:00"
-  },
-  {
-   "experiment_id": "B80",
-   "commit": "28c3acc1a0f58571163e90b562da1c25067085c4",
-   "score": 3.79,
-   "at": "2026-11-21T11:35:00-05:00"
-  },
-  {
-   "experiment_id": "B103",
-   "commit": "ed2cbbd06051c92a23c40a2ef2317576175e9ea2",
-   "score": 3.92,
-   "at": "2026-11-21T12:39:00-05:00"
-  },
-  {
-   "experiment_id": "P-B-001",
-   "commit": "ba521035278fb260f5685551366ee42bd1cb59f8",
-   "score": 4.06,
-   "at": "2026-11-21T12:55:00-05:00"
-  },
-  {
-   "experiment_id": "P-D-003",
-   "commit": "4d6e71bf3e2aa823e0c8c24dbc0e155d03f36971",
-   "score": 4.1,
-   "at": "2026-11-21T13:57:00-05:00"
-  },
-  {
-   "experiment_id": "B113",
-   "commit": "6182d29c673d99f5186d742a5f019c0b007234f2",
-   "score": 4.17,
-   "at": "2026-11-21T14:43:56-05:00"
-  },
-  {
-   "experiment_id": "P29",
-   "commit": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
-   "score": 4.35,
-   "at": "2026-11-21T20:10:00-05:00"
-  },
-  {
-   "experiment_id": "P34",
-   "commit": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
-   "score": 4.38,
-   "at": "2026-11-21T21:10:00-05:00"
-  },
-  {
-   "experiment_id": "P48",
-   "commit": "b9492c6f122c549c705b69402157f078b4a57857",
-   "score": 4.44,
-   "at": "2026-11-21T22:29:00-05:00",
-   "scorer_version": "builders-3",
-   "submission_id": "BB-94897D91",
-   "note": "builders-3 official win; kept as history only. Official gains are not compared to this score after the builders-4 cutover."
-  },
-  {
-   "experiment_id": "P48",
-   "commit": "b9492c6f122c549c705b69402157f078b4a57857",
-   "score": 3.75,
-   "at": "2026-11-22T01:55:00-05:00",
-   "scorer_version": "builders-4",
-   "submission_id": "BB-5727119F",
-   "note": "builders-4 bar until P41 scored 3.84"
-  }
- ],
- "scorer_version": "builders-4",
- "scores_by_scorer": {
-  "builders-3": {
-   "score": 4.44,
-   "submission_id": "BB-94897D91",
-   "at": "2026-11-21T22:29:00-05:00"
-  },
-  "builders-4": {
-   "score": 3.84,
-   "submission_id": "BB-0AAB8ADB",
-   "at": "2026-11-22T02:23:00-05:00",
-   "site_status": "Entered in the final (your best score)"
-  }
- },
- "merge_status": "NOT YET MERGED to main; PR #173 head c21d23b contains edb729f"
+  "merge_status": "Merged to main as 503a53d (bot code identical to c21d23b; check.py PASS max 3.4 ms; archive 3,778,560 bytes)"
 }

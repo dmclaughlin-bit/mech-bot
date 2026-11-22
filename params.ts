@@ -194,7 +194,7 @@ export const TREE_RETREAT_STUCK_S = 3
  * closer than EARLY_FARM_SPACE_M to a known enemy. Drops, the hunt and every mode above "farm, pickup" are unchanged.
  * false = champion exactly.
  */
-export const EARLY_FARM_ON = false
+export const EARLY_FARM_ON = true
 export const EARLY_FARM_FROM_S = 10
 export const EARLY_FARM_T = 60
 export const EARLY_FARM_SPACE_M = 145

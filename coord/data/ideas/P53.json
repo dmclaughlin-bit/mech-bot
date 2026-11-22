@@ -2,15 +2,19 @@
   "id": "P53",
   "title": "LOW_HP_BOOST_SAVE: below 35% HP, do not spend boost (except zone escape or finishing an active P48 tree-retreat move); save it for when HP recovers. Movement direction unchanged, only the boost flag is withheld.",
   "family": "movement / energy (boost discipline)",
-  "flags": ["LOW_HP_BOOST_SAVE_ON"],
+  "flags": [
+    "LOW_HP_BOOST_SAVE_ON"
+  ],
   "flag": "LOW_HP_BOOST_SAVE_ON",
-  "params": { "LOW_HP_BOOST_FRAC": 0.35 },
+  "params": {
+    "LOW_HP_BOOST_FRAC": 0.35
+  },
   "behaviors": [
     "when HP < LOW_HP_BOOST_FRAC (0.35) of max HP, t >= 10 s, and the drop gate is open (no drop near AND reachable within DROP_RUN_M, not on a drop run or ring hold): withhold the boost flag the champion would set on that tick, unless the move is a zone escape / leaving the zone or an active P48 tree-retreat move; direction unchanged"
   ],
   "owner": "Mech Builder",
-  "stage": "step_a",
-  "stage_detail": "step_a on P48 (log-only Step A, no behavior change)",
+  "stage": "building",
+  "stage_detail": "Step A passed (171/192, 164/192); building on P48",
   "pr": null,
   "sha": null,
   "branch": "p53-low-hp-boost-save",
@@ -25,16 +29,65 @@
     "kind": "correlation only",
     "finding": "winners boost while below 35% HP only 19% of the time vs 37% for the bottom half; d -0.72; 90/112 matches"
   },
-  "novelty_note": null,
-  "step_a_result": null,
+  "novelty_note": "P53 only withholds the boost flag below 35% HP and never changes a movement target. P48 TREE_RETREAT changes where the hurt retreat goes (a tree-hidden spot) and keeps boost above 30% energy; P53 leaves that move and its boost intact (exception). P49 TREE_HEAL changes where the standing heal goes (silent walk, never boosts), so it has no boost to save. Earlier boost rules all ADDED boost: P31 LATE_HURT_BOOST (retired) ground-boosted the hurt retreat leg late, the opposite of P53; P26/P26b HEALTHY_BOOST (hold/retired) boosted long zone/drop legs while healthy. The champion's own rules boost on zone escape, late zone legs, every retreat and the crossfire break above 30% energy, and jet to unstick; the silent cap (Build 19) only scales speed when not boosting. No champion rule or tested idea ever removes boost at low HP.",
+  "step_a_result": {
+    "verdict": "PASS",
+    "champion": "P48 b9492c6 (trees-on sim, /workspace/builder-sim copy, --trees --jobs 1, 96 seeds per base)",
+    "trigger": "HP < 35% of max, t >= 10, champion boost on that tick (after the silent cap, before the unstick jet), mode not zone escape / to next circle / retreat, trees, no drop run/hold, no drop near AND reachable within DROP_RUN_M",
+    "passivity": "log-only copy: 0/384 games with any non-timing CSV difference vs /workspace/tester/runs/trees-b9492c6-{2000,3000,4000,5000}.csv",
+    "games_fired": {
+      "2000": 83,
+      "3000": 88,
+      "4000": 82,
+      "5000": 82
+    },
+    "sets": {
+      "2000+3000": "171/192",
+      "4000+5000": "164/192"
+    },
+    "games_hp_below_35_t_ge_10": {
+      "2000": 95,
+      "3000": 95,
+      "4000": 95,
+      "5000": 96
+    },
+    "trigger_ticks": {
+      "2000": 3203,
+      "3000": 3136,
+      "4000": 3232,
+      "5000": 2729
+    },
+    "trigger_ticks_by_mode": {
+      "retreat": 8889,
+      "retreat to cover": 2534,
+      "break crossfire": 877
+    },
+    "champion_boost_share_below_35_hp": {
+      "2000": "3760/11437 = 32.9%",
+      "3000": "3789/11526 = 32.9%",
+      "4000": "4060/13211 = 30.7%",
+      "5000": "3524/12059 = 29.2%",
+      "pooled": "15133/48233 = 31.4%"
+    },
+    "note": "Champion boosts on 31.4% of its below-35% HP ticks (ladder bottom half 37%, winners 19%). The trigger is almost entirely the back-away retreat (72%), the building-cover retreat (21%) and the crossfire break (7%).",
+    "sources": [
+      "/tmp/p53/logs/stepa-*.jsonl and /tmp/p53/runs/stepa-*.csv (not committed)"
+    ]
+  },
   "screens": [],
   "receipt": null,
   "site_score": null,
   "decision": null,
   "blocker": null,
-  "next_action": "Mech Builder runs log-only Step A (trees-on, bases 2000-5000) on P48 b9492c6",
+  "next_action": "Mech Builder builds behind LOW_HP_BOOST_SAVE_ON and runs the FASTER checklist (bases 0, 6000)",
   "doug_waiver": false,
   "source": "Coordinator brief 12:25 AM ET Sun Nov 22 (P53 LOW HP BOOST SAVE TASK)",
-  "timestamps": { "created": "2026-11-22 12:25 AM ET", "updated": "2026-11-22 12:25 AM ET" },
-  "sources": ["Coordinator brief 12:25 AM ET Sun Nov 22", "Mech Watcher ladder study (135 top-16 matches)"]
+  "timestamps": {
+    "created": "2026-11-22 12:25 AM ET",
+    "updated": "2026-11-22 12:30 AM ET"
+  },
+  "sources": [
+    "Coordinator brief 12:25 AM ET Sun Nov 22",
+    "Mech Watcher ladder study (135 top-16 matches)"
+  ]
 }

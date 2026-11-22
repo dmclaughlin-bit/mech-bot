@@ -10,7 +10,7 @@
     "with an enemy mech as target and not in an engage mode, send reload when the gun holds fewer than half a magazine, is not reloading, and for at least LULL_RELOAD_QUIET_S (2 s) we have not fired it, the target has had no clear line, and no visible enemy has line of sight to us; t >= 10 s; never while a drop run/ring hold is in progress or a claimable drop (holder none or us) is within DROP_RUN_M"
   ],
   "owner": "Mech Builder (P38c rebuild)",
-  "stage": "step_a",
+  "stage": "step-a-fail",
   "pr": null,
   "sha": null,
   "champion_sha_tested_against": "b9492c6",
@@ -52,8 +52,8 @@
   "receipt": null,
   "site_score": null,
   "score": null,
-  "blocker": null,
-  "next_action": "Mech Builder: P38c Step A (log-only trigger count on champion P48 b9492c6, trees on, bases 2000-5000); build only if >= 10/192 on both sets.",
+  "blocker": "Step A (Doug 10:06 PM ET rule): the trigger fires in only 9/192 games on 4000+5000 (< 10) on champion P48 b9492c6, trees on. 2000+3000: 14/192.",
+  "next_action": "Grok/Coordinator: P38c retired at Step A on P48 (9/192 on 4000+5000). Not built; no flag code on p38c-on-p48.",
   "doug_waiver": false,
   "single_decision": "Extend the champion's existing early reload (brain.ts:1071 reloads at < half a magazine when no enemy is known) to the 'enemy known but no line either way for 1 s' lull. Movement, aim and fire are unchanged.",
   "trigger": "target is an enemy mech (not a farm shot) AND mode does not start with 'engage' (P38b fix round) AND gun ammo < mag/2 AND gun reload == 0 AND no forced reload this tick AND this tick has no contact AND the last contact was >= LULL_RELOAD_QUIET_S (2 s) ago, where contact = our gun fires, our target has a clear line, or a visible enemy has seenAt(cone=false) LOS to us (also tracked in the no-target branch) AND obs.t >= 10 AND drop gate open: no drop run/ring hold in progress (dropRun === null) and no claimable drop (holder null or us) within DROP_RUN_M (champion P34's dropOpen test)",
@@ -74,14 +74,14 @@
     "showdown_first_fights": "PR #145 coord/research-doug-1941.md: first hit decides first fights (KILL/DIED 309/171 when ours vs 129/297); median first-fight duration 4.5-4.8 s, longer than one magazine, so a fight entered with ~3 rounds contains a 2.4 s reload.",
     "watcher": "No reload metric in coord/data/watcher (not measured)."
   },
-  "estimated_activation": "P38b (trees on, champion 588557e): early count 16/192 on 0+1000 before the fix; after the engage-mode fix 12/192 on 0+1000, 27/384 on 0/1000/6000/7000. 2000-5000 not run.",
+  "estimated_activation": "P38b (trees on, champion 588557e): early count 16/192 on 0+1000 before the fix; after the engage-mode fix 12/192 on 0+1000, 27/384 on 0/1000/6000/7000. 2000-5000 not run. P38c Step A on P48 b9492c6 (trees on, passive): 14/192 on 2000+3000, 9/192 on 4000+5000.",
   "closest_prior_test": "None on reload timing. Nearest fire-handling tests: B15 aim lead + fire discipline LOSS (2.65 vs 2.98) and B7 drop the 100 m gun gate LOSS (2.04 vs 2.38); both changed when we shoot, P34 changes only when an idle gun refills. Not in the B125 package list (TAC_SPACE_EARLY, TAC_FIRE_MOVE, TAC_DODGE, TAC_JET_LOOT, TAC_LASER_REACH, TAC_FINISH_AMMO).",
   "what_would_disprove": "Paired screen: decisions with a clear enemy target while reloading not lower in fired games, or first-3-s damage dealt after re-contact lower, or deaths in the 10 s after an activation higher than the champion; fired < 10/192. The 52% 'target back within 2.4 s' share is the main way this loses.",
   "risks": "Pins: none (no movement). Drops: no movement, and gated on obs.drops empty. Combat: a reload started just before the target reappears delays the first shot by up to 2.4 s (52% of starts in the champion log); the reload makes a 60 m sound (protocol.md sound list). Lightning/laser holders keep their other weapon, so the cost is smaller for them.",
   "source": "Research P34-37 (this run): champion reload rules brain.ts:1052/1071 + passive sim log; PR #145 first-fight table",
   "timestamps": {
     "created": "2026-11-21 19:55 ET",
-    "updated": "2026-11-22 00:10 ET",
+    "updated": "2026-11-22 00:25 ET",
     "p38b_started": "2026-11-22 ET (P38b rebuild)",
     "p38c_started": "2026-11-22 00:10 ET (P38c rebuild on P48)"
   },
@@ -122,10 +122,10 @@
     "extra": "lull reloads sent 7/6/10/8; clear target back during the reload 1/2/4/5; kills (plain) main 292/368/368/367 vs P38b 292/368/370/367"
   },
   "decision_p38b": "Doug 10:30 PM ET (via Coordinator): 'Count the seed 44 drop as not a real loss and send P38b to the screen.' Base-0 item 3 (5->3, seed 44 won sooner at 222.4 s vs main 287.9 s, same place/score) waived; flag-ON head sent to Sim Tester.",
-  "decision": null,
+  "decision": "Step A FAIL on P48: 9/192 on 4000+5000 (< 10). Not built (Doug 10:06 PM ET fires-often-enough rule).",
   "doug_ruling_2230": "Doug 10:30 PM ET (Sat Nov 21, via Coordinator): 'Count the seed 44 drop as not a real loss and send P38b to the screen.' The P38b base-0 item 3 dip (5->3, seed 44 won the match outright 65 s sooner, same place/score) was not a real loss. Kept for P38c.",
   "p38c": {
-    "stage": "step_a",
+    "stage": "step-a-fail",
     "owner": "Mech Builder",
     "order": "Doug 12:06 AM ET (Sun Nov 22): rebuild P38b LULL_RELOAD_ON on P48 main.",
     "base": "aee5017",
@@ -133,6 +133,19 @@
     "behavior": "exactly P38b's (/workspace/patches/p38b-bot.diff vs 588557e, including the engage-mode exclusion and the near-and-reachable drop gate), re-applied by hand on P48's brain.ts/params.ts behind LULL_RELOAD_ON (default false).",
     "compare_with": "P38b on P34 (builder bases): delta about 0, deaths < 40 s 77->76, 12/192 activations (0+1000), no new pins.",
     "checklist": "coord/BUILD_CHECKLIST.md aee5017 FASTER: trees on, Step A on 2000-5000, two practice bases 0 and 6000, drop totals reported (dip does not block), deaths < 40 s block, archive < 15,000,000 bytes.",
-    "step_a_result": null
+    "step_a_result": {
+      "verdict": "FAIL (< 10/192 on 4000+5000)",
+      "counts": "2000+3000: 14/192 (2000: 5/96, 3000: 9/96); 4000+5000: 9/192 (4000: 3/96, 5000: 6/96)",
+      "per_base": {
+        "2000": "5/96 games; 121 trigger ticks, 5 episodes; seeds 2012 2038 2042 2067 2072",
+        "3000": "9/96 games; 218 ticks, 12 episodes; seeds 3010 3023 3032 3034 3035 3046 3055 3067 3090",
+        "4000": "3/96 games; 133 ticks, 4 episodes; seeds 4021 4041 4056",
+        "5000": "6/96 games; 88 ticks, 7 episodes; seeds 5036 5053 5055 5056 5065 5072"
+      },
+      "t_lt_10s": "0 trigger ticks before t = 10 s on all four bases",
+      "definition": "A game counts when, on at least one decision, P38b's exact trigger is true and the champion is NOT already sending reload that decision (target branch: enemy-mech target, not a farm shot, not an engage mode, t >= 10 s, gun < half magazine and not reloading, >= 2 s since the last contact = gun fired / target clear line / a visible enemy has seenAt(cone=false) LOS to us (also tracked in the no-target branch), drop gate open: dropRun === null and no claimable drop (holder null or us) within DROP_RUN_M). Sending reload there starts a reload the champion does not, so every counted game changes what the bot does.",
+      "passivity": "Instrumented champion CSVs vs plain champion CSVs /workspace/tester/runs/trees-b9492c6-{2000,3000,4000,5000}.csv: 0/384 seeds differ in any non-timing column (only bot_ms_mean differs). 0 exceptions, max decision 9.7 ms.",
+      "method": "Copy of champion bot code (branch HEAD = b9492c6 bot files, git diff empty) in /tmp/p38c/champA with a log-only block after the forced reload (brain.ts target branch) pushing obs.t to a global; a /tmp wrapper writes per-seed JSON. Sim: copy of /workspace/builder-sim at /tmp/p38c/sim, `SEED_BASE=<b> bun tools/sim/run.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --trees`. Logs in /tmp (not committed)."
+    }
   }
 }

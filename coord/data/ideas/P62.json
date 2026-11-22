@@ -28,7 +28,7 @@
  "negatives": "Base 0: paired -0.052 +/- 0.043 (0 better, 2 worse; kills 298->293). Seed 24: 5 look ticks at t 42 s, game diverges at 45 s, place 4->8, death 77.5->59.6 s, kills 12->8. Seed 6: place 8->9. Base 6000 seed 6034: the look is active (19 ticks at t 90.1-92.4) at the start of the champion's own 20 s pin at t 90-110 (same pin in P60, not new), place 10->12. Seed 6084 place 5->7, death 184.9->129.5 s.",
  "confidence": "Uncertain",
  "reuse": "site-test",
- "outcome": "pending (site score decides; local gates PASS)",
+ "outcome": "D: site 3.82 builders-4 (BB-AD32CDFC) < bar 3.88 (P60). Official screen vs P60: means +0.036 / +0.057, stall vetoes b(2021) c(2021,5036). Retired.",
  "disproof": "Fails if the paired mean vs P60 is lower on BOTH practice bases (0 and 6000), or the site score is at or below 3.88.",
  "doug_waiver": false,
  "source": "Coordinator order 2:40 AM ET Sun Nov 22: re-test P41 EARS_LOOK as ONE change on the P60 champion (findings F18 hypothesis).",

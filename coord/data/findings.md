@@ -61,3 +61,6 @@ Rules:
 - Source: P60 #181 afb6f26, BB-6F449E11, 3.88 builders-4 vs P41 3.84 (+0.04) and vs P48 3.75 (+0.13, its own base). Confidence: low-medium (one site score on 96 seeds; +0.04 margin is small). Outcome A. Builds on F16.
 - Local evidence: Sim Tester PASS 0 vetoes; 96-game +0.000 +/- 0.086 (another N10 case: estimate neutral, site positive).
 - P60 lacks P41's sound-cued look. Hypothesis (untested): P41 and P60 change different decisions (look vs retreat walk), so P41's look rebuilt on P60 may add. Disproof: paired screen of the combined build vs P60 shows a lower mean on both sets or a site score at or below 3.88.
+
+## F19 (3:16 AM ET Sun, from P62 BB-AD32CDFC). Confidence: low (one site score)
+EARS_LOOK (P41's change) ported onto P60 as one change scored 3.82 under builders-4, below P60's 3.88 (-0.06). On P48 the same change scored 3.84 vs P48's 3.75 (+0.09). Sim Tester paired screen vs P60 was +0.036 (2000+3000) and +0.057 (4000+5000), with the same stall seeds (2021, 5036) as P41. Takeaways (hypotheses): the 96/192-game sim delta again failed to predict the site sign (see F17/F18); EARS_LOOK's site gain does not carry over to P60. The stall-veto seeds 2021/5036 recur with torso-look changes; they did not predict the site result either way. Outcome D for P62. Do not re-test EARS_LOOK on P60.

@@ -29,10 +29,10 @@ import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
-  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
+  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, UPGRADE_DPS_TIER_MIN_T, UPGRADE_DPS_TIER_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
-import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
+import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type UpgradeDef, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
 // ------------------------------------------------------------------ geometry helpers
 const flat = (a: number[], b: number[]) => Math.hypot(b[0] - a[0], b[1] - a[1])
@@ -213,6 +213,29 @@ function weaponDps(kind: WeaponKind, s: Record<string, number>): number {
 /** How far one weapon reaches (m). The mortar's is its flat-ground maximum, v²/g. */
 function weaponReach(kind: WeaponKind, s: Record<string, number>): number {
   return finite(kind === "mortar" ? (s.speed * s.speed) / s.gravity : s.range)
+}
+/** P43 (UPGRADE_DPS_TIER_ON): sustained-DPS gain of one upgrade for the weapon kinds we hold now (0 for gyros and
+ * for effects that do not change weaponDps). Stats are the weapon's current ones (already stacked upgrades). */
+function upgradeDpsGain(def: UpgradeDef | undefined, held: WeaponObs[], cfgWeapons: Record<string, Record<string, number>>): number {
+  if (!def) return 0
+  let gain = 0
+  const seen = new Set<WeaponKind>()
+  for (const w of held) {
+    if (seen.has(w.kind)) continue
+    seen.add(w.kind)
+    const before: Record<string, number> = { ...(cfgWeapons[w.kind] ?? {}), ...w.stats }
+    const after = { ...before }
+    let touched = false
+    for (const e of def.effects ?? []) {
+      const p = e.path.split(".")
+      if (p.length !== 3 || p[0] !== "weapons" || p[1] !== w.kind || !(p[2] in after)) continue
+      if (e.mul !== undefined) after[p[2]] *= e.mul
+      if (e.add !== undefined) after[p[2]] += e.add
+      touched = true
+    }
+    if (touched) gain += weaponDps(w.kind, after) - weaponDps(w.kind, before)
+  }
+  return Number.isFinite(gain) ? gain : 0
 }
 const hitRate = (kind: WeaponKind, d: number) =>
   kind === "gun" ? (d <= GUN_NEAR_M ? HIT_GUN_NEAR : HIT_GUN_FAR) : kind === "mortar" ? HIT_MORTAR : HIT_BEAM
@@ -764,6 +787,8 @@ function buildBot(hello: Hello): Bot {
       // P-D-003 (DROP_RUN_M): walk to a called supply drop, timed to arrive as it lands, then hold the ring.
       let dropMove: [number, number] | null = null
       let dropHold = false
+      /** P43 (UPGRADE_DPS_TIER_ON): a drop passes the drop run's own candidate filter (near AND reachable), whatever the run's state gates. */
+      let dropReach = false
       if (DROP_RUN_M > 0) {
         const pace = ZONE_WALK * walkSpeed
         const safe = (p: number[], stay: number) =>
@@ -775,6 +800,10 @@ function buildBot(hello: Hello): Bot {
               safe(x.pos, x.lands_in + x.capture_s - x.progress))
             .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
           : undefined
+        if (UPGRADE_DPS_TIER_ON) {
+          dropReach = (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
+            flat(x.pos, me.pos) <= DROP_RUN_M && safe(x.pos, x.lands_in + x.capture_s - x.progress))
+        }
         if (!d) dropRun = null
         else {
           if (dropRun?.id !== d.id) dropRun = { id: d.id, since: obs.t }
@@ -812,6 +841,20 @@ function buildBot(hello: Hello): Bot {
         const p = treeSpot(me, myHeight, walkSpeed, seers, zoneKeep, canPlan)
         if (p) treeRun = { spot: p, key: treeKey(p[0], p[1]), best: flat(me.pos, p), bestAt: obs.t, used: obs.t }
         return p
+      }
+      // P43 (UPGRADE_DPS_TIER_ON): inside the weapon/gyros tie (no defensive choice offered), take the largest
+      // sustained-DPS gain for the weapons we hold; the champion's pick on a tie, in the opening, and while a drop
+      // run/hold is possible. Only act.pick changes; the offer is answered on this tick either way.
+      if (UPGRADE_DPS_TIER_ON && obs.offer?.choices?.length && act.pick !== undefined && obs.t >= UPGRADE_DPS_TIER_MIN_T &&
+        !dropMove && !dropHold && dropRun === null && !dropReach) {
+        const choices = obs.offer.choices
+        if (upgradeRank(choices[act.pick].id) === 4) {
+          const held = me.weapons.filter((w): w is WeaponObs => !!w)
+          const gains = choices.map((c) => (upgradeRank(c.id) === 4 ? upgradeDpsGain(cfg.upgrades?.find((u) => u.id === c.id), held, cfg.weapons) : -1))
+          let best = act.pick
+          for (let i = 0; i < gains.length; i++) if (gains[i] > gains[best] + 1e-9) best = i
+          act.pick = best
+        }
       }
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]

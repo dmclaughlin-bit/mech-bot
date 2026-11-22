@@ -1,0 +1,18 @@
+{
+  "id": "P43b",
+  "title": "Weapon-tier upgrade pick by DPS gain, rebuilt on P48",
+  "family": "rebuild of P43",
+  "flag": "UPGRADE_DPS_TIER_ON",
+  "owner": "Diego's Claude",
+  "prompt": "P-D-019",
+  "stage": "building (rebuild on P48)",
+  "rebuild_of": {
+    "id": "P43",
+    "pr": 158,
+    "head": "884aedd"
+  },
+  "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
+  "main": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
+  "note": "Same single change as the parent, merged onto the P48 champion; Step A skipped (rebuild of an idea that already fired 10/192+).",
+  "created_et": "2026-11-21 11:15 PM ET"
+}

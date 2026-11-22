@@ -1,0 +1,259 @@
+{
+  "id": "P43",
+  "title": "Weapon-tier upgrade pick by DPS gain on the held loadout, defensive order unchanged (UPGRADE_DPS_TIER_ON)",
+  "family": "upgrades",
+  "flags": [
+    "UPGRADE_DPS_TIER_ON"
+  ],
+  "flag": "UPGRADE_DPS_TIER_ON",
+  "behaviors": [
+    "when an offer has no plating/armor/nanites/sensors (so the champion's best rank is the weapon/gyros tier), pick the tier-4 choice with the largest sustained-DPS gain for a weapon we hold now (from hello.config.upgrades effects and our current weapon stats); keep the champion's pick on a tie, on gyros-only offers, at t < 10 s, and on a drop run/hold tick"
+  ],
+  "owner": "Mech Builder",
+  "stage": "screening",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+  "champion_sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+  "screens": [
+    {
+      "sha": "945c7f02fe09de23dd15bd2a4abcc03f7acde6a2 with UPGRADE_DPS_TIER_ON=true (same code as the flag-on head)",
+      "seed_set": "0",
+      "trees": true,
+      "fired": 5,
+      "activations": 6,
+      "activations_t_lt_10": 0,
+      "diff_behavior": 3,
+      "diff_score": 2,
+      "pins": "41, 43, 79 same as champion",
+      "drop_arrivals": "5 -> 5",
+      "deaths_lt_40": "24 -> 24",
+      "survivors": "2 -> 2",
+      "kills": "292 -> 289",
+      "verdict": "PASS",
+      "source": "builder hazard run trees-on, /tmp/p43 (wrapper copy of /tmp/stress-harness/wrapN-0e6fadd.ts on /tmp/builder-sim-trees --trees --jobs 1; champion side /workspace/tester/runs/trees-0e6fadd-<b>.csv + /tmp/stress-logs/trees-0e6fadd-<b>; not committed)",
+      "sim_delta": -0.031,
+      "sim_se": 0.043
+    },
+    {
+      "sha": "945c7f02fe09de23dd15bd2a4abcc03f7acde6a2 with UPGRADE_DPS_TIER_ON=true (same code as the flag-on head)",
+      "seed_set": "1000",
+      "trees": true,
+      "fired": 7,
+      "activations": 9,
+      "activations_t_lt_10": 0,
+      "diff_behavior": 6,
+      "diff_score": 4,
+      "pins": "1005, 1015, 1018, 1037 same as champion",
+      "drop_arrivals": "1 -> 1",
+      "deaths_lt_40": "15 -> 15",
+      "survivors": "2 -> 2",
+      "kills": "368 -> 365",
+      "verdict": "PASS",
+      "source": "builder hazard run trees-on, /tmp/p43 (wrapper copy of /tmp/stress-harness/wrapN-0e6fadd.ts on /tmp/builder-sim-trees --trees --jobs 1; champion side /workspace/tester/runs/trees-0e6fadd-<b>.csv + /tmp/stress-logs/trees-0e6fadd-<b>; not committed)",
+      "sim_delta": -0.021,
+      "sim_se": 0.044
+    },
+    {
+      "sha": "945c7f02fe09de23dd15bd2a4abcc03f7acde6a2 with UPGRADE_DPS_TIER_ON=true (same code as the flag-on head)",
+      "seed_set": "6000",
+      "trees": true,
+      "fired": 5,
+      "activations": 5,
+      "activations_t_lt_10": 0,
+      "diff_behavior": 5,
+      "diff_score": 1,
+      "pins": "6011, 6082 same as champion",
+      "drop_arrivals": "1 -> 1",
+      "deaths_lt_40": "16 -> 16",
+      "survivors": "0 -> 0",
+      "kills": "367 -> 368",
+      "verdict": "PASS",
+      "source": "builder hazard run trees-on, /tmp/p43 (wrapper copy of /tmp/stress-harness/wrapN-0e6fadd.ts on /tmp/builder-sim-trees --trees --jobs 1; champion side /workspace/tester/runs/trees-0e6fadd-<b>.csv + /tmp/stress-logs/trees-0e6fadd-<b>; not committed)",
+      "sim_delta": 0.01,
+      "sim_se": 0.01
+    },
+    {
+      "sha": "945c7f02fe09de23dd15bd2a4abcc03f7acde6a2 with UPGRADE_DPS_TIER_ON=true (same code as the flag-on head)",
+      "seed_set": "7000",
+      "trees": true,
+      "fired": 9,
+      "activations": 11,
+      "activations_t_lt_10": 0,
+      "diff_behavior": 9,
+      "diff_score": 5,
+      "pins": "7065 same as champion; NEW 7042 214-235 s (21 s; modes farm hunt / drop run / hold) and 301-331 s (30 s; to next circle / zone escape / engage finish), survivor game 15th->15th, flag not active in either window (picks at 57.3 and 113.8 s)",
+      "drop_arrivals": "3 -> 4",
+      "deaths_lt_40": "22 -> 22",
+      "survivors": "1 -> 1",
+      "kills": "367 -> 369",
+      "verdict": "PASS",
+      "source": "builder hazard run trees-on, /tmp/p43 (wrapper copy of /tmp/stress-harness/wrapN-0e6fadd.ts on /tmp/builder-sim-trees --trees --jobs 1; champion side /workspace/tester/runs/trees-0e6fadd-<b>.csv + /tmp/stress-logs/trees-0e6fadd-<b>; not committed)",
+      "sim_delta": 0.021,
+      "sim_se": 0.03
+    }
+  ],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Grok: screen/slot decision for the flag-on head of p43-upgrade-dps-tier (2000+3000 and 4000+5000 trees-on table).",
+  "doug_waiver": false,
+  "single_decision": "Which index to pick inside rank 4 of upgradeRank (brain.ts:158-166). Today all weapon upgrades and gyros tie at rank 4 and the first one listed wins (brain.ts:490-493, `ranks.indexOf(Math.min(...ranks))`), i.e. the offer's random order decides. Ranks 0-3 (plating > armor > nanites > sensors) and 5-6 are unchanged.",
+  "trigger": "UPGRADE_DPS_TIER_ON AND obs.offer has choices AND obs.t >= UPGRADE_DPS_TIER_MIN_T (40 s after the fix round) AND min rank of the choices is 4 AND some tier-4 choice upgrades a weapon kind we hold now with a sustained-DPS gain strictly larger than the champion's choice (weaponDps before/after the upgrade's effects, using self.weapons[i].stats, the same weaponDps as brain.ts:206-210) AND NOT dropMove AND NOT dropHold AND NOT dropNear. Gains at base stats: gun_mag +31.7 DPS, lightning_efficiency +24.0, laser_damage +23.6, gun_damage +15.3, laser_charge +11.1, gun_rate +7.8; gun_velocity, lightning_range, lightning_chain, laser_pierce and gyros score 0, so they only win when nothing better is offered.",
+  "hook": "brain.ts act(), upgrade answer brain.ts:490-493: when the min rank is 4, replace `ranks.indexOf(min)` with the argmax of DPS gain over tier-4 choices (fall back to the champion's index unless strictly better). DPS uses weaponDps (brain.ts:206-210) on `{...cfg.weapons[kind], ...w.stats}` before and after applying the choice's effects from cfg.upgrades (hello.config.upgrades, protocol.md section 10). Flag in params.ts.",
+  "observable_inputs": [
+    "obs.offer.choices ids",
+    "hello.config.upgrades (effects)",
+    "self.weapons[i].kind / stats",
+    "obs.t",
+    "obs.drops (gate)"
+  ],
+  "gates": "Cannot act before UPGRADE_DPS_TIER_MIN_T = 40 s (raised from 10 s in the fix round). Off on any tick with a drop run in progress, dropMove or dropHold, or a drop that passes the drop run's own candidate filter (not in dropSkip, holder null or us, within DROP_RUN_M, zone-safe for lands_in + capture time): near AND reachable, never 'any drop listed'. The offer is answered on the same tick either way; only act.pick changes (no movement, aim or fire change). Off = champion exactly (eqdrive identical vs origin/main bdcff4a).",
+  "drop_gate": "Counted both ways. Plain gate (no drop listed): 13/192 and 19/192 games. Narrow gate (spec): 17/192 and 22/192. A drop capture gives +3 cubes and often crosses an upgrade threshold, so offers cluster around drops; the narrow gate keeps the ones away from a run or hold. Plain gate = obs.drops is empty. Narrow gate = no drop with holder null or us within DROP_RUN_M (200 m), the same `dropNear` test P29 uses (brain.ts:853), and the champion's dropMove/dropHold are both off on that tick.",
+  "evidence": {
+    "pr145": "PR #145 coord/research-doug-1941.md section 3: B21 moved sensors below the weapon upgrades AND reordered the weapon tier, and lost 3.46 vs 3.50 (sim -0.08 +/- 0.17); 'The upgrade with the biggest effect sits at the bottom of the tie. gun_mag (+31% sustained DPS) ties with gun_velocity, laser_pierce and the mortar upgrades at rank 4. A single change could order only that tier and leave sensors at rank 3. B21 moved both at once, so they were never tested apart.' The same note reports Watcher T06's bot reorders by held weapon (laser_damage, laser_charge high when it holds a laser).",
+    "sim_offers": "Run 1, P29 champion: 91/109/100/106 offers per base; 35/91, 41/109, 35/100, 41/106 had no defensive choice, so the tier-4 tie decided the pick. Champion picks in those offers include gun_velocity (22 over four bases), gyros (17), lightning_chain (9) and laser_pierce (7), all zero sustained-DPS gain.",
+    "sim_changes": "Changed picks 2000+3000 (23 offers): gun_velocity->gun_damage 4, gun_velocity->gun_rate 3, gyros->laser_damage 2, gun_rate->gun_mag 2, gun_rate->laser_damage 1, gyros->gun_rate/gun_damage/gun_mag 4, lightning_chain->lightning_efficiency/laser_charge/gun_damage/gun_mag 5, laser_charge->laser_damage 1, gun_damage->gun_mag 1.",
+    "first_fights": "PR #145 first-fight table: cube/weapon lead decides fights (more cubes KILL 166 / DIED 74 vs fewer 100/220); a tier-4 pick is the only upgrade lever untested in isolation.",
+    "watcher": "coord/data/watcher/loadout.md: upgrades_n T01 2.90 / T03 2.84 vs T13 1.26 / T16 1.54; exact upgrade choices were not scored ('winners' first upgrades were already mixed'), so the Watcher gives no ladder; this rule takes no defensive position."
+  },
+  "trigger_counts": {
+    "2000+3000": {
+      "offers_at_t_ge_10": 182,
+      "fired_games": 18,
+      "changed_picks": 23,
+      "plain_gate_games": 13,
+      "plain_gate_picks": 15,
+      "narrow_gate_games": 17,
+      "narrow_gate_picks": 22,
+      "per_base": {
+        "2000": "none 6/8, plain 4/4, narrow 5/7 (games/picks)",
+        "3000": "none 12/15, plain 9/11, narrow 12/15"
+      }
+    },
+    "4000+5000": {
+      "offers_at_t_ge_10": 185,
+      "fired_games": 22,
+      "changed_picks": 27,
+      "plain_gate_games": 19,
+      "plain_gate_picks": 21,
+      "narrow_gate_games": 22,
+      "narrow_gate_picks": 27,
+      "per_base": {
+        "4000": "none 12/16, plain 9/10, narrow 12/16",
+        "5000": "none 10/11, plain 10/11, narrow 10/11"
+      }
+    },
+    "method": "Offline replay of the spec on every logged offer (choices, champion pick, held weapons, upgrades taken so far for stacking); the replayed champion pick matched the logged pick on every offer. Changed picks before 10 s (3 on 2000+3000, 2 on 4000+5000) are excluded by the t >= 10 gate and not counted."
+  },
+  "estimated_activation": "Measured trees-on (MIN_T 40): 5/96, 7/96, 5/96, 9/96 games on bases 0/1000/6000/7000 (26/384); 31 changed picks. At MIN_T 10 it was 8/14/12/22.",
+  "closest_prior_test": "B21 upgrade order change, LOSS 3.46 vs 3.50 (BB-1AFE6423), which also moved sensors below the weapon tier. This spec leaves plating > armor > nanites > sensors and mobility untouched and only breaks the tier-4 tie, the piece PR #145 says was never tested apart.",
+  "what_would_disprove": "Paired screen: fired < 10/192; no gain in damage dealt or kills in fired games; or a site score at or below 4.35. If B21's loss came from the weapon tier rather than from sensors, this loses too.",
+  "risks": "Pins: none (no movement). Drops: none (champion pick on drop ticks; no movement). Early deaths: none before 10 s. The DPS model ignores hit rate and range (gun_velocity's +25% shell speed and +15% range score 0), so a long-range gun fighter may lose a useful velocity pick; gun upgrades can be taken just before a B80/B17 walk swaps the gun out (upgrades persist on the mech, protocol.md section 10, and apply again if a gun is taken later).",
+  "source": "Research P41-44 (this run): PR #145 section 3, kit config upgrades, offline replay on the passive sim log of the P29 champion.",
+  "timestamps": {
+    "created": "2026-11-21 21:30 ET",
+    "updated": "2026-11-22 03:35 UTC (Nov 21 10:35 PM ET)",
+    "building_started": "2026-11-22 ET (Mech Builder)",
+    "built": "2026-11-22 03:35 UTC (Nov 21 10:35 PM ET)"
+  },
+  "sources": [
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/145 (coord/research-doug-1941.md section 3)",
+    "coord/data/site_results.csv (B21)",
+    "coord/data/watcher/loadout.md",
+    "/workspace/mechfight-kit/check/stream.jsonl.gz (config.upgrades, config.weapons)",
+    "/workspace/mechfight-kit/protocol.md section 10",
+    "brain.ts (origin/main 8f0ca4c = P29 2e1d036 bot code)",
+    "Instrumented champion sim (research P41-44): copies of the champion bot files from origin/main 8f0ca4c (bot code identical to P29 2e1d036: `git diff 2e1d036 HEAD` on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p4144/bot (run 1: per-decision state log), /tmp/p4144/bot2 (run 2: exact candidate triggers) and /tmp/p4144/bot3 (run 3: laser-charge triggers), passive CSV logging appended before act.move, no action changed. Run: `cd /tmp/wild-sim && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv>` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column of each run's CSV equals /workspace/tester/runs/fast-b6f2f8b-<s>.csv on 96/96 games per base, after two load-timing outliers in run 2 (seeds 3012 and 4027) were rerun alone and matched the champion exactly; the isolated logs replaced the batch logs. Logs stay in /tmp (not committed).",
+    "Trees-on recheck (Doug 8:58 PM ET, coord/WORKFLOW.md 475eb09): copies of the current champion bot files from origin/main 8c130ad (P34 merge; bot code identical to 0e6fadd) under /tmp/p4144t/bot and /tmp/p4144t/bot2 with passive per-decision CSV logging before act.move (no action changed; the tree sight model is copied read-only from /tmp/builder-sim-trees/geom.ts treeBlocks and loaded from the kit's arena/v2/world.json). Run: `cd /tmp/builder-sim-trees && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144t/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column equals /workspace/tester/runs/trees-0e6fadd-<s>.csv on 96/96 games per base for both runs (768 games). Logs in /tmp (not committed).",
+    "git show 8e623eb:coord/data/ideas/P43.json (research-p41-44, copied verbatim then updated to build stage)",
+    "builder hazard run trees-on, /tmp/p43 (wrapper copy of /tmp/stress-harness/wrapN-0e6fadd.ts on /tmp/builder-sim-trees --trees --jobs 1; champion side /workspace/tester/runs/trees-0e6fadd-<b>.csv + /tmp/stress-logs/trees-0e6fadd-<b>; not committed)"
+  ],
+  "priority_rank": 2,
+  "research_note": "Research P41-44 also measured and dropped (fewer than 10/192 games on a set, or a tested family): late farm-shot silence with <= 8 alive (2/192 and 5/192); P29 settle extended to r <= 70 (0/192 and 0/192: the bot is alive at r <= 70 in 1-2 games per 192); zone-entry choice with <= 8 alive (zone travel at <= 8 alive in only 8/192 games on 2000+3000); gun+lightning late walk to a laser (2/192 and 0/192 after gates; also B90 KEEP_LIGHT_ON lost 3.73); sensors over nanites while holding a laser (4/192). The sound-cued look at <= 8 alive fired 7/192 and 5/192, so P41 uses <= 12.",
+  "hook_lines_note": "brain.ts line numbers re-pointed to origin/main 8c130ad (champion P34 0e6fadd); trees-off counts below were taken on P29 2e1d036 (same lines minus the P34 shifts).",
+  "trigger_counts_trees_on": {
+    "champion": "P34 0e6fadd1a30db4ee30c26114b8198f63d782b7c9 (main 8c130ad7f0c81acb03508c40f20c31867f29d358)",
+    "sim": "/tmp/builder-sim-trees --trees",
+    "2000+3000": {
+      "none": "19 games / 22 changed picks",
+      "plain": "15 / 17",
+      "narrow": "19 / 22",
+      "reach": "19 / 22",
+      "per_base": "2000: 7/7 all gates except plain 6/6; 3000: none 12/15, plain 9/11, narrow 12/15, reach 12/15"
+    },
+    "4000+5000": {
+      "none": "26 / 28",
+      "plain": "22 / 22",
+      "narrow": "26 / 28",
+      "reach": "26 / 28",
+      "per_base": "4000: none 12/12, plain 10/10, reach 12/12; 5000: none 14/16, plain 12/12, reach 14/16"
+    },
+    "gates": "Gates as counted: none; plain = obs.drops empty; narrow = no drop (holder null or us) within DROP_RUN_M and no dropMove/dropHold; reach = 'near AND reachable within DROP_RUN_M' (Doug 8:58 PM ET follow-up): no drop that passes the champion's own drop-run candidate filter (not in dropSkip, holder null or us, within DROP_RUN_M, zone-safe for lands_in + capture time; brain.ts:731-736 on main 8c130ad) and no dropMove/dropHold that tick. Spec gate = reach."
+  },
+  "trees_on_change": "Slightly more (trees off on P29: 18 and 22 games). Trees do not touch offers; the rise follows the longer lives trees on (champion deaths before 40 s 48 and 38 trees on vs 56 and 54 trees off).",
+  "champion_sha_trees_on_recheck": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+  "champion_main": "588557e464dd4946680bff964a7c8e86700b8739 (merge 8c130ad7f0c81acb03508c40f20c31867f29d358 = P34 0e6fadd, LETHAL_RELEASE_ON=true, site 4.38)",
+  "base_sha": "bdcff4a84e62a2e8c56fcec090c96425b4808bb8",
+  "branch": "p43-upgrade-dps-tier",
+  "family_note": "New family for the site: upgrade timing/choice has never been site-tested alone (B21 3.46 moved sensors AND the weapon tier together).",
+  "activation_definition": "An upgrade pick that differs from the champion pick on the same offer.",
+  "sha_note": "Flag-on head = the commit right after this record update on branch p43-upgrade-dps-tier (it only flips UPGRADE_DPS_TIER_ON to true); its 40-char SHA is in the push report.",
+  "flagoff_sha": "945c7f02fe09de23dd15bd2a4abcc03f7acde6a2",
+  "flagoff_first_sha": "83bd3868fa6bc26c5d5dcc93541ccf4e4e290a34 (MIN_T 10, fix round replaced it)",
+  "fix_round": {
+    "reason": "Round 1 (UPGRADE_DPS_TIER_MIN_T = 10, flag-off 83bd386): base 0 deaths before 40 s 24 -> 25 (seed 24: gyros -> gun_mag at 25.3 s, died 53.55 -> 37.15 s), item 5 HARD fail. Other bases passed items 3 and 5.",
+    "fix": "Same behavior, time gate raised to UPGRADE_DPS_TIER_MIN_T = 40 s (as P34's LETHAL_RELEASE_MIN_T): play before 40 s, and every death before 40 s, equals the champion's by construction. All four bases rerun.",
+    "round1": {
+      "0": {
+        "fired": 8,
+        "activations": 9,
+        "diff_score": 6,
+        "delta": -0.042,
+        "se": 0.051,
+        "drop_arrivals": "5 -> 5",
+        "deaths_lt_40": "24 -> 25",
+        "kills": "292 -> 288"
+      },
+      "1000": {
+        "fired": 14,
+        "activations": 19,
+        "diff_score": 9,
+        "delta": -0.115,
+        "se": 0.106,
+        "drop_arrivals": "1 -> 1",
+        "deaths_lt_40": "15 -> 15",
+        "kills": "368 -> 356"
+      },
+      "6000": {
+        "fired": 12,
+        "activations": 12,
+        "diff_score": 6,
+        "delta": -0.125,
+        "se": 0.081,
+        "drop_arrivals": "1 -> 1",
+        "deaths_lt_40": "16 -> 16",
+        "kills": "367 -> 354"
+      },
+      "7000": {
+        "fired": 22,
+        "activations": 25,
+        "diff_score": 13,
+        "delta": 0.146,
+        "se": 0.144,
+        "drop_arrivals": "3 -> 5",
+        "deaths_lt_40": "22 -> 22",
+        "kills": "367 -> 378"
+      }
+    },
+    "early_activation_count_0_1000": "Round 1 (MIN_T 10): 8 + 14 = 22/192 games (>= 10, proceed). After the fix (MIN_T 40): 5 + 7 = 12/192."
+  },
+  "checks": {
+    "eqdrive_flag_off_vs_main": "IDENTICAL (cmp) for 83bd386 and 945c7f0 vs origin/main bdcff4a",
+    "check_py": "PASS flag off max 3.6 ms, flag on max 4.5 ms (945c7f0); round 1 83bd386 7.0 / 6.8 ms",
+    "merge_base_588557e": "OK",
+    "archive_bytes": 3420160
+  }
+}

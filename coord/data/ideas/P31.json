@@ -12,16 +12,41 @@
  "owner": "Mech Builder",
  "stage": "building",
  "pr": null,
- "sha": null,
+ "sha": "7bf9942e0b9f05dbea188aa7092e16dd90af2ae2",
  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
- "screens": [],
+ "screens": [
+  {
+   "sha": "7bf9942e0b9f05dbea188aa7092e16dd90af2ae2",
+   "seed_set": "0",
+   "fired": 0,
+   "diff_behavior": 0,
+   "diff_score": 0,
+   "pins": "6 seeds with a 20 s+ pin in both arms (16, 41, 43, 78, 79, 92), identical windows; 0 new; 0 flag ticks in any window",
+   "verdict": "BARELY FIRES",
+   "source": "builder hazard run /tmp/p31-haz (main-0.csv, on-0.csv). Flag-on copy vs origin/main (bot code = champion 6182d29), passively instrumented outside the repo, --jobs 2. Drop-ring arrivals 5 vs 5; deaths < 40 s 33 vs 33; activations t < 10 s 0.",
+   "sim_delta": 0.0,
+   "sim_se": 0.0
+  },
+  {
+   "sha": "7bf9942e0b9f05dbea188aa7092e16dd90af2ae2",
+   "seed_set": "2000",
+   "fired": 0,
+   "diff_behavior": 0,
+   "diff_score": 0,
+   "pins": "3 seeds with a 20 s+ pin in both arms (2004, 2025, 2047), identical windows; 0 new; 0 flag ticks in any window",
+   "verdict": "BARELY FIRES",
+   "source": "builder hazard run /tmp/p31-haz (main-2000.csv, on-2000.csv). Flag-on copy vs origin/main (bot code = champion 6182d29), passively instrumented outside the repo, --jobs 2. Drop-ring arrivals 5 vs 5; deaths < 40 s 39 vs 39; activations t < 10 s 0.",
+   "sim_delta": 0.0,
+   "sim_se": 0.0
+  }
+ ],
  "receipt": null,
  "site_score": null,
  "score": null,
- "decision": null,
- "blocker": null,
- "next_action": "Mech Builder implements on branch p31-late-hurt-boost (flag default false), check.py, eqdrive, base-0 96-game hazard",
+ "decision": "BARELY FIRES: 0/192 games (base 0 + 2000); flag-on play identical to main in all 192",
+ "blocker": "Never fires in the house sim. Only 10/192 games reach 4 or fewer alive (4 on base 0, 6 on base 2000); all 116 late (2-4 alive) retreat ticks had a supply drop announced or landed, so the required drop gate blocks every one. The champion's retreat already boosts above 30% energy; P31 only adds ground boost at 15-30% energy, and only 25 late retreat ticks (base 2000) were in that band on the ground, before the drop gate.",
+ "next_action": "Coordinator decides: retire, or re-brief (e.g. drop gate limited to drop run/hold possible, or a different late-hurt behavior); no submission",
  "doug_waiver": false,
  "source": "coord/data/watcher/RANKED.md rule 3 (speed while HP<35%, alive 2-4)",
  "timestamps": {
@@ -30,6 +55,14 @@
  },
  "sources": [
   "coord/data/watcher/RANKED.md",
-  "coord/data/ideas/P31.json (1a95fd3)"
- ]
+  "/tmp/p31-haz (builder hazard logs, not in repo)",
+  "commit 7bf9942e0b9f05dbea188aa7092e16dd90af2ae2"
+ ],
+ "checks": {
+  "build": "bun build bot.ts OK",
+  "check_py_flag_on": "PASS p99 1.0 ms max 3.9 ms",
+  "check_py_default": "PASS p99 1.1 ms max 3.9 ms",
+  "eqdrive_flag_off_vs_main": "IDENTICAL",
+  "merge_base_6182d29": "OK"
+ }
 }

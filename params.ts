@@ -198,3 +198,14 @@ export const TREE_RETREAT_STUCK_S = 3
  */
 export const BACKAWAY_FAR_COVER_ON = true
 export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]
+
+/**
+ * P64 (back-away LOS break): in the champion's back-away retreat (mode "retreat") when P60's far cover found no spot,
+ * from t = TREE_RETREAT_MIN_T (40 s), never in a drop run/hold or while a drop is near AND reachable within DROP_RUN_M,
+ * walk (same boost rule) to the nearest in-zone spot BACKAWAY_LOS_STEPS_S of straight walk away, no closer to any shooter
+ * (the seers that hit us in the last 2 s, else all seers), that fewer of those shooters can see than see us now,
+ * instead of backing straight away. Latched with P48's no-progress give-up and a skip list. Legs only; torso and aim
+ * unchanged (N8). false = champion behavior exactly.
+ */
+export const BACKAWAY_LOS_BREAK_ON = false
+export const BACKAWAY_LOS_STEPS_S = [1, 2, 3]

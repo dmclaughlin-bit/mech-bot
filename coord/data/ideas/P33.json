@@ -12,16 +12,30 @@
   "owner": "Mech Builder",
   "stage": "building",
   "pr": null,
-  "sha": null,
+  "sha": "c4a6164070d446ef68b83e051bbf75b4c8d4b16b",
   "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
   "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
-  "screens": [],
+  "screens": [
+    {
+      "sha": "c4a6164070d446ef68b83e051bbf75b4c8d4b16b",
+      "seed_set": "0 (base-0 hazard, n=96, builder run, flag-on copy only)",
+      "fired": 0,
+      "diff_behavior": 0,
+      "diff_score": 0,
+      "pins": "not compared (run stopped at the activation count); flag never active, so no flag ticks in any window",
+      "verdict": "BARELY FIRES",
+      "source": "builder hazard run /tmp/p33-haz (on-0.csv, logs-on-0): flag-on copy of this SHA, passively instrumented wrapper outside the repo, /tmp/wild-sim SEED_BASE=0 --seeds 96 --jobs 2, 2026-11-22",
+      "sim_delta": null,
+      "sim_se": null,
+      "notes": "0 activations in 96 games (0 at t < 10 s, 0 with a drop called). 15/96 games reach mid phase (zone shrinking to 240/140 m) with 5+ alive; 8 have a champion retreat there; 30 mid-phase retreat ends, all 30 with a supply drop announced or landed (drops are called at 70/140/210 s and stay on the map until captured), so the required drop gate blocks every one. 13 of the 30 (5 games: 41, 44, 73, 84, 89) meet every other P33 condition (heal next, HP < 35%, a visible enemy < 120 m). The p31 logs (main, bases 0 and 2000) agree: in 110-265 s with 5+ alive only 165 of ~26,000 decisions had no drop on the map. Mean score 3.479; deaths < 40 s 33; 0 exceptions."
+    }
+  ],
   "receipt": null,
   "site_score": null,
   "score": null,
-  "decision": null,
-  "blocker": null,
-  "next_action": null,
+  "decision": "BARELY FIRES: 0/96 base-0 activations; no main comparison run, no PR",
+  "blocker": "The required drop gate (no drop announced/landed) blocks every mid-phase retreat in the house sim: drops are called at 70/140/210 s and stay on the map until captured, so mid phase (110-265 s) almost never has zero drops. 30/30 mid-phase retreat ends had a drop live.",
+  "next_action": "Coordinator decides: retire, or re-brief the drop gate to 'drop run/ring hold possible' only (5/96 games, 13 hand-offs would qualify ignoring the drop gate; at HP < 30% the champion's drop run is already off)",
   "doug_waiver": false,
   "source": "coord/data/watcher/RANKED.md rule 11 (nearest enemy while HP<35%, mid phase, 119 vs 95 m)",
   "timestamps": {
@@ -31,6 +45,16 @@
   "sources": [
     "coord/data/watcher/RANKED.md",
     "coord/data/watcher/STATES.md",
-    "coord/BUILD_CHECKLIST.md"
-  ]
+    "coord/BUILD_CHECKLIST.md",
+    "/tmp/p33-haz (builder hazard logs, not in repo)",
+    "commit c4a6164070d446ef68b83e051bbf75b4c8d4b16b"
+  ],
+  "checks": {
+    "build": "bun build bot.ts --target=bun OK",
+    "check_py_flag_on": "PASS 300/300 p99 0.9 ms max 2.5 ms",
+    "check_py_default": "PASS 300/300 p99 1.0 ms max 2.7 ms",
+    "eqdrive_flag_off_vs_main": "IDENTICAL (cmp, vs origin/main d7fca14, bot code = 6182d29)",
+    "contains_champion": "PASS (merge-base --is-ancestor 6182d29)",
+    "single_change": "params.ts one flag HURT_RETREAT_FAR_ON=false (+3 value params) + brain.ts one guarded branch before heal; champion back-away heading factored into backAway() unchanged"
+  }
 }

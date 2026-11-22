@@ -1,0 +1,36 @@
+{
+  "id": "P34b",
+  "title": "Drop gate on the champion's lethal release: no early laser release while a supply drop is near and reachable within DROP_RUN_M, or while on a drop run / ring hold / capture (LETHAL_DROP_GATE_ON)",
+  "family": "weapons/drops",
+  "flags": [
+    "LETHAL_DROP_GATE_ON"
+  ],
+  "flag": "LETHAL_DROP_GATE_ON",
+  "behaviors": [
+    "inside the champion's LETHAL_RELEASE logic only: do not take the early (partial-charge) release while a called drop not held by another mech is within DROP_RUN_M and reachable by the drop run's own zone-safe ETA test, or while dropRun / ring hold (dropHold) / drop capture (farmHold) is active; everything else is the champion"
+  ],
+  "renumber_note": "P34b now = one drop gate on top of champion P34 (0e6fadd, merged 8c130ad, LETHAL_RELEASE_ON already true). The earlier GUN_NEAR_M distance variant (/workspace/patches/p34b-old-bot.diff, built on the old base) is NOT this build.",
+  "owner": "Mech Builder",
+  "stage": "building",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "588557e464dd4946680bff964a7c8e86700b8739",
+  "champion_sha": "588557e464dd4946680bff964a7c8e86700b8739",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Mech Builder: early activation count on base 0+1000 (stop with BARELY FIRES under 10/192), then the 4-base trees-on checklist",
+  "doug_waiver": false,
+  "source": "coordinator brief (branch p34b2-drop-gate); background: P34 on the old base lost drop arrivals on the Sim Tester screen (seed 2078 both drops 1st->7th, 2089 one 1st->6th; PR #147 comment 7072472836), rebuilt P34 scored 4.38 on the site",
+  "created_et": "2026-11-21 21:25",
+  "timestamps": {
+    "updated": "2026-11-21 21:25 ET"
+  },
+  "sources": [
+    "coord/data/ideas/P34.json",
+    "/workspace/drop-gate-rule.txt",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/147#issuecomment-7072472836"
+  ]
+}

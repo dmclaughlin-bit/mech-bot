@@ -1,0 +1,55 @@
+{
+  "id": "P49b",
+  "title": "P49 TREE_HEAL with a hard 8 s cap per heal attempt (same flag TREE_HEAL_ON)",
+  "family": "heal / tree cover",
+  "flags": [
+    "TREE_HEAL_ON"
+  ],
+  "flag": "TREE_HEAL_ON",
+  "owner": "Mech Builder",
+  "stage": "building",
+  "pr": null,
+  "sha": null,
+  "branch": "p49b-tree-heal-cap",
+  "base": "27b945b (p49-tree-heal record head; bot code = P49 flag-off 131a852156ef6926d0859b608fc7978774aa9e03)",
+  "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
+  "rebuild_of": {
+    "id": "P49",
+    "pr": 172,
+    "sha": "38aa9576069ead7982ddd0e0de736931486b8a64"
+  },
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "screens": [],
+  "doug_waiver": false,
+  "source": "findings.md F4; P49.json p49b block (3e595a0); coordinator brief for an 8 s heal cap",
+  "why": "P49 #172 (38aa957) vetoed 3x by Sim Tester (drop-ring arrivals 7 -> 6 on 2000+3000 from seed 3086, stall (b) on 3086 t=215-244, stall (c) 2 -> 5 pause games on 2000+3000: new 2022, 3066, 3086) for heal-walk pauses after 40 s",
+  "change": "Same one behavior and flag (TREE_HEAL_ON). Guard inside it: hard cap TREE_HEAL_MAX_S = 8 s on the whole tree-heal walk + hold per heal attempt regardless of progress or HP gain (then the champion's own logic runs; no new tree-heal attempt until the next heal phase); immediate exit when zone travel / leaving the zone / a near-and-reachable drop (DROP_RUN_M) / a drop run or hold needs moving; the abandoned spot is skip-listed for that heal phase. TREE_HEAL_MIN_T stays 40. Step A not needed (P49 fired 160/192 and 148/192).",
+  "pin_check_seeds": [
+    2022,
+    3066,
+    3086
+  ],
+  "timestamps": {
+    "created": "2026-11-22 00:35 ET",
+    "updated": "2026-11-22 12:55 AM ET"
+  },
+  "decision": "In flight. Same TREE_HEAL_ON as P49, plus a hard 8 s cap per heal attempt and an immediate exit when zone/drop travel needs moving (P49.json p49b.change). Must show pins gone on seeds 2022, 3066, 3086 and no rise in pause games before a site slot (findings F4).",
+  "next_action": "Mech Builder finishes the build; then a full trees-on paired screen vs P48.",
+  "blocker": null,
+  "hypothesis": "P49's survivor rise (2\u21923 and 3\u21925) can be kept if heal-hold pins are cut by capping each tree-heal at 8 s (findings F4).",
+  "mechanism": "Same one behavior and flag (TREE_HEAL_ON). Guard inside it: hard cap TREE_HEAL_MAX_S = 8 s on the whole tree-heal walk + hold per heal attempt regardless of progress or HP gain (then the champion's own logic runs; no new tree-heal attempt until the next heal phase); immediate exit when zone travel / leaving the zone / a near-and-reachable drop (DROP_RUN_M) / a drop run or hold needs moving; the abandoned spot is skip-listed for that heal phase. TREE_HEAL_MIN_T stays 40. Step A not needed (P49 fired 160/192 and 148/192).",
+  "activation": "Not yet screened. Step A skipped: P49 already fired 160/192 and 148/192.",
+  "positives": "Intended: keep P49's end-game survivor rise (F4). Not yet measured on P49b.",
+  "negatives": "Not yet measured. Parent P49's official \u22120.42 was blamed on heal-hold pins.",
+  "confidence": "Promising",
+  "reuse": "narrow-follow-up",
+  "outcome": null,
+  "builds_on": [
+    "F4"
+  ],
+  "disproof": "Pins on 2022, 3066, or 3086 remain, pause games rise vs P48, or official score \u2264 4.44.",
+  "updated_et": "2026-11-22 12:55 AM ET"
+}

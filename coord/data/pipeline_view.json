@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 22:19 ET",
- "origin_main": "93b8e70c1c92416742655ff991abd7d7fe285687",
+ "generated_at_et": "2026-11-21 22:29 ET",
+ "origin_main": "a6064f61f48539dff885736a000bb8856aec540c",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -16,20 +16,20 @@
  ],
  "header": {
   "champion": {
-   "build": "P34",
-   "score": 4.38,
-   "sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
-   "receipt": "BB-ABEB42BF",
-   "scored_at": "2026-11-21T21:10:00-05:00"
+   "build": "P48",
+   "score": 4.44,
+   "sha": "b9492c6f122c549c705b69402157f078b4a57857",
+   "receipt": "BB-94897D91",
+   "scored_at": "2026-11-21T22:29:00-05:00"
   },
   "pending": [
    "P34"
   ],
   "slots": {
    "limit": 6,
-   "used_rolling_60": 1,
-   "used_clock_hour": 1,
-   "last_submit": "2026-11-21 22:00 ET"
+   "used_rolling_60": 2,
+   "used_clock_hour": 2,
+   "last_submit": "2026-11-21 22:27 ET"
   },
   "ready_count": 0,
   "ready_items": [],
@@ -60,9 +60,9 @@
   ],
   "reserve_target": "2 fully screened + 1 researched (WORKFLOW.md, Doug 5:41 PM ET)",
   "since": "2026-11-21 12:00 ET",
-  "tests_since": 24,
-  "wins_since": 7,
-  "scored_since": 23,
+  "tests_since": 25,
+  "wins_since": 8,
+  "scored_since": 24,
   "wins_vs_champion_at_time": [
    "B103",
    "B105-PB001",
@@ -70,12 +70,13 @@
    "B113",
    "P29",
    "P34",
-   "P40b"
+   "P40b",
+   "P48"
   ],
-  "tests_vs_current_champion": 2,
-  "wins_vs_current_champion": 2,
-  "pre_click_screen_complete": 5,
-  "site_items_since": 24
+  "tests_vs_current_champion": 0,
+  "wins_vs_current_champion": 0,
+  "pre_click_screen_complete": 6,
+  "site_items_since": 25
  },
  "board": {
   "Idea": 0,
@@ -85,7 +86,7 @@
   "Screened": 15,
   "READY": 0,
   "Submitted": 1,
-  "Scored": 1,
+  "Scored": 2,
   "Merged": 5,
   "Retired": 45
  },
@@ -1796,7 +1797,7 @@
     "outcome": "pending",
     "receipt": "BB-FB8CB5AE",
     "verdict": "REJECTED",
-    "result_logged_et": "2026-11-21 21:10 ET",
+    "result_logged_et": null,
     "result_url": null
    },
    "screen": {
@@ -1909,7 +1910,7 @@
     "outcome": "win",
     "receipt": "BB-ABEB42BF",
     "verdict": "WIN",
-    "result_logged_et": "2026-11-21 21:10 ET",
+    "result_logged_et": null,
     "result_url": null
    },
    "screen": {
@@ -2044,11 +2045,115 @@
    "head": "ca549ae45e712c9747244f5cf2e6598ee7003874",
    "pr_closed": null,
    "pr_merged": null,
-   "contains_champion": true,
+   "contains_champion": false,
    "stage_idx": 7,
    "stage": "Scored",
    "outcome": "win",
    "blocker": null
+  },
+  {
+   "id": "P48",
+   "title": "P48 tree retreat (TREE_RETREAT_ON) on P34, near-miss data test (failed exactly one veto: drop-ring set totals 9->7 and 8->5)",
+   "kind": "build",
+   "source": "unknown",
+   "owner": "Mech Builder",
+   "decision": "P48 tree retreat (TREE_RETREAT_ON) on P34, near-miss data test (failed exactly one veto: drop-ring set totals 9->7 and 8->5)",
+   "changes": 1,
+   "changes_basis": "one behavior in the summary",
+   "multi": false,
+   "site": {
+    "submitted_et": "2026-11-21 22:27 ET",
+    "score": 4.44,
+    "champion_then": 4.17,
+    "delta": 0.27,
+    "outcome": "win",
+    "receipt": "BB-94897D91",
+    "verdict": "WIN",
+    "result_logged_et": "2026-11-21 22:29 ET",
+    "result_url": null
+   },
+   "screen": {
+    "both": true,
+    "status": "both_before_click",
+    "sets": [
+     "A",
+     "B"
+    ],
+    "when_both": "2026-11-21 22:23 ET",
+    "events": [
+     {
+      "src": "PR #157 comment",
+      "sets": [
+       "A",
+       "B"
+      ],
+      "at": "2026-11-21 22:23 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/157#issuecomment-7073507581",
+      "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "PR #157 body table (time = PR opened; body may have been edited)",
+      "sets": [
+       "A",
+       "B"
+      ],
+      "at": "2026-11-21 22:16 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/157",
+      "after_click": false,
+      "exact_sha": false
+     },
+     {
+      "src": "screens.csv P48",
+      "sets": [
+       "A"
+      ],
+      "at": "2026-11-21 22:23 ET",
+      "url": null,
+      "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "screens.csv P48",
+      "sets": [
+       "B"
+      ],
+      "at": "2026-11-21 22:23 ET",
+      "url": null,
+      "after_click": false,
+      "exact_sha": true
+     }
+    ]
+   },
+   "screened_before_click": true,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": "b9492c6f122c549c705b69402157f078b4a57857",
+   "champion_sha_note": "588557e",
+   "research": [],
+   "prs": [
+    {
+     "n": 157,
+     "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/157",
+     "state": "open",
+     "head": "b9492c6f122c549c705b69402157f078b4a57857",
+     "title": "P48: tree retreat (TREE_RETREAT_ON) on champion P34"
+    }
+   ],
+   "pr_opened": "2026-11-21 22:16 ET",
+   "primary_pr": 157,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/157",
+   "pr_state": "open",
+   "head": "b9492c6f122c549c705b69402157f078b4a57857",
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": true,
+   "stage_idx": 7,
+   "stage": "Scored",
+   "outcome": "win",
+   "blocker": "",
+   "record_decision": "Submitted 10:27 PM ET as near-miss data test (failed exactly one veto: drop-ring set totals 9->7 and 8->5; means -0.005/+0.026). Site 4.44 beat champion P34 4.38: NEW CHAMPION. Confirmed sim false negative for the drop-ring veto (Doug must decide any veto change). Merge of PR #157 pending (coordinator cannot merge).",
+   "from_idea_record": true
   },
   {
    "id": "P-B-004",
@@ -4428,45 +4533,6 @@
    "from_idea_record": true
   },
   {
-   "id": "P48",
-   "title": "Retreat behind trees: when hurt, being hit and no building cover is reachable, retreat to a spot within 3 s that trees hide from every enemy seeing us, instead of backing straight away (TREE_RETREAT_ON)",
-   "kind": "build",
-   "source": "Doug 8:58 PM ET follow-up (break line of sight while disengaging): trees-on passive sim log of the P34 champion.",
-   "owner": "Mech Builder",
-   "decision": "PR #157 opened 10:16 PM ET; checklist in PR body; waiting for Sim Tester trees-on paired screen vs P34 0e6fadd. Record copied from branch by Coordinator 10:22 PM ET.",
-   "changes": 1,
-   "changes_basis": "idea record flags",
-   "multi": false,
-   "site": null,
-   "screen": {
-    "both": false,
-    "status": "none",
-    "sets": [],
-    "when_both": null,
-    "events": []
-   },
-   "screened_before_click": false,
-   "postmortems": [],
-   "first_mention": null,
-   "sha": "b9492c6f122c549c705b69402157f078b4a57857",
-   "champion_sha_note": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
-   "research": [],
-   "prs": [],
-   "pr_opened": null,
-   "primary_pr": 157,
-   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/157",
-   "pr_state": null,
-   "head": "b9492c6f122c549c705b69402157f078b4a57857",
-   "pr_closed": null,
-   "pr_merged": null,
-   "contains_champion": null,
-   "stage_idx": null,
-   "stage": "Researched",
-   "outcome": null,
-   "blocker": null,
-   "from_idea_record": true
-  },
-  {
    "id": "P39",
    "title": "Regen guard: while healing, do not shoot drones or crates that are not shooting us (REGEN_GUARD_ON)",
    "kind": "build",
@@ -4489,6 +4555,45 @@
    "first_mention": null,
    "sha": null,
    "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",
+   "research": [],
+   "prs": [],
+   "pr_opened": null,
+   "primary_pr": null,
+   "pr_url": null,
+   "pr_state": null,
+   "head": null,
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Researched",
+   "outcome": null,
+   "blocker": null,
+   "from_idea_record": true
+  },
+  {
+   "id": "P51",
+   "title": "ST-2 late mortar fallback for gun-only bots after 45 s",
+   "kind": "build",
+   "source": "Mech Sim Tester death report /workspace/tester/proposals/20261121-2153-0e6fadd.md (ST-2), PR #154",
+   "owner": "Mech Builder",
+   "decision": null,
+   "changes": 1,
+   "changes_basis": "idea record flags",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": null,
+   "champion_sha_note": null,
    "research": [],
    "prs": [],
    "pr_opened": null,
@@ -7118,6 +7223,32 @@
     "ROOF_JET_ROUTE_ON"
    ],
    "multi": false
+  },
+  {
+   "build": "P48",
+   "submitted_et": "2026-11-21 22:27 ET",
+   "sub_dt": "2026-11-21T22:27:00-05:00",
+   "sha": "b9492c6f122c549c705b69402157f078b4a57857",
+   "parent": "588557e",
+   "champion_then": 4.17,
+   "champion_recorded": 4.38,
+   "score": 4.44,
+   "delta": 0.27,
+   "outcome": "win",
+   "receipt": "BB-94897D91",
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/157",
+   "pr": 157,
+   "summary": "P48 tree retreat (TREE_RETREAT_ON) on P34, near-miss data test (failed exactly one veto: drop-ring set totals 9->7 and 8->5)",
+   "family": "retreat",
+   "verdict": "WIN",
+   "changes": 1,
+   "changes_basis": "one behavior in the summary",
+   "diff_bool_flags": 1,
+   "diff_knobs_changed": 0,
+   "diff_flag_names": [
+    "TREE_RETREAT_ON"
+   ],
+   "multi": false
   }
  ],
  "change_audit": {
@@ -7258,10 +7389,10 @@
     "submitted_et": "2026-11-21 17:33 ET"
    }
   ],
-  "all_tests": 75,
+  "all_tests": 76,
   "single": {
-   "n": 58,
-   "wins": 14
+   "n": 59,
+   "wins": 15
   },
   "multi": {
    "n": 15,
@@ -7273,8 +7404,8 @@
    "B125"
   ],
   "since_noon_single": {
-   "n": 20,
-   "wins": 7
+   "n": 21,
+   "wins": 8
   },
   "since_noon_multi_rate": {
    "n": 3,
@@ -7300,32 +7431,32 @@
   {
    "id": "champion_at_time",
    "ok": false,
-   "text": "site_results.csv champion_score_at_time disagrees with the champion actually standing at click time for: B104 (recorded 3.79, champion then 3.92), P34 (recorded 4.35, champion then 4.17), P34 (recorded 4.35, champion then 4.17), P40b (recorded 4.38, champion then 4.17)"
+   "text": "site_results.csv champion_score_at_time disagrees with the champion actually standing at click time for: B104 (recorded 3.79, champion then 3.92), P34 (recorded 4.35, champion then 4.17), P34 (recorded 4.35, champion then 4.17), P40b (recorded 4.38, champion then 4.17), P48 (recorded 4.38, champion then 4.17)"
   },
   {
    "id": "champion_history",
    "ok": false,
-   "text": "pipeline/data/champion.json top says P34 but its history ends at P29"
+   "text": "pipeline/data/champion.json top says P48 but its history ends at P34"
   },
   {
    "id": "q_py_store",
    "ok": false,
-   "text": "pipeline/data/experiments.jsonl (what q.py eligible reads) has 13 records; coord/data/site_results.csv has 75"
+   "text": "pipeline/data/experiments.jsonl (what q.py eligible reads) has 13 records; coord/data/site_results.csv has 76"
   },
   {
    "id": "screens_csv",
    "ok": false,
-   "text": "17 of 24 site-tested builds since noon have no complete (both-set) screens.csv rows for their exact SHA: B105-PB001, B106, B108, P-D-002, B107, P-B-006, B113, B115, B118, P20, B117, P21, B110, B111, P24, B125, P34"
+   "text": "17 of 25 site-tested builds since noon have no complete (both-set) screens.csv rows for their exact SHA: B105-PB001, B106, B108, P-D-002, B107, P-B-006, B113, B115, B118, P20, B117, P21, B110, B111, P24, B125, P34"
   },
   {
    "id": "ideas_md_families",
    "ok": false,
-   "text": "site_results families not named in ideas.md: loadout, movement, threat-forecast, weapons, zone"
+   "text": "site_results families not named in ideas.md: loadout, movement, retreat, threat-forecast, weapons, zone"
   },
   {
    "id": "status_stale",
    "ok": false,
-   "text": "coord/STATUS.md says 'Updated Sat Nov 21 2026, 3:44 PM ET'; the newest site result is 10:00 PM ET"
+   "text": "coord/STATUS.md says 'Updated Sat Nov 21 2026, 3:44 PM ET'; the newest site result is 10:27 PM ET"
   },
   {
    "id": "log_utc_as_et",

@@ -11,7 +11,7 @@
     "in the champion's no-cover 'retreat' branch (HP < retreatHp, hit in the last 2 s, no building hide spot from hideSpot), t >= 40 (TREE_RETREAT_MIN_T; research said 10, raised once to fix deaths < 40 s), when trees+buildings do not already hide us from every enemy that sees us: walk (boost above 30% energy, as today) to the nearest in-zone spot 1, 2 or 3 s away, no closer to any of those enemies, that trees+buildings hide from all of them; the spot is kept while it still works; 3 s without progress (or reached and still seen) puts it on a 4 m skip list"
   ],
   "owner": "Mech Builder",
-  "stage": "waiting for screen",
+  "stage": "scored - WIN (near-miss data test)",
   "pr": 157,
   "sha": "b9492c6f122c549c705b69402157f078b4a57857",
   "branch": "p48-tree-retreat",
@@ -101,12 +101,12 @@
       "source": "/tmp/builder-sim-trees --trees --jobs 1 vs /workspace/tester/runs/trees-0e6fadd-7000.csv; traces /tmp/p48/logs (not committed)"
     }
   ],
-  "receipt": null,
-  "site_score": null,
-  "score": null,
-  "decision": "PR #157 opened 10:16 PM ET; checklist in PR body; waiting for Sim Tester trees-on paired screen vs P34 0e6fadd. Record copied from branch by Coordinator 10:22 PM ET.",
-  "blocker": null,
-  "next_action": "Coordinator/Grok: hand to Sim Tester for the full trees-on paired screen (2000-5000) of the pushed head.",
+  "receipt": "BB-94897D91",
+  "site_score": 4.44,
+  "score": 4.44,
+  "decision": "Submitted 10:27 PM ET as near-miss data test (failed exactly one veto: drop-ring set totals 9->7 and 8->5; means -0.005/+0.026). Site 4.44 beat champion P34 4.38: NEW CHAMPION. Confirmed sim false negative for the drop-ring veto (Doug must decide any veto change). Merge of PR #157 pending (coordinator cannot merge).",
+  "blocker": "",
+  "next_action": "Merge PR #157 (b9492c6) to main; builders rebase all waiting builds on b9492c6 and Sim Tester re-screens.",
   "doug_waiver": false,
   "single_decision": "Where the no-cover retreat goes. Today, with no building spot from hideSpot, it backs away from lastHit's bearing with a lean toward the center (brain.ts:780-794). This picks a tree-hidden spot instead when one exists; 'retreat to cover' (building spot, brain.ts:774-779) is unchanged.",
   "trigger": "TREE_RETREAT_ON AND obs.t >= 10 AND mode === 'retreat' (brain.ts:794) AND enemies with seenAt(me.pos, myHeight, [e], false) non-empty AND NOT already hidden from all of them by trees+buildings AND a tree spot exists AND NOT (near-and-reachable drop OR dropMove OR dropHold).",

@@ -1,6 +1,7 @@
 # Current status for researchers (read this first)
 
 **Doug 10:28 PM ET:** Diego's Mac screens builds with build and champion on the same machine; first two builds (P43 #158, P35b #159) cross-checked on both stations before its verdicts count.
+n**10:29 PM ET: P48 tree retreat scored 4.44 (BB-94897D91), NEW CHAMPION (near-miss data test, drop-ring veto was a sim false negative). PR #157 needs merge; rebase queue onto b9492c6.**
 
 **Doug 10:06 PM ET speed-ups:** Diego's Mac second screening station (P-D-015) moved first; Step A fires check before every new full build; spare tests to near misses every tick. P40b ca549ae scored 4.29 (BB-18893791), LOSS.
 

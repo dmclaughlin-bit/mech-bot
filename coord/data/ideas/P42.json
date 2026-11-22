@@ -10,7 +10,7 @@
     "while mode is 'to next circle' or 'zone escape' (t >= 10), the laser may not take the lead and start a new charge; gun and lightning lead and fire as usual; a charge already in progress is released by the champion's rules"
   ],
   "owner": "Mech Builder",
-  "stage": "building",
+  "stage": "built",
   "pr": null,
   "sha": null,
   "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
@@ -21,7 +21,7 @@
   "score": null,
   "decision": null,
   "blocker": null,
-  "next_action": "Mech Builder: build on branch p42-zone-trip-no-charge (base aee5017, champion P48 b9492c6/edb729f), FASTER checklist bases 0+6000 trees on.",
+  "next_action": "Grok: decide whether to screen (Sim Tester full trees-on paired screen 2000+3000 / 4000+5000) given the negative practice-base deltas; branch head is the flag-ON build.",
   "doug_waiver": false,
   "single_decision": "Whether the laser may start a charge during zone travel. Protocol: while charging you move at half speed (protocol.md:305, charge_move_mult 0.5; sim engine.ts:421). Zone travel (brain.ts:751-760) leaves just in time (needed >= timeLeft with a 10 s buffer, brain.ts:547-552), but the target code (brain.ts:1029, :1094) still starts laser charges on the way, so the trip runs at half speed for each 0.75 s charge plus the time to line up the release.",
   "trigger": "ZONE_TRIP_NO_CHARGE_ON AND obs.t >= 10 AND mode is 'to next circle' or 'zone escape' AND the laser would take the lead (clear target, laser cooldown <= 0, d <= laser range, brain.ts:1029) AND its charge is 0 (a new charge would start at brain.ts:1094). Drop gate: by construction never on a drop tick (zone travel ranks above the drop run and the drop run requires !leaveNow && !trip && me.in_zone, brain.ts:731), and counted with the narrow gate as well.",
@@ -78,7 +78,7 @@
   "source": "Research P41-44 (this run): protocol.md, P-D-007 Step A, passive sim log of the P29 champion.",
   "timestamps": {
     "created": "2026-11-21 21:30 ET",
-    "updated": "2026-11-22 00:20 ET"
+    "updated": "2026-11-22 00:35 ET"
   },
   "sources": [
     "/workspace/mechfight-kit/protocol.md:291, :305, section 9",
@@ -153,5 +153,67 @@
     }
   },
   "base": "aee5017",
-  "champion_merge": "edb729f"
+  "champion_merge": "edb729f",
+  "branch": "p42-zone-trip-no-charge",
+  "flag_off_sha": "130877f57b5a818d08c86366d6b343a668a92f9d",
+  "build_checklist": {
+    "checklist": "coord/BUILD_CHECKLIST.md FASTER (aee5017), trees on, practice bases 0 and 6000 (96 each) vs champion P48 b9492c6 (/workspace/champ-p48/trees-b9492c6-{0,6000}.csv)",
+    "eqdrive_flag_off_vs_main": "IDENTICAL (301 reply lines, md5 bce09293cbbf24bbb2fe5c2447afa2d1, main worktree 233e830)",
+    "check_py": "PASS default max 3.1 ms (p99 2.6); flag on max 4.6 ms (p99 3.4)",
+    "passivity": "instrumented flag-off rows == champion CSV non-timing 96/96 on both bases; instrumented flag-on == plain flag-on bot 96/96 on both bases",
+    "activations_t_lt_10": 0,
+    "withheld_on_drop_tick": 0,
+    "per_base": {
+      "0": {
+        "fired": 12,
+        "diff_behavior": 11,
+        "diff_score": 6,
+        "withheld_starts": 862,
+        "mean_champ": 3.406,
+        "mean_on": 3.323,
+        "paired_delta": -0.083,
+        "se": 0.035,
+        "survivors": "2 vs 2",
+        "kills": "293 vs 285",
+        "deaths_lt_40": "24 vs 24",
+        "drop_ring_arrivals": "5 (4 games) vs 3 (3 games); lost both on seed 44 (fired game)",
+        "pins_ge_20s": "41, 43, 79 (all same as champion, flag ticks in window 0); NEW none",
+        "zone_trip": {
+          "trip_ticks": "3265 vs 2992",
+          "dealt_on_trip": "34931 vs 18504",
+          "taken_on_trip_nonzone": "13275 vs 14220",
+          "zone_damage_taken": "4532 vs 3494",
+          "kills_on_trip": "8 vs 1",
+          "deaths_on_trip": "14 vs 11"
+        }
+      },
+      "6000": {
+        "fired": 17,
+        "diff_behavior": 16,
+        "diff_score": 13,
+        "withheld_starts": 1071,
+        "mean_champ": 3.865,
+        "mean_on": 3.625,
+        "paired_delta": -0.24,
+        "se": 0.104,
+        "survivors": "0 vs 0",
+        "kills": "358 vs 333",
+        "deaths_lt_40": "16 vs 16",
+        "drop_ring_arrivals": "1 (1 game) vs 0; lost seed 6037 (fired game)",
+        "pins_ge_20s": "6011, 6082 (same as champion, flag ticks in window 0); NEW none",
+        "zone_trip": {
+          "trip_ticks": "5777 vs 5134",
+          "dealt_on_trip": "68921 vs 39857",
+          "taken_on_trip_nonzone": "19550 vs 21735",
+          "zone_damage_taken": "4524 vs 2459",
+          "kills_on_trip": "29 vs 15",
+          "deaths_on_trip": "16 vs 16"
+        }
+      }
+    },
+    "blocking_items": "PASS: t<10 s activations 0, no new >=20 s pins, deaths <40 s equal on both bases",
+    "warning": "Paired score delta negative on both bases (-0.083 ± 0.035, -0.240 ± 0.104) and kills on zone trips fell (8->1, 29->15) with damage dealt on trips about halved: the record's what_would_disprove ('fewer kills on zone trips') is met in sim. Zone damage taken fell (4532->3494, 4524->2459). Drop arrivals dipped 5->3 and 1->0 (reported, not blocking).",
+    "method": "Sim /tmp/p42/sim = copy of /workspace/builder-sim (tools/sim byte-identical to /workspace/wt-tester-trees/tools/sim). `cd /tmp/p42/sim && P42_DIR=<log> HAZ_DIR=<traces> SEED_BASE=<b> bun tools/sim/run.ts --bot <bot> --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees`. Bots: passive per-game P42 counters added to copies of this branch (flag off / on), run through a copy of the tester's passive trace wrapper (wrap.template.ts) for pins and drop arrivals (hzlib pins rule); plus the plain flag-on bot. Logs in /tmp/p42 (not committed).",
+    "run": "2026-11-22 00:21-00:28 ET"
+  }
 }

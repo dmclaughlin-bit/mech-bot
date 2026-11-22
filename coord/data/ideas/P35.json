@@ -4,10 +4,13 @@
   "family": "targeting",
   "flag": "UNSEEN_TARGET_ON",
   "owner": "Mech Builder",
-  "stage": "built (PR), waiting for checklist and screen",
+  "stage": "retired",
   "source": "PR #145 research-doug-1941 ranked build 2 (target.ts); first hit decides first fights (KILL/DIED 309/171 vs 129/297)",
   "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
   "created_et": "2026-11-21 19:57",
-  "pr": 150,
-  "sha": "5778086"
+  "pr": "https://github.com/dmclaughlin-bit/mech-bot/pull/150",
+  "sha": "5778086",
+  "status": "retired",
+  "head": "5778086d38a531d03f8d2940f5da1634f9ddd90e",
+  "decision": "9:04 PM ET coordinator: VETO confirmed (https://github.com/dmclaughlin-bit/mech-bot/pull/150#issuecomment-7072641748). Drop-arrival set total 2000+3000 8->7, all from seed 2089 (place 1->9, died 121.45 s before the champion arrival). Effect otherwise flat or negative: +0.010 +/- 0.056 and -0.068 +/- 0.037. Note: seed 2089 also cost P34 and P37 a drop; it is a fragile late-drop game."
 }

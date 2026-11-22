@@ -1,0 +1,54 @@
+{
+  "id": "P66",
+  "title": "BODY_WIDTH_COVER_KNEE_ON: P65's body-width test for the champion's building-cover spot ('retreat to cover'), with the walk lines at knee height (feet + step_up + 0.3 m) instead of mid-height, so walls between 1.2 m and 4.5 m also block a spot",
+  "family": "retreat / movement",
+  "flag": "BODY_WIDTH_COVER_KNEE_ON",
+  "flags": [
+    "BODY_WIDTH_COVER_KNEE_ON"
+  ],
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "stage_note": "Step A (log-only) on P60",
+  "branch": "p66-body-width-cover-knee",
+  "base": "1c20cd14f48561b956be3c73d97de1f2f6e85be9",
+  "base_note": "origin/main 1c20cd1 (contains 490515c and the P60 merge 32acd3d; bot .ts files identical to afb6f26)",
+  "champion": "P60 BACKAWAY_FAR_COVER_ON afb6f26 (main merge 32acd3d, builders-4 3.88, BB-6F449E11)",
+  "champion_code": "afb6f263972480e03d381d5dbb32f56954e8ae73",
+  "champion_main": "32acd3dfd643c3bc46d7f2d96e8db2431d207ba0",
+  "champion_sha_tested_against": "afb6f263972480e03d381d5dbb32f56954e8ae73",
+  "builds_on": [
+    "P65 Step A 43/192, 62/192",
+    "P61 finding: building-cover freezes after 40 s 96/551 and 257/916",
+    "F16"
+  ],
+  "builds_on_detail": "P65 (origin/p65-body-width-cover, PR #185, coord/data/ideas/P65.json): requiring two walk lines offset by +/- the body radius (2.5 m) to be clear for a building-cover spot fired 43/192 and 62/192 in Step A on P60 and cut building-cover freezes after 40 s 96->64 (base 0) and 257->32 (base 6000). Its reuse note 1: all walk lines run at mid-height (4.5 m of a 9 m mech), so walls taller than step_up 1.2 m but shorter than 4.5 m block the body and not the lines; 6024 still freezes at (-41.1,-229.2) behind a 4.1-4.7 m wall, and seeds 84 (38->38) and 1 (6->6) keep their freezes. P61 record (origin/p61-building-cover-commit, reuse 2): the freeze definition and counts on P60. F16/F18: retreat deaths are most deaths and walking to reachable cover helped on the site. N8: legs only, never aim.",
+  "source": "Coordinator brief 2026-11-22 03:30 AM ET (P66 BODY WIDTH KNEE), from P65 reuse note 1",
+  "freeze_definition": "P61/P65's exact definition: a bot decision whose mode is 'retreat to cover' at t >= 40 s, for which the passive ground-truth sim trace has our position at t and at t + 0.5 s; FROZEN when our flat position moved < 0.5 m between t and t + 0.5 s. Reported per base as frozen decisions / building-cover decisions (t >= 40 s). The gate compares the frozen-decision COUNT between P60 and the candidate.",
+  "hypothesis": "The building-cover freezes P65 left (6024, 84, 1) come from walls taller than the 1.2 m step-up but lower than the 4.5 m mid-height where every walk line runs: the lines pass over the wall, the 9 m body walks into it and stops in the open under fire. Running the body-width walk lines at knee height (just above what the legs can step up) sees those walls, so hideSpot picks a spot the body can walk to (another bearing or step), or none (the champion's tree / far-cover / back-away retreat runs), and building-cover freezes after 40 s fall on both practice bases.",
+  "mechanism": "Only in the champion's building-cover call of hideSpot ('retreat to cover'), from t >= TREE_RETREAT_MIN_T (40 s), never in a drop run/hold and never while a drop is near AND reachable within DROP_RUN_M (P48's dropReach test, drop gate rule). For each candidate spot (same 1/2/3 s x 12 bearings order), besides the champion's mid-height center line (unchanged), walk lines at knee height (our feet z + step_up + 0.3 m, at both ends of the walk) at lateral offsets -R, 0, +R (R = our body radius, perpendicular to the walk) must be clear (clearLine, no end skips). Hide test (seenAt center/top lines), other hideSpot callers (rush, ambush, heal hiding, sneak), torso and aim unchanged (N8). No new target, latch or timing change. Flag false = champion byte-identical.",
+  "activation": "Decision-level: a 'retreat to cover' decision of the champion at t >= 40 s with the drop gates open where the knee-height body search returns a different spot than the champion's (another bearing/step, or none). Game-level Step A count = games where this happens at least once (fire + change), per set of 192 (2000+3000, 4000+5000).",
+  "disproof": "Written before any result. P66 fails if (1) the freeze cases 6024, 84 and 1 still freeze, OR (2) building-cover frozen decisions after 40 s (definition above) do not fall on BOTH practice bases 0 and 6000 vs my own P60 baselines, OR (3) the paired mean vs P60 is lower on BOTH practice bases. Standard: Step A fire+change < 10/192 on either set (2000+3000, 4000+5000); deaths < 40 s up on either base; a NEW >= 20 s pin (report flag ticks in the pin window).",
+  "novelty": {
+    "vs_P65": "Same gate, same caller, same body offsets; the only difference is the height of the walk lines (knee, feet + step_up + 0.3 m, instead of mid-height 4.5 m), plus a knee-height center line. P65's walk test can't see walls between 1.2 m and 4.5 m; P66's can. Not a re-test of P65's mechanism: it targets the freezes P65 left (6024, 84, 1).",
+    "vs_P61": "P61 latched the champion's first spot; P66 keeps the every-decision re-pick and only changes which spots count as reachable.",
+    "vs_P57": "P57 (N8) changed torso/aim; P66 is legs only."
+  },
+  "positives": null,
+  "negatives": null,
+  "confidence": "Uncertain (pre-build)",
+  "reuse": null,
+  "outcome": "pending",
+  "pr": null,
+  "sha": null,
+  "screens": [],
+  "timestamps": {
+    "recorded": "2026-11-22 (before Step A results)"
+  },
+  "sources": [
+    "origin/p65-body-width-cover:coord/data/ideas/P65.json (reuse 1, negatives 1)",
+    "origin/p65-body-width-cover brain.ts hideSpot bodyR test",
+    "origin/p61-building-cover-commit:coord/data/ideas/P61.json",
+    "coord/data/findings.md F16, F18, N8, N9, N10",
+    "/workspace/mechfight-kit/protocol.md: ledges up to step_up (1.2 m) are walked up; anything taller is a wall"
+  ]
+}

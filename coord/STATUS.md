@@ -207,3 +207,5 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 
 **3:36 AM ET (loop):** P64 8ada6a4 submitted as near-miss data test, receipt BB-0E81A218 (queued #1 of 11; counter 5 of 6 before, 4 of 6 after). One veto (stall c on 2000+3000, new 3066 pause, change inactive), means flat (+0.000/+0.005), 96-fresh +0.000. Submitted the screened SHA; PR head bd824dc only adds the idea record/log. Next: P65 #185 screen.
 - 3:58 AM ET loop: P64 8ada6a4 scored 3.90 (BB-0E81A218), WIN; promoted to main (merge 297f133). No pending receipt.
+
+- 4:29 AM ET coordinator ruling: P66b #187 26fdc7a seed-46 22 s pin is NON-BLOCKING (same pin as P65, ruled 3:30; 0 flag ticks). Both #187 and #188 contain bc640a6 and have a Sim Tester PASS vs P64. Submit order: #187 first (best paired means, +0.042/+0.042), then #188.

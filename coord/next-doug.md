@@ -87,3 +87,22 @@ Report: kills and kills per minute after 60 s first, on both seed sets, plus gam
 
 ## Past prompts
 (none in this format; earlier assignments are in `coord/log.md`)
+
+---
+
+## Doug 8:06 PM ET: mechanics research directive
+
+Verdict: **APPROVE WITH STIPULATIONS**. Do not begin implementation. Narrow scope only; do not reopen already-tested families.
+
+**Stipulations**
+- Research only. No champion edits, no submissions, no workflow or chart changes, no new infrastructure, no protocol bypass, no countdown manipulation, and no use of `hello.seed` as a match seed (it is per-slot only).
+- New ideas enter as `coord/data/ideas/<id>.json` records under D2 before any build starts.
+- No Mech Wild Sim batch without Doug's yes.
+- Single-change builds go through the normal full paired screen. Only a fully passing build may go to the site.
+- This work competes for the 4 Claude sessions after P33, P34, P35, and the research run already in flight.
+- Do not redo covered families: drop/zone/cover, opening laser and first-fight (PR #145), P30 front-arc facing (retired), P26/P26b healthy boost, B5b heal-and-fire, B125's six-tactic pack (site 3.5, includes TAC_JET_LOOT). P35 unseen-target is already building.
+- Tree/canopy tactics cannot be screened in the current sim (trees are ignored: they block neither sight nor shots). Do not add tree support to the sim, and do not send a tree build to the site, without Doug's yes.
+
+**In scope if later assigned (research first, then one idea record each)**
+1. Tree/canopy vision and blind fire at a sound (protocol: trees block sight, not shots). Blocked on the sim until Doug says otherwise.
+2. Planned jet/roof routes to rooftop loot. Champion nav is ground-only; jump/jet is only the stuck escape. Isolate this from the retired B125 pack.

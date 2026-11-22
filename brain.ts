@@ -786,7 +786,7 @@ function buildBot(hello: Hello): Bot {
         }
       }
       // P48 (TREE_RETREAT_ON): the tree spot for the no-cover retreat, or null (champion back-away). Called only from that
-      // branch. Off before TREE_RETREAT_MIN_T, while a drop run/hold is on, and while a drop is near AND reachable (the
+      // branch. Off before TREE_RETREAT_MIN_T (40 s), while a drop run/hold is on, and while a drop is near AND reachable (the
       // drop run's own candidate filter above, without its state gates); off when trees already hide us from every seer.
       const treeRetreat = (): Vec3 | null => {
         const pace = ZONE_WALK * walkSpeed

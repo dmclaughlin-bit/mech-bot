@@ -1,30 +1,63 @@
 {
   "id": "P38",
-  "title": "Reload the gun in a quiet lull instead of running it dry in the next exchange (LULL_RELOAD_ON)",
+  "title": "Reload the gun in a quiet lull instead of running it dry in the next exchange (LULL_RELOAD_ON), P38b rebuild on champion P34",
   "family": "weapon handling",
   "flags": [
     "LULL_RELOAD_ON"
   ],
   "flag": "LULL_RELOAD_ON",
   "behaviors": [
-    "with an enemy mech as target, send reload when the gun holds fewer than half a magazine, is not reloading, and for at least 1 s we have not fired it, the target has had no clear line, and no visible enemy has line of sight to us; t >= 10 s and no drop listed"
+    "with an enemy mech as target and not in an engage mode, send reload when the gun holds fewer than half a magazine, is not reloading, and for at least LULL_RELOAD_QUIET_S (2 s) we have not fired it, the target has had no clear line, and no visible enemy has line of sight to us; t >= 10 s; never while a drop run/ring hold is in progress or a claimable drop (holder none or us) is within DROP_RUN_M"
   ],
-  "owner": "unassigned (research P34-37; Grok assigns)",
-  "stage": "idea",
+  "owner": "Mech Builder (P38b rebuild)",
+  "stage": "built",
   "pr": null,
   "sha": null,
-  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
-  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
-  "screens": [],
+  "champion_sha_tested_against": "588557e464dd4946680bff964a7c8e86700b8739",
+  "champion_sha": "588557e464dd4946680bff964a7c8e86700b8739",
+  "screens": [
+    {
+      "sha": "flag-on copy of 619fd39cc9afa5d129e242d537afdd13883c5aef",
+      "seed_set": "0/1000/6000/7000 (builder hazard, trees on)",
+      "fired": 35,
+      "diff_behavior": 35,
+      "diff_score": 12,
+      "per_base": {
+        "0": "fired 8 diff 8 score 2, +0.021 +-0.033, arrivals 5->3, d40 24/24",
+        "1000": "fired 8 diff 8 score 0, +0.000 +-0.000, arrivals 1/1, d40 15/14",
+        "6000": "fired 11 diff 11 score 7, +0.000 +-0.033, arrivals 1/1, d40 16->17",
+        "7000": "fired 8 diff 8 score 3, -0.010 +-0.018, arrivals 3/3, d40 22/22"
+      },
+      "pins": "no NEW >= 20 s pin seed on any base; 0 lull-reload ticks in any pin window",
+      "verdict": "FAIL item 3 base 0 (arrivals 5->3, seed 44) and item 5 base 6000 (deaths < 40 s 16->17, seed 6028 engage-collect reload at 18 s). Led to the one fix: no lull reload in engage modes.",
+      "source": "P38b builder hazard run, trees ON, /tmp/builder-sim-trees copy (/tmp/p38b-sim), --jobs 1, passive instrumentation in /tmp/p38b-haz (not committed); plain-vs-instrumented CSVs identical except 1 timing-stall row per run noted"
+    },
+    {
+      "sha": "flag-on copy of 736d73dc7799b8907424e268a1457d878eb598f7",
+      "seed_set": "0/1000/6000/7000 (builder hazard, trees on)",
+      "fired": 27,
+      "diff_behavior": 28,
+      "diff_score": 9,
+      "per_base": {
+        "0": "fired 6 diff 7 (seed 4 = timing stall in the instrumented run, flag never fired; plain run identical) score 1 (instrumented) / 0 (plain), plain +0.000 +-0.000, arrivals 5->3, d40 24/24, survivors 2/2, kills 292/292 (plain)",
+        "1000": "fired 6 diff 6 score 0, +0.000 +-0.000, arrivals 1/1, d40 15/14, survivors 2/2, kills 368/368",
+        "6000": "fired 9 diff 9 score 6, plain +0.010 +-0.038 (4 better / 3 worse), arrivals 1/1, d40 16/16, survivors 0/0, kills 368/370 (plain)",
+        "7000": "fired 6 diff 6 score 2, +0.000 +-0.015 (1/1), arrivals 3/3, d40 22/22, survivors 1/1, kills 367/367"
+      },
+      "pins": "no NEW >= 20 s pin seed on any base (main/P38b 3/3, 4/4, 2/2, 1/1, same windows); 0 lull-reload ticks in any pin window",
+      "verdict": "FAILED item 3 base 0: drop-ring arrival total 5 -> 3 (seed 44 only: lull reload at 137.9 s in heal; P38b still wins place 1 with 12 kills, but kills the last house bot at 222.4 s, so the match ends before the two drops main arrives at from 222.2 s; main wins at 287.9 s). All other items PASS on all four bases. One fix used; no second fix.",
+      "source": "P38b builder hazard run, trees ON, /tmp/builder-sim-trees copy (/tmp/p38b-sim), --jobs 1, passive instrumentation in /tmp/p38b-haz (not committed); plain-vs-instrumented CSVs identical except 1 timing-stall row per run noted"
+    }
+  ],
   "receipt": null,
   "site_score": null,
   "score": null,
-  "decision": null,
-  "blocker": null,
-  "next_action": "Grok: assign or park. If built: one flag LULL_RELOAD_ON default false (+LULL_RELOAD_QUIET_S 1), base-0 hazard with fired/diff/score and the clear-target-while-reloading count.",
+  "decision": "Doug 10:30 PM ET (via Coordinator): 'Count the seed 44 drop as not a real loss and send P38b to the screen.' Base-0 item 3 (5->3, seed 44 won sooner at 222.4 s vs main 287.9 s, same place/score) waived; flag-ON head sent to Sim Tester.",
+  "blocker": "Checklist item 3 (HARD) fails on base 0: drop-ring arrival total 5 -> 3, one seed (44), where P38b wins the match outright (place 1, same as main) 65 s sooner, before the drops land. One fix (engage-mode exclusion) already used.",
+  "next_action": "Grok/Doug: decide whether an arrival 'loss' caused by winning the match earlier (equal place, equal score) counts under item 3; otherwise park P38b. Flag-false head pushed on p38b-lull-reload for inspection.",
   "doug_waiver": false,
   "single_decision": "Extend the champion's existing early reload (brain.ts:1071 reloads at < half a magazine when no enemy is known) to the 'enemy known but no line either way for 1 s' lull. Movement, aim and fire are unchanged.",
-  "trigger": "target is an enemy mech (not a farm shot) AND !target.clear AND gun ammo < mag/2 AND gun reload == 0 AND the gun is not set to fire this tick AND no threat has seenAt(cone=false) LOS to us AND the last tick with gun fire, a clear target or LOS on us is >= LULL_RELOAD_QUIET_S (1 s) ago AND obs.t >= 10 AND obs.drops.length === 0",
+  "trigger": "target is an enemy mech (not a farm shot) AND mode does not start with 'engage' (P38b fix round) AND gun ammo < mag/2 AND gun reload == 0 AND no forced reload this tick AND this tick has no contact AND the last contact was >= LULL_RELOAD_QUIET_S (2 s) ago, where contact = our gun fires, our target has a clear line, or a visible enemy has seenAt(cone=false) LOS to us (also tracked in the no-target branch) AND obs.t >= 10 AND drop gate open: no drop run/ring hold in progress (dropRun === null) and no claimable drop (holder null or us) within DROP_RUN_M (champion P34's dropOpen test)",
   "hook": "brain.ts act(), target branch: next to the forced reload at brain.ts:1052 (`if (gun >= 0 && (w(gun).ammo ?? 1) === 0 && (w(gun).reload ?? 0) <= 0) act.reload = true`), after the fire decisions at brain.ts:1024-1027. One closure variable next to standoffId (brain.ts:310) holds the last contact time. Compare the no-target branch brain.ts:1070-1071. Flag + LULL_RELOAD_QUIET_S in params.ts.",
   "observable_inputs": [
     "self.weapons[gun].ammo / reload / stats.mag (protocol.md:184)",
@@ -33,7 +66,7 @@
     "obs.drops",
     "action reload (protocol.md:231)"
   ],
-  "gates": "Cannot start before t = 10 s (explicit obs.t >= 10). Never starts while any supply drop is listed in obs.drops (called and not yet taken; protocol.md:359 every mech sees it from the moment it is called), so it never runs while a drop is announced/active and can never displace drop run/hold (those need a listed drop). Off = champion exactly (flag false short-circuits). No movement change at all.",
+  "gates": "Cannot start before t = 10 s (explicit obs.t >= 10). Drop gate (Coordinator rule, /workspace/drop-gate-rule.txt): never while a drop run or ring hold is in progress, and never while a claimable drop is near and reachable within DROP_RUN_M (the same read-only test as champion P34's lethal-release dropOpen and the midring settle's dropNear). Not 'any drop listed': an untaken drop sits in obs.drops almost all game. The gate is read on the same tick the drop run starts, so it yields on that tick. Off = champion exactly (flag false short-circuits). No movement change at all.",
   "evidence": {
     "sim_forced_reloads": "Champion auto-reloads at 0 ammo with an enemy target 791 times in 181/192 games; the gun is reloading while a clear enemy target is present for 27,562 decisions (~2,756 s) in 190/192 games.",
     "sim_trigger_state": "Spec trigger (1 s quiet): 52 reload starts in 31/192 games. All lull decisions without the quiet gate (1,657 in 70/192 games): ammo median 3 of 12 (p10 1, p90 5), target distance median 70 m (p10 42, p90 163), alive median 15, t median 35.0 s (p10 15.2, p90 58.6).",
@@ -42,14 +75,15 @@
     "showdown_first_fights": "PR #145 coord/research-doug-1941.md: first hit decides first fights (KILL/DIED 309/171 when ours vs 129/297); median first-fight duration 4.5-4.8 s, longer than one magazine, so a fight entered with ~3 rounds contains a 2.4 s reload.",
     "watcher": "No reload metric in coord/data/watcher (not measured)."
   },
-  "estimated_activation": "~31/192 games on 2000+3000 (52 starts; champion code + passive sim log). Held-out set not measured.",
+  "estimated_activation": "P38b (trees on, champion 588557e): early count 16/192 on 0+1000 before the fix; after the engage-mode fix 12/192 on 0+1000, 27/384 on 0/1000/6000/7000. 2000-5000 not run.",
   "closest_prior_test": "None on reload timing. Nearest fire-handling tests: B15 aim lead + fire discipline LOSS (2.65 vs 2.98) and B7 drop the 100 m gun gate LOSS (2.04 vs 2.38); both changed when we shoot, P34 changes only when an idle gun refills. Not in the B125 package list (TAC_SPACE_EARLY, TAC_FIRE_MOVE, TAC_DODGE, TAC_JET_LOOT, TAC_LASER_REACH, TAC_FINISH_AMMO).",
   "what_would_disprove": "Paired screen: decisions with a clear enemy target while reloading not lower in fired games, or first-3-s damage dealt after re-contact lower, or deaths in the 10 s after an activation higher than the champion; fired < 10/192. The 52% 'target back within 2.4 s' share is the main way this loses.",
   "risks": "Pins: none (no movement). Drops: no movement, and gated on obs.drops empty. Combat: a reload started just before the target reappears delays the first shot by up to 2.4 s (52% of starts in the champion log); the reload makes a 60 m sound (protocol.md sound list). Lightning/laser holders keep their other weapon, so the cost is smaller for them.",
   "source": "Research P34-37 (this run): champion reload rules brain.ts:1052/1071 + passive sim log; PR #145 first-fight table",
   "timestamps": {
     "created": "2026-11-21 19:55 ET",
-    "updated": "2026-11-21 19:55 ET"
+    "updated": "2026-11-22 ET",
+    "p38b_started": "2026-11-22 ET (P38b rebuild)"
   },
   "sources": [
     "brain.ts (origin/main d7fca14 = 6182d29 bot code)",
@@ -57,9 +91,33 @@
     "tools/sim/engine.ts",
     "coord/data/site_results.csv",
     "https://github.com/dmclaughlin-bit/mech-bot/pull/145 (coord/research-doug-1941.md)",
-    "Instrumented champion sim (this research run): a copy of the champion bot files from origin/main d7fca14 (bot code identical to 6182d29: git diff 6182d29 HEAD on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p3437/bot, with passive per-decision CSV logging appended before act.move (no action changed). Run: bun tools/sim/run.ts --worker --seed-list 2000-2095,3000-3095 (one job, 192 games, ~5 min). Sanity: mean 16-place 3.531 vs 3.542 for the same seeds in coord/data/research/heal-positioning.md; deaths < 40 s 56/192. Logs are in /tmp (not committed). Held-out 4000+5000 not run (kept light)."
+    "Instrumented champion sim (this research run): a copy of the champion bot files from origin/main d7fca14 (bot code identical to 6182d29: git diff 6182d29 HEAD on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p3437/bot, with passive per-decision CSV logging appended before act.move (no action changed). Run: bun tools/sim/run.ts --worker --seed-list 2000-2095,3000-3095 (one job, 192 games, ~5 min). Sanity: mean 16-place 3.531 vs 3.542 for the same seeds in coord/data/research/heal-positioning.md; deaths < 40 s 56/192. Logs are in /tmp (not committed). Held-out 4000+5000 not run (kept light).",
+    "/workspace/patches/p38-bot.diff; branch origin/p38-lull-reload (read only) record bb2a884; /workspace/drop-gate-rule.txt"
   ],
   "renumbered_from": "P34",
   "priority_rank": 3,
-  "coordinator_note": "Ranked 3 at 8:13 PM ET: queued. Champion is now P29 2e1d036 / main b6f2f8b; trigger counts came from the old champion, so re-count them."
+  "coordinator_note": "Ranked 3 at 8:13 PM ET: queued. Champion is now P29 2e1d036 / main b6f2f8b; trigger counts came from the old champion, so re-count them.",
+  "branch": "p38b-lull-reload",
+  "champion_note": "Champion = P34 rebuilt (0e6fadd, merged as 8c130ad, main 588557e; LETHAL_RELEASE_ON = true; site 4.38, BB-ABEB42BF).",
+  "drop_gate": "Near-and-reachable gate (dropRun !== null, or a drop with holder null/us within DROP_RUN_M flat), replacing P38's plain 'obs.drops empty' gate, per the Coordinator drop gate rule.",
+  "rebuild": {
+    "of": "P38 (branch p38-lull-reload, flag-off c6fdb6c, head e947614; reference /workspace/patches/p38-bot.diff on old P29 base b6f2f8b)",
+    "why": "Old base FAILED checklist item 3 on base 1000 (drop-ring arrivals 3 -> 1, seed 1010, trees off). Rebuilt on champion P34 588557e with trees ON and the Coordinator near-and-reachable drop gate; same behavior otherwise (quiet 2 s).",
+    "checklist": "coord/BUILD_CHECKLIST.md: trees on, four bases 0/1000/6000/7000, size check"
+  },
+  "prior_build_p38": {
+    "champion": "b6f2f8be91abacbf9f31469ce8b5ad4576c289c9",
+    "result": "FAIL item 3 base 1000 (arrivals 3->1, seed 1010), trees off, plain gate; fired 12/192 on 0+1000 at quiet 2 s"
+  },
+  "flagoff_sha": "736d73dc7799b8907424e268a1457d878eb598f7",
+  "sha_note": "FAILED: no flag-true commit was made. The branch head is the flag-false record commit after 736d73dc7799b8907424e268a1457d878eb598f7.",
+  "build_checklist": {
+    "1_record_one_change_eqdrive_gate": "PASS: record first (c340c36); one behavior, one flag LULL_RELOAD_ON default false (+LULL_RELOAD_QUIET_S 2); eqdrive flag-off vs origin/main 588557e IDENTICAL (cmp, 302 lines) at both flag-off commits; check.py --map-dir arena PASS default max 3.8 ms, flag-on max 4.8 ms",
+    "2_opening": "PASS: 0 lull reloads at t < 10 s on all four bases (earliest 53.5 / 10.0 / 11.7 / 37.2 s)",
+    "3_drops": "FAIL base 0: arrivals main/P38b 5/3, 1/1, 1/1, 3/3 (bases 0/1000/6000/7000). 0 lull reloads in drop run/hold/capture modes; near-and-reachable gate (no drop run, no claimable drop within DROP_RUN_M) read on the same tick",
+    "4_pins": "PASS: >= 20 s pin seeds main/P38b 3/3, 4/4, 2/2, 1/1, same windows, no NEW, 0 flag ticks inside",
+    "5_early_deaths": "PASS (after fix): deaths < 40 s main/P38b 24/24, 15/14, 16/16, 22/22",
+    "6_counts": "fired / diff behavior / diff score: base 0 6/7/1 (plain 0), base 1000 6/6/0, base 6000 9/9/6, base 7000 6/6/2; activation 0+1000: 16/192 before the fix, 12/192 after",
+    "extra": "lull reloads sent 7/6/10/8; clear target back during the reload 1/2/4/5; kills (plain) main 292/368/368/367 vs P38b 292/368/370/367"
+  }
 }

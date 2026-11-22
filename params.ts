@@ -173,3 +173,16 @@ export const LETHAL_RELEASE_ON = true
 export const LETHAL_RELEASE_MARGIN = 0.8
 /** Never release early before this match time (s): play before it, and so every death before 40 s, equals the champion's. */
 export const LETHAL_RELEASE_MIN_T = 40
+
+/**
+ * P38 (lull reload, P38b rebuild on P34): with an enemy mech as target, send reload when the gun holds fewer than half a
+ * magazine, is not reloading, and for at least LULL_RELOAD_QUIET_S we have not fired it, our target has had no clear
+ * line, and no visible enemy has line of sight to us. Never in an engage mode (engage ttk/finish/collect/standoff),
+ * never before t = 10 s, and never while a drop run/hold is possible (a drop run in progress, or a claimable drop
+ * within DROP_RUN_M; the lethal release's dropOpen test). Movement, aim and fire are unchanged. false = champion
+ * behavior exactly. Quiet is 2 s (first try 1 s: a clear target came back during 18 of 25 lull reloads in the base
+ * 0+1000 hazard run). P38b fix round: the engage-mode exclusion (first P38b hazard run: base 0 drop-ring arrivals
+ * 5 -> 3 after an engage-collect reload, base 6000 deaths < 40 s 16 -> 17 after an engage-collect reload at 18 s).
+ */
+export const LULL_RELOAD_ON = true
+export const LULL_RELOAD_QUIET_S = 2

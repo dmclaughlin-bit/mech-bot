@@ -156,3 +156,18 @@ export const MIDRING_HI = 0.7
 export const MIDRING_GOAL = 0.55
 export const MIDRING_MIN_R = 70
 export const MIDRING_STUCK_S = 3
+
+/**
+ * P34 (lethal release, PR #145 build 1): while charging the laser at the locked enemy mech with the torso lined up
+ * (the existing `lined` test, no re-aim), let go as soon as the charge already in is lethal instead of waiting for a
+ * full charge. Damage at the current charge follows protocol §7: damage × (min_frac + (1 − min_frac) × charge / full),
+ * with charge counted as at least min_charge (a release before it fires once that much is in), × our cube damage bonus
+ * (damage_per_cube × min(cubes, stat_cap)), × (1 + cookoff) if the target holds a mortar. Lethal = LETHAL_RELEASE_MARGIN
+ * × that ≥ the target's shown hp (the margin covers its armor and regen, which we cannot see). Never before
+ * LETHAL_RELEASE_MIN_T. Target choice, aim, movement and every other decision are unchanged. false = champion exactly.
+ */
+export const LETHAL_RELEASE_ON = false
+/** Share of the computed partial-charge damage that must cover the target's hp (top-16 public bot: 0.8). */
+export const LETHAL_RELEASE_MARGIN = 0.8
+/** Never release early before this match time (s): the opening is untouched. */
+export const LETHAL_RELEASE_MIN_T = 10

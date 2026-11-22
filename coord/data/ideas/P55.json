@@ -1,0 +1,54 @@
+{
+  "id": "P55",
+  "title": "ZONE_TRIP_LASER_COMMIT",
+  "family": "zone travel / weapon timing",
+  "flags": ["ZONE_TRIP_LASER_COMMIT_ON"],
+  "flag": "ZONE_TRIP_LASER_COMMIT_ON",
+  "behaviors": [
+    "on a zone trip (mode 'to next circle' or 'zone escape', as P42 defined it, t >= 10 s), when the laser is ready (charge 0, cooldown <= 0) and an enemy mech is in view with a clear line inside laser range, but the champion would not start a charge (the laser does not lead because the picked target is behind cover or beyond laser range), start the charge anyway; the champion's existing charge rules (Build 17 re-aim/rescue onto a hittable enemy, full-charge release, P34 lethal release) then aim and release it"
+  ],
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "base": "e5f7a85",
+  "champion": "b9492c6/edb729f",
+  "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_merge": "edb729f",
+  "branch": "p55-zone-trip-laser-commit",
+  "pr": null,
+  "sha": null,
+  "builds_on": [
+    "F2",
+    "N4"
+  ],
+  "builds_on_evidence": {
+    "F2": "Lethal laser release (P34) is a site-proven win: site 4.38 (BB-ABEB42BF), +0.03 over P29; in the champion. Laser shots that land on a target convert to kills.",
+    "N4": "P42 (ZONE_TRIP_NO_CHARGE_ON, branch 39b342c) removed laser charges on zone trips: zone-trip kills fell 8->1 (base 0) and 29->15 (base 6000), and both practice bases were negative (-0.083 +/- 0.035, -0.240 +/- 0.104). So laser charges on zone trips produce kills."
+  },
+  "novelty": "Opposite direction to P42 (which withheld charges the champion starts on zone trips; retired, N4). P55 adds charges the champion does NOT start today: the champion's weapon lead (brain.ts, 'Pick the weapon that steers the aim') starts a laser charge only when the PICKED target (TARGET_PICK lock) is clear and inside laser range; when the picked target is behind cover or beyond laser range but another enemy is clear inside laser range, the laser stays idle. P55 starts the charge in that case on zone trips only; the champion's existing Build 17 rescue then turns the charge onto the hittable enemy. Lethal release (F2/P34), zone pathing, boost, retreat, tree logic and the drop gate are unchanged.",
+  "hypothesis": "N4 shows laser charges on zone trips produce kills; the champion leaves the laser idle on some zone-trip ticks where a clear enemy is inside laser range (picked target elsewhere). Starting the charge there should add zone-trip laser hits and kills without changing the route.",
+  "mechanism": "ZONE_TRIP_LASER_COMMIT_ON (default false, params.ts): in act(), after the champion's laser fire decision, if t >= 10, mode is 'to next circle' or 'zone escape', the laser has charge 0 and cooldown <= 0, the champion did not set fire on the laser, and some LOS-checked enemy mech option is clear with distance <= laser range, set fire[laser] = true (start the charge). No aim or movement change on that tick; on later ticks the champion's charge code (rescue/re-aim, full or lethal release when lined) handles the charge.",
+  "activation": null,
+  "positives": null,
+  "negatives": "Known cost from P42's hypothesis: charging halves walk speed (protocol charge_move_mult 0.5) during the trip, which could raise zone damage or zone-trip deaths.",
+  "confidence": "Uncertain",
+  "reuse": null,
+  "outcome": "pending",
+  "disproof": "if Step A < 10/192 on either set, or practice shows deaths <40 s rising or zone-trip deaths rising on either base, stop and report, no PR",
+  "drop_gate": "Zone travel modes rank above the drop run/hold (brain.ts mode chain), so the trigger never runs on a drop-run/hold tick; Step A also counts with the coordinator's reach gate (no drop passing the champion's drop-run candidate filter within DROP_RUN_M, no dropMove/dropHold), never 'any drop exists'.",
+  "step_a_result": null,
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "doug_waiver": false,
+  "source": "Coordinator brief 1:00 AM ET Sun Nov 22 (P55 ZONE TRIP LASER COMMIT TASK).",
+  "timestamps": {
+    "created": "2026-11-22 01:05 ET",
+    "updated": "2026-11-22 01:05 ET"
+  },
+  "sources": [
+    "coord/data/findings.md (F2, N4)",
+    "coord/data/ideas/P42.json",
+    "origin/p42-zone-trip-no-charge (39b342c, read-only)",
+    "brain.ts at e5f7a85 (champion P48 b9492c6 bot code)"
+  ]
+}

@@ -1,2 +1,0 @@
-seed,slot,place,score,death_t,killer,killer_weapon,kills,damage_dealt,damage_taken,cubes,upgrades,weapons,house_dead,hunters_at_end,our_gun_shots,our_gun_hits,house_gun_shots,house_gun_hits,decisions,missed,late_over_50ms,bot_ms_mean,bot_ready,laser_t,laser_by_30s,in_zone,zone_edge,pos_x,pos_y,pos_z,charging,attackers_5s,dmg_5s,rear_hits,last_hit_rear,sees_us,killer_dist,killer_rear,fight_hp,zone_dmg,speed
-3050,1,14,2,31.00,house:hard#12,gun,2,2790,1408,0,,gun,2,3,68,62,88,20,310,0,0,0.33,1,,0,1,304.1,-75.0,155.2,-2.4,0,1,90,13,0,2,21.6,0,83,0,5.01

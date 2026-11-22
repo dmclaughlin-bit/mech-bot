@@ -129,3 +129,6 @@ Mech Builder's P41b Step 1 trace log (branch p41b-sound-look-no-stall c3a5bef): 
 
 ## P62 d3c356a (3:09 AM ET)
 In pool as near-miss data test, submitted BB-AD32CDFC. One veto type: stall (b on 2021, c 2->3 on both sets); look inactive during both pauses; means +0.036 / +0.057 vs P60.
+
+## P64 8ada6a4 (3:36 AM ET)
+Near-miss data test, submitted BB-0E81A218. One veto: stall c 2->3 (2000+3000). Means +0.000 / +0.005.

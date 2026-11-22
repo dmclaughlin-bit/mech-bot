@@ -10,18 +10,35 @@
   "on a non-firing tick after t >= 10 s, with no drop called and in retreat / heal / hide mode, when a mech that damaged us in the last 2 s is in view and outside 45 deg of the torso aim we would command, turn the torso just enough to put it within 45 deg; legs, path, retreat/heal thresholds and targets unchanged"
  ],
  "owner": "Mech Builder",
- "stage": "building",
+ "stage": "screening",
  "pr": null,
- "sha": null,
+ "sha": "867345d93eb180b875e295d7a64d705a37c9c7c8",
  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
- "screens": [],
+ "screens": [
+  {
+   "sha": "867345d93eb180b875e295d7a64d705a37c9c7c8",
+   "seed_set": "0 (base-0 hazard, n=96, builder run)",
+   "fired": 29,
+   "diff_behavior": 29,
+   "diff_score": 8,
+   "pins": "pin episodes (10 s windows stepped 1 s, in zone, moved < 3 m, mean move > 0.3) 11 to 11; the same six >=20 s pins in both (seeds 16, 41, 43, 78, 79, 92), no new pin, flag never active in any of them",
+   "verdict": "builder hazard PASS (not a Sim Tester screen)",
+   "source": "builder run on branch p30-front-arc: /tmp/wild-sim copy with passive per-decision logging, flag-on temp copy vs origin/main worktree, 2026-11-22",
+   "sim_delta": 0.042,
+   "sim_se": 0.039,
+   "games_changed": 8,
+   "better": 6,
+   "worse": 2,
+   "notes": "diff_behavior counts games whose action stream differs (every activation changes the aim command); 19 of the 29 also differ in position/mode/hits/outcome. 504 activation decisions: 0 in t < 10 s, 0 while a drop is called or in drop mode. Drop-ring arrivals 5 vs 5 (captures 5 vs 5). Deaths < 40 s 33 vs 33. Rear share of mech hits 15.2% vs 15.2% (rear share of mech damage 21.3% vs 20.4%); in the trigger state 19.5% (227/1167) vs 19.1% (225/1180). Mech damage taken 1445 vs 1423 per game; kills 3.16 vs 3.19. Sim delta is information only."
+  }
+ ],
  "receipt": null,
  "site_score": null,
  "score": null,
  "decision": null,
- "blocker": "build in progress; needs a one-flag branch and a complete both-set screen of that exact SHA before any site test",
- "next_action": "Mech Builder delivers branch p30-front-arc with base-0 hazard run; then Sim Tester runs both seed sets",
+ "blocker": "needs a complete both-set Sim Tester screen of this exact SHA vs champion 6182d29 before any site test",
+ "next_action": "Sim Tester screens 2000+3000 and 4000+5000 with FACE_ATTACKER_ON true (temp copy) vs 6182d29",
  "doug_waiver": false,
  "source": "coord/data/watcher/RANKED.md items 1 and 3 (late-game evasion while HP < 35%, alive 2-4) and their family note: facing the attacker (front-arc discipline) has not been site-tested; rear armor is 180 deg front / 180 deg back. Feasibility: mechfight-kit protocol.md:226 (legs independent of the torso) and protocol.md:295 (front arc centered on the torso aim yaw).",
  "timestamps": {
@@ -32,5 +49,12 @@
   "coord/data/watcher/RANKED.md",
   "coord/BUILD_CHECKLIST.md",
   "/workspace/mechfight-kit/protocol.md"
- ]
+ ],
+ "checks": {
+  "contains_champion": "PASS (merge-base --is-ancestor 6182d29)",
+  "flag0_identical": "PASS (eqdrive flag-off vs origin/main worktree: identical, cmp)",
+  "check_py": "PASS 300/300: flag on p99 1.1 ms max 4.1 ms; committed default p99 0.9 ms max 2.5 ms",
+  "single_change": "PASS (params.ts one flag FACE_ATTACKER_ON=false + brain.ts one guarded aim block, label suffix)",
+  "feasibility": "YES: protocol.md:226 legs independent of the torso; protocol.md:295 front arc centered on the torso aim yaw; damaged.rear exposed (protocol.md:201)"
+ }
 }

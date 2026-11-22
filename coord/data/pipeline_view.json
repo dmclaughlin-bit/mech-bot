@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 21:59 ET",
- "origin_main": "3e83367fbedaa2365ec7cb24be6ab531d1ef3434",
+ "generated_at_et": "2026-11-21 22:06 ET",
+ "origin_main": "3d08872ebdf373f0c18fe34e9a27a258a341c73b",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -27,9 +27,9 @@
   ],
   "slots": {
    "limit": 6,
-   "used_rolling_60": 2,
-   "used_clock_hour": 2,
-   "last_submit": "2026-11-21 21:10 ET"
+   "used_rolling_60": 3,
+   "used_clock_hour": 1,
+   "last_submit": "2026-11-21 22:00 ET"
   },
   "ready_count": 0,
   "ready_items": [],
@@ -60,31 +60,32 @@
   ],
   "reserve_target": "2 fully screened + 1 researched (WORKFLOW.md, Doug 5:41 PM ET)",
   "since": "2026-11-21 12:00 ET",
-  "tests_since": 23,
-  "wins_since": 6,
-  "scored_since": 22,
+  "tests_since": 24,
+  "wins_since": 7,
+  "scored_since": 23,
   "wins_vs_champion_at_time": [
    "B103",
    "B105-PB001",
    "B107",
    "B113",
    "P29",
-   "P34"
+   "P34",
+   "P40b"
   ],
-  "tests_vs_current_champion": 1,
-  "wins_vs_current_champion": 1,
-  "pre_click_screen_complete": 4,
-  "site_items_since": 23
+  "tests_vs_current_champion": 2,
+  "wins_vs_current_champion": 2,
+  "pre_click_screen_complete": 5,
+  "site_items_since": 24
  },
  "board": {
   "Idea": 0,
-  "Researched": 25,
+  "Researched": 26,
   "Assigned": 0,
   "Built (PR)": 1,
   "Screened": 15,
   "READY": 0,
   "Submitted": 1,
-  "Scored": 0,
+  "Scored": 1,
   "Merged": 5,
   "Retired": 45
  },
@@ -1924,6 +1925,119 @@
    "primary_pr": 147,
    "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/147",
    "from_idea_record": true
+  },
+  {
+   "id": "P40b",
+   "title": "P40b roof jet route (ROOF_JET_ROUTE_ON) on P34, Doug 10:00 PM ET direct order (used a spare slot) despite trees-on screen VETO (early deaths 38->39 on 4000+5000",
+   "kind": "build",
+   "source": "unknown",
+   "owner": "unknown",
+   "decision": "P40b roof jet route (ROOF_JET_ROUTE_ON) on P34, Doug 10:00 PM ET direct order (used a spare slot) despite trees-on screen VETO (early deaths 38->39 on 4000+5000; stall (c) 2->3 on 2000+3000)",
+   "changes": 1,
+   "changes_basis": "one behavior in the summary",
+   "multi": false,
+   "site": {
+    "submitted_et": "2026-11-21 22:00 ET",
+    "score": 4.29,
+    "champion_then": 4.17,
+    "delta": 0.12,
+    "outcome": "win",
+    "receipt": "BB-18893791",
+    "verdict": "LOSS",
+    "result_logged_et": null,
+    "result_url": null
+   },
+   "screen": {
+    "both": true,
+    "status": "both_before_click",
+    "sets": [
+     "A",
+     "B"
+    ],
+    "when_both": "2026-11-21 21:56 ET",
+    "events": [
+     {
+      "src": "PR #155 comment",
+      "sets": [
+       "A",
+       "B"
+      ],
+      "at": "2026-11-21 21:57 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/155#issuecomment-7073238443",
+      "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "PR #155 comment",
+      "sets": [
+       "A",
+       "B"
+      ],
+      "at": "2026-11-21 21:58 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/155#issuecomment-7073245075",
+      "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "PR #155 body table (time = PR opened; body may have been edited)",
+      "sets": [
+       "A",
+       "B"
+      ],
+      "at": "2026-11-21 21:47 ET",
+      "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/155",
+      "after_click": false,
+      "exact_sha": false
+     },
+     {
+      "src": "screens.csv P40b",
+      "sets": [
+       "A"
+      ],
+      "at": "2026-11-21 21:56 ET",
+      "url": null,
+      "after_click": false,
+      "exact_sha": true
+     },
+     {
+      "src": "screens.csv P40b",
+      "sets": [
+       "B"
+      ],
+      "at": "2026-11-21 21:56 ET",
+      "url": null,
+      "after_click": false,
+      "exact_sha": true
+     }
+    ]
+   },
+   "screened_before_click": true,
+   "postmortems": [],
+   "first_mention": "2026-11-21 21:55 ET",
+   "sha": "ca549ae45e712c9747244f5cf2e6598ee7003874",
+   "champion_sha_note": "588557e",
+   "research": [],
+   "prs": [
+    {
+     "n": 155,
+     "url": "https://github.com/dmclaughlin-bit/mech-bot/pull/155",
+     "state": "open",
+     "head": "ca549ae45e712c9747244f5cf2e6598ee7003874",
+     "title": "P40b: roof jet route (ROOF_JET_ROUTE_ON) on champion P34, narrow drop gate"
+    }
+   ],
+   "pr_opened": "2026-11-21 21:47 ET",
+   "primary_pr": 155,
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/155",
+   "pr_state": "open",
+   "head": "ca549ae45e712c9747244f5cf2e6598ee7003874",
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": true,
+   "stage_idx": 7,
+   "stage": "Scored",
+   "outcome": "win",
+   "blocker": null
   },
   {
    "id": "P-B-004",
@@ -4894,6 +5008,45 @@
    "from_idea_record": true
   },
   {
+   "id": "P50",
+   "title": "ST-1 clear-shot laser charge: start charging only when the shot is clear and lined up",
+   "kind": "build",
+   "source": "Sim Tester death report 20261121-2153-0e6fadd (ST-1)",
+   "owner": "Diego's Claude",
+   "decision": "Doug assigned to Diego's Claude, Sat Nov 21 10:02 PM ET",
+   "changes": 1,
+   "changes_basis": "idea record flags",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": null,
+   "champion_sha_note": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+   "research": [],
+   "prs": [],
+   "pr_opened": null,
+   "primary_pr": null,
+   "pr_url": null,
+   "pr_state": null,
+   "head": null,
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Researched",
+   "outcome": null,
+   "blocker": null,
+   "from_idea_record": true
+  },
+  {
    "id": "P37",
    "title": "While healing unseen, walk to a visible cube instead of standing still (HEAL_PICKUP_ON)",
    "kind": "build",
@@ -6850,6 +7003,32 @@
     "LETHAL_RELEASE_ON"
    ],
    "multi": false
+  },
+  {
+   "build": "P40b",
+   "submitted_et": "2026-11-21 22:00 ET",
+   "sub_dt": "2026-11-21T22:00:00-05:00",
+   "sha": "ca549ae45e712c9747244f5cf2e6598ee7003874",
+   "parent": "588557e",
+   "champion_then": 4.17,
+   "champion_recorded": 4.38,
+   "score": 4.29,
+   "delta": 0.12,
+   "outcome": "win",
+   "receipt": "BB-18893791",
+   "pr_url": "https://github.com/dmclaughlin-bit/mech-bot/pull/155",
+   "pr": 155,
+   "summary": "P40b roof jet route (ROOF_JET_ROUTE_ON) on P34, Doug 10:00 PM ET direct order (used a spare slot) despite trees-on screen VETO (early deaths 38->39 on 4000+5000; stall (c) 2->3 on 2000+3000)",
+   "family": "movement",
+   "verdict": "LOSS",
+   "changes": 1,
+   "changes_basis": "one behavior in the summary",
+   "diff_bool_flags": 1,
+   "diff_knobs_changed": 0,
+   "diff_flag_names": [
+    "ROOF_JET_ROUTE_ON"
+   ],
+   "multi": false
   }
  ],
  "change_audit": {
@@ -6990,10 +7169,10 @@
     "submitted_et": "2026-11-21 17:33 ET"
    }
   ],
-  "all_tests": 74,
+  "all_tests": 75,
   "single": {
-   "n": 57,
-   "wins": 13
+   "n": 58,
+   "wins": 14
   },
   "multi": {
    "n": 15,
@@ -7005,8 +7184,8 @@
    "B125"
   ],
   "since_noon_single": {
-   "n": 19,
-   "wins": 6
+   "n": 20,
+   "wins": 7
   },
   "since_noon_multi_rate": {
    "n": 3,
@@ -7032,7 +7211,7 @@
   {
    "id": "champion_at_time",
    "ok": false,
-   "text": "site_results.csv champion_score_at_time disagrees with the champion actually standing at click time for: B104 (recorded 3.79, champion then 3.92), P34 (recorded 4.35, champion then 4.17), P34 (recorded 4.35, champion then 4.17)"
+   "text": "site_results.csv champion_score_at_time disagrees with the champion actually standing at click time for: B104 (recorded 3.79, champion then 3.92), P34 (recorded 4.35, champion then 4.17), P34 (recorded 4.35, champion then 4.17), P40b (recorded 4.38, champion then 4.17)"
   },
   {
    "id": "champion_history",
@@ -7042,12 +7221,12 @@
   {
    "id": "q_py_store",
    "ok": false,
-   "text": "pipeline/data/experiments.jsonl (what q.py eligible reads) has 13 records; coord/data/site_results.csv has 74"
+   "text": "pipeline/data/experiments.jsonl (what q.py eligible reads) has 13 records; coord/data/site_results.csv has 75"
   },
   {
    "id": "screens_csv",
    "ok": false,
-   "text": "17 of 23 site-tested builds since noon have no complete (both-set) screens.csv rows for their exact SHA: B105-PB001, B106, B108, P-D-002, B107, P-B-006, B113, B115, B118, P20, B117, P21, B110, B111, P24, B125, P34"
+   "text": "17 of 24 site-tested builds since noon have no complete (both-set) screens.csv rows for their exact SHA: B105-PB001, B106, B108, P-D-002, B107, P-B-006, B113, B115, B118, P20, B117, P21, B110, B111, P24, B125, P34"
   },
   {
    "id": "ideas_md_families",
@@ -7057,7 +7236,7 @@
   {
    "id": "status_stale",
    "ok": false,
-   "text": "coord/STATUS.md says 'Updated Sat Nov 21 2026, 3:44 PM ET'; the newest site result is 9:10 PM ET"
+   "text": "coord/STATUS.md says 'Updated Sat Nov 21 2026, 3:44 PM ET'; the newest site result is 10:00 PM ET"
   },
   {
    "id": "log_utc_as_et",

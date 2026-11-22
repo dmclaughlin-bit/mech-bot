@@ -95,3 +95,7 @@ flowchart TD
 1. Second screening station: Diego's Mac (P-D-015) screens trees-on in parallel with Mech Sim Tester once its match check reproduces the champion baseline exactly. Same screen rules; Sim Tester stays primary.
 2. Fires-often-enough check (log-only Step A, 10/192 on both sets) before every full build of a new idea (coord/BUILD_CHECKLIST.md).
 3. Spare tests go to the top eligible near miss under the 9:47 PM ET near-miss pathway, every 10-minute check, without waiting.
+
+
+## Second screening station (Doug confirmed Sat Nov 21 10:28 PM ET)
+"Use Diego's Mac for screens with the build and champion on the same machine, cross-checking the first two builds on both stations." A Mac screen counts only if the champion baseline was also run on the Mac (same sim 4b8663e). The first two builds (P43, P35b) are screened on both stations; the Mac joins the rotation only if every veto decision matches. Otherwise it stays info-only and Doug decides.

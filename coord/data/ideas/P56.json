@@ -10,7 +10,7 @@
     "while a laser charge is in progress (charge > 0, not yet full, P34 not releasing), lined up on the locked enemy mech, if that target is predicted (from its velocity and ours) to leave laser range or lose a clear line (buildings/terrain, the champion's clearLine solids) within the next short horizon (1-2 decisions), let go now instead of losing the shot"
   ],
   "owner": "Mech Builder",
-  "stage": "step_a",
+  "stage": "step_a_pass",
   "base": "ac3e5e71dad2a518ad6e0c24e36a2dfa5bbdb3f2",
   "champion": "b9492c6/edb729f",
   "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
@@ -28,7 +28,7 @@
   "novelty": "P34 (F2) releases early only when the partial charge is already lethal on the lined-up locked mech; it never releases a non-lethal partial charge. Build 17 (LASER_RUSH_ON rescue) acts only AFTER the target is lost (re-aims the charge onto another enemy, drone or crate, or holds it). No existing code releases a partial charge because the target is ABOUT to break the line or leave range; today the champion keeps charging to full and the shot is lost or re-aimed. P56 adds that predictive release only; it never releases when P34 or the full-charge release already would, and it changes no targeting, aim or movement.",
   "hypothesis": "Some champion charges are lined up on the target while charging, then the target moves behind a building or out of laser range before the charge is full, so the shot is lost (re-aimed at something worse, auto-fired at nothing, or wasted on cover). Releasing early when the break is predicted within ~0.2 s lands a partial hit (35-100% of 315 damage) instead of nothing, adding laser hits and kills.",
   "mechanism": "HELD_CHARGE_EARLY_RELEASE_ON (default false, params.ts; horizon and min-charge constants in params.ts). In act(), in the champion's charging branch (charge > 0), after the champion computes full / lined / other / lethal: if the flag is on, !full, !lethal, lined, !other, !farmShot, target is a mech, t >= the P34 min time and the drop gate (P34's dropOpen) is closed, predict muzzle and target positions h seconds ahead from both velocities; if the predicted distance exceeds laser range or clearLine(solids, predicted muzzle, predicted target centre) fails, set fire[laser] = false (let go now). No other change.",
-  "activation": null,
+  "activation": "Step A on P48 (trees on, gated t>=40 and drop gate closed): brief count (target loses clear line / laser range before the champion lets go, no laser hit on it, an early release was possible) 21/192 (2000+3000) and 21/192 (4000+5000). The 0.2 s trigger itself (the rule that would change the action) fires in 26/192 and 28/192 games.",
   "positives": null,
   "negatives": null,
   "confidence": "Uncertain",
@@ -36,7 +36,60 @@
   "outcome": "pending",
   "disproof": "if Step A < 10/192 on either set, or practice shows deaths <40 s rising or kills falling on either base, stop with outcome C/D and no PR",
   "drop_gate": "Uses P34's read-only dropOpen gate (dropRun set, or a drop held by nobody/us within DROP_RUN_M: a drop near AND reachable within DROP_RUN_M), never 'any drop exists'. It only touches the laser trigger, never movement, so it cannot delay a drop run or ring hold.",
-  "step_a_result": null,
+  "step_a_result": {
+    "champion": "P48 b9492c6f122c549c705b69402157f078b4a57857 (bot code of ac3e5e7; main merge edb729f), TREE_RETREAT_ON=true",
+    "trees": true,
+    "seeds_per_set": 192,
+    "horizon_s": 0.2,
+    "2000+3000": {
+      "brief_count_games": 21,
+      "brief_count_charges": 27,
+      "trigger_games": 26,
+      "trigger_decisions": 87,
+      "trigger_games_ungated": 38,
+      "trigger_episodes_followed_by_real_loss": 22,
+      "lost_no_hit_on_lined_target_games_incl_lock_switch": 24,
+      "lost_no_hit_on_lined_target_charges_incl_lock_switch": 40,
+      "strict_no_laser_hit_at_all_games": 9,
+      "strict_no_laser_hit_at_all_charges": 12,
+      "charge_episodes": 1274,
+      "laser_hits": 1202,
+      "kills": 674,
+      "trigger_decisions_t_lt_10": 0
+    },
+    "4000+5000": {
+      "brief_count_games": 21,
+      "brief_count_charges": 36,
+      "trigger_games": 28,
+      "trigger_decisions": 99,
+      "trigger_games_ungated": 42,
+      "trigger_episodes_followed_by_real_loss": 24,
+      "lost_no_hit_on_lined_target_games_incl_lock_switch": 30,
+      "lost_no_hit_on_lined_target_charges_incl_lock_switch": 53,
+      "strict_no_laser_hit_at_all_games": 12,
+      "strict_no_laser_hit_at_all_charges": 19,
+      "charge_episodes": 1627,
+      "laser_hits": 1539,
+      "kills": 735,
+      "trigger_decisions_t_lt_10": 0
+    },
+    "per_base": {
+      "2000": "brief 7 games / 11 charges, trigger 11 games (44 dec), strict 3/6, episodes 676, loss reasons cover 26, lock switched after target lost 20, lock switched while target still ok 14, gone 1",
+      "3000": "brief 14 / 16, trigger 15 (43), strict 6/6, episodes 598, cover 26, switch-lost 18, switch-still-ok 11, gone 4",
+      "4000": "brief 9 / 15, trigger 10 (30), strict 5/8, episodes 740, cover 21, switch-lost 25, switch-still-ok 10, gone 5",
+      "5000": "brief 12 / 21, trigger 18 (69), strict 7/11, episodes 887, cover 45, switch-lost 30, switch-still-ok 21, gone 4"
+    },
+    "wasted_charges_per_set": "27 of 1274 charges (2000+3000) and 36 of 1627 (4000+5000) were lined up on the locked mech while charging, then that mech lost a clear line or left laser range before the champion let go, with no laser hit on it (t>=40, drop gate closed). 12 and 19 of those hit nothing at all; the rest were re-aimed (Build 17 rescue / lock switch) onto another target.",
+    "trigger_as_counted": "in the champion's charging branch, after its decision is final: charge > 0, champion keeps charging (fire[laser] still true, so not full and not P34-lethal), lined (leading laser and beamOn), no Build 17 re-aim (other null), not a farm shot, target kind mech, obs.t >= 40 (LETHAL_RELEASE_MIN_T), P34 dropOpen() false, and at h = 0.2 s (muzzle + our vel*h, target centre + its horizontal vel*h) the distance exceeds laser range or clearLine(solids) fails. Also logged at h = 0.1 / 0.3: games 21/26 and 30/32.",
+    "brief_count_as_counted": "charge episode (from first charge > 0 until let-go or auto-fire) with a decision meeting the trigger's state gates (lined on a mech, champion keeps charging, t >= 40, drop gate closed) where afterwards, before let-go, that mech is no longer a clear in-range option (cover, out of range, gone from view memory, or the lock moved because it lost its line) and the episode then had no laser hit on that mech within 0.45 s of let-go. Lock switches while the old target was still clear and in range are excluded.",
+    "drop_gate": "P34's dropOpen (dropRun set, or a drop held by nobody/us within DROP_RUN_M), i.e. a drop near and reachable within DROP_RUN_M; never 'any drop exists'.",
+    "passivity": "Run 1: all 384 games, every non-timing column (all but bot_ms_mean, late_over_50ms, missed, bot_ready) equal to /workspace/tester/runs/trees-b9492c6-<b>.csv (96/96 per base). Run 2 (same logger plus loss-reason fields): 383/384; seed 2011 death_t 145.20 vs 145.15, everything else equal. Three reruns of seed 2011 with the instrumented bot and two with the plain champion all gave 145.15, so it is one-off sim timing noise, not the logger. 0 logger exceptions; per-game log decisions equal the CSV decisions column in 384/384.",
+    "method": "Instrumented copy of the champion bot files (this branch at ca09dd3 = b9492c6 bot code) at /tmp/p56/stepa/bot: passive per-decision P56 counters (charging-branch snapshot + episode tracker just before act.move, inside try/catch, read-only), one JSON log per game; no action changed. Sim /tmp/p56/sim/tools/sim = copy of /workspace/wt-tester-trees/tools/sim. `cd /tmp/p56/sim && P56_DIR=<dir> SEED_BASE=<b> bun tools/sim/run.ts --bot /tmp/p56/stepa/bot/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees` for b = 2000, 3000, 4000, 5000, one at a time. Logs in /tmp/p56 (not committed).",
+    "caveat": "With the strictest reading (the charge hit nothing at all) set 2000+3000 is 9/192, under 10; the brief's reading (the shot on the lined target was lost) is 21/192 on both sets. The trigger also fires on some charges that would not have been lost (22 and 24 trigger episodes were followed by a real loss).",
+    "rule": "coord/BUILD_CHECKLIST.md Step A: fewer than 10/192 on either set retires the idea.",
+    "verdict": "step_a_pass",
+    "run": "2026-11-22 01:16-01:30 ET"
+  },
   "screens": [],
   "receipt": null,
   "site_score": null,
@@ -44,7 +97,7 @@
   "source": "Coordinator brief 1:10 AM ET Sun Nov 22 (P56 HELD CHARGE EARLY RELEASE TASK).",
   "timestamps": {
     "created": "2026-11-22 01:13 ET",
-    "updated": "2026-11-22 01:13 ET"
+    "updated": "2026-11-22 01:31 ET"
   },
   "sources": [
     "coord/data/findings.md (F2)",
@@ -54,5 +107,5 @@
     "/workspace/mechfight-kit/protocol.md:305 (laser: charge 0.75 s, min_charge 0.15 s, min_frac 35%, range 280 m, hold_s 2 s), :317 and :372 (trees block sight, not shots)"
   ],
   "decision": null,
-  "next_action": "Mech Builder: log-only Step A on P48 trees-on, bases 2000-5000"
+  "next_action": "Mech Builder: build behind HELD_CHARGE_EARLY_RELEASE_ON (default false), FASTER checklist on practice bases 0 and 6000"
 }

@@ -2,7 +2,7 @@
  * The match: 20 Hz ticks, one decision every 2 ticks (10 Hz), rules from protocol.md and hello.config.
  * Everything that is a guess is listed in ASSUMPTIONS.md.
  */
-import { type Geo, type Vec3, clear, floorAt, groundAt, rayDist, walkable } from "./geom.ts"
+import { type Geo, type Vec3, clear, floorAt, groundAt, rayDist, treeBlocks, walkable } from "./geom.ts"
 import { TIER_COUNTS, type Tier } from "./tune.ts"
 
 export const DT = 0.05
@@ -155,7 +155,11 @@ export function sees(S: Sim, m: Mech, e: any): boolean {
   }
   const eye: Vec3 = [m.pos[0], m.pos[1], m.pos[2] + m.stats.eye_height]
   const h = e.kind ? heightOf(e, S) : 1
-  return clear(S.geo, eye, [e.pos[0], e.pos[1], e.pos[2] + h / 2], 1.5) || clear(S.geo, eye, [e.pos[0], e.pos[1], e.pos[2] + h], 0.5)
+  const c: Vec3 = [e.pos[0], e.pos[1], e.pos[2] + h / 2], top: Vec3 = [e.pos[0], e.pos[1], e.pos[2] + h]
+  // P-D-014 (--trees): trunks stop sight; canopy fades it, except inside near range (protocol §8: "canopy does not").
+  const T = S.geo.trees
+  if (T) { const canopy = d > near; return (clear(S.geo, eye, c, 1.5) && !treeBlocks(T, eye, c, canopy)) || (clear(S.geo, eye, top, 0.5) && !treeBlocks(T, eye, top, canopy)) }
+  return clear(S.geo, eye, c, 1.5) || clear(S.geo, eye, top, 0.5)
 }
 
 // ---------- damage ----------

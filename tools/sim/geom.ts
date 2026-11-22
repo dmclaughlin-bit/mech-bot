@@ -1,7 +1,7 @@
 /**
  * Map geometry for the sim: prisms rasterised on the 1 m terrain grid (lowest base / highest top per cell, the
  * same reduction the bot's map.ts uses), bilinear ground, ray marching for line of sight and shots, and a coarse
- * 4 m walk grid with A* for the scripted house bots. Trees are ignored (see ASSUMPTIONS.md).
+ * 4 m walk grid with A* for the scripted house bots. Trees block sight only, and only with `--trees` (see ASSUMPTIONS.md).
  */
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
@@ -16,7 +16,77 @@ export type Geo = {
   cs: number; cnx: number; cny: number; blocked: Uint8Array
   /** cells with a roof low enough to stand on, for roof loot: [x, y, top] */
   roofs: number[]
+  /** P-D-014: trees for sight (null unless the run uses --trees) */
+  trees?: Trees | null
 }
+
+/** P-D-014: world.json trees, flat columns, plus a 16 m bucket grid for lookups. */
+export type Trees = {
+  n: number; x: Float32Array; y: Float32Array; z: Float32Array; top: Float32Array; cb: Float32Array
+  cr: Float32Array; cx: Float32Array; cy: Float32Array; tr: Float32Array
+  density: number; blockT: number; bs: number; bx0: number; by0: number; bnx: number; bny: number; buckets: number[][]
+}
+
+/** P-D-014: load world.json trees (protocol.md §8, §11). Heights are taken as metres above the tree's ground z. */
+export function loadTrees(dir: string): Trees {
+  const world = JSON.parse(readFileSync(join(dir, "v2/world.json"), "utf8"))
+  const F: string[] = world.trees.fields, D: number[] = world.trees.data, w = F.length, n = Math.floor(D.length / w)
+  const col = (k: string) => { const i = F.indexOf(k); const a = new Float32Array(n); for (let j = 0; j < n; j++) a[j] = D[j * w + i]; return a }
+  const x = col("x"), y = col("y"), z = col("z"), h = col("height"), cbRel = col("crownBase"), cr = col("crownR"), tr = col("trunkR")
+  const cx = F.includes("crownX") ? col("crownX") : x, cy = F.includes("crownY") ? col("crownY") : y
+  const top = new Float32Array(n), cb = new Float32Array(n)
+  for (let j = 0; j < n; j++) { top[j] = z[j] + h[j]; cb[j] = z[j] + cbRel[j] }
+  const b = world.bounds, bs = 16, bnx = Math.ceil((b.maxX - b.minX) / bs) + 1, bny = Math.ceil((b.maxY - b.minY) / bs) + 1
+  const buckets: number[][] = Array.from({ length: bnx * bny }, () => [])
+  for (let j = 0; j < n; j++) {
+    const r = Math.max(cr[j], tr[j]) + Math.hypot(cx[j] - x[j], cy[j] - y[j])
+    const i0 = Math.max(0, Math.floor((x[j] - r - b.minX) / bs)), i1 = Math.min(bnx - 1, Math.floor((x[j] + r - b.minX) / bs))
+    const k0 = Math.max(0, Math.floor((y[j] - r - b.minY) / bs)), k1 = Math.min(bny - 1, Math.floor((y[j] + r - b.minY) / bs))
+    for (let k = k0; k <= k1; k++) for (let i = i0; i <= i1; i++) buckets[k * bnx + i].push(j)
+  }
+  return { n, x, y, z, top, cb, cr, cx, cy, tr, density: Number(world.rules?.canopyDensity ?? 0), blockT: Number(world.rules?.canopyBlockT ?? 0), bs, bx0: b.minX, by0: b.minY, bnx, bny, buckets }
+}
+
+/**
+ * P-D-014: does a tree stop sight from a to b? A trunk (vertical cylinder trunkR from ground z to crownBase) always
+ * does. Crowns (ellipsoids: crownR across, crownBase..top tall, centred on crownX/crownY) fade the line by
+ * exp(-canopyDensity × metres inside crowns); it is stopped when that falls below canopyBlockT. `canopy` false = trunks only.
+ */
+export function treeBlocks(T: Trees, a: number[], b: number[], canopy: boolean): boolean {
+  const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2], len = Math.hypot(dx, dy, dz)
+  if (len < 1e-6) return false
+  const seen = new Set<number>()
+  const steps = Math.ceil(Math.hypot(dx, dy) / (T.bs / 2)) + 1
+  let inCrown = 0
+  for (let s = 0; s <= steps; s++) {
+    const px = a[0] + (dx * s) / steps, py = a[1] + (dy * s) / steps
+    const bi = Math.floor((px - T.bx0) / T.bs), bk = Math.floor((py - T.by0) / T.bs)
+    if (bi < 0 || bk < 0 || bi >= T.bnx || bk >= T.bny) continue
+    for (const j of T.buckets[bk * T.bnx + bi]) {
+      if (seen.has(j)) continue
+      seen.add(j)
+      // trunk: closest approach of the segment to the trunk axis, in plan
+      const h2 = dx * dx + dy * dy
+      let t = h2 > 0 ? ((T.x[j] - a[0]) * dx + (T.y[j] - a[1]) * dy) / h2 : 0
+      t = Math.max(0, Math.min(1, t))
+      const qx = a[0] + dx * t - T.x[j], qy = a[1] + dy * t - T.y[j], qz = a[2] + dz * t
+      if (qx * qx + qy * qy < T.tr[j] * T.tr[j] && qz >= T.z[j] && qz <= T.cb[j]) return true
+      if (!canopy) continue
+      // crown: segment inside the ellipsoid, in unit-sphere coordinates
+      const hz = (T.top[j] - T.cb[j]) / 2, r = T.cr[j]
+      if (hz <= 0 || r <= 0) continue
+      const ox = (a[0] - T.cx[j]) / r, oy = (a[1] - T.cy[j]) / r, oz = (a[2] - (T.cb[j] + hz)) / hz
+      const vx = dx / r, vy = dy / r, vz = dz / hz
+      const A = vx * vx + vy * vy + vz * vz, B = 2 * (ox * vx + oy * vy + oz * vz), C = ox * ox + oy * oy + oz * oz - 1
+      const disc = B * B - 4 * A * C
+      if (disc <= 0) continue
+      const sq = Math.sqrt(disc), t1 = Math.max(0, (-B - sq) / (2 * A)), t2 = Math.min(1, (-B + sq) / (2 * A))
+      if (t2 > t1) inCrown += (t2 - t1) * len
+    }
+  }
+  return canopy && T.density > 0 && Math.exp(-T.density * inCrown) < T.blockT
+}
+
 
 function inside(ring: number[], x: number, y: number): boolean {
   let hit = false

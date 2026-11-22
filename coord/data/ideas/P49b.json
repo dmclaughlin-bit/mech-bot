@@ -7,9 +7,9 @@
   ],
   "flag": "TREE_HEAL_ON",
   "owner": "Mech Builder",
-  "stage": "building",
-  "pr": null,
-  "sha": null,
+  "stage": "screening",
+  "pr": 177,
+  "sha": "0c6b134",
   "branch": "p49b-tree-heal-cap",
   "base": "27b945b (p49-tree-heal record head; bot code = P49 flag-off 131a852156ef6926d0859b608fc7978774aa9e03)",
   "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
@@ -51,5 +51,6 @@
     "F4"
   ],
   "disproof": "Pins on 2022, 3066, or 3086 remain, pause games rise vs P48, or official score \u2264 4.44.",
-  "updated_et": "2026-11-22 12:55 AM ET"
+  "updated_et": "2026-11-22 12:55 AM ET",
+  "stage_detail": "PR #177 opened 12:59 AM ET, flag-ON head 0c6b134; Sim Tester and Diego Mac screening (Doug order 1:03 AM ET)."
 }

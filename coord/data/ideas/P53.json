@@ -194,5 +194,6 @@
   "findings_added": [
     "F14",
     "N5"
-  ]
+  ],
+  "screen_simtester": "Sim Tester #176 1:56Z comment / screens.csv 864b2da: VETO (1 veto) vs P48 b9492c6, agrees with Mac."
 }

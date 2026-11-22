@@ -15,11 +15,12 @@
   "success": "No earlier mid-game deaths, died<40 flat, the long-game survivals kept on both sets, mean not lower on both sets.",
   "step_a": "log-only Step A first: count games where the gated rule would withhold boost (target >= 10/192 on both sets); if below, stop and log.",
   "owner": "Diego's Claude",
-  "stage": "assigned",
+  "stage": "building",
   "assigned": "2026-11-22 00:58 ET (10-minute loop, lane rank 1: refinement keeping F14's good part and fixing N5)",
   "base": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
   "champion": "P48 b9492c6 (main edb729f, site 4.44)",
   "pr": null,
-  "sha": null,
-  "outcome": null
+  "sha": "d3662df",
+  "outcome": null,
+  "branch": "diego/p53b-boost-save-safe"
 }

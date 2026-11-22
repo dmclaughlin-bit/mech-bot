@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  BACKAWAY_FAR_COVER_ON, BACKAWAY_FAR_STEPS_S, DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  BACKAWAY_FAR_COVER_ON, BACKAWAY_FAR_STEPS_S, DROP_RUN_M, EARS_AGE_S, EARS_ALIVE, EARS_LOOK_ON, EARS_MIN_DEG, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
@@ -149,6 +149,8 @@ const LIGHT_AMBUSH_ON = true
 const AMBUSH_MAX_M = 90
 /** Build 17 fix: with this long (s) left before a held full charge fires on its own and no enemy to hit, turn it onto a drone or crate (a half turn of the torso takes 0.8 s). */
 const LASER_REAIM_S = 0.8
+/** P41 (EARS_LOOK_ON): sound kinds only a mech makes (not npc_gun, crate, explosion, death or drop). */
+const EARS_KINDS = new Set(["step", "boost", "jet", "gun", "laser", "laser_charge", "lightning", "reload", "mortar"])
 /** P-B-001 (standoff break, see STANDOFF_BREAK_S): the lone enemy's distance window (m), no other enemy seen for this
  * long (s), and our HP at least this far above params.retreatHp (fraction of max). */
 const STANDOFF_MIN_M = 45
@@ -272,6 +274,8 @@ function buildBot(hello: Hello): Bot {
   const maxPitch = cfg.mech.max_pitch ?? 1.3
   const known = new Map<number, Known>()
   let lastHit: { bearing: number; t: number } | null = null
+  /** P41 (EARS_LOOK_ON): the newest mech-made sound heard (bearing, when it was made). */
+  let lastSound: { bearing: number; at: number } | null = null
   /** attacker id → last time it damaged us */
   const hitBy = new Map<number, number>()
   const nav = createNav(hello)
@@ -516,6 +520,11 @@ function buildBot(hello: Hello): Bot {
       if (e.type === "damaged") lastDamaged = obs.t
     }
     for (const [id, k] of known) if (obs.t - k.lastSeen > 30) known.delete(id)
+    if (EARS_LOOK_ON) for (const s of obs.sounds ?? []) {
+      if (!EARS_KINDS.has(s.kind)) continue
+      const at = obs.t - (s.age ?? 0)
+      if (!lastSound || at >= lastSound.at) lastSound = { bearing: s.bearing, at }
+    }
   }
 
   return {
@@ -1022,6 +1031,18 @@ function buildBot(hello: Hello): Bot {
         route = null
       }
       let aim: [number, number] = [Math.hypot(move[0], move[1]) > 0.05 ? Math.atan2(move[1], move[0]) : yawTo(me.pos, z.next_center), 0]
+      // P41 (EARS_LOOK_ON): the rest of the sound-cued look's trigger (called only with no target and no recent hit).
+      // Off with a drop run/hold or a drop near AND reachable within DROP_RUN_M (the drop run's own candidate filter).
+      const earsLook = (yaw: number): boolean => {
+        if (obs.t < 10 || obs.alive > EARS_ALIVE || beamCharge > 0 || dropMove || dropHold) return false
+        if (!lastSound || obs.t - lastSound.at > EARS_AGE_S || Math.abs(wrap(lastSound.bearing - yaw)) <= (EARS_MIN_DEG * Math.PI) / 180) return false
+        const pace = ZONE_WALK * walkSpeed
+        const safe = (p: number[], stay: number) =>
+          flat(p, z.center) < Math.max(0, z.radius - margin) &&
+          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
+        return !(DROP_RUN_M > 0 && (obs.drops ?? []).some((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) &&
+          flat(x.pos, me.pos) <= DROP_RUN_M && safe(x.pos, x.lands_in + x.capture_s - x.progress)))
+      }
 
       // Target: the nearest enemy mech with a clear shot, else the nearest one we know is there (Build 16 re-picks below).
       const slotOf = (kind: WeaponKind) => me.weapons.findIndex((w) => w?.kind === kind)
@@ -1224,6 +1245,10 @@ function buildBot(hello: Hello): Bot {
           fire[beamSlot] = !(other?.on && beamFull !== null)
         }
         if (lastHit && obs.t - lastHit.t < 2) aim = [lastHit.bearing, 0]
+        else if (EARS_LOOK_ON && earsLook(aim[0])) {
+          aim = [lastSound!.bearing, 0]
+          label += " (ears)"
+        }
         const g = me.weapons.find((x) => x?.kind === "gun")
         if (g && (g.ammo ?? 0) < (g.stats.mag ?? 12) / 2 && (g.reload ?? 0) <= 0) act.reload = true
       }

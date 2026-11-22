@@ -179,10 +179,13 @@ export const LETHAL_RELEASE_MIN_T = 40
  * champion's best rank is the weapon/gyros tier, which today ties and takes the first listed), pick the tier-4 choice
  * with the largest sustained-DPS gain (weaponDps before/after the choice's hello.config.upgrades effects, on the
  * current stats of each weapon kind we hold now). The champion's pick stays on a tie (strictly larger gain only),
- * before UPGRADE_DPS_TIER_MIN_T, and while a drop run/hold is possible (a run in progress, dropMove/dropHold, or a
+ * before UPGRADE_DPS_TIER_MIN_T (40 s), and while a drop run/hold is possible (a run in progress, dropMove/dropHold, or a
  * drop that passes the drop run's own candidate filter: near AND reachable within DROP_RUN_M). Movement, aim and
  * fire are unchanged. false = champion exactly.
  */
 export const UPGRADE_DPS_TIER_ON = false
-/** Never change a pick before this match time (s): the opening stays the champion's. */
-export const UPGRADE_DPS_TIER_MIN_T = 10
+/**
+ * Never change a pick before this match time (s), so play before it, and every death before 40 s, equals the
+ * champion's (fix round: at 10 s, base 0 trees-on had deaths before 40 s 24 -> 25, seed 24 after a 25 s pick).
+ */
+export const UPGRADE_DPS_TIER_MIN_T = 40

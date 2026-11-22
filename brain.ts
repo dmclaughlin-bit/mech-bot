@@ -29,10 +29,10 @@ import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
-  NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
+  LASER_SHORT_GUARD_ON, NO_SNEAK_ON, NO_SNEAK_QUIET_S, SHORT_GUARD_M, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
-import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
+import { type Bot, type BotAction, type DropObs, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
 
 // ------------------------------------------------------------------ geometry helpers
 const flat = (a: number[], b: number[]) => Math.hypot(b[0] - a[0], b[1] - a[1])
@@ -764,15 +764,18 @@ function buildBot(hello: Hello): Bot {
       // P-D-003 (DROP_RUN_M): walk to a called supply drop, timed to arrive as it lands, then hold the ring.
       let dropMove: [number, number] | null = null
       let dropHold = false
+      // A drop the run below may take: not skipped, not held by another mech, within DROP_RUN_M, zone-safe for the capture.
+      const dropPace = ZONE_WALK * walkSpeed
+      const dropSafe = (p: number[], stay: number) =>
+        flat(p, z.center) < Math.max(0, z.radius - margin) &&
+        (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / dropPace + ZONE_BUFFER + stay < timeLeft
+      const dropCandidate = (x: DropObs) =>
+        !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M &&
+        dropSafe(x.pos, x.lands_in + x.capture_s - x.progress)
       if (DROP_RUN_M > 0) {
-        const pace = ZONE_WALK * walkSpeed
-        const safe = (p: number[], stay: number) =>
-          flat(p, z.center) < Math.max(0, z.radius - margin) &&
-          (flat(me.pos, p) + Math.max(0, flat(p, z.next_center) - inner)) / pace + ZONE_BUFFER + stay < timeLeft
         const d = me.in_zone && !leaveNow && !trip && !engage && !claimGoal && !hurt && me.hp >= RETREAT_HP * me.max_hp
           ? (obs.drops ?? [])
-            .filter((x) => !dropSkip.has(x.id) && (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M &&
-              safe(x.pos, x.lands_in + x.capture_s - x.progress))
+            .filter(dropCandidate)
             .sort((a, b) => flat(a.pos, me.pos) - flat(b.pos, me.pos))[0]
           : undefined
         if (!d) dropRun = null
@@ -1101,7 +1104,14 @@ function buildBot(hello: Hello): Bot {
         // Pick the weapon that steers the aim this decision.
         let leading = "track"
         aim = gunAim
-        if (clear && laser >= 0 && w(laser).cooldown <= 0 && d <= w(laser).stats.range) {
+        // P44 (LASER_SHORT_GUARD_ON): a lightning hit wipes a charge and blocks a new one for short_s, so do not start a
+        // charge on a target seen holding lightning within SHORT_GUARD_M; lightning or the gun lead instead. Not before
+        // 10 s, and never on a drop run/hold tick or while a drop the run may take is near (the champion's choice there).
+        const shortGuard = () =>
+          LASER_SHORT_GUARD_ON && obs.t >= 10 && (w(laser).charge ?? 0) <= 0 && d <= SHORT_GUARD_M && !dropMove && !dropHold &&
+          (m.weapons ?? known.get(m.id)?.weapons ?? []).includes("lightning") &&
+          !(DROP_RUN_M > 0 && (obs.drops ?? []).some(dropCandidate))
+        if (clear && laser >= 0 && w(laser).cooldown <= 0 && d <= w(laser).stats.range && !shortGuard()) {
           leading = "laser"
           aim = beamAim
         } else if (clear && arc >= 0 && d <= w(arc).stats.range) {

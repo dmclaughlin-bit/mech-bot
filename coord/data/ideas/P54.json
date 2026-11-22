@@ -1,0 +1,37 @@
+{
+  "id": "P54",
+  "title": "EARLY_SPACING: in the first 30 s, when a known enemy is within 120 m and we are not engaging, pick the farm / arm-up / zone target that keeps us >= 120 m from it (EARLY_SPACING_ON)",
+  "family": "movement (early-game spacing)",
+  "flags": ["EARLY_SPACING_ON"],
+  "flag": "EARLY_SPACING_ON",
+  "behaviors": [
+    "t < EARLY_SPACING_T (30 s), a known enemy within EARLY_SPACING_M (120 m), not engaging, not in laser rush, drop gate open: among the farm / arm-up / zone targets the champion would consider, pick one that keeps us >= 120 m from that enemy when one exists, else the champion's choice"
+  ],
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "base": "c2b3e1d",
+  "champion": "P48 b9492c6 (merge edb729f)",
+  "champion_sha_tested_against": "b9492c6",
+  "champion_sha": "b9492c6",
+  "builds_on": ["F10"],
+  "evidence": {
+    "source": "Mech Watcher ladder (coord/data/findings.md F10): nearest enemy in the first 30 s is 145 m for winners vs 117 m for losers",
+    "confidence": "medium"
+  },
+  "novelty": "P52 (EARLY_FARM_ON) widens the farm reach and gate from 10 to 60 s, picking the nearest cube when every enemy is > 145 m away; it never picks a target BY distance to an enemy. P54 changes only which of the champion's own candidate targets is chosen, in the first 30 s, when an enemy is already within 120 m. The champion has no early-game target rule that scores targets by enemy distance.",
+  "step_a": "Log only, trees-on on P48: count games where t < 30, a known enemy within 120 m, not engaging / laser rush, drop gate open, and an alternative target keeping >= 120 m exists that differs from the champion's pick, on 2000+3000 and 4000+5000. Fewer than 10/192 on either set: step-a-fail, no build.",
+  "what_would_disprove": "No rise in our early (t < 30 s) nearest-enemy distance, or deaths before 40 s up.",
+  "drop_gate": "Never when a drop is near AND reachable within DROP_RUN_M (champion's drop-run candidate filter) or on a drop run / ring hold. Never 'any drop exists'.",
+  "pr": null,
+  "sha": null,
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Mech Builder: Step A on P48 trees on (2000-5000).",
+  "doug_waiver": false,
+  "branch": "p54-early-spacing",
+  "timestamps": { "created": "2026-11-22 00:47 ET" },
+  "sources": ["coord/data/findings.md F10", "coord/BUILD_CHECKLIST.md (aee5017)", "/workspace/drop-gate-rule.txt"]
+}

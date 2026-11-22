@@ -1,120 +1,122 @@
 {
-  "id": "P37b",
-  "title": "P37 heal pickup re-applied on champion P34, with a near-and-reachable drop gate (HEAL_PICKUP_ON)",
-  "family": "heal-farm order",
-  "flags": [
-    "HEAL_PICKUP_ON"
-  ],
-  "flag": "HEAL_PICKUP_ON",
-  "behaviors": [
-    "when the champion would stand still in 'heal' (HP < 90%) and farmOk is true, walk to the visible zone-safe cube the Build 12 farm already chose (within 80 m) instead of standing; never start or continue it while a free supply drop is within DROP_RUN_M (near and reachable, the champion's dropOpen test) or while on a drop run / drop hold / farm capture / heading to the next circle"
-  ],
-  "owner": "Mech Builder",
-  "stage": "retired",
-  "pr": null,
-  "sha": "9b1ceb11184f8c1dd8f0147a9a9b62e61d91a360",
-  "champion_sha_tested_against": "588557e464dd4946680bff964a7c8e86700b8739",
-  "champion_sha": "588557e464dd4946680bff964a7c8e86700b8739",
-  "screens": [
-    {
-      "sha": "flag-on copy of 9b1ceb11184f8c1dd8f0147a9a9b62e61d91a360 (HEAL_PICKUP_ON=true, /tmp/p37b/on), passive wrapper",
-      "seed_set": "0+1000+6000+7000 trees-on (builder hazard, 96 each, --jobs 1, /tmp/builder-sim-trees) vs champion trees-0e6fadd-<b>.csv",
-      "fired": 64,
-      "diff_behavior": 65,
-      "diff_score": 46,
-      "pins": "no new >=20 s pin on 0/1000/6000; base 7000 NEW pin seed 7042 26 s t=126-152 at (174,-166), 0 flag ticks in window. All other head pins equal the champion's (0 flag ticks).",
-      "verdict": "FAILED BUILD_CHECKLIST item 3 (drop-ring arrivals base 0 5 -> 3)",
-      "source": "builder run, logs /tmp/p37b (not committed)",
-      "sim_delta": 0.049,
-      "sim_se": 0.057,
-      "per_set": {
-        "0": {
-          "fired": "15 (819 ticks)",
-          "diff_behavior": 15,
-          "diff_score": 10,
-          "paired": "+0.146 +/- 0.117 (better 7, worse 3)",
-          "drop_ring_arrivals": "5 -> 3 FAIL",
-          "died_lt40": "24 -> 24",
-          "survivors": "2 -> 3",
-          "kills": "292 -> 308",
-          "heal_pickups": 47,
-          "t_lt_10_activations": 0
-        },
-        "1000": {
-          "fired": "17 (944 ticks)",
-          "diff_behavior": 17,
-          "diff_score": 12,
-          "paired": "+0.219 +/- 0.097 (better 9, worse 3)",
-          "drop_ring_arrivals": "1 -> 3",
-          "died_lt40": "15 -> 14",
-          "survivors": "2 -> 3",
-          "kills": "368 -> 389",
-          "heal_pickups": 68,
-          "t_lt_10_activations": 0
-        },
-        "6000": {
-          "fired": "18 (924 ticks)",
-          "diff_behavior": 18,
-          "diff_score": 12,
-          "paired": "-0.083 +/- 0.122 (better 4, worse 8)",
-          "drop_ring_arrivals": "1 -> 1",
-          "died_lt40": "16 -> 16",
-          "survivors": "0 -> 2",
-          "kills": "367 -> 356",
-          "heal_pickups": 46,
-          "t_lt_10_activations": 0
-        },
-        "7000": {
-          "fired": "14 (569 ticks)",
-          "diff_behavior": "15 (7011 not fired: champion-side late answer, 614 vs 585 decisions)",
-          "diff_score": 12,
-          "paired": "-0.083 +/- 0.113 (better 6, worse 6)",
-          "drop_ring_arrivals": "3 -> 3",
-          "died_lt40": "22 -> 22",
-          "survivors": "1 -> 1",
-          "kills": "367 -> 359",
-          "heal_pickups": 36,
-          "t_lt_10_activations": 0
-        }
-      },
-      "gate": {
-        "check_py": "PASS default max 2.7 ms; PASS flag-on max 2.6 ms",
-        "eqdrive": "flag-off vs origin/main (bot code = 588557e) IDENTICAL (cmp, 302 lines); flag-on also identical on the check stream",
-        "merge_base": "588557e is ancestor of HEAD",
-        "timing": "head late answers under shared load: 2 (base 0), 0, 3, 1 games; max 98 ms single tick (load spikes; check.py max 2.6 ms)"
-      }
+ "id": "P37b",
+ "title": "P37 heal pickup re-applied on champion P34, with a near-and-reachable drop gate (HEAL_PICKUP_ON)",
+ "family": "heal-farm order",
+ "flags": [
+  "HEAL_PICKUP_ON"
+ ],
+ "flag": "HEAL_PICKUP_ON",
+ "behaviors": [
+  "when the champion would stand still in 'heal' (HP < 90%) and farmOk is true, walk to the visible zone-safe cube the Build 12 farm already chose (within 80 m) instead of standing; never start or continue it while a free supply drop is within DROP_RUN_M (near and reachable, the champion's dropOpen test) or while on a drop run / drop hold / farm capture / heading to the next circle"
+ ],
+ "owner": "Mech Builder",
+ "stage": "waiting-for-screen",
+ "pr": null,
+ "sha": "9b1ceb11184f8c1dd8f0147a9a9b62e61d91a360",
+ "champion_sha_tested_against": "588557e464dd4946680bff964a7c8e86700b8739",
+ "champion_sha": "588557e464dd4946680bff964a7c8e86700b8739",
+ "screens": [
+  {
+   "sha": "flag-on copy of 9b1ceb11184f8c1dd8f0147a9a9b62e61d91a360 (HEAL_PICKUP_ON=true, /tmp/p37b/on), passive wrapper",
+   "seed_set": "0+1000+6000+7000 trees-on (builder hazard, 96 each, --jobs 1, /tmp/builder-sim-trees) vs champion trees-0e6fadd-<b>.csv",
+   "fired": 64,
+   "diff_behavior": 65,
+   "diff_score": 46,
+   "pins": "no new >=20 s pin on 0/1000/6000; base 7000 NEW pin seed 7042 26 s t=126-152 at (174,-166), 0 flag ticks in window. All other head pins equal the champion's (0 flag ticks).",
+   "verdict": "FAILED BUILD_CHECKLIST item 3 (drop-ring arrivals base 0 5 -> 3)",
+   "source": "builder run, logs /tmp/p37b (not committed)",
+   "sim_delta": 0.049,
+   "sim_se": 0.057,
+   "per_set": {
+    "0": {
+     "fired": "15 (819 ticks)",
+     "diff_behavior": 15,
+     "diff_score": 10,
+     "paired": "+0.146 +/- 0.117 (better 7, worse 3)",
+     "drop_ring_arrivals": "5 -> 3 FAIL",
+     "died_lt40": "24 -> 24",
+     "survivors": "2 -> 3",
+     "kills": "292 -> 308",
+     "heal_pickups": 47,
+     "t_lt_10_activations": 0
+    },
+    "1000": {
+     "fired": "17 (944 ticks)",
+     "diff_behavior": 17,
+     "diff_score": 12,
+     "paired": "+0.219 +/- 0.097 (better 9, worse 3)",
+     "drop_ring_arrivals": "1 -> 3",
+     "died_lt40": "15 -> 14",
+     "survivors": "2 -> 3",
+     "kills": "368 -> 389",
+     "heal_pickups": 68,
+     "t_lt_10_activations": 0
+    },
+    "6000": {
+     "fired": "18 (924 ticks)",
+     "diff_behavior": 18,
+     "diff_score": 12,
+     "paired": "-0.083 +/- 0.122 (better 4, worse 8)",
+     "drop_ring_arrivals": "1 -> 1",
+     "died_lt40": "16 -> 16",
+     "survivors": "0 -> 2",
+     "kills": "367 -> 356",
+     "heal_pickups": 46,
+     "t_lt_10_activations": 0
+    },
+    "7000": {
+     "fired": "14 (569 ticks)",
+     "diff_behavior": "15 (7011 not fired: champion-side late answer, 614 vs 585 decisions)",
+     "diff_score": 12,
+     "paired": "-0.083 +/- 0.113 (better 6, worse 6)",
+     "drop_ring_arrivals": "3 -> 3",
+     "died_lt40": "22 -> 22",
+     "survivors": "1 -> 1",
+     "kills": "367 -> 359",
+     "heal_pickups": 36,
+     "t_lt_10_activations": 0
     }
-  ],
-  "receipt": null,
-  "site_score": null,
-  "decision": "FAILED BUILD_CHECKLIST item 3 (HARD): drop-ring arrivals base 0 5 -> 3 (seed 44, 2 -> 0, a fired game). Flag stays false; no flag-on commit. Fix not attempted: no near-and-reachable drop gate can block the detours that lose drops (see diagnosis).",
-  "blocker": "The drop losses come from trajectory divergence after detours taken while no drop is within DROP_RUN_M (often none listed at all). The only gate that blocks them is 'any drop listed', which the Coordinator rule forbids, and P37 had exactly that gate and still lost 4 arrivals on the screen.",
-  "next_action": "Coordinator: retire P37b, or decide whether any heal-pickup variant is worth a different drop protection. Builder stopped.",
-  "doug_waiver": false,
-  "source": "P37 PR #149 Sim Tester veto (https://github.com/dmclaughlin-bit/mech-bot/pull/149#issuecomment-7072563191: drop-ring arrivals 8->7 and 7->4, all lost arrivals in fired games; survival 6->5 from seed 3012) + Coordinator drop-gate rule (gate on a drop near and reachable within DROP_RUN_M, never on 'any drop exists')",
-  "timestamps": {
-    "created": "2026-11-22 ET (builder step 0)",
-    "updated": "2026-11-22 ET (builder: FAILED item 3)"
-  },
-  "sources": [
-    "coord/data/ideas/P37.json",
-    "/workspace/patches/p37-bot.diff (P37 flag-off a214f12)",
-    "https://github.com/dmclaughlin-bit/mech-bot/pull/149#issuecomment-7072563191",
-    "/workspace/drop-gate-rule.txt",
-    "/workspace/tester/runs/trees-0e6fadd-{0,1000,6000,7000}.csv",
-    "/tmp/stress-logs/trees-0e6fadd-<b>/ (champion traces)",
-    "/tmp/p37b (head CSVs, traces, diag runs; not committed)"
-  ],
-  "branch": "p37b-heal-drop-gate",
-  "parent_idea": "P37",
-  "status": "retired",
-  "sha_flag_off": "9b1ceb11184f8c1dd8f0147a9a9b62e61d91a360",
-  "head": null,
-  "drop_gate": "healCube is blocked when dropRun !== null || dropHold || dropMove || any drop with holder null or us is within DROP_RUN_M (200 m) of us: the champion's dropOpen() test (brain.ts lethal release) plus dropHold/dropMove, and !farmHold (capture). farmOk already excludes leaveNow (walk to the next circle) and being out of the zone. The branch ranks below drop hold/run, so a drop wins on the same tick. What it adds over the champion: the champion has no heal detour, so its drop logic gates nothing here; the gate only matters later in the game, once a drop has been called within 200 m. What it changes vs P37: P37 required obs.drops to be empty (the forbidden 'any drop exists' gate), so P37b's gate is LOOSER than P37's, not tighter.",
-  "implementation": "brain.ts: healPick/healSkip state; in act(), healCube computed after the drop run block (HEAL_PICKUP_ON, obs.t >= HEAL_PICKUP_T 10, farmOk, farmGoal is an obs.cubes cube, !farmHunt, !farmHold, HP < 90%, drop gate above, cube not in healSkip; 3 s / 1 m no-progress give-up -> healSkip). One branch `} else if (healCube)` immediately before the stand-still heal branch, travel() to the cube, mode 'heal, pickup'. params.ts: HEAL_PICKUP_ON=false, HEAL_PICKUP_T=10, HEAL_PICKUP_STUCK_S=3.",
-  "diagnosis": {
-    "veto_detours_vs_gate": "The screened P37 (f174d55 brain.ts:755) only detoured when obs.drops was EMPTY, so every veto detour behind a lost drop (2089, 5048, 5051, 5053) and the worse deaths (3012, 3001, 4014) happened with no drop listed; neither the champion's dropOpen() nor the new gate could block any of them.",
-    "single_seed_trees_on": "Single-seed reruns trees-on (/tmp/builder-sim-trees --worker --seed-list, champion diag rows equal the trees-0e6fadd CSVs): 2089 and 3012: no detour at all on P34 (gated = ungated = champion: 2089 place 4, 3012 place 16). 5048: gated still detours 19.0-38.8 s (183 ticks, 0 with a drop listed), place 11 -> 14, death 185.70 -> 174.85, arrivals 1 -> 0. 5051: detours 25.4-32.9 s (76 ticks, 0 drops listed), place 6 -> 11, arrivals 1 -> 0. 5053: detours 69.4-71.3 s (20 ticks, nearest drop 469 m), place 5 -> 9, death 248.60 -> 80.95. An ungated copy (drop gate removed) behaves identically on all five seeds: the gate blocks none of these detours.",
-    "base0_seed44": "Seed 44 (base 0) lost 2 arrivals: the first detour 95.9-97.0 s ran while the only drop was 336 m away; games diverge from there. At 210-250 s the champion is within 200 m of the drops and runs (drop run 220-245 s); the head stands at full HP in 'hold' 203-234 m away, outside DROP_RUN_M, and never qualifies. Its last detour (200.1-204.8 s) was 224-236 m from the drops."
+   },
+   "gate": {
+    "check_py": "PASS default max 2.7 ms; PASS flag-on max 2.6 ms",
+    "eqdrive": "flag-off vs origin/main (bot code = 588557e) IDENTICAL (cmp, 302 lines); flag-on also identical on the check stream",
+    "merge_base": "588557e is ancestor of HEAD",
+    "timing": "head late answers under shared load: 2 (base 0), 0, 3, 1 games; max 98 ms single tick (load spikes; check.py max 2.6 ms)"
+   }
   }
+ ],
+ "receipt": null,
+ "site_score": null,
+ "decision": "FAILED BUILD_CHECKLIST item 3 (HARD): drop-ring arrivals base 0 5 -> 3 (seed 44, 2 -> 0, a fired game). Flag stays false; no flag-on commit. Fix not attempted: no near-and-reachable drop gate can block the detours that lose drops (see diagnosis).",
+ "blocker": "The drop losses come from trajectory divergence after detours taken while no drop is within DROP_RUN_M (often none listed at all). The only gate that blocks them is 'any drop listed', which the Coordinator rule forbids, and P37 had exactly that gate and still lost 4 arrivals on the screen.",
+ "next_action": "Coordinator: retire P37b, or decide whether any heal-pickup variant is worth a different drop protection. Builder stopped.",
+ "doug_waiver": false,
+ "source": "P37 PR #149 Sim Tester veto (https://github.com/dmclaughlin-bit/mech-bot/pull/149#issuecomment-7072563191: drop-ring arrivals 8->7 and 7->4, all lost arrivals in fired games; survival 6->5 from seed 3012) + Coordinator drop-gate rule (gate on a drop near and reachable within DROP_RUN_M, never on 'any drop exists')",
+ "timestamps": {
+  "created": "2026-11-22 ET (builder step 0)",
+  "updated": "2026-11-22 ET (builder: FAILED item 3)"
+ },
+ "sources": [
+  "coord/data/ideas/P37.json",
+  "/workspace/patches/p37-bot.diff (P37 flag-off a214f12)",
+  "https://github.com/dmclaughlin-bit/mech-bot/pull/149#issuecomment-7072563191",
+  "/workspace/drop-gate-rule.txt",
+  "/workspace/tester/runs/trees-0e6fadd-{0,1000,6000,7000}.csv",
+  "/tmp/stress-logs/trees-0e6fadd-<b>/ (champion traces)",
+  "/tmp/p37b (head CSVs, traces, diag runs; not committed)"
+ ],
+ "branch": "p37b-heal-drop-gate",
+ "parent_idea": "P37",
+ "status": "retired",
+ "sha_flag_off": "9b1ceb11184f8c1dd8f0147a9a9b62e61d91a360",
+ "head": null,
+ "drop_gate": "healCube is blocked when dropRun !== null || dropHold || dropMove || any drop with holder null or us is within DROP_RUN_M (200 m) of us: the champion's dropOpen() test (brain.ts lethal release) plus dropHold/dropMove, and !farmHold (capture). farmOk already excludes leaveNow (walk to the next circle) and being out of the zone. The branch ranks below drop hold/run, so a drop wins on the same tick. What it adds over the champion: the champion has no heal detour, so its drop logic gates nothing here; the gate only matters later in the game, once a drop has been called within 200 m. What it changes vs P37: P37 required obs.drops to be empty (the forbidden 'any drop exists' gate), so P37b's gate is LOOSER than P37's, not tighter.",
+ "implementation": "brain.ts: healPick/healSkip state; in act(), healCube computed after the drop run block (HEAL_PICKUP_ON, obs.t >= HEAL_PICKUP_T 10, farmOk, farmGoal is an obs.cubes cube, !farmHunt, !farmHold, HP < 90%, drop gate above, cube not in healSkip; 3 s / 1 m no-progress give-up -> healSkip). One branch `} else if (healCube)` immediately before the stand-still heal branch, travel() to the cube, mode 'heal, pickup'. params.ts: HEAL_PICKUP_ON=false, HEAL_PICKUP_T=10, HEAL_PICKUP_STUCK_S=3.",
+ "diagnosis": {
+  "veto_detours_vs_gate": "The screened P37 (f174d55 brain.ts:755) only detoured when obs.drops was EMPTY, so every veto detour behind a lost drop (2089, 5048, 5051, 5053) and the worse deaths (3012, 3001, 4014) happened with no drop listed; neither the champion's dropOpen() nor the new gate could block any of them.",
+  "single_seed_trees_on": "Single-seed reruns trees-on (/tmp/builder-sim-trees --worker --seed-list, champion diag rows equal the trees-0e6fadd CSVs): 2089 and 3012: no detour at all on P34 (gated = ungated = champion: 2089 place 4, 3012 place 16). 5048: gated still detours 19.0-38.8 s (183 ticks, 0 with a drop listed), place 11 -> 14, death 185.70 -> 174.85, arrivals 1 -> 0. 5051: detours 25.4-32.9 s (76 ticks, 0 drops listed), place 6 -> 11, arrivals 1 -> 0. 5053: detours 69.4-71.3 s (20 ticks, nearest drop 469 m), place 5 -> 9, death 248.60 -> 80.95. An ungated copy (drop gate removed) behaves identically on all five seeds: the gate blocks none of these detours.",
+  "base0_seed44": "Seed 44 (base 0) lost 2 arrivals: the first detour 95.9-97.0 s ran while the only drop was 336 m away; games diverge from there. At 210-250 s the champion is within 200 m of the drops and runs (drop run 220-245 s); the head stands at full HP in 'hold' 203-234 m away, outside DROP_RUN_M, and never qualifies. Its last detour (200.1-204.8 s) was 224-236 m from the drops."
+ },
+ "near_miss": true,
+ "near_miss_note": "Near-miss under Doug 9:47 PM ET pathway (Coordinator 10:03 PM ET): only miss is checklist item 3 per-base drop arrivals, base 0 5->3 (seed 44), 4-base total 10->10; survivors 5->9. Flag-ON head = flip on top of 9b1ceb1 bot code."
 }

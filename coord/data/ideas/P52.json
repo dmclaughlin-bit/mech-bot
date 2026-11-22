@@ -15,5 +15,30 @@
   "branch": "p52-early-farm",
   "head_sha": "911a6629edb6e646e6a7d94c62568f22048f5d38",
   "pr": null,
-  "coordinator_note": "Copied from branch to main by 10-minute loop 12:08 AM ET Sun Nov 22."
+  "coordinator_note": "Copied from branch to main by 10-minute loop 12:08 AM ET Sun Nov 22.",
+  "p52b": {
+    "id": "P52b",
+    "title": "Early farm with drop safety: P52 early farm (EARLY_FARM_ON) where an active drop run (drop near AND reachable within DROP_RUN_M) always takes priority, and early farm never picks a cube that would put us beyond the drop-run margin from an active drop",
+    "flag": "EARLY_FARM_ON",
+    "owner": "Mech Builder",
+    "stage": "building",
+    "branch": "p52b-early-farm-drop-safe",
+    "base": "c2b3e1d",
+    "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
+    "main": "edb729f",
+    "builds_on": [
+      "F8",
+      "F11"
+    ],
+    "why": "P52 #169 cut deaths <40 s (48->45, 38->37) but lost drop arrivals (8->3 on 2000+3000).",
+    "source": "Coordinator brief 12:47 AM ET Sun Nov 22; P52 code from 911a662 (brain.ts, params.ts)",
+    "sha": null,
+    "pr": null,
+    "created_et": "2026-11-22 12:47 AM ET",
+    "sources": [
+      "coord/data/findings.md (F8, F11)",
+      "git show 911a662",
+      "gh pr view 169"
+    ]
+  }
 }

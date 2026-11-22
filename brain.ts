@@ -894,8 +894,8 @@ function buildBot(hello: Hello): Bot {
         return best
       }
       // P67 (FAR_COVER_LATCH_HOLD_ON): the far spot P60 has latched (refreshed within 0.5 s) if it still passes P60's gates
-      // and latch rules, else null. Checked ahead of the building, tree, P64 LOS-break and plain back-away retreat branches so
-      // they cannot preempt the walk; P60's give-up (no progress, arrived, outside the circle we keep to, no longer hidden) is unchanged.
+      // and latch rules, else null. Checked after building cover and ahead of the tree, P64 LOS-break and plain back-away
+      // retreat branches so they cannot preempt the walk; P60's give-up (no progress, arrived, outside the circle we keep to, no longer hidden) is unchanged.
       const farHold = (): Vec3 | null => {
         if (!FAR_COVER_LATCH_HOLD_ON || !farRun || obs.t - farRun.used > 0.5) return null
         if (!BACKAWAY_FAR_COVER_ON || !trees || obs.t < TREE_RETREAT_MIN_T || dropMove || dropHold || dropReach()) return (farRun = null)
@@ -938,17 +938,18 @@ function buildBot(hello: Hello): Bot {
         if ((!engage.clear || (engage.why === "finish" && d > close && !standOff)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1])
           move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
         mode = `engage, ${engage.why}`
-      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && (spot = farHold())) {
-        // P67 (FAR_COVER_LATCH_HOLD_ON): keep walking to P60's latched far spot; building, tree, LOS break and back-away can't preempt it.
-        move = heading(spot)
-        boost = me.energy > 0.3 * me.max_energy
-        mode = "retreat, far cover"
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && seenAt(me.pos, myHeight, threats, false) && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
         // Retreat (F2, F3, Build 5): hurt and under fire, so head for the nearest in-zone spot out of every visible
         // enemy's line of sight, torso still on the attacker (legs and torso are independent). Boost only above 30% energy.
         move = heading(spot)
         boost = me.energy > 0.3 * me.max_energy
         mode = "retreat to cover"
+      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && (spot = farHold())) {
+        // P67 (FAR_COVER_LATCH_HOLD_ON): keep walking to P60's latched far spot; tree, LOS break and back-away can't preempt it
+        // (building cover above still can: fix round, the 4093 save is a building-cover exit from a far walk).
+        move = heading(spot)
+        boost = me.energy > 0.3 * me.max_energy
+        mode = "retreat, far cover"
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && (spot = treeRetreat())) {
         // P48 (TREE_RETREAT_ON): no building cover in reach, but trees can hide us from every enemy that sees us: walk
         // there instead of backing straight away (no closer to any of them), torso still on the attacker.

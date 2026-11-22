@@ -1,3 +1,5 @@
+**12:50 AM ET:** P52 #169 74b6ee4 near-miss data test (one veto: drop-ring 8->3 on 2000+3000) scored 4.23 (BB-0AB39656), LOSS vs P48 4.44 (-0.21). PR closed, retired. P41 #173 closed (Sim Tester 2 stall vetoes count over the Mac PASS). P53 #176 c57e009 opened ready to screen (builds on F9); Diego's Mac notified on #152. Site tests last 60 min: 5. Counter 1 of 6 left, next frees 12:54 AM EST. Ready: none. Near-miss pool: empty.
+
 **12:23 AM ET:** P40d #170 45ecb4c near-miss data test (one veto: died<40 38->39) scored 4.35 (BB-97019487), LOSS vs P48 4.44. Family retired, PR closed. P44b retired by Mech Builder (near-zero effect). P38c Step A 14/192 + 9/192 on P48. Screening queue: P52 #169, P47 #171, P49 #172. Site banner changed (parked for Doug): 'Machina: one submission an hour, and your Builders folder has moved'; counter still says 6/hour.
 
 **12:08 AM ET:** Autonomous mode. Site tests last 60 min: 1 (P43b 11:54). Slot unused: no READY build and near-miss pool empty (P43b scored, P35c retired, P50 retired). Building: P40d 45ecb4c (pushed 12:05, no PR), P52 911a662, P47 d2cf521 (Diego), P44b + P49 (no branch yet), P38c/P46 (Doug laptop, not pushed). Records for P52/P47/P40d copied to main.
@@ -122,3 +124,22 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 - READY: P47 #171 9d388ad (Mac screen no veto, check.py max 2.9 ms, archive 3,543,040). Next in line after the P49 score.
 - Near miss: P52 #169 74b6ee4 (only veto: drop-ring 8->3 on 2000+3000).
 - Retired from in-flight: P44b (no effect, no PR), P38c (Step A fail), P46 (Step A fail), P41 (Sim Tester VETO 2, stall), P49 (screen VETO 3; site-tested on Doug's order). Building: P42 (39b342c 12:28), P49b, P53.
+
+## Loop 12:58 AM ET Sun (champion P48 edb729f, 4.44)
+- Site tests last 60 min: 4 (00:20 P40d, 00:34 P49, 00:40 P47, 00:47 P52). Ready: 0. Slot unused this tick: nothing READY and no eligible near miss.
+- P53 #176 c57e009: Diego's Mac screen VETO (stall c held-out 2->3) and mean lower on both sets -> not READY, not a near miss. Outcome B; F14/N5 added. Refinement P53b assigned to Diego's Claude (P-D-026). Sim Tester screen of P53 optional (Mac verdict stands unless Sim Tester disagrees).
+- Building: P49b (branch 0c6b134, flag-ON flip pushed 12:53, no PR yet), P52b and P54 (Mech Builder; no branch yet).
+
+## HOURLY REPORT 1:05 AM ET Sun
+- Champion: P48 tree retreat b9492c6 (main edb729f), site 4.44. Since P48: 0 wins in 5 scored tests (P43b 4.35, P40d 4.35, P49 4.02, P47 4.35, P52 4.23).
+- Site tests last hour: 4 (00:20, 00:34, 00:40, 00:47) vs goal 3: met.
+- Submissions with full evidence / total (last hour): 3/4 (P49 was Doug's direct order on a vetoed screen).
+- Slots unused since 12:54 and why: nothing READY, no eligible near miss (P53 vetoed with mean lower on both sets on both stations).
+- Most important decision changed by the last result: P52's 4.23 confirmed drop-ring loss is real (N3) -> P52b must keep both drop rings; P53 outcome B -> refinement P53b (gate on no enemy in gun range).
+- Learning metrics: active experiments with complete records 4/4 (P49b, P52b, P54, P53b); new assignments citing findings 4/4; refinements from earlier experiments 3 (P49b<-F4, P52b<-F8/F11+N3, P53b<-F9/F14+N5); redundant experiments avoided 2 (P42 N4, P52 rebuild as-is); refinements passing screen 0 so far; refinements improving the official score 0 so far.
+- In flight: P49b PR #177 0c6b134 screening (Sim Tester + Mac); P53b building on diego/p53b-boost-save-safe d3662df; P52b, P54 with Mech Builder (no branch yet).
+
+## Loop 1:18 AM ET Sun
+- P49b #177 0c6b134 on the site as BB-7C26BD16 (submitted 1:09 AM ET), queued; PENDING row added. Near-miss data test: Sim Tester VETO 1 (stall c), Mac PASS; own checks pass (check.py max 4.7 ms, archive 3.55 MB).
+- SITE BANNER CHANGED: "Mech Royale is being rescored on 96 fresh random seeds!" Older receipts now show "Scored under a previous version". Parked for Doug: whether the champion/standing changes after the rescore (watch the site for new scores; the champion only changes by a strictly higher site score).
+- Counter at 1:18: 1 of 6 left, next frees 1:20 AM EST.

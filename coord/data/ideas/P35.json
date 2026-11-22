@@ -12,5 +12,16 @@
   "sha": "5778086",
   "status": "retired",
   "head": "5778086d38a531d03f8d2940f5da1634f9ddd90e",
-  "decision": "9:04 PM ET coordinator: VETO confirmed (https://github.com/dmclaughlin-bit/mech-bot/pull/150#issuecomment-7072641748). Drop-arrival set total 2000+3000 8->7, all from seed 2089 (place 1->9, died 121.45 s before the champion arrival). Effect otherwise flat or negative: +0.010 +/- 0.056 and -0.068 +/- 0.037. Note: seed 2089 also cost P34 and P37 a drop; it is a fragile late-drop game."
+  "decision": "9:04 PM ET coordinator: VETO confirmed (https://github.com/dmclaughlin-bit/mech-bot/pull/150#issuecomment-7072641748). Drop-arrival set total 2000+3000 8->7, all from seed 2089 (place 1->9, died 121.45 s before the champion arrival). Effect otherwise flat or negative: +0.010 +/- 0.056 and -0.068 +/- 0.037. Note: seed 2089 also cost P34 and P37 a drop; it is a fragile late-drop game.",
+  "hypothesis": "Unseen target first: target-pick bonus for a visible enemy facing away from us and beyond 45 m (UNSEEN_TARGET_ON)",
+  "mechanism": "UNSEEN_TARGET_ON",
+  "activation": null,
+  "positives": null,
+  "negatives": "Superseded by P35b/P35c rebuilds on later champions.",
+  "confidence": "Uncertain",
+  "reuse": "narrow-follow-up",
+  "outcome": null,
+  "builds_on": null,
+  "disproof": null,
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

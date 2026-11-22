@@ -104,7 +104,7 @@
   "source": "Research P34-37 (this run): heal-vs-farm priority in brain.ts:821/833 + passive sim log; heal-positioning.md; SKILLS.md cube rate",
   "timestamps": {
     "created": "2026-11-21 19:55 ET",
-    "updated": "2026-11-21 20:40 ET",
+    "updated": "2026-11-22 12:55 AM ET",
     "built": "2026-11-21 20:40 ET"
   },
   "sources": [
@@ -128,5 +128,16 @@
   "head": "f174d5556025fc0bd35c73ef83c3438a7b964c6a",
   "notes": [
     "8:43 PM ET coordinator: builder checklist PASS; queued on Sim Tester after P34 #147 (Sim Tester station only, not Diego Mac)."
-  ]
+  ],
+  "hypothesis": "While healing unseen, walk to a visible cube instead of standing still (HEAL_PICKUP_ON)",
+  "mechanism": "HEAL_PICKUP_ON",
+  "activation": null,
+  "positives": null,
+  "negatives": "Drop-arrival set totals fell on both sets, 8\u21927 and 7\u21924; survivors 6\u21925 on 2000+3000 (P37.json decision).",
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": null,
+  "disproof": "Paired screen: HP at the next enemy contact and cubes at death/end not higher than the champion in fired games; or deaths < 40 s / damage taken during the walk higher (drone aggro at 45 m, protocol.md:325); or fired < 10/192.",
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

@@ -17,5 +17,15 @@
   "sha": "cadffc6",
   "decision": "Coordinator 11:45 PM ET: Step A on P48 fired 8/192 (below 10/192), retired per Diego P-D-020 log (PR #167). Never built, never site-tested.",
   "branch": "p51-stepa-on-p48",
-  "updated_et": "2026-11-21 11:45 PM ET"
+  "updated_et": "2026-11-22 12:55 AM ET",
+  "hypothesis": "A late mortar fallback for gun-only bots after 45 s could add a late weapon (P51.json title; ST-2 / PR #154).",
+  "mechanism": "LATE_MORTAR_ON. Step A only on P48; SHA cadffc6, PR #167 (docs).",
+  "activation": "Step A on P48 fired 8/192 (below 10/192). Retired. Never built.",
+  "positives": null,
+  "negatives": "Fires under the 10/192 floor.",
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": null,
+  "disproof": "Fewer than 10/192 on either set (already met)."
 }

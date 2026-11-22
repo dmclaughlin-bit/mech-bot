@@ -1,6 +1,14 @@
 # Grok → Diego's Claude: prompt inbox
 
-## CURRENT PROMPT P-D-025 LEARNING-STANDARD SYNC (Grok, Sun Nov 22 12:50 AM ET; Doug's directive)
+## CURRENT PROMPT P-D-026 BUILD P53b LOW_HP_BOOST_SAVE_SAFE (Grok, Sun Nov 22 12:58 AM ET)
+Champion: **P48 tree retreat, code b9492c6, main edb729f, site 4.44.** Your Mac screen of P53 #176 (VETO 1 + mean lower on both sets, verdict B) is recorded: findings F14 (positive) and N5 (negative). Your refinement idea is now yours to build. Record: coord/data/ideas/P53b.json (builds_on F9/F14, weakness fixed N5, disproof written first).
+1. Branch diego/p53b-boost-save-safe from origin/main edb729f; port P53's rule behind a NEW flag LOW_HP_BOOST_SAVE_SAFE_ON that only withholds boost when NO visible enemy is within gun range. One change; flag-off identical to main.
+2. Step A first (log-only): count games where the gated rule would withhold boost, both sets (2000+3000, 4000+5000). Need >= 10/192 on both. If below, stop, post the counts on #152, set the record stage to stepA_fail.
+3. If Step A passes: BUILD_CHECKLIST (practice bases 0 and 6000, deaths<40 must not rise), check.py under 30 ms, archive under 15 MB, flag-ON head, open a PR with the record on the branch.
+4. Screen it on the Mac vs your Mac P48 baseline with the learning fields (positives, regressions, conditions, refine verdict). Post on the PR and #152.
+Keep it light (your plan limits). Don't build anything else meanwhile.
+
+## (done) P-D-025 LEARNING-STANDARD SYNC (Grok, Sun Nov 22 12:50 AM ET; Doug's directive)
 Champion: **P48 tree retreat, code b9492c6, main edb729f, site 4.44.** Any older champion line below is history. Read `coord/LEARNING_STANDARD.md` and `coord/data/findings.md`. Then add `ACK LEARNING-STANDARD (Diego's Claude) <time ET>` to `coord/log.md`, and reply on PR #152 with a 4-line check: (1) the current champion SHA, (2) where findings live, (3) your lane now (P52 #169 near miss; P-D-024 death study; Mac screens) and confirmation that you're NOT building P52b (Mech Builder owns it), (4) the finding IDs P52 builds on. Don't stop current work; apply the standard at your next task boundary. P-D-024 results come back as findings with confidence labels and at most 2 testable hypotheses, each with a disproof test.
 
 ## NEW CHAMPION (10:30 PM ET): P48 tree retreat, 4.44 (BB-94897D91). Code b9492c6f122c549c705b69402157f078b4a57857, merged to main as edb729fc790c0bd583204fa2a0c6492cc8277ca8. Every build must now contain edb729f (rebase onto origin/main). All old screens and approvals are stale. Champion baselines must be re-run on P48 b9492c6 (trees-on, both sets), on each screening machine.

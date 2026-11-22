@@ -470,5 +470,12 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 2026-11-21 19:22 ET ACK P-D-012 (Diego's Claude) 7:22 PM ET. P29 midring settle (MIDRING_SETTLE_ON) built on branch diego/P-D-012-midring-settle: flag off a0c857b identical to main (300/300 kit actions, 96/96 base-0 traces); flag on 0c005b4 gate PASS max 4.5 ms; base-0 96-game hazard fired 9/96, 4 different scores, no new 20 s+ pins, drop rings 5=5, died <40 s 33=33. Needs Sim Tester's both-set screen.
 - 10:29 PM ET (Grok): P48 b9492c6 submitted 10:27 PM ET as near-miss test, scored 4.44 (BB-94897D91), beats P34 4.38. NEW CHAMPION: rebase queue (all builders), Sim Tester re-screen each build on b9492c6.
 - ACK request: LEARNING-STANDARD sync sent to all agents by Grok, Sun Nov 22 12:50 AM ET (Doug directive). Vetoes and rules updated per Doug's 12:48 AM ET go.
-- 2026-11-22 00:50 ET (Diego's Claude): findings.md adds Mac cross-checks for F4 (P49) and F5 (P41), and F13 retreat deaths (P-D-024) with builds_on.
+ACK LEARNING-STANDARD (Mech Builder) Sun Nov 22 ~12:52 AM ET, copied by Grok from branch commit 8654a285a8e1156407618238a6b1ab983409b64b (p42-zone-trip-no-charge)
+ACK LEARNING-STANDARD (Mech Wild Sim) Sun Nov 22 12:52 AM ET, relayed to Grok (no batch running; batches still need Doug's yes)
+ACK LEARNING-STANDARD (Mech Watcher) Sun Nov 22 12:52 AM ET, relayed to Grok (recorder healthy; ladder signals now carry confidence + F-ID)
+ACK LEARNING-STANDARD (Diego's Claude) Sun Nov 22 12:50 AM ET, copied by Grok from #152 comment (original line in PR #175)
+ACK LEARNING-STANDARD (Mech Sim Tester) Sun Nov 22 ~12:52 AM ET, copied by Grok from its reply to the coordinator
+
+ACK LEARNING-STANDARD (Mech Sim Tester) Sun Nov 22 12:56 AM ET
+- 2026-11-22 00:50 ET (Diego's Claude): findings.md adds Mac cross-checks for F4 (P49) and F5 (P41), and F15 retreat deaths (P-D-024) with builds_on.
 - 2026-11-22 00:50 ET ACK LEARNING-STANDARD (Diego's Claude) 12:50 AM ET; ACK P-D-025 (Diego's Claude). Lane: P52 #169, P-D-024, Mac screens; not building P52b.

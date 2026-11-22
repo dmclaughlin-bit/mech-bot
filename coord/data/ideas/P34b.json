@@ -39,7 +39,7 @@
   "source": "coordinator brief (branch p34b2-drop-gate); background: P34 on the old base lost drop arrivals on the Sim Tester screen (seed 2078 both drops 1st->7th, 2089 one 1st->6th; PR #147 comment 7072472836), rebuilt P34 scored 4.38 on the site",
   "created_et": "2026-11-21 21:25",
   "timestamps": {
-    "updated": "2026-11-21 21:45 ET"
+    "updated": "2026-11-22 12:55 AM ET"
   },
   "sources": [
     "coord/data/ideas/P34.json",
@@ -49,5 +49,16 @@
   ],
   "gate": "eqdrive flag-off vs main IDENTICAL (cmp), flag-on also IDENTICAL; check.py --map-dir arena PASS default max 2.7 ms, flag-on max 2.6 ms",
   "retired_reason": "BARELY FIRES 0/192 trees-on (bases 0+1000): the near-and-reachable drop gate is a strict subset of the champion P34 lethal release dropOpen() test (drop run set, or a free called drop within DROP_RUN_M 200 m), so it never blocks a release the champion takes; all 192 games identical to champion. Lost drops on 2078/2089 followed early-release kills at 46-47 s before any drop was called.",
-  "retired_by": "Mech Builder 2026-11-21 9:38 PM ET per Coordinator"
+  "retired_by": "Mech Builder 2026-11-21 9:38 PM ET per Coordinator",
+  "hypothesis": "Drop gate on the champion's lethal release: no early laser release while a supply drop is near and reachable within DROP_RUN_M, or while on a drop run / ring hold / capture (LETHAL_DROP_GATE_ON)",
+  "mechanism": "LETHAL_DROP_GATE_ON",
+  "activation": null,
+  "positives": null,
+  "negatives": "BARELY FIRES 0/192 (P34b.json retired_reason).",
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": null,
+  "disproof": null,
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

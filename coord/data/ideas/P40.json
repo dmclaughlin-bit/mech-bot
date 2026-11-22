@@ -199,7 +199,8 @@
     "p40b_built": "2026-11-22",
     "p40c_started": "2026-11-22",
     "p40d_started": "2026-11-22",
-    "p40d_built": "2026-11-22"
+    "p40d_built": "2026-11-22",
+    "updated": "2026-11-22 12:55 AM ET"
   },
   "sources": [
     "coord/data/ideas/B125.json",
@@ -494,5 +495,16 @@
   },
   "head_sha": "45ecb4cc2eba61fdab862f9b3fcb596a89b2d344",
   "coordinator_note": "Copied from branch to main by 10-minute loop 12:08 AM ET Sun Nov 22.",
-  "site_score": 4.35
+  "site_score": 4.35,
+  "hypothesis": "A rooftop jet route to roof loot could collect upgrades the champion misses by walking (P40 title/family).",
+  "mechanism": "ROOF_JET_ROUTE_ON. P40d (45ecb4c, PR #170) added a post-climb landing exit on P48. P40b (ca549ae, PR #155) was the same family on P34.",
+  "activation": "P40d official screen games changed 18 and 19; activation 78/192 and 80/192 (site_results.csv notes).",
+  "positives": "P40d official screen: deaths <40 s 48\u219247 on 2000+3000; mean +0.047 \u00b1 0.109 on 4000+5000. Not confirmed on the site.",
+  "negatives": "P40b site 4.29 (BB-18893791) vs P34 4.38. P40d site 4.35 (BB-97019487) vs P48 4.44. P40d one veto: died<40 s 38\u219239 on 4000+5000 (seed 5083). Findings F7: don't build on it.",
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": null,
+  "disproof": "Official score \u2264 then-champion (already met twice).",
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

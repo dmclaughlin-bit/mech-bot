@@ -48,7 +48,7 @@
   "source": "Research P34-37 (this run): regen rule protocol.md:291 vs farm-shot gate brain.ts:955 + passive sim log",
   "timestamps": {
     "created": "2026-11-21 19:55 ET",
-    "updated": "2026-11-21 19:55 ET"
+    "updated": "2026-11-22 12:55 AM ET"
   },
   "sources": [
     "brain.ts (origin/main d7fca14 = 6182d29 bot code)",
@@ -61,5 +61,16 @@
   ],
   "renumbered_from": "P35",
   "priority_rank": 4,
-  "coordinator_note": "Ranked 4 at 8:13 PM ET: parked: likely tie (11/192 games have quiet time after). Champion is now P29 2e1d036 / main b6f2f8b; trigger counts came from the old champion, so re-count them."
+  "coordinator_note": "Ranked 4 at 8:13 PM ET: parked: likely tie (11/192 games have quiet time after). Champion is now P29 2e1d036 / main b6f2f8b; trigger counts came from the old champion, so re-count them.",
+  "hypothesis": "Regen guard: while healing, do not shoot drones or crates that are not shooting us (REGEN_GUARD_ON)",
+  "mechanism": "REGEN_GUARD_ON",
+  "activation": null,
+  "positives": null,
+  "negatives": null,
+  "confidence": "Uncertain",
+  "reuse": "research",
+  "outcome": null,
+  "builds_on": null,
+  "disproof": "Paired screen: HP at the next enemy contact not higher in fired games, or cubes at end lower (crates/drones left unbroken), or more damage from drones; fired < 10/192. If diff_score is mostly ties, it is the low-impact outcome predicted by the 11/192 figure and should not take a site slot.",
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

@@ -10,18 +10,18 @@
     "in 'to next circle' (t >= 10), while an enemy beyond 45 m has line of sight and trees+buildings do not already hide us from all such enemies: head for the nearest spot 1-3 s away that trees+buildings hide from all of them and that is at least 0.5 s of walking closer to the entry point, else one 1-2 s away that is no farther from it, only if the trip still fits (distance via the spot / (zoneWalk x walk speed) + zoneBuffer < time left); otherwise the champion's route"
   ],
   "owner": "Diego's Claude (P-D-023)",
-  "stage": "building (branch pushed, no PR yet)",
-  "pr": null,
-  "sha": null,
+  "stage": "scored",
+  "pr": 171,
+  "sha": "9d388ad9c3673ac097c2df4d99ce5a5731f0ad70",
   "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
   "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
   "screens": [],
-  "receipt": null,
-  "site_score": null,
-  "score": null,
-  "decision": null,
-  "blocker": null,
-  "next_action": "Grok: assign or keep parked. Step A passed on P48 trees on; a build still needs the full BUILD_CHECKLIST 4-base screen.",
+  "receipt": "BB-0B156FFA",
+  "site_score": 4.35,
+  "score": 4.35,
+  "decision": "Diego's Mac full paired trees-on screen: no veto, activation 13/192 and 15/192, survivors 3\u21924 on 4000+5000, hazard counts flat (findings F12 as first written; ready_ledger 12:42 AM ET). Site 4.35 vs 4.44 (BB-0B156FFA), LOSS (\u22120.09). Findings F12 revised: negative finding, do not build on it (see N2).",
+  "blocker": "Official loss 4.35.",
+  "next_action": "None. Do not repeat tree-rotate.",
   "doug_waiver": false,
   "single_decision": "The next step of the zone trip. Today 'to next circle' follows the nav path to the entry point (brain.ts:756-760, entry brain.ts:542-545) whoever watches. This allows a short detour into tree shadow when it costs no ground.",
   "trigger": "TREE_ROTATE_ON AND obs.t >= 10 AND mode === 'to next circle' AND enemies beyond 45 m with seenAt(..., false) non-empty AND not already tree/building-hidden from all AND a qualifying spot exists AND the trip still fits AND NOT (near-and-reachable drop OR dropMove OR dropHold).",
@@ -72,7 +72,7 @@
   "source": "Doug 8:58 PM ET follow-up (rotations through tree cover): trees-on passive sim log of the P34 champion.",
   "timestamps": {
     "created": "2026-11-21 21:55 ET",
-    "updated": "2026-11-22 00:15 ET"
+    "updated": "2026-11-22 12:55 AM ET"
   },
   "sources": [
     "/workspace/mechfight-kit/protocol.md:317, :369-372, :452",
@@ -140,5 +140,18 @@
   },
   "branch": "p47-tree-rotate",
   "head_sha": "d2cf521f49c67c76b7426d85d15e4d7d05503faa",
-  "coordinator_note": "Copied from branch to main by 10-minute loop 12:08 AM ET Sun Nov 22."
+  "coordinator_note": "Copied from branch to main by 10-minute loop 12:08 AM ET Sun Nov 22.",
+  "hypothesis": "On the zone trip, a short detour into tree shadow when an enemy beyond 45 m sees us, without losing ground to the entry point, could cut exposure (P47.json single_decision; builds on F3).",
+  "mechanism": "TREE_ROTATE_ON. SHA 9d388ad, PR #171.",
+  "activation": "Mac screen: different behaviour 13/192 and 15/192.",
+  "positives": "Mac screen: no veto; survivors 3\u21924 on 4000+5000; drop rings, deaths <40 s, and pause games flat.",
+  "negatives": "Site 4.35 (BB-0B156FFA), \u22120.09. One of three small P48 changes that all scored 4.35 (N2). F12 is a negative finding.",
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": [
+    "F3"
+  ],
+  "disproof": "Official score \u2264 4.44 (already met).",
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

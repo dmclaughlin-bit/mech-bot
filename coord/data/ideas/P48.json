@@ -11,7 +11,7 @@
     "in the champion's no-cover 'retreat' branch (HP < retreatHp, hit in the last 2 s, no building hide spot from hideSpot), t >= 40 (TREE_RETREAT_MIN_T; research said 10, raised once to fix deaths < 40 s), when trees+buildings do not already hide us from every enemy that sees us: walk (boost above 30% energy, as today) to the nearest in-zone spot 1, 2 or 3 s away, no closer to any of those enemies, that trees+buildings hide from all of them; the spot is kept while it still works; 3 s without progress (or reached and still seen) puts it on a 4 m skip list"
   ],
   "owner": "Mech Builder",
-  "stage": "scored - WIN (near-miss data test)",
+  "stage": "champion",
   "pr": 157,
   "sha": "b9492c6f122c549c705b69402157f078b4a57857",
   "branch": "p48-tree-retreat",
@@ -149,7 +149,7 @@
   "timestamps": {
     "created": "2026-11-21 21:55 ET (research P46)",
     "renumbered": "2026-11-22 ET",
-    "updated": "2026-11-22 ET"
+    "updated": "2026-11-22 12:55 AM ET"
   },
   "sources": [
     "git show 8e623eb:coord/data/ideas/P46.json",
@@ -184,5 +184,16 @@
     "notes": "Seed 7011 (base 7000) differs without firing: it diverges at t = 39.1 in heal mode, where P48 cannot act; the champion run had a late tick there (timing-dependent hideSpot deadline). Head max decision 656 ms (seed 1051, mode hold, not P48 code) during a CPU contention burst (seeds 1051-1053, load ~9 on 8 cores); champion trace max 67.7 ms on base 7000. Head bot code worst on check.py 2.9 ms.",
     "size_bytes": 3430400,
     "ancestor_588557e": "OK"
-  }
+  },
+  "hypothesis": "When hurt, being hit, and no building cover is reachable, retreating to a tree-hidden spot should cut deaths in the open-retreat (P48.json single_decision).",
+  "mechanism": "TREE_RETREAT_ON. SHA b9492c6, PR #157, merged edb729f.",
+  "activation": "Official screen vs P34: games changed 24/192 on both sets; fired 24/192 on both (P48.json decision / screens.csv).",
+  "positives": "Site 4.44 vs P34 4.38 (BB-94897D91), +0.06. Current champion. Early deaths and pause games equal on the screen. Findings F3.",
+  "negatives": "Screen failed exactly one veto: drop-ring set totals 9\u21927 and 8\u21925 (confirmed sim false negative; veto change parked for Doug).",
+  "confidence": "Verified",
+  "reuse": "already-in-champion",
+  "outcome": "A",
+  "builds_on": null,
+  "disproof": "Trees-on paired screen: deaths within 10 s of a trigger not lower, or damage taken during retreat not lower; drop-ring set totals below the champion; deaths < 40 s above; new 20 s+ pins with the flag active; official score at or below the champion.",
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

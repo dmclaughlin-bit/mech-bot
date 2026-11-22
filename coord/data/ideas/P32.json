@@ -59,10 +59,21 @@
   "blocker": "BUILD_CHECKLIST item 5 FAIL after the one allowed fix: deaths before 40 s 33 -> 35 on base 0 (seeds 0, 36). Both new early deaths follow early fades (10.9 s and 12.3 s) that still killed their target on time; the games split afterwards (second enemy, different position).",
   "next_action": "Grok: decide close/hold or a different variant (a second fix would be a new gate, e.g. no fade before 45 s, which leaves 1-4/96 games firing). Not ready for Sim Tester as built.",
   "timestamps": {
-    "updated": "2026-11-21 19:58 ET"
+    "updated": "2026-11-22 12:55 AM ET"
   },
   "sources": [
     "builder base-0 hazard run, /tmp/p32-main-0.csv vs /tmp/p32-on-0.csv, logs /tmp/p32-logs-{main,on}",
     "check.py, /tmp/eqdrive.py"
-  ]
+  ],
+  "hypothesis": "Fade on the finish walk: while the finish rule is walking us in and we already have a clear gun or laser shot in range on the visible target, keep firing and replace the straight walk-in with a sideways offset plus a slight fade (FIGHT_FADE_ON)",
+  "mechanism": "FIGHT_FADE_ON",
+  "activation": null,
+  "positives": null,
+  "negatives": "Base 0 deaths <40 s 33\u219235 after the one allowed fix; a pre-45 s gate would leave 1\u20134/96 activations (P32.json decision).",
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": null,
+  "disproof": null,
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

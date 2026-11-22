@@ -114,7 +114,7 @@
   "source": "Research P34-37 (this run): champion claim gate brain.ts:669 + passive sim log; watcher RANKED.md rule 2, SKILLS.md cube rate; site B53/B94 losses",
   "timestamps": {
     "created": "2026-11-21 19:55 ET",
-    "updated": "2026-11-21 20:35 ET"
+    "updated": "2026-11-22 12:55 AM ET"
   },
   "sources": [
     "brain.ts (origin/main d7fca14 = 6182d29 bot code)",
@@ -141,5 +141,16 @@
     "check_py": "PASS both: flag-on copy max 3.1 ms, default (flag false) max 2.7 ms, 300/300 in time",
     "merge_base": "git merge-base --is-ancestor b6f2f8b HEAD OK",
     "sim": "/tmp/wild-sim run.ts, --jobs 1, 96 seeds each on SEED_BASE 0 and 1000; main rerun the same way; passive wrapper (/tmp/p36-inst, eqdrive identical to the unwrapped bots)"
-  }
+  },
+  "hypothesis": "Claim a kill's visible cubes while only one distant enemy (>= 100 m) watches (CLAIM_WATCHED_ON)",
+  "mechanism": "CLAIM_WATCHED_ON",
+  "activation": null,
+  "positives": null,
+  "negatives": "After the one fix, base 1000 paired \u22120.250 \u00b1 0.118, kills 309\u2192287, drop arrivals 3\u21921 (P36.json decision).",
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": null,
+  "disproof": "Paired screen: mech damage taken during relaxed-claim walks larger than the champion's 5 s loss in the same state (median 3%, p90 19% of max), or deaths within 10 s of a relaxed claim higher than the champion; cubes at death/end not higher; diff_score worse on both sets; fewer than 10/192 games fired.",
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

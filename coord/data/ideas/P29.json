@@ -10,7 +10,7 @@
     "after a shrink, once inside the circle with farmOk, prefer a midring sit/patrol (zratio ~0.40-0.70) over camping the center or hugging the edge; drop run and zone-first travel stay above it; stay off at r <= 70"
   ],
   "owner": "Diego's Claude",
-  "stage": "champion",
+  "stage": "scored - WIN (in champion stack; superseded as current champion by P34 then P48)",
   "pr": 143,
   "sha": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
   "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
@@ -27,7 +27,7 @@
   "timestamps": {
     "first_mention": "2026-11-21 17:54 ET (ideas_queue.md)",
     "assigned": "2026-11-21 19:00 ET",
-    "updated": "2026-11-21 19:01 ET",
+    "updated": "2026-11-22 12:55 AM ET",
     "submitted": "2026-11-21 20:04 ET"
   },
   "sources": [
@@ -35,5 +35,15 @@
     "coord/data/watcher/SKILLS.md",
     "coord/next-diego.md (P-D-012)"
   ],
-  "updated_et": "2026-11-21 19:49 ET"
+  "updated_et": "2026-11-22 12:55 AM ET",
+  "hypothesis": "After a shrink, settling in the midring to farm (not camping the center) should raise placement (P29 title).",
+  "mechanism": "MIDRING_SETTLE_ON. SHA 2e1d036, PR #143.",
+  "activation": null,
+  "positives": "Site 4.35 vs 4.17 (BB-BAB3F961), +0.18. Findings F1. In the champion stack.",
+  "negatives": null,
+  "confidence": "Verified",
+  "reuse": "already-in-champion",
+  "outcome": "A",
+  "builds_on": null,
+  "disproof": null
 }

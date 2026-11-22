@@ -140,3 +140,22 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P33 (hurt retreat far, Watcher RANKED.md rule 11): in mid phase (the zone shrinking to its 2nd or 3rd circle,
+ * 240 m then 140 m in the house config, i.e. Watcher phases 2-3) with 5 or more alive and HP below
+ * HURT_RETREAT_FAR_HP of max, when the champion's own retreat ("retreat to cover" / "retreat") was running on the
+ * previous decision and we would now stop to heal, keep running that same retreat (same hide spot or back-away
+ * heading, same boost rule) until the nearest visible enemy is at least HURT_RETREAT_FAR_M away or none is visible.
+ * Gives up after HURT_RETREAT_FAR_GIVEUP_S without progress (moved 3 m and the nearest visible enemy 2 m farther).
+ * Never at t < 10 s, never with a supply drop announced or landed (so never where a drop run or ring hold could
+ * start), never in place of zone travel, engage, kill-claim, laser walk, crossfire break, ambush or drop run/hold.
+ * Retreat trigger HP, heal and drop rules unchanged. false = champion behavior exactly.
+ */
+export const HURT_RETREAT_FAR_ON = false
+/** P33: stop the extended retreat once the nearest visible enemy is at least this far (m). */
+export const HURT_RETREAT_FAR_M = 120
+/** P33: only below this fraction of max HP. */
+export const HURT_RETREAT_FAR_HP = 0.35
+/** P33: no-progress give-up (s). */
+export const HURT_RETREAT_FAR_GIVEUP_S = 3

@@ -28,7 +28,7 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  HURT_RETREAT_FAR_GIVEUP_S, HURT_RETREAT_FAR_HP, HURT_RETREAT_FAR_M, HURT_RETREAT_FAR_ON, LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -308,6 +308,9 @@ function buildBot(hello: Hello): Bot {
   let claim: { pos: Vec3; until: number } | null = null
   /** P-B-001: the enemy the standoff break walked at last decision (null when it did not run). */
   let standoffId: number | null = null
+  /** P33: a retreat (the champion's or its P33 extension) ran last decision, and the extension's last progress mark. */
+  let farLive = false
+  let farMark: { t: number; pos: [number, number]; dist: number } | null = null
 
   /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
    * lightning 0.8 × its range, gun GUN_NEAR_M, laser and mortar their reach. */
@@ -550,6 +553,19 @@ function buildBot(hello: Hello): Bot {
         const yaw = yawTo(me.pos, to)
         return [Math.cos(yaw), Math.sin(yaw)]
       }
+      // The F2/F3 back-away heading: away from the last hit's bearing, leaning toward the center near the circle's edge.
+      const backAway = (bearing: number): [number, number] => {
+        const away = bearing + Math.PI
+        let mx = Math.cos(away), my = Math.sin(away)
+        const edge = clamp((flat(me.pos, z.center) - (z.radius - 40)) / 40, 0, 1)
+        if (edge > 0) {
+          const [cx, cy] = heading(z.center)
+          mx += 1.5 * edge * cx
+          my += 1.5 * edge * cy
+        }
+        const n = Math.hypot(mx, my) || 1
+        return [mx / n, my / n]
+      }
       // F3, Q2 (Build 5): the enemies in view (or remembered for memory_s), nearest first, and where we may hide:
       // inside the circle we are in, and inside the next one once we are there, so hiding never undoes Z1.
       const myHeight = me.stats.height ?? cfg.mech.height * scale(me.cubes)
@@ -744,6 +760,26 @@ function buildBot(hello: Hello): Bot {
       let move: [number, number] = [0, 0]
       let boost = false
       let mode = "hold"
+      // P33 (HURT_RETREAT_FAR_ON, see params.ts): the same retreat as the champion's two retreat branches, run on
+      // after the 2 s under-fire window ends, in mid phase (zone shrinking to its 2nd or 3rd circle, 5+ alive), below
+      // HURT_RETREAT_FAR_HP, until the nearest visible enemy is HURT_RETREAT_FAR_M away. Never before 10 s or with any
+      // supply drop announced or landed; gives up after HURT_RETREAT_FAR_GIVEUP_S without progress.
+      let far: { move: [number, number]; mode: string } | null = null
+      const hurtFar = (hit: { bearing: number }): { move: [number, number]; mode: string } | null => {
+        const ph = cfg.zone.phases
+        if (obs.t < 10 || obs.alive < 5 || (obs.drops ?? []).length > 0 || dropMove || dropHold || me.hp >= HURT_RETREAT_FAR_HP * me.max_hp) return null
+        if (!(ph.length > 2 && z.next_radius <= ph[1].radius && z.next_radius >= ph[2].radius)) return null
+        const near = enemies.reduce((d, e) => Math.min(d, flat(e.pos, me.pos)), Infinity)
+        if (near >= HURT_RETREAT_FAR_M) return null
+        if (!farMark || (flat(me.pos, farMark.pos) >= 3 && near >= farMark.dist + 2)) farMark = { t: obs.t, pos: [me.pos[0], me.pos[1]], dist: near }
+        else if (obs.t - farMark.t > HURT_RETREAT_FAR_GIVEUP_S) return null
+        let s: Vec3 | null
+        if (seenAt(me.pos, myHeight, threats, false) && (s = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
+          spot = s
+          return { move: heading(s), mode: "retreat to cover, far" }
+        }
+        return { move: backAway(hit.bearing), mode: "retreat, far" }
+      }
       if (!me.in_zone) {
         // Outside the circle every tick costs HP and stops regen (Z2): head in along a path, boosting.
         move = travel(me.pos, [z.center[0], z.center[1], me.pos[2]], obs.t, canPlan()).move
@@ -776,16 +812,7 @@ function buildBot(hello: Hello): Bot {
       } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp) {
         // Retreat (F2, F3) with no cover in reach, or hit by someone we can't see: back away from the attacker with the torso still on it.
         // Lean toward the center near the circle's edge; boost only above 30% energy.
-        const away = lastHit.bearing + Math.PI
-        let mx = Math.cos(away), my = Math.sin(away)
-        const edge = clamp((flat(me.pos, z.center) - (z.radius - 40)) / 40, 0, 1)
-        if (edge > 0) {
-          const [cx, cy] = heading(z.center)
-          mx += 1.5 * edge * cx
-          my += 1.5 * edge * cy
-        }
-        const n = Math.hypot(mx, my) || 1
-        move = [mx / n, my / n]
+        move = backAway(lastHit.bearing)
         boost = me.energy > 0.3 * me.max_energy
         mode = "retreat"
       } else if (claimGoal) {
@@ -818,6 +845,11 @@ function buildBot(hello: Hello): Bot {
       } else if (dropMove) {
         move = dropMove
         mode = "drop, run"
+      } else if (HURT_RETREAT_FAR_ON && farLive && lastHit && (far = hurtFar(lastHit))) {
+        // P33 (HURT_RETREAT_FAR_ON): the champion's retreat just ran and we would now stop to heal; keep retreating.
+        move = far.move
+        boost = me.energy > 0.3 * me.max_energy
+        mode = far.mode
       } else if (me.hp < HEAL_HP * me.max_hp) {
         // Heal (F4, Build 5): until HP is over 90%, stand still (Build 5b: targeting and firing stay normal), and if an enemy can see us, walk silently to the nearest spot it can't (Q2).
         // Build 19: the walk to a hiding spot only while hurt.
@@ -865,6 +897,10 @@ function buildBot(hello: Hello): Bot {
           mode = "engage, standoff"
         }
         standoffId = foe?.id ?? null
+      }
+      if (HURT_RETREAT_FAR_ON) {
+        farLive = mode === "retreat to cover" || mode === "retreat" || mode.endsWith(", far")
+        if (!mode.endsWith(", far")) farMark = null
       }
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.

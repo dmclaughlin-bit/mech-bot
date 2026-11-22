@@ -198,3 +198,13 @@ export const TREE_RETREAT_STUCK_S = 3
  */
 export const BACKAWAY_FAR_COVER_ON = true
 export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]
+
+/**
+ * P61 (building cover commit): in the champion's building-cover retreat ("retreat to cover": hurt, hit in the last 2 s,
+ * seen, and hideSpot finds a spot; that entry test is unchanged), from TREE_RETREAT_MIN_T (40 s) and never while a drop
+ * run/hold is on or a drop is near AND reachable within DROP_RUN_M: keep walking to the spot chosen first instead of
+ * re-picking the nearest spot every decision, while it is still in the circle we keep to, no closer to any threat, not
+ * seen by any threat and not yet reached. No progress (0.5 m) for 3 s puts the spot on a skip list for that retreat and the
+ * next spot is picked. Legs only; torso/aim unchanged. false = champion behavior exactly.
+ */
+export const BUILDING_COVER_COMMIT_ON = false

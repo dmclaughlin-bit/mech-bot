@@ -1,12 +1,12 @@
 {
-  "experiment_id": "P41",
-  "commit": "c21d23b0c487f2de3acf030f27118520dd0ff07a",
-  "merge_commit": "503a53d05a526da6f6507aec22cf9f88f02ad844",
-  "branch": "PR #173 (EARS_LOOK_ON on P48)",
-  "score": 3.84,
-  "submission_id": "BB-0AAB8ADB",
+  "experiment_id": "P60",
+  "commit": "afb6f263972480e03d381d5dbb32f56954e8ae73",
+  "merge_commit": null,
+  "branch": "PR #181 (BACKAWAY_FAR_COVER_ON on P48; lacks P41 EARS_LOOK)",
+  "score": 3.88,
+  "submission_id": "BB-6F449E11",
   "target_score": 6.0,
-  "updated_at": "2026-11-22T02:23:00-05:00",
+  "updated_at": "2026-11-22T02:38:00-05:00",
   "history": [
     {
       "experiment_id": "EXP-0000",
@@ -145,6 +145,14 @@
       "scorer_version": "builders-4",
       "submission_id": "BB-5727119F",
       "note": "builders-4 bar until P41 scored 3.84"
+    },
+    {
+      "experiment_id": "P41",
+      "commit": "c21d23b",
+      "score": 3.84,
+      "scorer": "builders-4",
+      "submission_id": "BB-0AAB8ADB",
+      "at": "2026-11-22T02:23:00-05:00"
     }
   ],
   "scorer_version": "builders-4",
@@ -161,5 +169,9 @@
       "site_status": "Entered in the final (your best score)"
     }
   },
-  "merge_status": "Merged to main as 503a53d (bot code identical to c21d23b; check.py PASS max 3.4 ms; archive 3,778,560 bytes)"
+  "merge_status": "Merged to main as 503a53d (bot code identical to c21d23b; check.py PASS max 3.4 ms; archive 3,778,560 bytes)",
+  "scorer": "builders-4",
+  "per_version_scores": {
+    "builders-4": 3.88
+  }
 }

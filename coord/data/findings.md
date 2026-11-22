@@ -56,3 +56,8 @@ Rules:
 
 ## N10 (2:23 AM ET Sun): the 96-game paired estimate has not predicted the site sign for small effects
 - P53b: 96-game +0.000 -> site -0.12. P41: 96-game -0.031 -> site +0.09. Confidence: medium. Small local deltas (|d| < 0.1) carry little site signal; site tests of veto-free or one-veto builds remain the decider.
+
+## F18 (2:38 AM ET Sun): P60 back-away far cover (BACKAWAY_FAR_COVER_ON) won on the site
+- Source: P60 #181 afb6f26, BB-6F449E11, 3.88 builders-4 vs P41 3.84 (+0.04) and vs P48 3.75 (+0.13, its own base). Confidence: low-medium (one site score on 96 seeds; +0.04 margin is small). Outcome A. Builds on F16.
+- Local evidence: Sim Tester PASS 0 vetoes; 96-game +0.000 +/- 0.086 (another N10 case: estimate neutral, site positive).
+- P60 lacks P41's sound-cued look. Hypothesis (untested): P41 and P60 change different decisions (look vs retreat walk), so P41's look rebuilt on P60 may add. Disproof: paired screen of the combined build vs P60 shows a lower mean on both sets or a site score at or below 3.88.

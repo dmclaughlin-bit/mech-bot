@@ -176,3 +176,10 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 - Queue is stale: P61 and any new build must be rebuilt on P41 c21d23b and re-screened; Sim Tester needs a P41 trees-on baseline.
 - Learning: F17 (P41 won despite local -0.031) and N10 (96-game estimate missed the sign twice). Because we learned the 96-game estimate does not predict small site effects, we moved one-veto near misses up for site tests and kept the estimate advisory only.
 - 2:27 AM ET: coordinator merged P41 c21d23b to main as 503a53d (no-ff; only conflict was coord/data/ideas/P41.json, kept main version). New champion bar 3.84 builders-4 (BB-0AAB8ADB). All builds must now contain 503a53d (or c21d23b). Queue rebased: P61 rebuild on main; Sim Tester P41 baseline requested.
+
+## Loop 2:38 AM ET Sun
+- P60 BB-6F449E11 scored 3.88 builders-4: WIN (+0.04 vs P41 3.84). NEW CHAMPION P60 afb6f26 (PR #181, not merged; built on P48, lacks P41 EARS_LOOK). Site marks BB-6F449E11 Entered in the final. champion.json updated (merge_commit pending, parent merges).
+- Site: counter 2 of 6, next frees 2:44 AM ET; rules text still 4/hour; nothing pending. Tests last 60 min: 4 (1:44, 1:58, 2:13, 2:23).
+- Queue stale again: P61 (being rebuilt on P41) must instead be built on P60. Top next build: P41 EARS_LOOK rebuilt on P60 (F17+F18). Sim Tester needs a P60 trees-on baseline (screens vs P48 already exist for afb6f26).
+- Unused slot reason (from 2:44): no build READY vs the new champion.
+- Because we learned P60's far-cover walk scores above P41 on the site, we moved "P41 look on P60" to the top, moved P61 down until rebuilt on P60, and assigned Sim Tester to baseline P60.

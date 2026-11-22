@@ -191,7 +191,8 @@ export const TREE_RETREAT_STUCK_S = 3
  * hide spot and no P48 tree spot within a 1-3 s walk), from t = TREE_RETREAT_MIN_T (40 s), never in a drop run/hold or
  * while a drop is near AND reachable within DROP_RUN_M, when an enemy in view sees us and trees + buildings don't already
  * hide us from it: walk (same boost rule) to the nearest in-zone spot BACKAWAY_FAR_STEPS_S of straight walk away, no
- * closer to any of those enemies, that trees + buildings hide from all of them, instead of backing straight away. Latched
+ * closer to any of those enemies, that trees + buildings hide from all of them (those that hit us in the last 2 s, or
+ * every seer if none did), instead of backing straight away. Latched
  * like P48's tree run (no progress for TREE_RETREAT_STUCK_S: skip list). Legs only; torso and aim unchanged (N8).
  * false = champion behavior exactly.
  */

@@ -818,10 +818,15 @@ function buildBot(hello: Hello): Bot {
       }
       // P60 (BACKAWAY_FAR_COVER_ON): the far cover spot for the back-away retreat, or null (champion back-away). Called only
       // from that branch; the same gates as treeRetreat (40 s, no drop run/hold, no near-and-reachable drop, a seer in view
-      // that trees don't already hide us from), searched BACKAWAY_FAR_STEPS_S out, latched with the same give-up.
+      // that trees don't already hide us from; hidden from the seers that hit us, else all seers), searched
+      // BACKAWAY_FAR_STEPS_S out, latched with the same give-up.
       const farRetreat = (): Vec3 | null => {
         if (!BACKAWAY_FAR_COVER_ON || !trees || obs.t < TREE_RETREAT_MIN_T || dropMove || dropHold || dropReach()) return (farRun = null)
-        const seers = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        const seen = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        // Fix round: hide from the seers that hit us in the last THREAT_HIT_S (all seers if none did): a spot hidden from
+        // every one of 2-8 seers rarely exists (P60 Step A: "no far spot" in 37 of 79 target deaths).
+        const shooters = seen.filter((e) => obs.t - (mechHitBy.get(e.id) ?? -Infinity) < THREAT_HIT_S)
+        const seers = shooters.length ? shooters : seen
         if (!seers.length || seers.every((e) => treeHidden(me.pos, myHeight, e))) return (farRun = null)
         if (farRun && obs.t - farRun.used > 0.5) farRun = null
         if (farRun) {

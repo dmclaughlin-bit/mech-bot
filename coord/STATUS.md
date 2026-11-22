@@ -187,3 +187,11 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 - 2:45 AM ET loop: slot free (3 tests last 60 min: 1:58, 2:13, 2:23), none used: nothing eligible; P41 EARS_LOOK-on-P60 build not yet pushed; P60 baseline rows landed (2bca723). No receipt pending.
 
 - 2:52 AM ET loop: unused slot. No READY build, near-miss pool empty, no receipt pending. P62 (EARS_LOOK on P60) still with Mech Builder (briefed 2:43), not yet pushed; nothing screened vs P60. Rolling hour 3 tests (1:59, 2:13, 2:23).
+
+## Hourly report 3:00 AM ET (loop)
+- Champion P60 3.88 builders-4 (BB-6F449E11). Wins out of scored builders-4 tests: 2 of 4 (P41 3.84, P60 3.88; P53b 3.63 loss; P48 3.75 baseline).
+- Site tests 2:00-3:00: 2 (2:13 P41, 2:23 P60); rolling 60 min at 3:01: 2 (2:13, 2:23). Goal 6, min 3. Below minimum.
+- Unused slots: 2:33-3:00 nothing eligible; P60 promotion at 2:38 made every queued build stale; P62 (first build on P60) only pushed 2:57.
+- Decision changed by last result: P60 became champion without P41 EARS_LOOK, so P62 re-tests EARS_LOOK as one change on P60.
+- P62 d3c356a: loop checks PASS (contains 32acd3d; check.py max 4.0 ms; archive 3,819,520 bytes). Waiting for Sim Tester paired screen vs P60 + 96-game estimate. Idea record copied to main.
+- Learning: findings ledger at F18/N10; no new screen verdicts this hour after 2bca723.

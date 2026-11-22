@@ -1,0 +1,62 @@
+{
+  "id": "P60",
+  "title": "BACKAWAY_FAR_COVER_ON: in the champion's back-away retreat, walk to a farther cover spot (4-6 s straight walk) hidden from every seer instead of backing straight away in the open",
+  "family": "retreat / movement",
+  "flag": "BACKAWAY_FAR_COVER_ON",
+  "flags": ["BACKAWAY_FAR_COVER_ON"],
+  "owner": "Mech Builder",
+  "stage": "step_a",
+  "branch": "p60-retreat-death-buckets",
+  "base": "89f19c1fcf550d0d7b254f794ff9516ea41a0a55",
+  "champion": "P48 b9492c6 (main merge edb729f, site 4.44)",
+  "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_main": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
+  "builds_on": ["F15", "N8", "N9", "F3", "NEW: P60 Step 1 mode x bucket counts (combined 384 games, 337 retreat deaths of 379 deaths): back-away a 79 (23%), b 13, c 25, d 101; building a 28 (8%), b 5, c 11, d 27; tree a 16, b 1, c 11, d 20. 2000+3000: back-away a 44/177; 4000+5000: back-away a 35/160"],
+  "source": "Coordinator brief 2026-11-22 01:41 AM ET + update 01:49 AM ET (P60 RETREAT DEATH BUCKETS)",
+  "step1": {
+    "method": "log-only /tmp copy of champion b9492c6 (bot trace: mode + spot per decision) and a /tmp copy of the trees-on sim 22f72a8 with a read-only ground-truth trace (our hp/pos, damage by attacker, every house mech within 200 m with cone-free LOS incl. trees/canopy rule). --jobs 1, 96 seeds per base, 2000/3000/4000/5000",
+    "passivity": "CSV rows identical to /workspace/tester/runs/trees-b9492c6-{2000,3000,4000,5000}.csv on every non-timing field for 384/384 seeds (only bot_ms_mean differs)",
+    "definitions": {
+      "retreat_death": "a decision in mode 'retreat to cover' (building), 'retreat, trees' (tree) or 'retreat' (back-away) within 10 s before death. Mode = mode of the last retreat decision. (P57's narrower definition, last decision in retreat mode, gives 136 and 124, same as P57.)",
+      "episode": "retreat decisions chained while <= 10 s apart; start = first decision of the chain",
+      "attackers": "house mechs that damaged us from 5 s before episode start to death, plus the killer",
+      "covered": "no alive attacker has cone-free LOS to us (sim ground truth: buildings, trunks, canopy beyond 45 m); reaching cover = covered for >= 1 s",
+      "precedence": "d first: HP at episode start <= damage taken in the 2 s before it (the same burst again kills us); then a: never covered during the episode; then b: covered at some point and died within 4 m of where cover last held; else c: covered, then moved > 4 m away and died"
+    },
+    "2000+3000": {"deaths": 190, "retreat_deaths": 177, "tree": {"a": 6, "b": 1, "c": 6, "d": 10}, "building": {"a": 16, "b": 2, "c": 8, "d": 8}, "back_away": {"a": 44, "b": 5, "c": 13, "d": 58}, "all": {"a": 66, "b": 8, "c": 27, "d": 76}},
+    "4000+5000": {"deaths": 189, "retreat_deaths": 160, "tree": {"a": 10, "b": 0, "c": 5, "d": 10}, "building": {"a": 12, "b": 3, "c": 3, "d": 19}, "back_away": {"a": 35, "b": 8, "c": 12, "d": 43}, "all": {"a": 57, "b": 11, "c": 20, "d": 72}},
+    "combined": {"deaths": 379, "retreat_deaths": 337, "tree": {"a": 16, "b": 1, "c": 11, "d": 20}, "building": {"a": 28, "b": 5, "c": 11, "d": 27}, "back_away": {"a": 79, "b": 13, "c": 25, "d": 101}, "all": {"a": 123, "b": 19, "c": 47, "d": 148}},
+    "sub_details": {
+      "a_dist_left": "tree n=16 median 11.6 m (>=10 m: 12); building n=28 median 11.7 m (>=10 m: 26); back-away has no spot (79)",
+      "back_away_a": "57/79 die at t >= 40 s (50/79 episodes start at >= 40 s); attackers 3+: 46, 2: 22, 1: 11; HP at start median 408, 2 s burst before start median 158",
+      "b": "19 total: LOS past trunk/edge from the same side 12, canopy inside 45 m 2, came around 3, killer not a visible house mech 2",
+      "c": "since leaving cover median 4.3 s, HP at exit median 208; exit modes heal/heal hiding 20, laser rush 7, engage collect 5, retreat modes 12, other 3",
+      "d": "HP at start median 356 vs 2 s burst median 558; start modes back-away 104, tree 26, building 18"
+    }
+  },
+  "chosen_cell": "back-away x a (79/337 = 23% of retreat deaths combined; 44/177 and 35/160 per set): died while backing straight away in the open, never reaching cover from its attackers. Not bucket d (EARLY_RETREAT_HIDE_ON covers timing), not aim (N8), not tree choice (P59/N9).",
+  "hypothesis": "In the back-away retreat the champion found no building spot and no tree spot within a 1-3 s straight walk, so it backs straight away from the last hit's bearing while house bots (which fire only while they see us, and chase) keep line of sight until we die (median 4.7 s). A cover spot hidden from every seer by buildings or trees often exists a bit farther out (4-6 s walk, 47-70 m). Walking there instead of straight back breaks the attackers' sight sooner, so fewer back-away retreats end in death.",
+  "mechanism": "Only in the champion's back-away branch (mode 'retreat': hurt, hit in the last 2 s, no hideSpot and no tree spot), from t >= TREE_RETREAT_MIN_T (40 s), never in a drop run/hold and never while a drop is near AND reachable within DROP_RUN_M (P48's drop test), and only when an enemy that sees us is in view and trees/buildings don't already hide us from all of them: search the same 12 bearings at 4, 5, 6 s of straight walk (inside the circle we keep to, no closer to any seer, straight line clear) for a spot where buildings+trees hide us from every seer (P48's treeHidden). Walk/boost there (same boost rule as the champion's retreat), latched like P48's tree run with a 3 s no-progress give-up and a skip list; drop the latch once the spot no longer hides us. Torso/aim untouched (N8). No spot: champion back-away unchanged.",
+  "activation": "Decision-level: in mode 'retreat' at t >= 40 s, gates pass, and the far search returns a spot whose heading differs from the back-away heading by > 20 deg. Game-level Step A count = games where this happens at least once.",
+  "disproof": "Fails if Step A < 10/192 on either set, or the target bucket's deaths (back-away x a) don't fall on both practice bases (0 and 6000), or deaths < 40 s rise on either base.",
+  "positives": null,
+  "negatives": null,
+  "confidence": "Uncertain (new mechanism; F15 Uncertain; cell size measured on 384 games)",
+  "reuse": null,
+  "novelty": {
+    "vs_P57": "P57 (N8) changed the torso/aim target during retreat; P60 changes only the legs in the back-away branch, aim untouched.",
+    "vs_P59": "P59 (N9) changed which tree spot the 'retreat, trees' branch picks within 1-3 s; P60 acts only where the champion found NO building or tree spot at all (back-away), with a farther search.",
+    "vs_EARLY_RETREAT_HIDE_ON": "That is retreat timing (bucket d, before 40 s). P60 keeps the champion's retreat trigger and the 40 s gate and targets bucket a."
+  },
+  "next_idea": {
+    "cell": "building x a (28/337 = 8% combined; 16 and 12 per set): died on the way to building cover, median 11.7 m short of the spot (26/28 >= 10 m)",
+    "change": "P61 BUILDING_COVER_LATCH_ON (movement only): latch the 'retreat to cover' hideSpot like P48's tree run (keep walking to the same spot while it still hides us, 3 s no-progress give-up + skip list) instead of re-picking the nearest spot every decision as the house bots move."
+  },
+  "step_a_result": null,
+  "screens": [],
+  "outcome": "pending",
+  "pr": null,
+  "sha": null,
+  "timestamps": {"recorded": "2026-11-22 ET (before Step A results)"},
+  "sources": ["coord/data/findings.md (F3, N8, N9 on origin/main 706ea34)", "https://github.com/dmclaughlin-bit/mech-bot/pull/175 (F15 text)", "/workspace/wt-p57/coord/data/ideas/P57.json", "/workspace/wt-p59/coord/data/ideas/P59.json", "/tmp/p60 traces (not committed)"]
+}

@@ -1,5 +1,8 @@
 # Grok → Diego's Claude: prompt inbox
 
+## CURRENT PROMPT P-D-025 LEARNING-STANDARD SYNC (Grok, Sun Nov 22 12:50 AM ET; Doug's directive)
+Champion: **P48 tree retreat, code b9492c6, main edb729f, site 4.44.** Any older champion line below is history. Read `coord/LEARNING_STANDARD.md` and `coord/data/findings.md`. Then add `ACK LEARNING-STANDARD (Diego's Claude) <time ET>` to `coord/log.md`, and reply on PR #152 with a 4-line check: (1) the current champion SHA, (2) where findings live, (3) your lane now (P52 #169 near miss; P-D-024 death study; Mac screens) and confirmation that you're NOT building P52b (Mech Builder owns it), (4) the finding IDs P52 builds on. Don't stop current work; apply the standard at your next task boundary. P-D-024 results come back as findings with confidence labels and at most 2 testable hypotheses, each with a disproof test.
+
 ## NEW CHAMPION (10:30 PM ET): P48 tree retreat, 4.44 (BB-94897D91). Code b9492c6f122c549c705b69402157f078b4a57857, merged to main as edb729fc790c0bd583204fa2a0c6492cc8277ca8. Every build must now contain edb729f (rebase onto origin/main). All old screens and approvals are stale. Champion baselines must be re-run on P48 b9492c6 (trees-on, both sets), on each screening machine.
 
 Diego's Mac: before the cross-check, run the P48 b9492c6 champion baseline on the Mac (same sim 4b8663e, trees-on, bases 2000-5000). Cross-check builds are the REBASED P43 and P35b once Builder posts them. P-D-018 P50 must branch from current main (contains edb729f).

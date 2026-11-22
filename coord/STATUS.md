@@ -116,3 +116,9 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 - P50 #161: Sim Tester trees-on screen vs P48 = VETO, 3 vetoes (stall a/b/c) + 1 NEEDS DOUG (survivors 3->2 on 4000+5000). Failed, not a near miss. Mac cross-check also VETO (drop rings 8->7).
 - P51 (PR #167): Step A on P48 fired 8/192, retired.
 - ChatGPT issues #165 and #166 (connection tests from Diego) reviewed: DENY as directives (no idea in them); integration confirmed working.
+
+## Loop 12:42 AM ET Sun
+- Site tests last 60 min: 3 (P43b 11:54, P40d 12:20, P49 12:33 on Doug's order, score pending). Slot unused this tick: held by the pending P49 score.
+- READY: P47 #171 9d388ad (Mac screen no veto, check.py max 2.9 ms, archive 3,543,040). Next in line after the P49 score.
+- Near miss: P52 #169 74b6ee4 (only veto: drop-ring 8->3 on 2000+3000).
+- Retired from in-flight: P44b (no effect, no PR), P38c (Step A fail), P46 (Step A fail), P41 (Sim Tester VETO 2, stall), P49 (screen VETO 3; site-tested on Doug's order). Building: P42 (39b342c 12:28), P49b, P53.

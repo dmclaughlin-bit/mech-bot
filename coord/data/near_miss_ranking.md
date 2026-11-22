@@ -1,3 +1,8 @@
+## Update 12:42 AM ET Sun (champion P48 edb729f, 10-minute loop)
+
+1. P52 EARLY_FARM_ON, PR #169, 74b6ee4: Diego's Mac full paired trees-on screen vs Mac P48 baseline fails exactly one veto (drop-ring set total 8->3 on 2000+3000; 4000+5000 4->5). Means +0.047±0.051 and +0.016±0.052 (both positive). Died<40 48->45 and 38->37. Pause games 2->2 both. Activation (different behaviour) 26 and 22 of 192. Builds on F8. Needs the loop's check.py rerun + archive check before submit. Eligible near miss behind READY P47.
+U = 3 (11:54 P43b, 12:20 P40d, 12:33 P49), R = 1 (P47 READY), spare = (6-3)-(1+1) = 1, but a score is pending (P49) so no near-miss submit this tick.
+
 ## Update 11:55 PM ET (champion P48 edb729f)
 
 1. P43b UPGRADE_DPS_TIER_ON, PR #162, e4879af: official trees-on screen vs P48, exactly one veto (drop-ring set total 7->5 on 2000+3000, seed 3086 still 1st and survived; 4000+5000 5->9). Means -0.010 +/- 0.010 and +0.031 +/- 0.040 (not lower on both). Changed pick 8/192 and 11/192. Archive 3,532,800 bytes. Blocker: activation 8/192 on one set (borderline vs ~10/192) and coordinator check.py re-run; Doug ruling requested.

@@ -1,0 +1,2 @@
+# Agents: read this first
+Every AI agent working in this repo (Claude, Codex, Grok helpers) follows `coord/LEARNING_STANDARD.md`. Current champion and work in flight: `coord/STATUS.md`. What we've learned: `coord/data/findings.md`. Rules: `coord/WORKFLOW_CHART.md` (locked, Doug only) and `coord/WORKFLOW.md`. Assignment inboxes: `coord/next-diego.md`, `coord/next-doug.md`. Never merge, submit, or push bot code to main.

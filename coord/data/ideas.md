@@ -4,7 +4,7 @@ Status: **alive** = a keep that is still in the champion stack, or a build in fl
 
 The official site score is the only keep/close truth. Best site result is blank when the family has no official submission.
 
-Champion stack still on main (bot code of B113 `6182d29c673d99f5186d742a5f019c0b007234f2`, site 4.17, receipt BB-09AE8A68, merged `8b6e7b2`): B1 aim, B2/B3 nav, B5b cover/heal, B12/B13 farm, B14/B16 engage and target pick, B19 no-sneak, B17 bounded laser rush, B30 settings, B60 crossfire, B80 late gun-only walk, B103 lightning ambush, P-B-001 standoff break, P-D-003 supply-drop run with B113 longer reach (`DROP_RUN_M=200`).
+Current champion: **P48 tree retreat**, bot `b9492c6f122c549c705b69402157f078b4a57857`, site **4.44**, receipt BB-94897D91, merged to main `edb729f`. Earlier keeps still in the stack include B1 aim, B2/B3 nav, B5b cover/heal, B12/B13 farm, B14/B16 engage and target pick, B19 no-sneak, B17 bounded laser rush, B30 settings, B60 crossfire, B80 late gun-only walk, B103 lightning ambush, P-B-001 standoff break, P-D-003 supply-drop run with B113 longer reach (`DROP_RUN_M=200`, site 4.17, BB-09AE8A68), P29 midring settle (4.35, BB-BAB3F961), and P34 lethal laser release (4.38, BB-ABEB42BF).
 
 ## Site-tested families
 
@@ -20,7 +20,7 @@ Champion stack still on main (bot code of B113 `6182d29c673d99f5186d742a5f019c0b
 | upgrades | B21 (3.46 LOSS) | 3.46 | dead |
 | crossfire | B60 (3.67 KEEP), B82 (3.46 LOSS), B88 (3.52 LOSS) | 3.67 (B60, in the stack) | alive (B60 2-on-1 LOS break); wider cover search and "don't start a laser charge under fire" dead |
 | lightning | B80 (3.79 KEEP), B66 (3.58 LOSS), B68 (3.21 LOSS), B86 (3.79 TIE), B90 (3.73 LOSS), B92 (3.79 TIE), B94 (3.73 LOSS), B103 (3.92 KEEP), B106 (3.85 LOSS) | 3.92 (B103, in the stack) | alive (B80 late walk + B103 ambush). Distance/start-time/claim-priority variants tied or lost. Widening the ambush to uncharged-laser holders (B106) lost. Do not extend late-walk distance again (B86) or start it at 35 s (B92) |
-| drops | B104 (3.88 CLOSE, +0.09 over B80 parent), B107 / P-D-003 (4.10 KEEP), B113 (4.17 KEEP, `DROP_RUN_M=200`) | 4.17 (B113, current champion and final entry) | **WINNING**. 200 m beat 150 m on the site (+0.07). A shorter reach (110 m, PR #117) is the losing direction. Follow-up: 250–300 m on the new main. |
+| drops | B104 (3.88 CLOSE, +0.09 over B80 parent), B107 / P-D-003 (4.10 KEEP), B113 (4.17 KEEP, `DROP_RUN_M=200`) | 4.17 (B113, then-champion keep; later replaced by P29/P34/P48) | Alive in the stack. 200 m beat 150 m on the site (+0.07). Current champion is P48, 4.44, BB-94897D91. |
 | standoff | P-B-001 (4.06 KEEP), P-B-006 (4.02 CLOSE, 45 s on 4.10) | 4.06 (P-B-001, still in the stack under the 4.17 drop run) | alive (in the stack). 60 s stays; 45 s lost (−0.08). 90 s (PR #108) still queued, now on 4.17 |
 
 Screened on the sim but **not** site-submitted (do not treat as a site result): B28, B34, B38, B42, B49, B54, B56, B78, B84, B96, B101, and earlier SHAs of B39/B43/B51/B64/B66/B82. See `screens.csv`. B56 (sidestep off a charging laser line) was screened vs B30 at sim −0.214 ± 0.119 and was not submitted; P-B-002 is a later, narrower engagement check and must explain why it is not the same mechanism.

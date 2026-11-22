@@ -121,3 +121,9 @@ Doug approved these four on Sat Nov 21, 6:46 PM ET (his own words). D4, D5 (Sonn
 ## Doug 7:00 PM ET: pre-built queue
 
 Doug confirmed Sat Nov 21, 7:00 PM ET (his own words): pre-build 3-4 ahead, each still needs the full paired screen before it's tested; rebuild on top of any new winner.
+
+## Doug 7:16 PM ET (Sat Nov 21): stall rule (replaces "any new pin of 20 s or more vetoes")
+
+Exact wording, approved by Doug: "A new pause of 20 s or more blocks a build only if (a) the change was active during that pause, (b) it happens at a spot where the champion never gets stuck and that game got worse (lower place, earlier death, or a missed drop), or (c) more games have a 20 s+ pause than the champion on either seed set."
+
+All other vetoes are unchanged (crash, drop-ring arrival loss on either set, more deaths before 40 s, clear loss of end-game survival). Evidence per new 20 s+ pause: flag ticks inside the window, champion pins within about 10 m on cached seeds, and that game's place, death time and drops versus the champion. Applies to future builds. P26 #138 and P25b #136 stay on hold for their drop-ring arrival losses (Doug 7:16 PM ET).

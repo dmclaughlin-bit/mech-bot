@@ -36,3 +36,5 @@ flowchart TD
     J --> DB
     K --> DB
 ```
+
+- Doug 7:16 PM ET: stall rule narrowed (see WORKFLOW.md, "stall rule"); other vetoes unchanged.

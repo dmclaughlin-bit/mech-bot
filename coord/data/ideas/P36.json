@@ -13,15 +13,77 @@
   "stage": "idea",
   "pr": null,
   "sha": null,
-  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
-  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
-  "screens": [],
+  "champion_sha_tested_against": "b6f2f8be91abacbf9f31469ce8b5ad4576c289c9",
+  "champion_sha": "b6f2f8be91abacbf9f31469ce8b5ad4576c289c9",
+  "screens": [
+    {
+      "sha": "7479f0e flag-on copy (CLAIM_WATCHED_MIN_T 10), superseded",
+      "seed_set": "0",
+      "fired": 30,
+      "diff_behavior": 30,
+      "diff_score": 18,
+      "sim_delta": -0.208,
+      "sim_se": 0.104,
+      "pins": "6 vs 6 games with a >= 20 s pin; 1 new pin (seed 78, 215-248 s, 0 flag ticks, place 1 both; main pin elsewhere at 222-250 s)",
+      "verdict": "FAIL item 5: deaths < 40 s 33 -> 36 (all 4 new early deaths followed activations at t 10-20 s)",
+      "drop_arrivals": "5 vs 5",
+      "source": "builder run, /tmp/p36-inst/r1 (not committed)"
+    },
+    {
+      "sha": "7479f0e flag-on copy (CLAIM_WATCHED_MIN_T 10), superseded",
+      "seed_set": "1000",
+      "fired": 36,
+      "diff_behavior": 36,
+      "diff_score": 22,
+      "sim_delta": -0.219,
+      "sim_se": 0.195,
+      "pins": "2 vs 2 games, all identical to main, 0 flag ticks",
+      "verdict": "deaths < 40 s 30 -> 29; drop arrivals 3 vs 3",
+      "source": "builder run, /tmp/p36-inst/r1 (not committed)"
+    },
+    {
+      "sha": "f2d4e97 flag-on copy (CLAIM_WATCHED_MIN_T 40) = final head bot code",
+      "seed_set": "0",
+      "fired": 9,
+      "diff_behavior": 9,
+      "diff_score": 4,
+      "sim_delta": 0.031,
+      "sim_se": 0.07,
+      "pins": "5 games with a >= 20 s pin vs main 6; every P36 pin identical to main (same seed, time, place), 0 flag ticks; no new pin",
+      "verdict": "items 2-5 PASS on this set",
+      "t_lt10_activations": 0,
+      "deaths_lt40": "33 vs 33",
+      "drop_arrivals": "8 vs 5 (games 5 vs 3)",
+      "kills": "311 vs 307",
+      "cubes_end": "262 vs 226",
+      "claim_walks": "40 walks, 0 completed (0 cubes); 25 of 40 ended in 'break crossfire' (a second enemy saw us); watcher hits during walk + 1 s: 15 hits, 724 dmg (all gun), 8 of 40 walks hit; deaths within 10 s of a walk 0",
+      "source": "builder run, /tmp/p36-inst/on-0.csv vs main-0.csv (not committed)"
+    },
+    {
+      "sha": "f2d4e97 flag-on copy (CLAIM_WATCHED_MIN_T 40) = final head bot code",
+      "seed_set": "1000",
+      "fired": 13,
+      "diff_behavior": 13,
+      "diff_score": 11,
+      "sim_delta": -0.25,
+      "sim_se": 0.118,
+      "pins": "2 vs 2 games, identical to main, 0 flag ticks",
+      "verdict": "FAIL item 3: drop-ring arrivals set total 1 vs main 3 (seed 1010: P36 died at 104.65 s, 35 s after its last walk, vs main 234.50 s, so it missed the drops landing at 161.8 s; no walk ran while a drop was listed)",
+      "t_lt10_activations": 0,
+      "deaths_lt40": "30 vs 30",
+      "drop_arrivals": "1 vs 3 (games 1 vs 2)",
+      "kills": "287 vs 309",
+      "cubes_end": "192 vs 195",
+      "claim_walks": "32 walks, 6 completed (12 cubes); watcher hits during walk + 1 s: 6 hits, 327 dmg (all gun), 6 of 32 walks hit; deaths within 10 s of a walk 1 (seed 1042)",
+      "source": "builder run, /tmp/p36-inst/on-1000.csv vs main-1000.csv (not committed)"
+    }
+  ],
   "receipt": null,
   "site_score": null,
   "score": null,
   "decision": null,
-  "blocker": null,
-  "next_action": "Grok: assign or park. If built: one flag CLAIM_WATCHED_ON default false, flag-0 eqdrive identical, check.py < 30 ms, base-0 hazard with fired/diff/score, deaths within 10 s of activation, cubes at end.",
+  "blocker": "BUILD_CHECKLIST item 3 FAILS on base 1000 (drop-ring arrivals 1 vs 3, one game that died earlier after walks; the drop gate already excludes every drop-listed tick, so no further fix within this behavior). One fix round used (item 5, MIN_T 10 -> 40). Base 1000 also -0.250 +/- 0.118 and kills 287 vs 309.",
+  "next_action": "Coordinator: decide hold/retire. Not screened on 2000+3000 / 4000+5000. Do not submit as is.",
   "doug_waiver": false,
   "single_decision": "Relax one condition of the existing claim gate: 'nobody has LOS to us' becomes 'nobody has LOS to us, OR (flag on) exactly one enemy has LOS and it is >= 100 m away, HP >= 50%, a cube is visible near the death spot, t >= 10 s, obs.drops empty'. No new walk target, no new mode; the walk is the champion's 'engage, collect'.",
   "trigger": "claim active (our kill in the last CLAIM_S = 12 s) AND me.in_zone AND !leaveNow AND !engage AND a cube in obs.cubes within CLAIM_M (12 m) of the death spot AND zone-safe AND obs.t - lastMechHit > 2 s AND seenAt(cone=false) is true for exactly one threat, at flat distance >= 100 m AND me.hp >= 0.5 * max_hp AND obs.t >= 10 AND obs.drops.length === 0",
@@ -45,14 +107,14 @@
     "showdown_first_fights": "PR #145 coord/research-doug-1941.md (branch research-doug-20261122-0041, not on main): first fight with more cubes KILL/DIED 166/74 (n=485) vs fewer cubes 100/220 (n=631).",
     "site": "Both site tests that reduced claiming lost: B53 POST_KILL_COVER_ON (cover after an early kill) 3.50 vs 3.67 (-0.17); B94 LATE_CLAIM_ON (late walk outranks cube claim) 3.73 vs 3.79 (-0.06) (coord/data/site_results.csv). No test has widened the claim."
   },
-  "estimated_activation": "~65/192 games on 2000+3000 (132 trigger episodes, champion code + passive sim log). Each activation changes movement, so diff_behavior should be close to fired. Held-out set not measured.",
+  "estimated_activation": "Re-counted on champion b6f2f8b: CLAIM_WATCHED_MIN_T 10: 66/192 (base 0 + 1000). After the fix (MIN_T 40): 22/192 (9 + 13). Held-out sets not run.",
   "closest_prior_test": "B53 POST_KILL_COVER_ON (opposite direction: take cover after a kill, LOSS -0.17) and B94 LATE_CLAIM_ON (claim demoted below the late walk, -0.06). PR #145 ranked build 3 'take the kill's laser' (not built) would reuse the same claim walk for a dropped laser; P36 changes only who may watch, not what is collected, so the two must not be stacked in one build.",
   "what_would_disprove": "Paired screen: mech damage taken during relaxed-claim walks larger than the champion's 5 s loss in the same state (median 3%, p90 19% of max), or deaths within 10 s of a relaxed claim higher than the champion; cubes at death/end not higher; diff_score worse on both sets; fewer than 10/192 games fired.",
   "risks": "Pins: none new (same 'engage, collect' walk to a visible cube within 12 m of the death spot, CLAIM_S 12 s cap, claim cleared at the spot); builder still lists every 20 s+ pin vs main. Drops: gated on obs.drops empty, so claim never pre-empts a drop run/hold (brain.ts:727 uses !claimGoal). Exposure: one watcher at >= 100 m with a gun (hit-rate guess 0.5 beyond 60 m, brain.ts:98) or a laser (280 m reach, no spread) can punish the walk; a second enemy turning up ends the relaxed case (LOS count must be exactly 1). Displaces stand-still heal and 'heal, hiding' for at most a few seconds (walking does not stop regen, protocol.md:291). Pre-empts the laser rush as the champion's claim already does.",
   "source": "Research P34-37 (this run): champion claim gate brain.ts:669 + passive sim log; watcher RANKED.md rule 2, SKILLS.md cube rate; site B53/B94 losses",
   "timestamps": {
     "created": "2026-11-21 19:55 ET",
-    "updated": "2026-11-21 19:55 ET"
+    "updated": "2026-11-21 20:35 ET"
   },
   "sources": [
     "brain.ts (origin/main d7fca14 = 6182d29 bot code)",
@@ -61,8 +123,23 @@
     "coord/data/watcher/SKILLS.md",
     "coord/data/site_results.csv",
     "https://github.com/dmclaughlin-bit/mech-bot/pull/145 (coord/research-doug-1941.md)",
-    "Instrumented champion sim (this research run): a copy of the champion bot files from origin/main d7fca14 (bot code identical to 6182d29: git diff 6182d29 HEAD on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p3437/bot, with passive per-decision CSV logging appended before act.move (no action changed). Run: bun tools/sim/run.ts --worker --seed-list 2000-2095,3000-3095 (one job, 192 games, ~5 min). Sanity: mean 16-place 3.531 vs 3.542 for the same seeds in coord/data/research/heal-positioning.md; deaths < 40 s 56/192. Logs are in /tmp (not committed). Held-out 4000+5000 not run (kept light)."
+    "Instrumented champion sim (this research run): a copy of the champion bot files from origin/main d7fca14 (bot code identical to 6182d29: git diff 6182d29 HEAD on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p3437/bot, with passive per-decision CSV logging appended before act.move (no action changed). Run: bun tools/sim/run.ts --worker --seed-list 2000-2095,3000-3095 (one job, 192 games, ~5 min). Sanity: mean 16-place 3.531 vs 3.542 for the same seeds in coord/data/research/heal-positioning.md; deaths < 40 s 56/192. Logs are in /tmp (not committed). Held-out 4000+5000 not run (kept light).",
+    "Builder screen 2026-11-21 20:35 ET, branch p36-claim-watched: /tmp/wild-sim run.ts --jobs 1, SEED_BASE 0 and 1000 x 96, main e19bafd rerun the same way; /tmp/paired.py; check.py --map-dir arena"
   ],
   "priority_rank": 1,
-  "coordinator_note": "Ranked 1 at 8:13 PM ET: queued: build next on champion b6f2f8b. Champion is now P29 2e1d036 / main b6f2f8b; trigger counts came from the old champion, so re-count them."
+  "coordinator_note": "Ranked 1 at 8:13 PM ET: queued: build next on champion b6f2f8b. Champion is now P29 2e1d036 / main b6f2f8b; trigger counts came from the old champion, so re-count them.",
+  "build": {
+    "branch": "p36-claim-watched",
+    "flag_off_sha": "f2d4e9736dec8bda6eb208ab242dc8fcba8007f8",
+    "head": "the commit after the one that adds this record: it only flips CLAIM_WATCHED_ON to true (bot code byte-identical to the screened flag-on copy /tmp/p36-on)",
+    "commits": [
+      "7479f0e flag + behavior, default false (CLAIM_WATCHED_MIN_T 10)",
+      "f2d4e97 fix round: CLAIM_WATCHED_MIN_T 10 -> 40 s (item 5 failed on base 0 in the first run)"
+    ],
+    "drop_gate": "plain gate kept (no supply drop listed in obs.drops). First run: plain gate fired in 66/192 games (30 on base 0 + 36 on base 1000), narrow gate (no drop announced/falling within DROP_RUN_M, no drop run, no eligible landed drop within DROP_RUN_M) 75/192. Plain >= 10/192, so the narrow gate was not needed.",
+    "flag_off_eqdrive": "IDENTICAL (cmp) vs origin/main e19bafd (bot code = b6f2f8b), /tmp/eqdrive.py, both f2d4e97 and 7479f0e",
+    "check_py": "PASS both: flag-on copy max 3.1 ms, default (flag false) max 2.7 ms, 300/300 in time",
+    "merge_base": "git merge-base --is-ancestor b6f2f8b HEAD OK",
+    "sim": "/tmp/wild-sim run.ts, --jobs 1, 96 seeds each on SEED_BASE 0 and 1000; main rerun the same way; passive wrapper (/tmp/p36-inst, eqdrive identical to the unwrapped bots)"
+  }
 }

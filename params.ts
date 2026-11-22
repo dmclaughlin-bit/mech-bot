@@ -115,8 +115,11 @@ export const UNSEEN_TARGET_ON = false
 export const UNSEEN_TARGET_W = 1.5
 /** The enemy must be more than this far (m, horizontal) from us: the protocol's near_range proximity ring. */
 export const UNSEEN_TARGET_MIN_M = 45
-/** No bonus before this match time (s): the opening is untouched. */
-export const UNSEEN_TARGET_FROM_S = 10
+/**
+ * No bonus before this match time (s): the opening is untouched. P35b fix (checklist item 5): 40, not 10, so the
+ * pick never changes before 40 s and deaths before 40 s cannot rise (at 10 the trees-on base-1000 hazard run had 15 -> 16).
+ */
+export const UNSEEN_TARGET_FROM_S = 40
 
 /**
  * Build 19 (stop sneaking): while not hurt, drop the silent speed cap (H2, Q1: params.silentSpeed inside the next

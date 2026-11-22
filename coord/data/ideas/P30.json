@@ -10,7 +10,7 @@
     "on a non-firing tick after t >= 10 s, with no drop called and in retreat / heal / hide mode, when a mech that damaged us in the last 2 s is in view and outside 45 deg of the torso aim we would command, turn the torso just enough to put it within 45 deg; legs, path, retreat/heal thresholds and targets unchanged"
   ],
   "owner": "Mech Builder",
-  "stage": "waiting for screen (head moved, re-screen on final SHA)",
+  "stage": "hold",
   "pr": 144,
   "sha": "32c50e75327fe474577138a81507a721fe568ae4",
   "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
@@ -36,7 +36,7 @@
   "receipt": null,
   "site_score": null,
   "score": null,
-  "decision": null,
+  "decision": "HOLD: screen VETO on both sets (screened on 9906286 with flag on; 32c50e7 only ships flag true). 2000+3000: drop arrivals 6->4 (seed 2078 lost both drops, place 1->7), deaths<40s 56->59. 4000+5000: deaths<40s 54->57. Activation 62/50 games. Needs fix + re-screen.",
   "blocker": "needs a complete both-set Sim Tester screen of this exact SHA vs champion 6182d29 before any site test",
   "next_action": "Sim Tester screens 2000+3000 and 4000+5000 with FACE_ATTACKER_ON true (temp copy) vs 6182d29",
   "doug_waiver": false,
@@ -57,5 +57,5 @@
     "single_change": "PASS (params.ts one flag FACE_ATTACKER_ON=false + brain.ts one guarded aim block, label suffix)",
     "feasibility": "YES: protocol.md:226 legs independent of the torso; protocol.md:295 front arc centered on the torso aim yaw; damaged.rear exposed (protocol.md:201)"
   },
-  "updated_et": "2026-11-21 19:49 ET"
+  "updated_et": "2026-11-21 19:55 ET"
 }

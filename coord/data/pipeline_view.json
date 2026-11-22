@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 19:48 ET",
- "origin_main": "8f0bcb84705e1b92176ed84ef192cfbef620d943",
+ "generated_at_et": "2026-11-21 19:53 ET",
+ "origin_main": "f0a0165195295f8fd54c4ecb51c22c24868cdc38",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -25,7 +25,7 @@
   "pending": [],
   "slots": {
    "limit": 6,
-   "used_rolling_60": 1,
+   "used_rolling_60": 0,
    "used_clock_hour": 0,
    "last_submit": "2026-11-21 18:50 ET"
   },
@@ -46,6 +46,7 @@
    "P-D-006: HOLD",
    "P-B-004: HOLD",
    "PR-133: HOLD (not a bot candidate; screening-lane change only after a benchmark and Doug's yes). Benchmark is P-D-011.",
+   "P30: HOLD: screen VETO on both sets (screened on 9906286 with flag on; 32c50e7 only ships flag true). 2000+3000: drop arrivals 6->4 (seed 2078 lost both drops, place 1->7), deaths<40s 56->59. 4000+5000: deaths<40s 54->57. Activation 62/50 games. Needs fix + re-screen.",
    "B112: HOLD",
    "P18: HOLD",
    "B116: ON HOLD by Doug 3:07 PM ET (PR #119 comment)",
@@ -75,10 +76,10 @@
  },
  "board": {
   "Idea": 0,
-  "Researched": 21,
+  "Researched": 20,
   "Assigned": 0,
   "Built (PR)": 3,
-  "Screened": 16,
+  "Screened": 17,
   "READY": 0,
   "Submitted": 0,
   "Scored": 0,
@@ -4204,7 +4205,7 @@
    "kind": "build",
    "source": "coord/data/watcher/RANKED.md items 1 and 3 (late-game evasion while HP < 35%, alive 2-4) and their family note: facing the attacker (front-arc discipline) has not been site-tested; rear armor is 180 deg front / 180 deg back. Feasibility: mechfight-kit protocol.md:226 (legs independent of the torso) and protocol.md:295 (front arc centered on the torso aim yaw).",
    "owner": "Mech Builder",
-   "decision": null,
+   "decision": "HOLD: screen VETO on both sets (screened on 9906286 with flag on; 32c50e7 only ships flag true). 2000+3000: drop arrivals 6->4 (seed 2078 lost both drops, place 1->7), deaths<40s 56->59. 4000+5000: deaths<40s 54->57. Activation 62/50 games. Needs fix + re-screen.",
    "changes": 1,
    "changes_basis": "idea record flags",
    "multi": false,
@@ -4232,7 +4233,7 @@
    "pr_merged": null,
    "contains_champion": null,
    "stage_idx": null,
-   "stage": "Researched",
+   "stage": "Screened",
    "outcome": null,
    "blocker": "needs a complete both-set Sim Tester screen of this exact SHA vs champion 6182d29 before any site test",
    "from_idea_record": true

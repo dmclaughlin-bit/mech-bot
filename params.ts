@@ -206,4 +206,4 @@ export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]
  * zero-width line reaches but the body can't (P61: champion freezes at building edges). Hide test (center/top lines),
  * other hideSpot callers, torso and aim unchanged (N8). false = champion behavior exactly.
  */
-export const BODY_WIDTH_COVER_ON = false
+export const BODY_WIDTH_COVER_ON = true

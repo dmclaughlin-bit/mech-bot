@@ -7,7 +7,7 @@
     "BUILDING_COVER_COMMIT_ON"
   ],
   "owner": "Mech Builder",
-  "stage": "step_a",
+  "stage": "building",
   "branch": "p61-building-cover-commit",
   "base": "3dd3a0e1ce7853b0bf7e3459659dae5345571888",
   "base_note": "branch point on origin/main; origin/main later moved to fce266d (site_results.csv only, no bot code change). Bot code identical to b9492c6.",
@@ -41,11 +41,64 @@
   "sha": null,
   "screens": [],
   "timestamps": {
-    "recorded": "2026-11-22 02:15 ET (before Step A results)"
+    "recorded": "2026-11-22 02:15 ET (before Step A results)",
+    "step_a": "2026-11-22 02:25 ET"
   },
   "sources": [
     "coord/data/findings.md (F3, F15 via N8 text, N8, N9, F16) on 3dd3a0e",
     "origin/p60-retreat-death-buckets:coord/data/ideas/P60.json (Step 1 counts, next_idea)",
     "brain.ts hideSpot and the 'retreat to cover' branch on 3dd3a0e"
-  ]
+  ],
+  "step_a_result": {
+    "method": "log-only /tmp copy of champion b9492c6: in every 'retreat to cover' decision, a shadow latch (the spot chosen at the previous building-cover decision, <= 0.5 s ago, kept with P61's validity tests: no progress 3 s, reached 1.5 m, out of the circle, closer to a threat, seen by a threat) is compared with the champion's newly picked spot; fire+change = gates open (t >= 40 s, no drop run/hold, no near reachable drop), latch valid, heading to latch vs new spot differs by > 20 deg (shadow latch then follows the champion). Trees-on sim copy of /workspace/wt-tester-trees/tools/sim plus a read-only ground-truth trace (P60's), --jobs 1, 96 seeds per base",
+    "passivity": "CSV rows identical to /workspace/tester/runs/trees-b9492c6-{2000,3000,4000,5000}.csv on every non-timing field, 384/384 (only bot_ms_mean differs)",
+    "2000+3000": {
+      "games_with_building_cover_decisions": 81,
+      "fire_and_change_games": 29,
+      "of": 192,
+      "any_repick_games_ungated": 40,
+      "repick_only_before_40s_games": 10,
+      "building_cover_decisions": 1610,
+      "fire_and_change_decisions": 66,
+      "repick_decisions_t_lt_40": 34,
+      "repick_decisions_drop_gate": 1,
+      "latch_state_per_decision": {
+        "new": 170,
+        "valid": 1329,
+        "seen": 78,
+        "closer": 27,
+        "reached": 5,
+        "stuck": 1
+      },
+      "building_x_a_deaths": 16,
+      "building_x_a_with_gated_repick_in_final_episode": 5,
+      "building_x_a_with_any_repick": 7,
+      "building_x_a_deaths_before_40s": 3
+    },
+    "4000+5000": {
+      "games_with_building_cover_decisions": 102,
+      "fire_and_change_games": 46,
+      "of": 192,
+      "any_repick_games_ungated": 61,
+      "repick_only_before_40s_games": 13,
+      "building_cover_decisions": 2297,
+      "fire_and_change_decisions": 104,
+      "repick_decisions_t_lt_40": 34,
+      "repick_decisions_drop_gate": 7,
+      "latch_state_per_decision": {
+        "new": 229,
+        "valid": 1907,
+        "seen": 110,
+        "closer": 46,
+        "reached": 4,
+        "stuck": 1
+      },
+      "building_x_a_deaths": 12,
+      "building_x_a_with_gated_repick_in_final_episode": 4,
+      "building_x_a_with_any_repick": 7,
+      "building_x_a_deaths_before_40s": 1
+    },
+    "verdict": "PASS (29/192 and 46/192 >= 10/192)",
+    "note": "Building x a counts reproduce P60 Step 1 (16 and 12). Only 9 of the 28 target deaths had a gated re-pick in their final episode (4 more are before 40 s, out of the gate). Re-picks are rare per decision (170 of 3907 = 4%): the champion's re-picked spot usually stays within 20 deg of the previous one. The 11.7 m 'short of the spot' in P60 is close to the 1 s hide ring itself (the spot is re-generated relative to our position each decision), so it is weak evidence of dithering."
+  }
 }

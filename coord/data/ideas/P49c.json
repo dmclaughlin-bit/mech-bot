@@ -7,9 +7,9 @@
   ],
   "flag": "TREE_HEAL_LATE_SAFE_ON",
   "owner": "Mech Builder",
-  "stage": "building",
+  "stage": "retired",
   "pr": null,
-  "sha": null,
+  "sha": "614e9e29caa20a970ace0faa008cafd4bf424501",
   "branch": "p49c-tree-heal-late-safe",
   "base": "p49b 0c6b1344c0948695dc865cfeffcdc52732cc47ec (origin/p49b-tree-heal-cap, TREE_HEAL_ON=true, TREE_HEAL_MAX_S=8)",
   "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
@@ -98,12 +98,12 @@
   },
   "hypothesis": "P49b's tree heal regresses when it starts (or keeps walking) while every enemy that sees us is still far and closing on us; skipping the tree heal in exactly that case recovers those games and keeps P49b's survivor gain (F4).",
   "mechanism": "Inside P49b's treeHeal() only (TREE_HEAL_ON): when every seer (enemy that sees us, the heal's own cone test) is beyond cfg.vision.near_range (45 m) and closing on us at >= TREE_HEAL_CLOSE_MPS (6 m/s, about half walk speed, from its obs vel), do not start a tree-heal walk (champion standing heal instead), and end an attempt in progress (same bookkeeping as P49b's cap: spot skip-listed, attempt spent for this heal phase). Everything else is P49b.",
-  "activation": "pending (fired / changed per base 0 and 6000)",
-  "positives": "pending",
-  "negatives": "pending",
-  "confidence": "Uncertain",
+  "activation": "5-seed check only: the stop fired at the first tree-heal tick on 5053 (40.2 s), 5032 (50.4 s), 5024 (70.7 s); not on 5055, 5037. Practice bases not run with the flag on (stopped at the disproof).",
+  "positives": "5024 recovered fully and beat P48 (P48 2nd death 143.25 s; P49b 7th death 110.9 s; P49c 1st, survived). 5053 10th -> 8th and 5032 11th -> 10th (partial).",
+  "negatives": "5053 (P48 5th) and 5032 (P48 6th) did not return to P48: the stop only delayed the tree heal a few seconds; it started once the hunter slowed (5053 t=44.2, seer 84.6 m closing 1.2 m/s; 5032 t=51.3, seer 72.6 m closing 3.8 m/s) and the fight diverged anyway. 5055 and 5037 (enemy stopped at ~45 m) were not targeted and stayed 11th and 10th.",
+  "confidence": "Disproven",
   "reuse": "narrow-follow-up",
-  "outcome": "pending",
+  "outcome": "C",
   "strength_kept": "P49b survivor gain (2->4 and 3->5 official, 2->4 and 3->6 Mac) and no heal-hold pins (2022, 3066, 3086 cleared).",
   "weakness_fixed": "Tree heal walking away from a hunter that is still far and closing (5053, 5032, 5024 regressions).",
   "differs_from_P49b": "One extra stop condition inside the same tree heal; the walk, spot search, 8 s cap and zone/drop exits are unchanged.",
@@ -117,12 +117,63 @@
   "source": "Coordinator brief 1:09 AM ET Sun Nov 22; PR #177 Mac screen (5000-seed regressions) and Sim Tester screen",
   "timestamps": {
     "created": "2026-11-22 01:25 ET",
-    "updated": "2026-11-22 01:25 ET"
+    "updated": "2026-11-22 01:50 ET"
   },
   "sources": [
     "coord/data/findings.md F4",
     "PR #177 comments",
     "/workspace/tester/runs/trees-b9492c6-5000.csv",
     "/workspace/tester/runs/trees-0c6b134-5000.csv"
-  ]
+  ],
+  "flag_off_sha": "614e9e29caa20a970ace0faa008cafd4bf424501",
+  "decision": "FAILED: disproof hit at the 5-seed check (3 of 5 still regressed vs P48: 5053, 5032, 5037). Not flipped, no PR. Flag-false state pushed.",
+  "results": {
+    "eqdrive": "flag-off == P49b 0c6b134 byte-identical; TREE_HEAL_ON=false + flag-off == origin/main 59d6354 byte-identical (kit check stream, 300 obs; note the stream ends before t=40 s, so tree heal never runs in it)",
+    "five_seed": [
+      {
+        "seed": 5055,
+        "p48": "11th d144.95",
+        "p49b": "11th d139.65",
+        "p49c": "11th d139.65",
+        "vs_p48": "same place, earlier death"
+      },
+      {
+        "seed": 5053,
+        "p48": "5th d248.60",
+        "p49b": "10th d221.30",
+        "p49c": "8th d244.05",
+        "vs_p48": "regressed"
+      },
+      {
+        "seed": 5032,
+        "p48": "6th d96.90",
+        "p49b": "11th d77.45",
+        "p49c": "10th d84.15",
+        "vs_p48": "regressed"
+      },
+      {
+        "seed": 5037,
+        "p48": "5th d120.55",
+        "p49b": "10th d93.95",
+        "p49c": "10th d93.95",
+        "vs_p48": "regressed"
+      },
+      {
+        "seed": 5024,
+        "p48": "2nd d143.25",
+        "p49b": "7th d110.90",
+        "p49c": "1st survived",
+        "vs_p48": "recovered (better)"
+      }
+    ],
+    "five_seed_flag_off": "identical to P49b on all 5 (place and death time)",
+    "practice_p49b_vs_p48_info": {
+      "note": "Own trees-on baselines (/tmp sim copy of wt-tester-trees 22f72a8, --jobs 1, box shared/loaded), run before the build; P49c flag-on not run (stopped at disproof).",
+      "base0": "P49b vs P48 +0.229 +/- 0.173, better 12 / tied 76 / worse 8, changed 37, diff score 20; kills 293 -> 314; survivors 2 -> 2; died<40 24 -> 24; drop arrivals 5 -> 4; >=20 s pins [41,43,79] both, none new; heal-trees ticks before 10 s 0",
+      "base6000": "P49b vs P48 +0.104 +/- 0.112, better 16 / tied 69 / worse 11, changed 40, diff score 27; kills 358 -> 367; survivors 0 -> 0; died<40 16 -> 16; drop arrivals 1 -> 1; >=20 s pins P48 [6011,6082] vs P49b [6082], none new"
+    }
+  },
+  "learned": "The 5000-seed P49b regressions are mostly downstream divergence: any small change to where the bot stands in an ongoing fight (here delaying the tree heal by 4-5 s) re-rolls the fight. A start-time stop on far closing hunters only fixes games where the hunter keeps closing until contact (5024). Do not rebuild this condition; a refinement would have to keep the tree heal off for the whole approach (e.g. any seer beyond near range), which also covers P49b gain seeds 4043 and 2090, or leave P49b as is.",
+  "next_action": "Coordinator: P49c closed (outcome C). P49b's own practice numbers on bases 0/6000 are positive with no new pins or early deaths (see results).",
+  "updated_et": "2026-11-22 01:50 ET"
 }

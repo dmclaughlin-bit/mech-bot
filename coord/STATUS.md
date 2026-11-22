@@ -1,3 +1,5 @@
+**12:08 AM ET:** Autonomous mode. Site tests last 60 min: 1 (P43b 11:54). Slot unused: no READY build and near-miss pool empty (P43b scored, P35c retired, P50 retired). Building: P40d 45ecb4c (pushed 12:05, no PR), P52 911a662, P47 d2cf521 (Diego), P44b + P49 (no branch yet), P38c/P46 (Doug laptop, not pushed). Records for P52/P47/P40d copied to main.
+
 **11:55 PM ET:** P43b #162 e4879af official screen vs P48: 1 veto (drop-ring 7->5 on 2000+3000), mean -0.010/+0.031, fires 8/192 and 11/192. Near-miss candidate pending Doug ruling on 8/192 activation. Slot unused this tick: no READY build; near miss held for that ruling. ChatGPT #168 reviewed (APPROVE_WITH_STIPULATIONS, advisory).
 
 # Current status for researchers (read this first)

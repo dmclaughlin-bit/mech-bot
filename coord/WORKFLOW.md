@@ -127,3 +127,7 @@ Doug confirmed Sat Nov 21, 7:00 PM ET (his own words): pre-build 3-4 ahead, each
 Exact wording, approved by Doug: "A new pause of 20 s or more blocks a build only if (a) the change was active during that pause, (b) it happens at a spot where the champion never gets stuck and that game got worse (lower place, earlier death, or a missed drop), or (c) more games have a 20 s+ pause than the champion on either seed set."
 
 All other vetoes are unchanged (crash, drop-ring arrival loss on either set, more deaths before 40 s, clear loss of end-game survival). Evidence per new 20 s+ pause: flag ticks inside the window, champion pins within about 10 m on cached seeds, and that game's place, death time and drops versus the champion. Applies to future builds. P26 #138 and P25b #136 stay on hold for their drop-ring arrival losses (Doug 7:16 PM ET).
+
+## Doug 7:35 PM ET (Sat Nov 21): faster sim for screens (#133)
+
+Doug: "Yes, adopt the #133 faster sim for all screens from now on." Basis: clean A/B on champion 6182d29, finals 384/384 and per-tick traces 384/384 identical; full screen 207.1 s vs 79.9 s (2.59x). Results: PR #139 comment, raw files in coord/data/benchmarks/P-D-011-local/ (e07ed31). Every screen row names the sim version it used. This changes only the test tool, never the submitted bot; #133 is not merged to main by this decision.

@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 21:46 ET",
- "origin_main": "85cf8da355be8a72266e9c3c78bd6da92e77b95f",
+ "generated_at_et": "2026-11-21 21:59 ET",
+ "origin_main": "3e83367fbedaa2365ec7cb24be6ab531d1ef3434",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -86,12 +86,12 @@
   "Submitted": 1,
   "Scored": 0,
   "Merged": 5,
-  "Retired": 44
+  "Retired": 45
  },
  "board_detail": {
   "Retired_loss": 13,
   "Retired_tie": 3,
-  "Retired_unsubmitted": 28
+  "Retired_unsubmitted": 29
  },
  "items": [
   {
@@ -4458,7 +4458,7 @@
    "stage_idx": null,
    "stage": "Researched",
    "outcome": null,
-   "blocker": null,
+   "blocker": "Step A FAIL: rare choice: a real cover/exit choice between 2+ reachable midring candidates occurs in 11/192 games on 2000+3000 but only 5/192 on 4000+5000 (< 10); only 20/192 games there settle at all.",
    "from_idea_record": true
   },
   {
@@ -4774,6 +4774,45 @@
    "stage": "Retired",
    "outcome": null,
    "blocker": null,
+   "from_idea_record": true
+  },
+  {
+   "id": "P34b",
+   "title": "Drop gate on the champion's lethal release: no early laser release while a supply drop is near and reachable within DROP_RUN_M, or while on a drop run / ring hold / capture (LETHAL_DROP_GATE_ON)",
+   "kind": "build",
+   "source": "coordinator brief (branch p34b2-drop-gate); background: P34 on the old base lost drop arrivals on the Sim Tester screen (seed 2078 both drops 1st->7th, 2089 one 1st->6th; PR #147 comment 7072472836), rebuilt P34 scored 4.38 on the site",
+   "owner": "Mech Builder",
+   "decision": "BARELY FIRES (0/192); stopped before the 4-base hazard run per brief",
+   "changes": 1,
+   "changes_basis": "idea record flags",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": "c5bb83f94d9c4b6998bb42a8932ff2e2789d5a61",
+   "champion_sha_note": "588557e464dd4946680bff964a7c8e86700b8739",
+   "research": [],
+   "prs": [],
+   "pr_opened": null,
+   "primary_pr": null,
+   "pr_url": null,
+   "pr_state": null,
+   "head": "c5bb83f94d9c4b6998bb42a8932ff2e2789d5a61",
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Retired",
+   "outcome": null,
+   "blocker": "By construction the gate is a subset of the champion's existing P34 drop test (brain.ts dropOpen(): dropRun set, or any called drop not held by another mech within DROP_RUN_M flat). dropHold only happens with dropRun set; farmHold needs a drop within FARM_PICKUP_M 80 m < 200 m; a reachable drop within DROP_RUN_M is a drop within DROP_RUN_M. So the champion never early-releases while a drop is near/reachable or during a run/hold/capture. The lost arrivals (2078, 2089 on the old base) come from divergence after releases made before any drop was called (P34 record: 46-47 s kills, drops lost 150-235 s later), which no drop-time gate can touch.",
    "from_idea_record": true
   },
   {

@@ -1,0 +1,36 @@
+{
+ "id": "P30",
+ "title": "Front-arc facing: while retreating/healing/hiding and hit in the last 2 s by a visible mech, keep that attacker in the torso's front 180 deg arc on non-firing ticks (FACE_ATTACKER_ON)",
+ "family": "evasion",
+ "flags": [
+  "FACE_ATTACKER_ON"
+ ],
+ "flag": "FACE_ATTACKER_ON",
+ "behaviors": [
+  "on a non-firing tick after t >= 10 s, with no drop called and in retreat / heal / hide mode, when a mech that damaged us in the last 2 s is in view and outside 45 deg of the torso aim we would command, turn the torso just enough to put it within 45 deg; legs, path, retreat/heal thresholds and targets unchanged"
+ ],
+ "owner": "Mech Builder",
+ "stage": "building",
+ "pr": null,
+ "sha": null,
+ "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+ "screens": [],
+ "receipt": null,
+ "site_score": null,
+ "score": null,
+ "decision": null,
+ "blocker": "build in progress; needs a one-flag branch and a complete both-set screen of that exact SHA before any site test",
+ "next_action": "Mech Builder delivers branch p30-front-arc with base-0 hazard run; then Sim Tester runs both seed sets",
+ "doug_waiver": false,
+ "source": "coord/data/watcher/RANKED.md items 1 and 3 (late-game evasion while HP < 35%, alive 2-4) and their family note: facing the attacker (front-arc discipline) has not been site-tested; rear armor is 180 deg front / 180 deg back. Feasibility: mechfight-kit protocol.md:226 (legs independent of the torso) and protocol.md:295 (front arc centered on the torso aim yaw).",
+ "timestamps": {
+  "assigned": "2026-11-22",
+  "updated": "2026-11-22"
+ },
+ "sources": [
+  "coord/data/watcher/RANKED.md",
+  "coord/BUILD_CHECKLIST.md",
+  "/workspace/mechfight-kit/protocol.md"
+ ]
+}

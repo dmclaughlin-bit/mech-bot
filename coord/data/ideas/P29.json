@@ -1,37 +1,38 @@
 {
- "id": "P29",
- "title": "After a shrink, settle in the midring and farm, do not camp the center (MIDRING_SETTLE_ON)",
- "family": "zone",
- "flags": [
-  "MIDRING_SETTLE_ON"
- ],
- "flag": "MIDRING_SETTLE_ON",
- "behaviors": [
-  "after a shrink, once inside the circle with farmOk, prefer a midring sit/patrol (zratio ~0.40-0.70) over camping the center or hugging the edge; drop run and zone-first travel stay above it; stay off at r <= 70"
- ],
- "owner": "Diego's Claude",
- "stage": "building",
- "pr": null,
- "sha": null,
- "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
- "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
- "screens": [],
- "receipt": null,
- "site_score": null,
- "score": null,
- "decision": null,
- "blocker": "assigned as P-D-012; record exists; build and both-set screen not started. Must not overlap P28 (P29 is position choice after a shrink; P28 is when nothing to farm and no shrink context); keep the code paths separate.",
- "next_action": "Diego's Claude ACKs P-D-012, branches from origin/main containing 6182d29, delivers PR 'P29 midring settle (MIDRING_SETTLE_ON)' with check.py PASS max under 30 ms, flag-0 identical, and a 96-game base-0 hazard",
- "doug_waiver": false,
- "source": "Watcher SKILLS.md idea 5; ideas_queue.md item 5; assigned P-D-012 Sat Nov 21 7:00 PM ET",
- "timestamps": {
-  "first_mention": "2026-11-21 17:54 ET (ideas_queue.md)",
-  "assigned": "2026-11-21 19:00 ET",
-  "updated": "2026-11-21 19:01 ET"
- },
- "sources": [
-  "coord/data/ideas_queue.md",
-  "coord/data/watcher/SKILLS.md",
-  "coord/next-diego.md (P-D-012)"
- ]
+  "id": "P29",
+  "title": "After a shrink, settle in the midring and farm, do not camp the center (MIDRING_SETTLE_ON)",
+  "family": "zone",
+  "flags": [
+    "MIDRING_SETTLE_ON"
+  ],
+  "flag": "MIDRING_SETTLE_ON",
+  "behaviors": [
+    "after a shrink, once inside the circle with farmOk, prefer a midring sit/patrol (zratio ~0.40-0.70) over camping the center or hugging the edge; drop run and zone-first travel stay above it; stay off at r <= 70"
+  ],
+  "owner": "Diego's Claude",
+  "stage": "waiting for screen",
+  "pr": 143,
+  "sha": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
+  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": "assigned as P-D-012; record exists; build and both-set screen not started. Must not overlap P28 (P29 is position choice after a shrink; P28 is when nothing to farm and no shrink context); keep the code paths separate.",
+  "next_action": "Diego's Claude ACKs P-D-012, branches from origin/main containing 6182d29, delivers PR 'P29 midring settle (MIDRING_SETTLE_ON)' with check.py PASS max under 30 ms, flag-0 identical, and a 96-game base-0 hazard",
+  "doug_waiver": false,
+  "source": "Watcher SKILLS.md idea 5; ideas_queue.md item 5; assigned P-D-012 Sat Nov 21 7:00 PM ET",
+  "timestamps": {
+    "first_mention": "2026-11-21 17:54 ET (ideas_queue.md)",
+    "assigned": "2026-11-21 19:00 ET",
+    "updated": "2026-11-21 19:01 ET"
+  },
+  "sources": [
+    "coord/data/ideas_queue.md",
+    "coord/data/watcher/SKILLS.md",
+    "coord/next-diego.md (P-D-012)"
+  ],
+  "updated_et": "2026-11-21 19:33 ET"
 }

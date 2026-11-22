@@ -84,3 +84,7 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 
 ## 9:25 PM ET: P45 selected from Doug research handoff (R1)
 - Midring settle spot quality (MIDRING_SPOT_ON), Step A measurement first, owner Mech Builder, next free session ahead of P37b. Record: coord/data/ideas/P45.json. R3 laser option deferred (P34b2, P42, P44 already cover P34 follow-ups).
+
+## 9:29 PM ET: Doug on PR #153
+- Option A: no knob sweeps; keep the current queue and the full two-set screen. Revisit a specific setting only if replay evidence shows changing it produces a genuinely different behavior.
+- 10:07 PM ET slot: the loop submits the highest-ranked eligible (fully screened) build if one is ready and no score is pending; if the slot goes unused, log what held it up in this file.

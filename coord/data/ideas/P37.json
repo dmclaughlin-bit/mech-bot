@@ -1,0 +1,67 @@
+{
+  "id": "P37",
+  "title": "While healing unseen, walk to a visible cube instead of standing still (HEAL_PICKUP_ON)",
+  "family": "heal-farm order",
+  "flags": [
+    "HEAL_PICKUP_ON"
+  ],
+  "flag": "HEAL_PICKUP_ON",
+  "behaviors": [
+    "when the champion would stand still in 'heal' (HP < 90%) and farmOk is true (no enemy in view or known within 160 m for 10 s, no mech hit for 3 s), walk the existing farm pickup path to the visible zone-safe cube Build 12 already chose (within 80 m) instead of standing; regen keeps running because walking does not reset it"
+  ],
+  "owner": "unassigned (research P34-37; Grok assigns)",
+  "stage": "idea",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Grok: assign or park. If built: one flag HEAL_PICKUP_ON default false; base-0 hazard with fired/diff/score, HP at next contact, cubes at end, pins.",
+  "doug_waiver": false,
+  "single_decision": "Move the existing Build 12 cube pickup (farmGoal, cubes only) above the stand-still heal branch, only while farmOk, t >= 10 s and no drop is listed. Nothing else changes: no new target list, no memory, no hunt, no hiding change.",
+  "trigger": "mode would be 'heal' (me.hp < HEAL_HP 0.9 * max, all higher branches declined) AND farmOk AND farmGoal is a cube (not a drop, not a hunt target) AND obs.t >= 10 AND obs.drops.length === 0",
+  "hook": "brain.ts act(): insert one guarded branch immediately before the heal branch at brain.ts:821 (`} else if (me.hp < HEAL_HP * me.max_hp) {`), reusing the farm pickup move of brain.ts:833-835 (travel to farmGoal.pos, mode 'farm, pickup'). farmOk is brain.ts:560-562, the cube choice brain.ts:577-581, chase give-up brain.ts:597-602. farmOk already requires enemies.length === 0, so the 'heal, hiding' (seen) case can never be displaced. Flag in params.ts next to FARM_ON.",
+  "observable_inputs": [
+    "self.hp/max_hp",
+    "obs.mechs (none in view)",
+    "obs.events damaged.weapon (mech vs npc)",
+    "obs.cubes",
+    "obs.zone",
+    "obs.t",
+    "obs.drops"
+  ],
+  "gates": "Cannot start before t = 10 s (explicit obs.t >= 10). Never starts while any supply drop is listed in obs.drops (called and not yet taken; protocol.md:359 every mech sees it from the moment it is called), so it never runs while a drop is announced/active and can never displace drop run/hold (those need a listed drop). Off = champion exactly (flag false short-circuits).",
+  "evidence": {
+    "sim_trigger_state": "Champion standing in 'heal' with a visible zone-safe cube goal (t >= 10, no drop listed): 33 episodes in 22/192 games (25/192 without the drop gate); cube distance median 39 m (p10 11, p90 67); HP median 0.67 (p10 0.34); episode median 3.8 s (p90 15.1 s); alive median 14, t median 39.3 s (p10 18.1, p90 62.3).",
+    "sim_outcome": "After the episode the champion picked the cube up within 20 s in only 13/33 episodes; in 16/33 an enemy came into view first (farm closes) and in 4/33 neither happened.",
+    "heal_context": "coord/data/research/heal-positioning.md: champion heal time is 87.5% standing; regen works when left alone (546 undamaged heal episodes +43.0 HP mean); about 20% of heal time is unseen (18.4% covered and unseen + 1.5% open and unseen, seeds 2000+3000), and the unseen-with-a-visible-cube slice is a narrow, quiet part of it.",
+    "protocol": "Regen needs 5 s without dealing or taking damage; movement is not a condition (protocol.md:291; brain.ts:795 'Walking does not stop regen'). A cube heals +4% of max HP immediately and adds +4% damage (protocol.md:425).",
+    "watcher": "Idle (not engaged) pickup rate 3.94 vs 2.27 cubes/min and mid-phase 5.11 vs 3.12 (SKILLS.md, 21029/21109 s idle, 88/86 matches); high teams move more when hurt and not engaged: speed at HP < 35% eng_0 7.14 vs 5.02 m/s (evasion.md, 872/606 ticks, 59/59 matches).",
+    "showdown_first_fights": "PR #145 coord/research-doug-1941.md: 'I am already under 70% HP' at first hit KILL/DIED 2/20 (n=40); more cubes 166/74 vs fewer 100/220."
+  },
+  "estimated_activation": "~22/192 games on 2000+3000 (33 episodes; champion code + passive sim log). Held-out set not measured. Lowest-frequency of the four but above the 10/192 bar.",
+  "closest_prior_test": "P24 HEAL_COVER=2 (3.79, -0.38): walked while hurt, but toward a hide spot and only when SEEN; P37 runs only when nobody is in view or known within 160 m, and walks to an item the champion already targets at HP >= 90%. Farm family: B12/B13 KEEP; P23b late idle sweep (4.00) and P25/P25b cube memory (retired/hold) are different decisions (torso sweep; remembered cubes to 150 m). P25c is still building on cube memory; if both are built they must stay separate flags and separate screens.",
+  "what_would_disprove": "Paired screen: HP at the next enemy contact and cubes at death/end not higher than the champion in fired games; or deaths < 40 s / damage taken during the walk higher (drone aggro at 45 m, protocol.md:325); or fired < 10/192.",
+  "risks": "Pins: uses the existing farm walk and its FARM_CHASE_S 15 s give-up + farmGiveUp skip list (brain.ts:599-602), not the checklist's ~3 s no-progress give-up; builder must list every 20 s+ pin vs main with the flag state in the window, and add a 3 s no-progress give-up only if a new pin appears (that would be a scope question for the coordinator). Drops: gated on obs.drops empty, never runs while a drop is listed. Noise: hurt-and-recently-damaged moves stay silent-capped by the champion (brain.ts:873); steps carry 40 m (protocol.md:397). Drones: cubes from a destroyed drone lie near other drones' homes; a walk inside 45 m of a drone draws fire and resets regen.",
+  "source": "Research P34-37 (this run): heal-vs-farm priority in brain.ts:821/833 + passive sim log; heal-positioning.md; SKILLS.md cube rate",
+  "timestamps": {
+    "created": "2026-11-21 19:55 ET",
+    "updated": "2026-11-21 19:55 ET"
+  },
+  "sources": [
+    "brain.ts (origin/main d7fca14 = 6182d29 bot code)",
+    "/workspace/mechfight-kit/protocol.md",
+    "coord/data/research/heal-positioning.md",
+    "coord/data/watcher/SKILLS.md",
+    "coord/data/watcher/evasion.md",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/145 (coord/research-doug-1941.md)",
+    "Instrumented champion sim (this research run): a copy of the champion bot files from origin/main d7fca14 (bot code identical to 6182d29: git diff 6182d29 HEAD on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p3437/bot, with passive per-decision CSV logging appended before act.move (no action changed). Run: bun tools/sim/run.ts --worker --seed-list 2000-2095,3000-3095 (one job, 192 games, ~5 min). Sanity: mean 16-place 3.531 vs 3.542 for the same seeds in coord/data/research/heal-positioning.md; deaths < 40 s 56/192. Logs are in /tmp (not committed). Held-out 4000+5000 not run (kept light)."
+  ],
+  "priority_rank": 2,
+  "coordinator_note": "Ranked 2 at 8:13 PM ET: queued. Champion is now P29 2e1d036 / main b6f2f8b; trigger counts came from the old champion, so re-count them."
+}

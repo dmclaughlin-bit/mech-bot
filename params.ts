@@ -102,6 +102,23 @@ export const TARGET_TTK_REF_S = 5
 export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
 
 /**
+ * P35 (unseen target first, research PR #145 build 2): in the Build 16 target pick, add UNSEEN_TARGET_W to the kill
+ * value of a visible enemy that is facing away from us (its torso aim yaw is more than 90° off its bearing to us) and
+ * is more than UNSEEN_TARGET_MIN_M away (outside its near_range proximity ring). It cannot see us (protocol §8) and
+ * we are outside its front arc (×1.5 rear damage, §7), so we likely land the first hit, which decided showdown first
+ * fights KILL/DIED 309/171 vs 129/297. Never before UNSEEN_TARGET_FROM_S. The weight is below TARGET_W.shot, so it
+ * never puts an enemy we can't shoot above one we can. Only the pick changes; aim, fire and movement are untouched.
+ * false = champion (B113) behavior exactly.
+ */
+export const UNSEEN_TARGET_ON = false
+/** Kill-value bonus for an unseen target (same scale as TARGET_W; equal to TARGET_W.hp). */
+export const UNSEEN_TARGET_W = 1.5
+/** The enemy must be more than this far (m, horizontal) from us: the protocol's near_range proximity ring. */
+export const UNSEEN_TARGET_MIN_M = 45
+/** No bonus before this match time (s): the opening is untouched. */
+export const UNSEEN_TARGET_FROM_S = 10
+
+/**
  * Build 19 (stop sneaking): while not hurt, drop the silent speed cap (H2, Q1: params.silentSpeed inside the next
  * circle and on hide moves) and the hide-from-sight move (Q2: the hold-out-of-sight walk, and the walk to a hiding
  * spot while healing). Loot, farm and zone moves then go at full walk speed, and the bot stands and shoots an enemy

@@ -1,0 +1,37 @@
+{
+  "id": "P26b",
+  "title": "Healthy boost, drop-safe: P26's healthy reserve boost only on the long zone leg, never near any drop (HEALTHY_BOOST_ON)",
+  "family": "movement",
+  "flags": [
+    "HEALTHY_BOOST_ON"
+  ],
+  "flag": "HEALTHY_BOOST_ON",
+  "behaviors": [
+    "on a long (> 60 m) 'to next circle' leg, healthy (HP >= 60%, not hurt in the Build 19 sense), grounded, unseen, energy above 50%, t >= 10 s, no drop announced/falling/on the map, not in a drop run/hold, and not in the 15 s before any drops.times call: boost instead of walk"
+  ],
+  "owner": "Mech Builder",
+  "stage": "building",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "builder: implement with flag false, base-0 activation count, BUILD_CHECKLIST hazard run",
+  "doug_waiver": false,
+  "source": "Rebuild of P26 (#138, c566fba, held for a drop-ring arrival loss 6->5 on 2000+3000 and 20 s+ pause games 5->6 on 4000+5000). Builder diagnosis: every lost arrival (seeds 89, 94, 2047, 3000, 5051) and every new/grown pause game (4018, 5053, 78) diverges from the champion through P26 boost ticks taken on a 'drop, run' leg or while a drop was announced or uncaptured on the map; boost drains energy to the 50% reserve and the bot meets the drop contest with 15-50 energy.",
+  "timestamps": {
+    "assigned": "2026-11-22",
+    "updated": "2026-11-22"
+  },
+  "sources": [
+    "coord/data/ideas/P26.json",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/138#issuecomment-7071092977",
+    "/workspace/tester/haz138.out and /tmp/stress-logs/{c2,h138,i138}-* (Sim Tester #138 logs)",
+    "builder single-seed reruns /tmp/wild-sim --jobs 1, main 6182d29 vs P26 c566fba"
+  ]
+}

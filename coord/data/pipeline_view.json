@@ -1,6 +1,6 @@
 {
- "generated_at_et": "2026-11-21 20:13 ET",
- "origin_main": "ac15a5955b54de83e65747919920fca8f289999e",
+ "generated_at_et": "2026-11-21 20:25 ET",
+ "origin_main": "7fbaad6f68bff6808c7b6bbc80c8bb583de0a8ab",
  "since": "2026-11-21 12:00 ET",
  "stages": [
   "Idea",
@@ -75,20 +75,20 @@
  },
  "board": {
   "Idea": 0,
-  "Researched": 26,
+  "Researched": 27,
   "Assigned": 0,
-  "Built (PR)": 2,
+  "Built (PR)": 1,
   "Screened": 15,
   "READY": 0,
   "Submitted": 0,
   "Scored": 0,
   "Merged": 5,
-  "Retired": 38
+  "Retired": 39
  },
  "board_detail": {
   "Retired_loss": 13,
   "Retired_tie": 3,
-  "Retired_unsubmitted": 22
+  "Retired_unsubmitted": 23
  },
  "items": [
   {
@@ -3988,7 +3988,7 @@
    "kind": "build",
    "source": "coord/data/watcher/RANKED.md rule 11 (nearest enemy while HP<35%, mid phase, 119 vs 95 m)",
    "owner": "Mech Builder",
-   "decision": null,
+   "decision": "RETIRED 8:15 PM ET by coordinator: 0/96 activations on old base (a drop is on the map at every mid-phase retreat end); without the gate 5/96, under the floor. Lesson: in the sim an untaken drop sits on the map almost all game, so any 'no drop on the map' gate on a mid-game behavior must be counted before building.",
    "changes": 1,
    "changes_basis": "idea record flags",
    "multi": false,
@@ -4003,7 +4003,7 @@
    "screened_before_click": false,
    "postmortems": [],
    "first_mention": null,
-   "sha": null,
+   "sha": "92bfe9925b94ac259ddd9ff98b46f0e97b79901e",
    "champion_sha_note": "6182d29c673d99f5186d742a5f019c0b007234f2",
    "research": [],
    "prs": [],
@@ -4011,14 +4011,14 @@
    "primary_pr": null,
    "pr_url": null,
    "pr_state": null,
-   "head": null,
+   "head": "92bfe9925b94ac259ddd9ff98b46f0e97b79901e",
    "pr_closed": null,
    "pr_merged": null,
    "contains_champion": null,
    "stage_idx": null,
-   "stage": "Built (PR)",
+   "stage": "Retired",
    "outcome": null,
-   "blocker": null,
+   "blocker": "The required drop gate (no drop announced/landed) blocks every mid-phase retreat in the house sim: drops are called at 70/140/210 s and stay on the map until captured, so mid phase (110-265 s) almost never has zero drops. 30/30 mid-phase retreat ends had a drop live.",
    "from_idea_record": true
   },
   {
@@ -4456,6 +4456,45 @@
    "stage": "Screened",
    "outcome": null,
    "blocker": "new 20 s+ pins 4018 and 5053; Doug decides. Loop has not yet re-run check.py.",
+   "from_idea_record": true
+  },
+  {
+   "id": "P40",
+   "title": "Rooftop jet route to roof loot",
+   "kind": "build",
+   "source": "mechanics research directive (Doug 8:06 PM ET), coord/next-doug.md 5404931",
+   "owner": "Mech Builder",
+   "decision": "Recorded 8:18 PM ET per Doug: build after P38.",
+   "changes": 1,
+   "changes_basis": "idea record flags",
+   "multi": false,
+   "site": null,
+   "screen": {
+    "both": false,
+    "status": "none",
+    "sets": [],
+    "when_both": null,
+    "events": []
+   },
+   "screened_before_click": false,
+   "postmortems": [],
+   "first_mention": null,
+   "sha": null,
+   "champion_sha_note": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
+   "research": [],
+   "prs": [],
+   "pr_opened": null,
+   "primary_pr": null,
+   "pr_url": null,
+   "pr_state": null,
+   "head": null,
+   "pr_closed": null,
+   "pr_merged": null,
+   "contains_champion": null,
+   "stage_idx": null,
+   "stage": "Researched",
+   "outcome": null,
+   "blocker": null,
    "from_idea_record": true
   },
   {

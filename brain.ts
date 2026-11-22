@@ -28,7 +28,8 @@ import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
   DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
-  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LATE_HURT_BOOST_ALIVE, LATE_HURT_BOOST_HP, LATE_HURT_BOOST_MIN_T,
+  LATE_HURT_BOOST_ON, LATE_HURT_BOOST_RESERVE, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -866,6 +867,13 @@ function buildBot(hello: Hello): Bot {
         }
         standoffId = foe?.id ?? null
       }
+      // P31 (LATE_HURT_BOOST_ON): late (2-4 alive), hurt and on the champion's own retreat leg, on the ground, keep boosting
+      // below its 30% floor down to the reserve. Never with a drop announced or landed, or a drop run/hold possible.
+      if (
+        LATE_HURT_BOOST_ON && !boost && (mode === "retreat to cover" || mode === "retreat") && obs.t >= LATE_HURT_BOOST_MIN_T &&
+        obs.alive >= 2 && obs.alive <= LATE_HURT_BOOST_ALIVE && me.hp < LATE_HURT_BOOST_HP * me.max_hp && me.grounded &&
+        me.energy > LATE_HURT_BOOST_RESERVE * me.max_energy && !(obs.drops ?? []).length && !dropRun && !dropHold && !dropMove
+      ) boost = true
       // Inside the next circle, stay under 5 m/s so our steps make no sound (H2, Q1). Healing and hiding are always silent (F4, Q2).
       // Engaging and collecting a kill's cubes go at full walk speed (Build 14): we are already firing or were just heard.
       // Build 19: no cap at all while not hurt, so loot and farm moves inside the next circle go at full walk speed.

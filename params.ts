@@ -140,3 +140,24 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P31 (late hurt boost, Watcher RANKED.md rule 3: Top-16 teams move faster while HP < 35% with 2-4 mechs alive).
+ * The champion's retreat ("retreat to cover" / "retreat": HP below params.retreatHp and damaged in the last 2 s, and
+ * the TTK rule did not keep us in the fight) already boosts, but only while energy is above 30% of max. With this on,
+ * on that same retreat leg, when 2-4 mechs are alive (obs.alive), HP is below LATE_HURT_BOOST_HP of max, we are on the
+ * ground and t >= LATE_HURT_BOOST_MIN_T, we also boost while energy is above LATE_HURT_BOOST_RESERVE of max, so the
+ * leg runs at boost speed from 30% down to the reserve. In the air (boost = jet) the champion's choice is kept.
+ * It never fires while any supply drop is announced or on the ground, nor with a drop run or hold possible.
+ * The retreat's target, path and torso aim, heal, drop run/hold, zone travel, engage and firing are unchanged.
+ * false = champion behavior exactly.
+ */
+export const LATE_HURT_BOOST_ON = false
+/** Hurt = HP below this fraction of max (the champion's retreat itself needs HP below params.retreatHp, 0.30). */
+export const LATE_HURT_BOOST_HP = 0.35
+/** Late = this many mechs alive or fewer (and at least 2). */
+export const LATE_HURT_BOOST_ALIVE = 4
+/** Boost only while energy is above this fraction of max (kept for lightning shots and the unstick jet's 15). */
+export const LATE_HURT_BOOST_RESERVE = 0.15
+/** Never in the opening: only from this match time (s). */
+export const LATE_HURT_BOOST_MIN_T = 10

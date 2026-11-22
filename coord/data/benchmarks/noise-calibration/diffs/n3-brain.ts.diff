@@ -1,0 +1,15 @@
+--- /tmp/null-champ/brain.ts	2026-11-22 00:59:37.169688096 +0000
++++ /tmp/null-n3/brain.ts	2026-11-22 00:59:37.233686537 +0000
+@@ -469,10 +469,12 @@
+     for (const [id, k] of known) if (obs.t - k.lastSeen > 30) known.delete(id)
+   }
+ 
++  let _n3tick = 0
+   return {
+     name: "mech-bot",
+     act(obs: Observation): BotAction {
+       const started = performance.now()
++      if (++_n3tick % 7 === 0) { const _n3t = performance.now(); while (performance.now() - _n3t < 1) {} } // noise-calibration N3: 1ms every 7th tick
+       // Deadline guard (D6, §7 rule 2): start a path search only while its worst case still fits in 30 ms.
+       const canPlan = () => performance.now() - started < DEADLINE_MS - PLAN_RESERVE_MS
+       remember(obs)

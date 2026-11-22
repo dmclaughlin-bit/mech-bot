@@ -1,0 +1,10 @@
+--- /tmp/null-champ/brain.ts	2026-11-22 00:59:37.169688096 +0000
++++ /tmp/null-n1/brain.ts	2026-11-22 00:59:37.193687512 +0000
+@@ -473,6 +473,7 @@
+     name: "mech-bot",
+     act(obs: Observation): BotAction {
+       const started = performance.now()
++      void Math.random() // noise-calibration N1: unused; bot has no RNG
+       // Deadline guard (D6, §7 rule 2): start a path search only while its worst case still fits in 30 ms.
+       const canPlan = () => performance.now() - started < DEADLINE_MS - PLAN_RESERVE_MS
+       remember(obs)

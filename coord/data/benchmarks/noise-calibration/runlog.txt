@@ -1,0 +1,124 @@
+BATCH START 2026-11-22 00:59:48 UTC load average: 2.69, 3.09, 4.32
+sim=/workspace/wt-tester-fast HEAD=d548479 geom=shortcut-P-D-011-local-e07ed31 champion=6182d29c673d99f5186d742a5f019c0b007234f2
+WAITLOCK champ base=2000 2026-11-22 00:59:48 UTC load average: 2.69, 3.09, 4.32
+START champ base=2000 2026-11-22 00:59:48 UTC load average: 2.69, 3.09, 4.32
+matches 96/96  mean(16-place) 3.479  (SE 0.35)  kills/match 3.34  median death 45 s  survived 5
+our gun hit rate 0.82  house gun hit rate on us 0.19  missed answers 0  answers over 50 ms 0  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/champ-2000.csv  runtime 18.9 s on 4 job(s)
+END champ base=2000 rc=0 wall=19s rows=96 hazjson=96 2026-11-22 01:00:07 UTC load average: 6.12, 3.86, 4.54
+WAITLOCK champ base=3000 2026-11-22 01:00:07 UTC load average: 6.12, 3.86, 4.54
+START champ base=3000 2026-11-22 01:00:07 UTC load average: 6.12, 3.86, 4.54
+matches 96/96  mean(16-place) 3.583  (SE 0.27)  kills/match 3.31  median death 66 s  survived 1
+our gun hit rate 0.82  house gun hit rate on us 0.18  missed answers 0  answers over 50 ms 0  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/champ-3000.csv  runtime 19.3 s on 4 job(s)
+END champ base=3000 rc=0 wall=20s rows=96 hazjson=96 2026-11-22 01:00:27 UTC load average: 7.10, 4.24, 4.66
+WAITLOCK champ base=4000 2026-11-22 01:00:27 UTC load average: 7.10, 4.24, 4.66
+START champ base=4000 2026-11-22 01:00:27 UTC load average: 7.10, 4.24, 4.66
+matches 96/96  mean(16-place) 3.854  (SE 0.32)  kills/match 3.60  median death 67 s  survived 1
+our gun hit rate 0.81  house gun hit rate on us 0.18  missed answers 0  answers over 50 ms 0  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/champ-4000.csv  runtime 21.9 s on 4 job(s)
+END champ base=4000 rc=0 wall=22s rows=96 hazjson=96 2026-11-22 01:00:49 UTC load average: 8.54, 4.76, 4.82
+WAITLOCK champ base=5000 2026-11-22 01:00:49 UTC load average: 8.54, 4.76, 4.82
+START champ base=5000 2026-11-22 01:00:49 UTC load average: 8.54, 4.76, 4.82
+matches 96/96  mean(16-place) 3.844  (SE 0.35)  kills/match 3.59  median death 51 s  survived 4
+our gun hit rate 0.79  house gun hit rate on us 0.19  missed answers 0  answers over 50 ms 0  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/champ-5000.csv  runtime 22.9 s on 4 job(s)
+END champ base=5000 rc=0 wall=22s rows=96 hazjson=96 2026-11-22 01:01:12 UTC load average: 9.58, 5.34, 5.01
+WAITLOCK n1 base=2000 2026-11-22 01:01:12 UTC load average: 9.58, 5.34, 5.01
+START n1 base=2000 2026-11-22 01:01:12 UTC load average: 9.58, 5.34, 5.01
+matches 96/96  mean(16-place) 3.479  (SE 0.35)  kills/match 3.34  median death 45 s  survived 5
+our gun hit rate 0.82  house gun hit rate on us 0.19  missed answers 0  answers over 50 ms 1  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/n1-2000.csv  runtime 20.6 s on 4 job(s)
+END n1 base=2000 rc=0 wall=20s rows=96 hazjson=96 2026-11-22 01:01:32 UTC load average: 10.19, 5.77, 5.16
+WAITLOCK n1 base=3000 2026-11-22 01:01:32 UTC load average: 10.19, 5.77, 5.16
+START n1 base=3000 2026-11-22 01:01:32 UTC load average: 10.19, 5.77, 5.16
+matches 96/96  mean(16-place) 3.583  (SE 0.27)  kills/match 3.31  median death 66 s  survived 1
+our gun hit rate 0.82  house gun hit rate on us 0.18  missed answers 0  answers over 50 ms 0  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/n1-3000.csv  runtime 20.8 s on 4 job(s)
+END n1 base=3000 rc=0 wall=21s rows=96 hazjson=96 2026-11-22 01:01:53 UTC load average: 10.59, 6.15, 5.30
+WAITLOCK n1 base=4000 2026-11-22 01:01:53 UTC load average: 10.59, 6.15, 5.30
+START n1 base=4000 2026-11-22 01:01:53 UTC load average: 10.59, 6.15, 5.30
+matches 96/96  mean(16-place) 3.854  (SE 0.32)  kills/match 3.60  median death 67 s  survived 1
+our gun hit rate 0.81  house gun hit rate on us 0.18  missed answers 0  answers over 50 ms 0  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/n1-4000.csv  runtime 23.7 s on 4 job(s)
+END n1 base=4000 rc=0 wall=24s rows=96 hazjson=96 2026-11-22 01:02:17 UTC load average: 12.03, 6.86, 5.56
+WAITLOCK n1 base=5000 2026-11-22 01:02:17 UTC load average: 12.03, 6.86, 5.56
+START n1 base=5000 2026-11-22 01:02:17 UTC load average: 12.03, 6.86, 5.56
+matches 96/96  mean(16-place) 3.844  (SE 0.35)  kills/match 3.59  median death 51 s  survived 4
+our gun hit rate 0.79  house gun hit rate on us 0.19  missed answers 0  answers over 50 ms 0  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/n1-5000.csv  runtime 24.3 s on 4 job(s)
+END n1 base=5000 rc=0 wall=24s rows=96 hazjson=96 2026-11-22 01:02:41 UTC load average: 11.70, 7.22, 5.71
+WAITLOCK n2 base=2000 2026-11-22 01:02:41 UTC load average: 11.70, 7.22, 5.71
+START n2 base=2000 2026-11-22 01:02:41 UTC load average: 11.70, 7.22, 5.71
+matches 96/96  mean(16-place) 3.479  (SE 0.35)  kills/match 3.34  median death 45 s  survived 5
+our gun hit rate 0.82  house gun hit rate on us 0.19  missed answers 0  answers over 50 ms 5  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/n2-2000.csv  runtime 50.4 s on 4 job(s)
+END n2 base=2000 rc=0 wall=50s rows=96 hazjson=96 2026-11-22 01:03:32 UTC load average: 13.59, 8.46, 6.22
+WAITLOCK n2 base=3000 2026-11-22 01:03:32 UTC load average: 13.59, 8.46, 6.22
+START n2 base=3000 2026-11-22 01:03:32 UTC load average: 13.59, 8.46, 6.22
+matches 96/96  mean(16-place) 3.583  (SE 0.27)  kills/match 3.31  median death 66 s  survived 1
+our gun hit rate 0.83  house gun hit rate on us 0.18  missed answers 0  answers over 50 ms 7  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/n2-3000.csv  runtime 54.8 s on 4 job(s)
+END n2 base=3000 rc=0 wall=54s rows=96 hazjson=96 2026-11-22 01:04:26 UTC load average: 14.80, 9.73, 6.79
+WAITLOCK n2 base=4000 2026-11-22 01:04:26 UTC load average: 14.80, 9.73, 6.79
+START n2 base=4000 2026-11-22 01:04:26 UTC load average: 14.80, 9.73, 6.79
+matches 96/96  mean(16-place) 3.854  (SE 0.32)  kills/match 3.60  median death 67 s  survived 1
+our gun hit rate 0.81  house gun hit rate on us 0.18  missed answers 0  answers over 50 ms 3  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/n2-4000.csv  runtime 55.8 s on 4 job(s)
+END n2 base=4000 rc=0 wall=56s rows=96 hazjson=96 2026-11-22 01:05:22 UTC load average: 14.48, 10.60, 7.26
+WAITLOCK n2 base=5000 2026-11-22 01:05:22 UTC load average: 14.48, 10.60, 7.26
+START n2 base=5000 2026-11-22 01:05:22 UTC load average: 14.48, 10.60, 7.26
+matches 96/96  mean(16-place) 3.844  (SE 0.35)  kills/match 3.59  median death 51 s  survived 4
+our gun hit rate 0.79  house gun hit rate on us 0.19  missed answers 0  answers over 50 ms 2  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/n2-5000.csv  runtime 55.9 s on 4 job(s)
+END n2 base=5000 rc=0 wall=56s rows=96 hazjson=96 2026-11-22 01:06:18 UTC load average: 13.95, 11.19, 7.66
+WAITLOCK n3 base=2000 2026-11-22 01:06:18 UTC load average: 13.95, 11.19, 7.66
+START n3 base=2000 2026-11-22 01:06:18 UTC load average: 13.95, 11.19, 7.66
+matches 96/96  mean(16-place) 3.479  (SE 0.35)  kills/match 3.34  median death 45 s  survived 5
+our gun hit rate 0.82  house gun hit rate on us 0.19  missed answers 0  answers over 50 ms 1  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/n3-2000.csv  runtime 25.6 s on 4 job(s)
+END n3 base=2000 rc=0 wall=26s rows=96 hazjson=96 2026-11-22 01:06:44 UTC load average: 14.09, 11.44, 7.84
+WAITLOCK n3 base=3000 2026-11-22 01:06:44 UTC load average: 14.09, 11.44, 7.84
+START n3 base=3000 2026-11-22 01:06:44 UTC load average: 14.09, 11.44, 7.84
+matches 96/96  mean(16-place) 3.583  (SE 0.27)  kills/match 3.31  median death 66 s  survived 1
+our gun hit rate 0.82  house gun hit rate on us 0.18  missed answers 0  answers over 50 ms 3  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/n3-3000.csv  runtime 28.2 s on 4 job(s)
+END n3 base=3000 rc=0 wall=28s rows=96 hazjson=96 2026-11-22 01:07:12 UTC load average: 14.65, 11.83, 8.08
+WAITLOCK n3 base=4000 2026-11-22 01:07:12 UTC load average: 14.65, 11.83, 8.08
+START n3 base=4000 2026-11-22 01:07:12 UTC load average: 14.65, 11.83, 8.08
+matches 96/96  mean(16-place) 3.854  (SE 0.32)  kills/match 3.60  median death 67 s  survived 1
+our gun hit rate 0.81  house gun hit rate on us 0.18  missed answers 0  answers over 50 ms 3  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/n3-4000.csv  runtime 29.0 s on 4 job(s)
+END n3 base=4000 rc=0 wall=29s rows=96 hazjson=96 2026-11-22 01:07:41 UTC load average: 14.50, 12.02, 8.25
+WAITLOCK n3 base=5000 2026-11-22 01:07:41 UTC load average: 14.50, 12.02, 8.25
+START n3 base=5000 2026-11-22 01:07:41 UTC load average: 14.50, 12.02, 8.25
+matches 96/96  mean(16-place) 3.844  (SE 0.35)  kills/match 3.59  median death 51 s  survived 4
+our gun hit rate 0.79  house gun hit rate on us 0.19  missed answers 0  answers over 50 ms 3  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/n3-5000.csv  runtime 30.3 s on 4 job(s)
+END n3 base=5000 rc=0 wall=31s rows=96 hazjson=96 2026-11-22 01:08:12 UTC load average: 14.72, 12.35, 8.50
+BATCH END 2026-11-22 01:08:12 UTC load average: 14.72, 12.35, 8.50
+WAITLOCK iso champ seed=3007 2026-11-22 01:09:22 UTC load average: 8.41, 10.86, 8.25
+START iso champ seed=3007 2026-11-22 01:09:22 UTC load average: 8.41, 10.86, 8.25
+matches 1/1  mean(16-place) 3.000  (SE 0.00)  kills/match 3.00  median death 75 s  survived 0
+our gun hit rate 0.88  house gun hit rate on us 0.11  missed answers 0  answers over 50 ms 0  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/iso/champ-3007.csv  runtime 1.1 s on 1 job(s)
+END iso champ seed=3007 2026-11-22 01:09:23 UTC load average: 8.41, 10.86, 8.25
+WAITLOCK iso n2 seed=3007 2026-11-22 01:09:23 UTC load average: 8.41, 10.86, 8.25
+START iso n2 seed=3007 2026-11-22 01:09:23 UTC load average: 8.41, 10.86, 8.25
+matches 1/1  mean(16-place) 3.000  (SE 0.00)  kills/match 3.00  median death 75 s  survived 0
+our gun hit rate 0.88  house gun hit rate on us 0.11  missed answers 0  answers over 50 ms 0  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/iso/n2-3007.csv  runtime 1.9 s on 1 job(s)
+END iso n2 seed=3007 2026-11-22 01:09:25 UTC load average: 8.41, 10.86, 8.25
+WAITLOCK iso champ seed=3050 2026-11-22 01:09:25 UTC load average: 8.41, 10.86, 8.25
+START iso champ seed=3050 2026-11-22 01:09:25 UTC load average: 8.41, 10.86, 8.25
+matches 1/1  mean(16-place) 2.000  (SE 0.00)  kills/match 2.00  median death 31 s  survived 0
+our gun hit rate 0.91  house gun hit rate on us 0.23  missed answers 0  answers over 50 ms 0  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/iso/champ-3050.csv  runtime 0.6 s on 1 job(s)
+END iso champ seed=3050 2026-11-22 01:09:26 UTC load average: 8.41, 10.86, 8.25
+WAITLOCK iso n2 seed=3050 2026-11-22 01:09:26 UTC load average: 8.41, 10.86, 8.25
+START iso n2 seed=3050 2026-11-22 01:09:26 UTC load average: 8.41, 10.86, 8.25
+matches 1/1  mean(16-place) 2.000  (SE 0.00)  kills/match 2.00  median death 31 s  survived 0
+our gun hit rate 0.91  house gun hit rate on us 0.23  missed answers 0  answers over 50 ms 0  bot not ready 0
+wrote /workspace/tester/bench/noise-calibration/csv/iso/n2-3050.csv  runtime 1.0 s on 1 job(s)
+END iso n2 seed=3050 2026-11-22 01:09:27 UTC load average: 8.13, 10.76, 8.24
+ISO DONE 2026-11-22 01:09:27 UTC

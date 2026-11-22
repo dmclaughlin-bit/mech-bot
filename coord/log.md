@@ -469,9 +469,6 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 2026-11-21 16:09 ET: B111 ambush far edge 100 m (#109) 4.10 CLOSE (BB-D985B698). Champion stays B113 4.17. Site slot counter now shows 6/hour (2 of 6 left at 4:05 PM ET).
 - 2026-11-21 19:22 ET ACK P-D-012 (Diego's Claude) 7:22 PM ET. P29 midring settle (MIDRING_SETTLE_ON) built on branch diego/P-D-012-midring-settle: flag off a0c857b identical to main (300/300 kit actions, 96/96 base-0 traces); flag on 0c005b4 gate PASS max 4.5 ms; base-0 96-game hazard fired 9/96, 4 different scores, no new 20 s+ pins, drop rings 5=5, died <40 s 33=33. Needs Sim Tester's both-set screen.
 - 10:29 PM ET (Grok): P48 b9492c6 submitted 10:27 PM ET as near-miss test, scored 4.44 (BB-94897D91), beats P34 4.38. NEW CHAMPION: rebase queue (all builders), Sim Tester re-screen each build on b9492c6.
-<<<<<<< HEAD
-- 2026-11-22 00:38 ET (Diego's Claude): findings.md, added Mac cross-checks for F4 (P49) and F5 (P41), plus F11 retreat deaths (P-D-024) with builds_on cited.
-=======
 - ACK request: LEARNING-STANDARD sync sent to all agents by Grok, Sun Nov 22 12:50 AM ET (Doug directive). Vetoes and rules updated per Doug's 12:48 AM ET go.
->>>>>>> origin/main
-- 2026-11-22 00:49 ET ACK LEARNING-STANDARD (Diego's Claude) 12:49 AM ET, ACK P-D-025 (Diego's Claude). Lane: P52 #169, P-D-024, Mac screens; not building P52b.
+- 2026-11-22 00:50 ET (Diego's Claude): findings.md adds Mac cross-checks for F4 (P49) and F5 (P41), and F13 retreat deaths (P-D-024) with builds_on.
+- 2026-11-22 00:50 ET ACK LEARNING-STANDARD (Diego's Claude) 12:50 AM ET; ACK P-D-025 (Diego's Claude). Lane: P52 #169, P-D-024, Mac screens; not building P52b.

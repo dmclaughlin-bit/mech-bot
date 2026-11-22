@@ -2,13 +2,15 @@
   "id": "P55",
   "title": "ZONE_TRIP_LASER_COMMIT",
   "family": "zone travel / weapon timing",
-  "flags": ["ZONE_TRIP_LASER_COMMIT_ON"],
+  "flags": [
+    "ZONE_TRIP_LASER_COMMIT_ON"
+  ],
   "flag": "ZONE_TRIP_LASER_COMMIT_ON",
   "behaviors": [
     "on a zone trip (mode 'to next circle' or 'zone escape', as P42 defined it, t >= 10 s), when the laser is ready (charge 0, cooldown <= 0) and an enemy mech is in view with a clear line inside laser range, but the champion would not start a charge (the laser does not lead because the picked target is behind cover or beyond laser range), start the charge anyway; the champion's existing charge rules (Build 17 re-aim/rescue onto a hittable enemy, full-charge release, P34 lethal release) then aim and release it"
   ],
   "owner": "Mech Builder",
-  "stage": "step_a",
+  "stage": "step-a-fail",
   "base": "e5f7a85",
   "champion": "b9492c6/edb729f",
   "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
@@ -27,15 +29,48 @@
   "novelty": "Opposite direction to P42 (which withheld charges the champion starts on zone trips; retired, N4). P55 adds charges the champion does NOT start today: the champion's weapon lead (brain.ts, 'Pick the weapon that steers the aim') starts a laser charge only when the PICKED target (TARGET_PICK lock) is clear and inside laser range; when the picked target is behind cover or beyond laser range but another enemy is clear inside laser range, the laser stays idle. P55 starts the charge in that case on zone trips only; the champion's existing Build 17 rescue then turns the charge onto the hittable enemy. Lethal release (F2/P34), zone pathing, boost, retreat, tree logic and the drop gate are unchanged.",
   "hypothesis": "N4 shows laser charges on zone trips produce kills; the champion leaves the laser idle on some zone-trip ticks where a clear enemy is inside laser range (picked target elsewhere). Starting the charge there should add zone-trip laser hits and kills without changing the route.",
   "mechanism": "ZONE_TRIP_LASER_COMMIT_ON (default false, params.ts): in act(), after the champion's laser fire decision, if t >= 10, mode is 'to next circle' or 'zone escape', the laser has charge 0 and cooldown <= 0, the champion did not set fire on the laser, and some LOS-checked enemy mech option is clear with distance <= laser range, set fire[laser] = true (start the charge). No aim or movement change on that tick; on later ticks the champion's charge code (rescue/re-aim, full or lethal release when lined) handles the charge.",
-  "activation": null,
+  "activation": "Step A on P48 (trees on): 0/192 (2000+3000) and 0/192 (4000+5000); 0 decisions even before the drop gate.",
   "positives": null,
-  "negatives": "Known cost from P42's hypothesis: charging halves walk speed (protocol charge_move_mult 0.5) during the trip, which could raise zone damage or zone-trip deaths.",
-  "confidence": "Uncertain",
-  "reuse": null,
-  "outcome": "pending",
+  "negatives": "The trigger never occurs on the champion: 0/192 on both sets (0 decisions in 768 games, ungated too).",
+  "confidence": "Disproven",
+  "reuse": "retire. The champion already starts a laser charge on a zone trip whenever a clear enemy is inside laser range and the laser is ready (target.ts interim rule + laser range 280 m > gun range 230 m), so there is nothing to commit. The only other reading of \"commit\" (release an already-held charge earlier on a zone trip, beyond P34 lethal release) was NOT measured; it would be a new idea with its own record and Step A.",
+  "outcome": "D",
   "disproof": "if Step A < 10/192 on either set, or practice shows deaths <40 s rising or zone-trip deaths rising on either base, stop and report, no PR",
   "drop_gate": "Zone travel modes rank above the drop run/hold (brain.ts mode chain), so the trigger never runs on a drop-run/hold tick; Step A also counts with the coordinator's reach gate (no drop passing the champion's drop-run candidate filter within DROP_RUN_M, no dropMove/dropHold), never 'any drop exists'.",
-  "step_a_result": null,
+  "step_a_result": {
+    "champion": "P48 b9492c6f122c549c705b69402157f078b4a57857 (bot code of e5f7a85; main merge edb729f), TREE_RETREAT_ON=true",
+    "trees": true,
+    "seeds_per_set": 192,
+    "2000+3000": {
+      "fired_games": 0,
+      "decisions": 0,
+      "ungated_games": 0,
+      "champion_zone_trip_deaths": 16,
+      "champion_zone_trip_kills": 15
+    },
+    "4000+5000": {
+      "fired_games": 0,
+      "decisions": 0,
+      "ungated_games": 0,
+      "champion_zone_trip_deaths": 25,
+      "champion_zone_trip_kills": 30
+    },
+    "per_base": {
+      "2000": "fired 0, zone-trip deaths 11, trip kills 6, trip ticks 2939",
+      "3000": "fired 0, zone-trip deaths 5, trip kills 9, trip ticks 3657",
+      "4000": "fired 0, zone-trip deaths 12, trip kills 20, trip ticks 4139",
+      "5000": "fired 0, zone-trip deaths 13, trip kills 10, trip ticks 4221"
+    },
+    "trigger_as_counted": "after every champion decision is final: obs.t >= 10 AND mode is 'to next circle' or 'zone escape' AND we hold a laser with charge <= 0 and cooldown <= 0 (weapon ready, a charge can start) AND some LOS-checked enemy mech option is clear with muzzle distance <= laser range AND the champion did NOT set fire on the laser (it holds the charge) AND a picked non-farm target exists AND drop gate open. Also counted ungated (any reason, any target state): 0.",
+    "drop_gate": "Coordinator rule (drop-gate-rule.txt): off when dropMove or dropHold is on, or a drop passes the champion's drop-run candidate filter (not in dropSkip, holder null or us, flat distance <= DROP_RUN_M, zone-safe for lands_in + capture time). Never 'any drop exists'. Gated-out decisions: 0.",
+    "zone_trip_death_def": "game where we died and the last decision's mode was 'to next circle' or 'zone escape' (same definition as P42's practice screen)",
+    "why_zero": "target.ts: a candidate has `shot` when it is clear and one of our weapons reaches it (ourDps(d) > 0); a lock without a shot yields to the best other shot target ('interim'), and a new lock takes the best eligible one. Laser range is 280 m vs gun 230 m (protocol.md:151, :305), so any clear enemy inside laser range is a shot target and the picked target is always clear and inside laser range when one exists; the weapon lead (brain.ts 'Pick the weapon that steers the aim') then starts the charge whenever the laser is ready. The champion never holds a ready laser on a zone trip with a clear enemy in range.",
+    "passivity": "IDENTICAL: every non-timing column (all but bot_ms_mean, late_over_50ms, missed, bot_ready) of the instrumented rows equals /workspace/tester/runs/trees-b9492c6-<b>.csv on 96/96 games for each base (384/384); 0 logger exceptions; per-game log decisions equal the CSV decisions column on every game.",
+    "method": "Instrumented copy of the champion bot files (this branch at 5cd2661 = b9492c6 bot code) at /tmp/p55/stepa/bot: passive per-decision P55 counters appended just before act.move, inside try/catch, read-only on champion state, one JSON log per game; no action changed. Sim /tmp/p55/sim/tools/sim = copy of /workspace/wt-tester-trees/tools/sim. Run: `cd /tmp/p55/sim && P55_DIR=<dir> SEED_BASE=<b> bun tools/sim/run.ts --bot /tmp/p55/stepa/bot/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees` for b = 2000, 3000, 4000, 5000, one at a time. Logs in /tmp/p55 (not committed).",
+    "rule": "coord/BUILD_CHECKLIST.md Step A: fewer than 10/192 on either set retires the idea.",
+    "verdict": "step_a_fail",
+    "run": "2026-11-22 01:03-01:08 ET"
+  },
   "screens": [],
   "receipt": null,
   "site_score": null,
@@ -43,12 +78,18 @@
   "source": "Coordinator brief 1:00 AM ET Sun Nov 22 (P55 ZONE TRIP LASER COMMIT TASK).",
   "timestamps": {
     "created": "2026-11-22 01:05 ET",
-    "updated": "2026-11-22 01:05 ET"
+    "updated": "2026-11-22 01:10 ET"
   },
   "sources": [
     "coord/data/findings.md (F2, N4)",
     "coord/data/ideas/P42.json",
     "origin/p42-zone-trip-no-charge (39b342c, read-only)",
-    "brain.ts at e5f7a85 (champion P48 b9492c6 bot code)"
-  ]
+    "brain.ts at e5f7a85 (champion P48 b9492c6 bot code)",
+    "target.ts (createTargetLock interim rule, scoreTargets shot)",
+    "/workspace/mechfight-kit/protocol.md:151 (gun range 230), :305 (laser range 280)",
+    "/workspace/tester/runs/trees-b9492c6-{2000,3000,4000,5000}.csv (passivity reference)",
+    "Step A logs /tmp/p55/stepa (not committed)"
+  ],
+  "decision": "Retired at Step A (0/192 on both sets): redundant with the champion's existing target lock + weapon lead. No build, no PR.",
+  "next_action": "None. Do not build. A different idea (early release of a held charge on zone trips) would need its own record and Step A."
 }

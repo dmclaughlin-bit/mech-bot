@@ -288,6 +288,8 @@ function buildBot(hello: Hello): Bot {
   let lastMechHit = -Infinity
   /** Build 19: the last time we took damage from anything (mech, drone or zone). */
   let lastDamaged = -Infinity
+  /** P44: match time of the last lightning short on us (a new laser charge cannot start for short_s after it). */
+  let shortAt = -Infinity
   let farmChase: { id: number; since: number } | null = null
   const farmGiveUp = new Set<number>()
   /** P-D-003: the drop we are walking to, and drops we gave up on. */
@@ -510,6 +512,7 @@ function buildBot(hello: Hello): Bot {
       if (e.type === "damaged" && e.by !== null) hitBy.set(e.by, obs.t)
       if (e.type === "damaged" && e.weapon !== "npc") lastMechHit = obs.t
       if (e.type === "damaged") lastDamaged = obs.t
+      if (e.type === "effect" && e.effect === "short") shortAt = obs.t
     }
     for (const [id, k] of known) if (obs.t - k.lastSeen > 30) known.delete(id)
   }
@@ -1104,11 +1107,13 @@ function buildBot(hello: Hello): Bot {
         // Pick the weapon that steers the aim this decision.
         let leading = "track"
         aim = gunAim
-        // P44 (LASER_SHORT_GUARD_ON): a lightning hit wipes a charge and blocks a new one for short_s, so do not start a
-        // charge on a target seen holding lightning within SHORT_GUARD_M; lightning or the gun lead instead. Not before
-        // 10 s, and never on a drop run/hold tick or while a drop the run may take is near (the champion's choice there).
+        // P44 (LASER_SHORT_GUARD_ON): a lightning hit wipes a charge and blocks a new one for short_s, so while that short
+        // is on us do not lead with the laser to start a charge on a target seen holding lightning within SHORT_GUARD_M;
+        // lightning or the gun lead instead. Not before 10 s, and never on a drop run/hold tick or while a drop the run
+        // may take is near (the champion's choice there).
         const shortGuard = () =>
           LASER_SHORT_GUARD_ON && obs.t >= 10 && (w(laser).charge ?? 0) <= 0 && d <= SHORT_GUARD_M && !dropMove && !dropHold &&
+          obs.t - shortAt < (cfg.weapons.lightning.short_s ?? 2) &&
           (m.weapons ?? known.get(m.id)?.weapons ?? []).includes("lightning") &&
           !(DROP_RUN_M > 0 && (obs.drops ?? []).some(dropCandidate))
         if (clear && laser >= 0 && w(laser).cooldown <= 0 && d <= w(laser).stats.range && !shortGuard()) {

@@ -190,7 +190,9 @@ export const TREE_RETREAT_STUCK_S = 3
  * P44 (laser short guard): lightning shorts a laser it hits (protocol §7: any charge in progress is lost and a new one
  * can't start for short_s 2 s), and charging halves our walk. When the laser would take the lead and START a new charge
  * (charge 0) on the target, and that target is seen holding lightning (obs or remembered weapons) within SHORT_GUARD_M,
- * the laser does not lead; lightning or the gun lead and fire as usual. A charge already in progress is left to the
+ * the laser does not lead while a short on us still blocks a new charge (an `effect: short` event within the lightning
+ * short_s, 2 s); lightning or the gun lead and fire as usual. (Fix 1: the first build guarded every such start, also
+ * when no short was on, and gave up laser shots that could start: kills and drop-ring arrivals fell.) A charge already in progress is left to the
  * champion's release rules (including LETHAL_RELEASE_ON). Never before t = 10 s, and never on a drop run/hold tick or
  * while a drop the run may take (the drop run's own candidate filter) is near. false = champion exactly.
  */

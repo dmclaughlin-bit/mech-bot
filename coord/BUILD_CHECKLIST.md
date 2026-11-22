@@ -18,3 +18,6 @@ P34 and P37 both passed this checklist on base 0+1000 and then lost drop-ring ar
 
 ## Doug 9:08 PM ET (Sat Nov 21): archive size check
 Before handoff, and again before any submit, `git archive --format=tar <SHA> | wc -c` must be under 15,000,000 bytes (the site limit is 20.0 MB; we keep a margin). Never commit raw sim output, traces, or per-seed JSON to a build branch or main.
+
+## Doug 10:06 PM ET (Sat Nov 21): fires-often-enough check before every full build
+Before starting the full build and 4-base checklist for any NEW idea, run a log-only Step A on the current champion (trees-on, bases 2000-5000, 192 games per set): count the games where the new behavior would actually fire and change what the bot does. Fewer than 10/192 on either set: retire the idea (record stage step-a-fail with the numbers) and do not build it. Research runs that already measured firing per set on the current champion count as Step A (e.g. P43, P48 from 8e623eb). Rebuilds and near-miss reworks of an idea that already fired 10/192+ on both sets skip it.

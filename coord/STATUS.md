@@ -1,5 +1,7 @@
 # Current status for researchers (read this first)
 
+**Doug 10:06 PM ET speed-ups:** Diego's Mac second screening station (P-D-015) moved first; Step A fires check before every new full build; spare tests to near misses every tick. P40b ca549ae scored 4.29 (BB-18893791), LOSS.
+
 Updated by Grok, Sat Nov 21 2026, 3:44 PM ET. Grok updates this file whenever the champion or the in-flight list changes. The canonical data is `coord/data/` (site_results.csv, ideas.md, screens.csv, hazard_screens.csv).
 
 ## Champion (base for all research and builds)
@@ -77,3 +79,19 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 - Empty reserve: 0 READY. P26 #138 and P25b #136 screens are complete but HOLD on rule (6) new 20 s+ pins with the feature not active in the window (P26: 4018 22 s, 5053 20 s; P25b: 72, 4091, 5048, 5054). Owner: Doug (does a pin with the feature inactive veto?). P25b also has a D3 question (memory + no-progress drop under one flag).
 - Site banner (seen 6:50 PM ET): "New rule: excessive code reuse may result in disqualification." Counter 5 of 6 left; next frees 7:50 PM ET.
 - Next action: parent assigns a new non-drop build to Mech Builder (Diego's Claude backup) to refill the reserve.
+
+## Loop 9:13 PM ET (Sat Nov 21)
+- NEW CHAMPION: P34 lethal release, 0e6fadd, 4.38 (BB-ABEB42BF), +0.03 over P29 4.35. Submitted 9:10 PM ET on Doug's order. Branch p34-rebased is not merged to main yet (needs a PR; coordinator does not merge). All waiting builds are stale: rebase on 0e6fadd and re-screen. Banner now: 'Shopping Sessions is being rescored, please see the rules page!'. Counter 4 of 6 left, next frees 10:07 PM EST.
+- UPDATE 9:17 PM ET: P34 0e6fadd is now merged to main as 8c130ad7f0c81acb03508c40f20c31867f29d358. Bot code on main equals 0e6fadd (coord/pipeline excepted).
+
+## 9:25 PM ET: P45 selected from Doug research handoff (R1)
+- Midring settle spot quality (MIDRING_SPOT_ON), Step A measurement first, owner Mech Builder, next free session ahead of P37b. Record: coord/data/ideas/P45.json. R3 laser option deferred (P34b2, P42, P44 already cover P34 follow-ups).
+
+## 9:29 PM ET: Doug on PR #153
+- Option A: no knob sweeps; keep the current queue and the full two-set screen. Revisit a specific setting only if replay evidence shows changing it produces a genuinely different behavior.
+- 10:07 PM ET slot: the loop submits the highest-ranked eligible (fully screened) build if one is ready and no score is pending; if the slot goes unused, log what held it up in this file.
+
+
+## 9:53 PM ET: near-miss pathway confirmed (Doug 9:47 PM ET)
+- Doug confirmed the merged near-miss pathway. Official text is the additive section in `coord/WORKFLOW_CHART.md` (existing chart untouched) and the matching section in `coord/WORKFLOW.md`. First ranking: `coord/data/near_miss_ranking.md`.
+- At this check: U = 2 (P34 `c281bf5` rejected 9:07 PM ET, BB-FB8CB5AE; P34 `0e6fadd` submitted 9:10 PM ET, scored 4.38, BB-ABEB42BF; `coord/data/site_results.csv`). R = 1 (P40b PR #155 handed off 9:47 PM ET after a trees-on four-base checklist; official screen comment not posted yet as of 9:53 PM ET; if Sim Tester started promptly the screen can finish before 10:07). spare = (6 - 2) - (1 + 1) = 2. Next slot frees 10:07 PM EST. No normal READY build. No near miss is eligible to submit yet: none has a trees-on official screen on main `8c130ad`. Best candidate is P35; it still needs a rebase onto current main and a trees-on official screen (see the ranking file).

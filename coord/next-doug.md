@@ -12,7 +12,17 @@ Rules: the real site score is the only source of truth; the sim is a crash/timin
 
 ---
 
-## CURRENT (SIM-ONLY training track, not a site slot): P-B-008 (Grok, Sat Nov 21, 1:56 PM ET): movement & evasion training track
+## CURRENT (Doug 9:38 PM ET): P46 mid-game unstuck, built by Doug's Claude (Grok, Sat Nov 21, 9:39 PM ET)
+Record: `coord/data/ideas/P46.json`. Champion: P34 lethal release, code 0e6fadd, main 588557e (merge 8c130ad), site 4.38. Mech Builder no longer takes P46; its queue is P45 Step A, then P37b.
+Add `ACK P46 (Doug's Claude) <time ET>` to `coord/log.md` in your first push.
+
+**Step A first (log-only, no behavior change).** Branch `p46-unstuck-mid` off origin/main. Sim: #148 22f72a8 tools/sim with `--trees`, SEED_BASE from env, 96 seeds each on 2000, 3000, 4000, 5000. Count stretches where we moved under ~3 m in 5 s with 5-8 alive, outside a drop ring/hold, outside P29's settle, not healing and not engaged, plus deaths or zone damage within 20 s after them. Pass: 10/192 games or more on BOTH sets. On a fail, write a one-line reason in P46.json and stop.
+
+**Build only if Step A passes.** One flag `UNSTUCK_MID_ON` in params.ts: in that state, re-path to a reachable in-zone point a short distance away. The drop run, the near-and-reachable drop gate, P29 midring settle, P34 lethal release and zone rules stay unchanged. Use our own observations only. The flag-off build must be byte-identical to main (eqdrive). Follow coord/BUILD_CHECKLIST.md with the 4 practice bases 0, 1000, 6000, 7000 trees-on (champion CSVs are already at /workspace/tester/runs/trees-0e6fadd-*.csv, so reuse them). Drop-arrival totals can't be lower on any base, and deaths under 40 s can't be higher. Stall rule applies. Archive: `git archive --format=tar <SHA> | wc -c` under 15,000,000, written in the PR body. The PR head must be the flag-ON build.
+
+**Hand off** by opening a PR titled "P46 mid-game unstuck (UNSTUCK_MID_ON)" and messaging Grok. Sim Tester runs the full trees-on paired screen on 2000+3000 and 4000+5000; only a full pass goes to the site, and the loop submits it. Never merge, submit, click on the site, force-push or commit raw sim output.
+
+## PAUSED (SIM-ONLY training track, not a site slot): P-B-008 (Grok, Sat Nov 21, 1:56 PM ET): movement & evasion training track
 
 Doug, 1:52 PM ET: train movement in the local sim (strafe, slide, fluid motion) so the mech is harder to hit, keep pathfinding from getting stuck on objects, fine-tune map awareness (always know where we are), and improve evasion plus aiming while moving. **All current 4.10 champion rules stay in place** (the 4.06 stack plus `DROP_RUN_M=150`). Only movement / evasion / aim-while-moving mechanics change. This is **sim-only**: do not submit to the site, do not merge to main, do not take a practice slot. After the gate is green and the sim testers show opponent hit rate down without new stuck/pathing damage, Grok hands the winning variant to Mech Builder for a later site test on the then-current champion.
 
@@ -108,3 +118,5 @@ Verdict: **APPROVE WITH STIPULATIONS**. Do not begin implementation. Narrow scop
 2. Planned jet/roof routes to rooftop loot. Champion nav is ground-only; jump/jet is only the stuck escape. Isolate this from the retired B125 pack.
 
 **Doug 8:16-8:17 PM ET:** record the rooftop jet route as P40 and build it after P38. Doug approved adding trees to the sim ("ok also add trees to the simulations"). The tree work goes to Diego's Claude as P-D-014. The tree sim is adopted for screens only after it's validated and the champion baseline is re-run on it; until then, screens stay on the current sim.
+
+**UPDATE 9:17 PM ET: P34 is the new champion, site 4.38 (BB-ABEB42BF, code 0e6fadd), merged to main 8c130ad.** Branch every new build from current origin/main. Flag 0 must be byte-identical to this main, and a keep needs a site score strictly above 4.38. All queued builds (P34b, P38, P40, P37b) must be rebuilt on the new champion main, handed off on fresh branches, with the 4-base trees-on checklist (bases 0, 1000, 6000, 7000) and archive size in the PR body (`git archive --format=tar HEAD | wc -c` under 15,000,000). Old approvals expire. P34b is P34 plus one drop gate, so on the new main it should be only the drop-gate diff (LETHAL_RELEASE_ON is already true).

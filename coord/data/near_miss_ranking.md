@@ -1,3 +1,20 @@
+## Refresh, Sun Nov 22 2:12 AM ET (coordinator, Doug's request). Champion P48 b9492c6 / edb729f, 3.75 under builders-4 (BB-5727119F)
+All earlier sections are history (builders-3 bar 4.44 or older). Gains are judged only against 3.75 under builders-4. The 96-game figure is Sim Tester's advisory paired estimate (new seeds per candidate; only the paired difference is reliable, since a single build's mean moves about 0.2 between seed sets).
+
+Ranked by expected gain on the site:
+1. **P60, retreat-death fix (Mech Builder, RUNNING, no branch yet).** builds_on F15 + N8 + N9 + F3. It changes movement in building-cover or back-away retreat, where most of P48's retreat deaths happen (retreat deaths 136/190 and 124/189; only 19 and 16 of those in tree-retreat mode). Highest expected impact. On handoff it gets the safety screen plus the 96-game estimate.
+2. **P61, second retreat bucket (Mech Builder, QUEUED after P60's counts).** Same evidence, a different bucket.
+3. **P41 #173 c21d23b, near miss (eligible, NEUTRAL, last resort).** The 1:29 AM ruling stands: only stall (c) remains, and the Sim Tester stall calls are under re-check after P49b's 2021 pause failed to reproduce on two other stations. 96-game: 3.708 vs 3.740, difference -0.031 +/- 0.056. Submit only when a slot would otherwise sit idle and P60 isn't ready within about 10 min. N2 says neutral changes have cost about -0.09 on the site.
+On the site now: P53b #178 52c2862 (BB-9617EF60, queued). 96-game: 3.552 vs 3.552, a difference of +0.000 +/- 0.026. Expect about P48's score, no win.
+
+Out of the ranking:
+- Scored losses: P49b 3.49 (builders-4; capped tree heal, F4 doesn't transfer), plus builders-3 losses P43b, P40d, P47, P49, P52.
+- Retired: P42, P52b, P53, P54, P55, P56, P57, P58, P59, P49c, P41b, P50, P51.
+- Exhausted ladder signals: F8 farming (N3), F9 low-HP boost (P53/P53b neutral), F10 spacing (P54; the bot sees about 78 m).
+- Diego's EARLY_RETREAT_HIDE_ON: Diego's lane recommended outcome D, and the lane is on station work.
+- Parked for Doug: re-testing builders-3 near-losers under builders-4 (never-resubmit rule).
+Pipeline gap: after P60/P61 there are no evidence-backed candidates. Next evidence sources are P60's bucket counts and Watcher's questions (coord/data/watcher_builders4_questions.md).
+
 ## Update 12:42 AM ET Sun (champion P48 edb729f, 10-minute loop)
 
 1. P52 EARLY_FARM_ON, PR #169, 74b6ee4: Diego's Mac full paired trees-on screen vs Mac P48 baseline fails exactly one veto (drop-ring set total 8->3 on 2000+3000; 4000+5000 4->5). Means +0.047±0.051 and +0.016±0.052 (both positive). Died<40 48->45 and 38->37. Pause games 2->2 both. Activation (different behaviour) 26 and 22 of 192. Builds on F8. Needs the loop's check.py rerun + archive check before submit. Eligible near miss behind READY P47.

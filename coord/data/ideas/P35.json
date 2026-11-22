@@ -4,13 +4,30 @@
   "family": "targeting",
   "flag": "UNSEEN_TARGET_ON",
   "owner": "Mech Builder",
-  "stage": "retired",
+  "stage": "building",
   "source": "PR #145 research-doug-1941 ranked build 2 (target.ts); first hit decides first fights (KILL/DIED 309/171 vs 129/297)",
-  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "champion_sha": "8c130ad7f0c81acb03508c40f20c31867f29d358",
   "created_et": "2026-11-21 19:57",
   "pr": "https://github.com/dmclaughlin-bit/mech-bot/pull/150",
   "sha": "5778086",
-  "status": "retired",
+  "status": "rebuilding",
   "head": "5778086d38a531d03f8d2940f5da1634f9ddd90e",
-  "decision": "9:04 PM ET coordinator: VETO confirmed (https://github.com/dmclaughlin-bit/mech-bot/pull/150#issuecomment-7072641748). Drop-arrival set total 2000+3000 8->7, all from seed 2089 (place 1->9, died 121.45 s before the champion arrival). Effect otherwise flat or negative: +0.010 +/- 0.056 and -0.068 +/- 0.037. Note: seed 2089 also cost P34 and P37 a drop; it is a fragile late-drop game."
+  "decision": "9:04 PM ET coordinator: VETO confirmed (https://github.com/dmclaughlin-bit/mech-bot/pull/150#issuecomment-7072641748). Drop-arrival set total 2000+3000 8->7, all from seed 2089 (place 1->9, died 121.45 s before the champion arrival). Effect otherwise flat or negative: +0.010 +/- 0.056 and -0.068 +/- 0.037. Note: seed 2089 also cost P34 and P37 a drop; it is a fragile late-drop game.",
+  "near_miss": true,
+  "rebuild": {
+    "branch": "p35b-unseen-target",
+    "base": "a4fa643d6c17d3b1b62c98acb574d98d99a6f666",
+    "champion_main": "588557e464dd4946680bff964a7c8e86700b8739",
+    "champion_merge": "8c130ad7f0c81acb03508c40f20c31867f29d358",
+    "champion_code": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+    "flag": "UNSEEN_TARGET_ON",
+    "pathway": "near-miss (Doug 9:47 PM ET Sat Nov 21); near_miss_ranking.md rank 1",
+    "started_et": "2026-11-21 22:00",
+    "note": "Same single behavior as 5778086 (target-pick bonus for a visible enemy facing away from us beyond 45 m, t>=10 s), re-applied on champion P34. Trees-on four-base checklist (0/1000/6000/7000); drop-ring arrivals reported only for this near-miss rebuild."
+  },
+  "next_action": "Mech Builder: rebuild on a4fa643, trees-on four-base checklist, push p35b-unseen-target flag-ON head",
+  "sources": [
+    "coord/data/near_miss_ranking.md",
+    "coord/WORKFLOW_CHART.md near-miss pathway"
+  ]
 }

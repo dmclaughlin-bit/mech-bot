@@ -474,3 +474,4 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 =======
 - 10:29 PM ET (Grok): P48 b9492c6 submitted 10:27 PM ET as near-miss test, scored 4.44 (BB-94897D91), beats P34 4.38. NEW CHAMPION: rebase queue (all builders), Sim Tester re-screen each build on b9492c6.
 >>>>>>> origin/main
+- 2026-11-21 23:05 ET P-D-018 P50 rebased on champion P48 (edb729f): flag off 70811b6 identical to main (299/299 kit actions, 384/384 traces and rows, trees-on bases 0/1000/6000/7000). Flag ON checklist vs P48: fired 30/33/39/32, 0 before 40 s, died<40 equal on all 4, no new 20 s+ pins, paired +0.104/+0.052/-0.062/-0.135. Still FAILS item 3 by one ring: drop rings 5->4 (base 0), 4->3 (7000); 1000 1->2, 6000 1=1. Lost rings are late knock-ons. Draft PR #161, ruling asked.

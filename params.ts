@@ -194,6 +194,6 @@ export const TREE_RETREAT_STUCK_S = 3
  * P34 dropOpen test). A charge already in progress, its release (full / P34 lethal) and every other decision are unchanged.
  * false = champion exactly.
  */
-export const CHARGE_LINED_ON = false
+export const CHARGE_LINED_ON = true
 /** Never hold back a charge before this match time (s): play before it, and so every death before 40 s, equals the champion's (as P34). */
 export const CHARGE_LINED_MIN_T = 40

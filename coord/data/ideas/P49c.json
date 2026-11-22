@@ -1,0 +1,128 @@
+{
+  "id": "P49c",
+  "title": "TREE_HEAL_LATE_SAFE",
+  "family": "heal / tree cover",
+  "flags": [
+    "TREE_HEAL_LATE_SAFE_ON"
+  ],
+  "flag": "TREE_HEAL_LATE_SAFE_ON",
+  "owner": "Mech Builder",
+  "stage": "building",
+  "pr": null,
+  "sha": null,
+  "branch": "p49c-tree-heal-late-safe",
+  "base": "p49b 0c6b1344c0948695dc865cfeffcdc52732cc47ec (origin/p49b-tree-heal-cap, TREE_HEAL_ON=true, TREE_HEAL_MAX_S=8)",
+  "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_main": "edb729f",
+  "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
+  "builds_on": [
+    "F4"
+  ],
+  "refines": {
+    "id": "P49b",
+    "pr": 177,
+    "sha": "0c6b134"
+  },
+  "step1": {
+    "method": "Passive /tmp logger (per-decision mode, HP, zone, threats with distance / closing speed from vel / seen) on P48 b9492c6 and P49b 0c6b134, single-seed trees-on runs SEED_BASE=<seed>; CSV rows reproduce /workspace/tester/runs trees-b9492c6-5000 and trees-0c6b134-5000 exactly.",
+    "table": [
+      {
+        "seed": 5055,
+        "heal_start_t": 112.4,
+        "attempt": "112.4-119.3 s, 4 episodes, 10 heal-trees ticks",
+        "exit": "no cap/zone/drop exit; heal branch lost priority (break crossfire, lightning ambush, engage collect) or no hidden spot",
+        "enemy_at_start": "1 seer 44.7 m, closing -1.4 m/s (stopped at standoff), hp 1496",
+        "ring": "in zone, 54 m outside next circle, 82.6 s to shrink end",
+        "hp": "1248/1512 (83%)",
+        "next": "same fight, P49b took more damage (757 vs 940 HP at +10 s), died 139.65 s vs 144.95 s",
+        "place_p48": 11,
+        "place_p49b": 11,
+        "place_mac": "1 -> 11",
+        "common_cause": false
+      },
+      {
+        "seed": 5053,
+        "heal_start_t": 40.2,
+        "attempt": "40.2-46.7 s, 5 episodes, 28 ticks",
+        "exit": "no cap/zone/drop exit; flicker with engage collect, then heal hiding",
+        "enemy_at_start": "only seer 199 m, closing 11.4 m/s (non-seer 144 m closing 9.6)",
+        "ring": "in zone, 88.8 m outside next circle, 69.8 s to shrink end",
+        "hp": "1196/1868 (64%)",
+        "next": "walk moved 32 m toward next circle while the hunter came on; 781 vs 1004 HP at 55 s; game diverged, died 221.3 s vs 248.6 s",
+        "place_p48": 5,
+        "place_p49b": 10,
+        "common_cause": true
+      },
+      {
+        "seed": 5032,
+        "heal_start_t": 50.4,
+        "attempt": "50.4-56.3 s, 7 episodes, 32 ticks",
+        "exit": "no cap/zone/drop exit; flicker with engage collect, ended into engage finish",
+        "enemy_at_start": "only seer 82.9 m, closing 11.6 m/s, hp 1803",
+        "ring": "in zone, inside next circle, 59.6 s to shrink end",
+        "hp": "1260/1512 (83%)",
+        "next": "damage on the closing enemy lagged (1669 vs 1311 at +1 s); a second enemy reached 44 m; 1109 vs 1468 HP at +10 s; died 77.45 s vs 96.9 s",
+        "place_p48": 6,
+        "place_p49b": 11,
+        "common_cause": true
+      },
+      {
+        "seed": 5037,
+        "heal_start_t": 81.6,
+        "attempt": "81.6-84.9 s, 3 episodes, 10 ticks",
+        "exit": "no cap/zone/drop exit; back to standing heal / engage finish",
+        "enemy_at_start": "1 seer 44.8 m, closing -0.2 m/s (stopped), hitting us (hit age 0)",
+        "ring": "in zone, 43.5 m outside next circle, 28.4 s to shrink end (shrinking)",
+        "hp": "1524/1736 (88%)",
+        "next": "1.4 m step; second enemy at 51 m; 508 vs 1223 HP at +10 s; died 93.95 s vs 120.55 s",
+        "place_p48": 5,
+        "place_p49b": 10,
+        "common_cause": false
+      },
+      {
+        "seed": 5024,
+        "heal_start_t": 70.7,
+        "attempt": "70.7-78.1 s, 2 episodes, 41 ticks",
+        "exit": "no cap/zone/drop exit; ended into engage finish / collect",
+        "enemy_at_start": "only seer 134.2 m, closing 11.7 m/s, hp 1400",
+        "ring": "in zone, 8.7 m outside next circle, 39.3 s to shrink end",
+        "hp": "621/1739 (36%)",
+        "next": "walked 21 m away (next-circle gap 8.7 -> 20.7 m); the hunter stayed ~128 m instead of closing to 87 m where P48 switched to engage finish at 73.1 s; died 110.9 s vs 143.25 s",
+        "place_p48": 2,
+        "place_p49b": 7,
+        "common_cause": true
+      }
+    ],
+    "common_cause": "3 of 5 (5053, 5032, 5024): the tree heal started while EVERY enemy that saw us was beyond near range (83-199 m) and walking straight at us (11.4-11.7 m/s, walk speed). Hiding from a hunter that is still coming is short-lived; the walk gave up the champion's standing fire / engage start and changed where the fight happened. 5055 and 5037 (enemy stopped at ~45 m) do not share it.",
+    "caveat": "Same start condition also holds on 3 of 8 P49b gain/held seeds checked (4043 4->1, 2090 4->3, 5091 1->1); 2022, 2055, 4027, 5017, 5003 gains do not match it. 4043 showed one nondeterministic logger run (7th) vs 1st on rerun and in the official CSV."
+  },
+  "hypothesis": "P49b's tree heal regresses when it starts (or keeps walking) while every enemy that sees us is still far and closing on us; skipping the tree heal in exactly that case recovers those games and keeps P49b's survivor gain (F4).",
+  "mechanism": "Inside P49b's treeHeal() only (TREE_HEAL_ON): when every seer (enemy that sees us, the heal's own cone test) is beyond cfg.vision.near_range (45 m) and closing on us at >= TREE_HEAL_CLOSE_MPS (6 m/s, about half walk speed, from its obs vel), do not start a tree-heal walk (champion standing heal instead), and end an attempt in progress (same bookkeeping as P49b's cap: spot skip-listed, attempt spent for this heal phase). Everything else is P49b.",
+  "activation": "pending (fired / changed per base 0 and 6000)",
+  "positives": "pending",
+  "negatives": "pending",
+  "confidence": "Uncertain",
+  "reuse": "narrow-follow-up",
+  "outcome": "pending",
+  "strength_kept": "P49b survivor gain (2->4 and 3->5 official, 2->4 and 3->6 Mac) and no heal-hold pins (2022, 3066, 3086 cleared).",
+  "weakness_fixed": "Tree heal walking away from a hunter that is still far and closing (5053, 5032, 5024 regressions).",
+  "differs_from_P49b": "One extra stop condition inside the same tree heal; the walk, spot search, 8 s cap and zone/drop exits are unchanged.",
+  "success": "Majority (3+) of 5055/5053/5032/5037/5024 recover vs P49b, no new pins or vetoes on bases 0 and 6000, survivors kept vs P48.",
+  "disproof": "If the fix leaves 3+ of the 5 seeds regressed vs P48, or practice shows deaths <40 s or new >=20 s pins on either base, or the survivors gain vs P48 vanishes on both bases, stop and report, no PR.",
+  "drop_gate": "Unchanged from P49b (healDropReach: drop near AND reachable within DROP_RUN_M, never in a drop run/hold). The new condition only removes tree-heal ticks.",
+  "receipt": null,
+  "site_score": null,
+  "screens": [],
+  "doug_waiver": false,
+  "source": "Coordinator brief 1:09 AM ET Sun Nov 22; PR #177 Mac screen (5000-seed regressions) and Sim Tester screen",
+  "timestamps": {
+    "created": "2026-11-22 01:25 ET",
+    "updated": "2026-11-22 01:25 ET"
+  },
+  "sources": [
+    "coord/data/findings.md F4",
+    "PR #177 comments",
+    "/workspace/tester/runs/trees-b9492c6-5000.csv",
+    "/workspace/tester/runs/trees-0c6b134-5000.csv"
+  ]
+}

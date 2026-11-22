@@ -11,7 +11,7 @@
   ],
   "renumber_note": "P34b now = one drop gate on top of champion P34 (0e6fadd, merged 8c130ad, LETHAL_RELEASE_ON already true). The earlier GUN_NEAR_M distance variant (/workspace/patches/p34b-old-bot.diff, built on the old base) is NOT this build.",
   "owner": "Mech Builder",
-  "stage": "hold",
+  "stage": "retired",
   "pr": null,
   "sha": "c5bb83f94d9c4b6998bb42a8932ff2e2789d5a61",
   "champion_sha_tested_against": "588557e464dd4946680bff964a7c8e86700b8739",
@@ -47,5 +47,7 @@
     "https://github.com/dmclaughlin-bit/mech-bot/pull/147#issuecomment-7072472836",
     "/tmp/p34b2-out (builder activation run)"
   ],
-  "gate": "eqdrive flag-off vs main IDENTICAL (cmp), flag-on also IDENTICAL; check.py --map-dir arena PASS default max 2.7 ms, flag-on max 2.6 ms"
+  "gate": "eqdrive flag-off vs main IDENTICAL (cmp), flag-on also IDENTICAL; check.py --map-dir arena PASS default max 2.7 ms, flag-on max 2.6 ms",
+  "retired_reason": "BARELY FIRES 0/192 trees-on (bases 0+1000): the near-and-reachable drop gate is a strict subset of the champion P34 lethal release dropOpen() test (drop run set, or a free called drop within DROP_RUN_M 200 m), so it never blocks a release the champion takes; all 192 games identical to champion. Lost drops on 2078/2089 followed early-release kills at 46-47 s before any drop was called.",
+  "retired_by": "Mech Builder 2026-11-21 9:38 PM ET per Coordinator"
 }

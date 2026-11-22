@@ -12,6 +12,16 @@
   "created_et": "2026-11-21 10:03 PM ET",
   "pr": 161,
   "sha": "424029b",
-  "updated_et": "2026-11-21 11:45 PM ET",
-  "screen": "Sim Tester trees-on full paired screen vs P48 b9492c6 (#161, 11:39 PM ET; screens.csv e6b2b0f): VETO, 3 vetoes (stall (a) seed 4093, stall (b) seed 2047, stall (c) pause games 2->6 on 4000+5000) plus 1 NEEDS DOUG (survivors 3->2 on 4000+5000, corrected 11:40 PM ET). Mac cross-check (Diego 11:32 PM ET): VETO on drop-ring 8->7 on 2000+3000."
+  "updated_et": "2026-11-22 12:55 AM ET",
+  "screen": "Sim Tester trees-on full paired screen vs P48 b9492c6 (#161, 11:39 PM ET; screens.csv e6b2b0f): VETO, 3 vetoes (stall (a) seed 4093, stall (b) seed 2047, stall (c) pause games 2->6 on 4000+5000) plus 1 NEEDS DOUG (survivors 3->2 on 4000+5000, corrected 11:40 PM ET). Mac cross-check (Diego 11:32 PM ET): VETO on drop-ring 8->7 on 2000+3000.",
+  "hypothesis": "Starting a laser charge only when the shot is clear and lined up could cut wasted charges (P50.json title; ST-1 death report).",
+  "mechanism": "CHARGE_LINED_ON. SHA 424029b, PR #161.",
+  "activation": "Official screen games changed 35 and 44 (screens.csv).",
+  "positives": "Deaths <40 s 48=48 and 38=38 (screens.csv).",
+  "negatives": "Sim Tester: VETO, 3 vetoes, not a near miss (P50.json decision, 11:45 PM ET). Never site-tested.",
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": null,
+  "disproof": "More than one official-screen veto, or official score \u2264 4.44."
 }

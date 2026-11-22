@@ -94,7 +94,7 @@
   "source": "P37 PR #149 Sim Tester veto (https://github.com/dmclaughlin-bit/mech-bot/pull/149#issuecomment-7072563191: drop-ring arrivals 8->7 and 7->4, all lost arrivals in fired games; survival 6->5 from seed 3012) + Coordinator drop-gate rule (gate on a drop near and reachable within DROP_RUN_M, never on 'any drop exists')",
   "timestamps": {
     "created": "2026-11-22 ET (builder step 0)",
-    "updated": "2026-11-22 ET (builder: FAILED item 3)"
+    "updated": "2026-11-22 12:55 AM ET"
   },
   "sources": [
     "coord/data/ideas/P37.json",
@@ -118,5 +118,16 @@
     "base0_seed44": "Seed 44 (base 0) lost 2 arrivals: the first detour 95.9-97.0 s ran while the only drop was 336 m away; games diverge from there. At 210-250 s the champion is within 200 m of the drops and runs (drop run 220-245 s); the head stands at full HP in 'hold' 203-234 m away, outside DROP_RUN_M, and never qualifies. Its last detour (200.1-204.8 s) was 224-236 m from the drops."
   },
   "near_miss": true,
-  "near_miss_note": "Near-miss under Doug 9:47 PM ET pathway (Coordinator 10:03 PM ET): only miss is checklist item 3 per-base drop arrivals, base 0 5->3 (seed 44), 4-base total 10->10; survivors 5->9. Flag-ON head = flip on top of 9b1ceb1 bot code."
+  "near_miss_note": "Near-miss under Doug 9:47 PM ET pathway (Coordinator 10:03 PM ET): only miss is checklist item 3 per-base drop arrivals, base 0 5->3 (seed 44), 4-base total 10->10; survivors 5->9. Flag-ON head = flip on top of 9b1ceb1 bot code.",
+  "hypothesis": "P37 heal pickup re-applied on champion P34, with a near-and-reachable drop gate (HEAL_PICKUP_ON)",
+  "mechanism": "HEAL_PICKUP_ON",
+  "activation": null,
+  "positives": null,
+  "negatives": "Trees-on screen vs P34: 4 vetoes including drop-ring arrivals 8\u21923 on 4000+5000. Not a near miss (P37b.json decision).",
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": null,
+  "disproof": null,
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

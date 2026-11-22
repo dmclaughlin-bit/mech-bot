@@ -51,7 +51,7 @@
   "source": "coord/data/watcher/RANKED.md rule 3 (speed while HP<35%, alive 2-4)",
   "timestamps": {
     "created": "2026-11-21 19:20 ET",
-    "updated": "2026-11-22"
+    "updated": "2026-11-22 12:55 AM ET"
   },
   "sources": [
     "coord/data/watcher/RANKED.md",
@@ -64,5 +64,16 @@
     "check_py_default": "PASS p99 1.1 ms max 3.9 ms",
     "eqdrive_flag_off_vs_main": "IDENTICAL",
     "merge_base_6182d29": "OK"
-  }
+  },
+  "hypothesis": "Late hurt boost: with 2-4 alive, HP < 35% and under fire (the champion's retreat already active), ground-boost the retreat leg down to an energy reserve (LATE_HURT_BOOST_ON)",
+  "mechanism": "LATE_HURT_BOOST_ON",
+  "activation": null,
+  "positives": null,
+  "negatives": null,
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": null,
+  "disproof": null,
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

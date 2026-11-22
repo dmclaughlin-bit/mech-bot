@@ -43,7 +43,7 @@
   "source": "coord/data/watcher/RANKED.md items 1 and 3 (late-game evasion while HP < 35%, alive 2-4) and their family note: facing the attacker (front-arc discipline) has not been site-tested; rear armor is 180 deg front / 180 deg back. Feasibility: mechfight-kit protocol.md:226 (legs independent of the torso) and protocol.md:295 (front arc centered on the torso aim yaw).",
   "timestamps": {
     "assigned": "2026-11-22",
-    "updated": "2026-11-22"
+    "updated": "2026-11-22 12:55 AM ET"
   },
   "sources": [
     "coord/data/watcher/RANKED.md",
@@ -57,5 +57,15 @@
     "single_change": "PASS (params.ts one flag FACE_ATTACKER_ON=false + brain.ts one guarded aim block, label suffix)",
     "feasibility": "YES: protocol.md:226 legs independent of the torso; protocol.md:295 front arc centered on the torso aim yaw; damaged.rear exposed (protocol.md:201)"
   },
-  "updated_et": "2026-11-21 19:55 ET"
+  "updated_et": "2026-11-22 12:55 AM ET",
+  "hypothesis": null,
+  "mechanism": "FACE_ATTACKER_ON",
+  "activation": null,
+  "positives": "Rear damage share 21.3%\u219220.4% (tiny; P30.json decision).",
+  "negatives": "Full screen VETO on both sets: drop arrivals 6\u21924 on 2000+3000, deaths <40 s 56\u219259 and 54\u219257 (P30.json decision).",
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": null,
+  "disproof": null
 }

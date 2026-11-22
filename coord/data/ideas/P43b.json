@@ -5,7 +5,7 @@
   "flag": "UPGRADE_DPS_TIER_ON",
   "owner": "Diego's Claude",
   "prompt": "P-D-019",
-  "stage": "screened: near miss (1 veto), awaiting Doug ruling on activation",
+  "stage": "scored",
   "rebuild_of": {
     "id": "P43",
     "pr": 158,
@@ -18,8 +18,8 @@
   "pr": 162,
   "sha": "e4879af063b12dda0023587a819e8e4145b9afcf",
   "screen_station": "Mech Sim Tester (official, #162 comment, screens.csv e539722); Mac fallback earlier",
-  "decision": "Coordinator 11:55 PM ET: official tester screen vs P48 = exactly ONE veto (drop-ring 2000+3000 7->5), not lower mean on both sets, contains edb729f, flag-ON head, flag-off identical, archive 3,532,800 bytes, never site-tested. Near-miss eligible EXCEPT activation 8/192 on 2000+3000 (11/192 on 4000+5000) is below ~10/192 on one set and coordinator check.py re-run not yet done: borderline, sent to Doug with numbers. Supersedes the 11:30 PM Mac-fallback VETO (Mac stall (c) on 5091 not confirmed by tester: 11 s pause).",
-  "updated_et": "2026-11-21 11:55 PM ET",
+  "decision": "Near-miss data test (exactly one veto: drop-ring 7\u21925 on 2000+3000; activation 8/192 and 11/192). Site 4.35 vs 4.44 (BB-447742C7), LOSS. Findings F6: don't build on it.",
+  "updated_et": "2026-11-22 12:55 AM ET",
   "screen": {
     "2000+3000": {
       "paired": "-0.010 +/- 0.010",
@@ -41,5 +41,20 @@
       "pause_games": "2->2",
       "survivors": "3->5"
     }
-  }
+  },
+  "receipt": "BB-447742C7",
+  "site_score": 4.35,
+  "score": 4.35,
+  "next_action": "None. Family retired as a negative finding (F6).",
+  "blocker": "Official loss 4.35.",
+  "hypothesis": "Picking the upgrade that adds the most DPS could raise mid/late damage (rebuild of P43 on P48).",
+  "mechanism": "UPGRADE_DPS_TIER_ON on P48. SHA e4879af, PR #162.",
+  "activation": "Official screen changed pick 8/192 and 11/192 (P43b.json screen).",
+  "positives": "Official screen: deaths <40 s flat; drop rings 5\u21929 on 4000+5000; survivors 3\u21925 on 4000+5000; mean +0.031 \u00b1 0.040 on that set.",
+  "negatives": "Drop-ring 7\u21925 on 2000+3000 (the one veto). Site 4.35 (BB-447742C7), \u22120.09. Findings F6.",
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": null,
+  "disproof": "Official score \u2264 4.44 (already met)."
 }

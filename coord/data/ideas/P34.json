@@ -73,12 +73,23 @@
   "created_et": "2026-11-21 19:57",
   "timestamps": {
     "built": "2026-11-21 20:32 ET",
-    "updated": "2026-11-21 20:32 ET"
+    "updated": "2026-11-22 12:55 AM ET"
   },
   "sources": [
     "PR #145 (coord/research-doug-1941.md)",
     "/workspace/mechfight-kit/protocol.md:305, :319",
     "builder hazard runs /tmp/p34-{main,on}-{0,1000}.csv and /tmp/p34-logs, analyzed with /tmp/p34-harness/analyze.py and /tmp/paired.py"
   ],
-  "status": "site test (Doug one-time exception)"
+  "status": "site test (Doug one-time exception)",
+  "hypothesis": "Firing a partially charged laser as soon as its damage is lethal should secure kills sooner (P34.json title).",
+  "mechanism": "LETHAL_RELEASE_ON. Winning SHA 0e6fadd, receipt BB-ABEB42BF, PR #147.",
+  "activation": null,
+  "positives": "Site 4.38 vs P29 4.35 (BB-ABEB42BF), +0.03. Findings F2. In the champion stack.",
+  "negatives": "First SHA c281bf5 REJECTED unscored (BB-FB8CB5AE, archive over 20 MB). Screen of that family had a drop-ring set-total veto (8\u21925 on 2000+3000) that the official win later marked as a false negative.",
+  "confidence": "Verified",
+  "reuse": "already-in-champion",
+  "outcome": "A",
+  "builds_on": null,
+  "disproof": null,
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

@@ -36,4 +36,5 @@ Rules:
 
 ## Added by the 10-minute loop, 12:50 AM ET Sun
 - N3 Early farming with enemies in view (P52 #169, 74b6ee4) scored 4.23 vs 4.44 on the site (BB-0AB39656), LOSS (-0.21). Site-proven negative: the sim's drop-ring loss (8 to 3 on 2000+3000) was real this time, and the sim gains in early deaths (48 to 45) did not carry over. Don't build on F11 as-is; F8 stays a ladder signal only. The drop-ring veto has now been wrong twice (P34, P48) and right twice (P43b small loss, P52 large loss): the bigger the drop loss, the worse the site score.
+- N4 Zone-trip no-charge (P42, branch 39b342c, Mech Builder practice screen): negative on both bases (-0.083 on base 0, -0.240 on base 6000), and zone-trip kills fell 8 to 1 and 29 to 15. Laser charges during zone trips produce kills; don't suppress them. Retired before a PR. Sim signal.
 - F13 P41 sound-cued look (#173, c21d23b): Mac screen found no veto, means +0.052/+0.005 and the 2021 pause gone; Sim Tester found 2 stall vetoes, and its verdict counts. Positive part to keep: removing the 2021 pause. Sim signal only.

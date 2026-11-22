@@ -36,7 +36,7 @@
   "approval_requirements": "None new: Step A and the build follow the existing workflow. Site test only after a full passing screen, submitted by the loop. Any exception or rule change needs Doug's yes.",
   "decision": null,
   "blocker": "Step A FAIL: rare choice: a real cover/exit choice between 2+ reachable midring candidates occurs in 11/192 games on 2000+3000 but only 5/192 on 4000+5000 (< 10); only 20/192 games there settle at all.",
-  "updated_et": "2026-11-21 21:48",
+  "updated_et": "2026-11-22 12:55 AM ET",
   "step_a_result": {
     "verdict": "FAIL",
     "reason": "Step A FAIL: rare choice: a real cover/exit choice between 2+ reachable midring candidates occurs in 11/192 games on 2000+3000 but only 5/192 on 4000+5000 (< 10); only 20/192 games there settle at all.",
@@ -105,5 +105,15 @@
     },
     "passivity": "instrumented vs plain champion CSV rows identical (timing columns excluded) on all 4 bases: 384/384",
     "pass_rule": ">= 10/192 real-choice games on BOTH sets and worst < 30 ms: timing passes, 4000+5000 fails (5/192)"
-  }
+  },
+  "hypothesis": "Midring settle spot quality: when P29 has already decided to settle, pick between 2-3 reachable midring spots by cover, escape-route clearance and zone slack (MIDRING_SPOT_ON)",
+  "mechanism": "MIDRING_SPOT_ON",
+  "activation": "Step A failed: 11/192 on 2000+3000 and 5/192 on 4000+5000 (under 10 on one set). Source: P45.json / near_miss_ranking.md.",
+  "positives": null,
+  "negatives": "Fires under the 10/192 floor on 4000+5000. No build.",
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": null,
+  "disproof": "Fewer than 10/192 fired on either set (already met on 4000+5000)."
 }

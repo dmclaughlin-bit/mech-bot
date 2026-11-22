@@ -49,7 +49,7 @@
   "source": "Research P34-37 (this run): champion reload rules brain.ts:1052/1071 + passive sim log; PR #145 first-fight table",
   "timestamps": {
     "created": "2026-11-21 19:55 ET",
-    "updated": "2026-11-21 19:55 ET"
+    "updated": "2026-11-22 12:55 AM ET"
   },
   "sources": [
     "brain.ts (origin/main d7fca14 = 6182d29 bot code)",
@@ -61,5 +61,16 @@
   ],
   "renumbered_from": "P34",
   "priority_rank": 3,
-  "coordinator_note": "Ranked 3 at 8:13 PM ET: queued. Champion is now P29 2e1d036 / main b6f2f8b; trigger counts came from the old champion, so re-count them."
+  "coordinator_note": "Ranked 3 at 8:13 PM ET: queued. Champion is now P29 2e1d036 / main b6f2f8b; trigger counts came from the old champion, so re-count them.",
+  "hypothesis": "Reload the gun in a quiet lull instead of running it dry in the next exchange (LULL_RELOAD_ON)",
+  "mechanism": "LULL_RELOAD_ON",
+  "activation": null,
+  "positives": null,
+  "negatives": null,
+  "confidence": "Uncertain",
+  "reuse": "research",
+  "outcome": null,
+  "builds_on": null,
+  "disproof": "Paired screen: decisions with a clear enemy target while reloading not lower in fired games, or first-3-s damage dealt after re-contact lower, or deaths in the 10 s after an activation higher than the champion; fired < 10/192. The 52% 'target back within 2.4 s' share is the main way this loses.",
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

@@ -10,11 +10,27 @@
   "distinct_from": "B12/B13 (farm gate, no enemy in view), B21 (upgrade order), P23b (late idle farm)",
   "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
   "main": "edb729f",
-  "stage": "site-tested LOSS 4.23 (BB-0AB39656), retired",
+  "stage": "screened: near miss (1 veto)",
   "created_et": "2026-11-22 12:05 AM ET",
   "branch": "p52-early-farm",
   "head_sha": "74b6ee44df73f78ff26f50a3564ed3a5abdc46d2",
   "pr": 169,
   "coordinator_note": "Near-miss data test 12:47 AM ET Sun by 10-minute loop (one veto: drop-ring 8->3 on 2000+3000). LOSS -0.21. PR closed.",
-  "builds_on": "F8"
+  "builds_on": [
+    "F8"
+  ],
+  "sha": "74b6ee44df73f78ff26f50a3564ed3a5abdc46d2",
+  "decision": "Diego's Mac full paired trees-on screen vs Mac P48 baseline (findings F11, near_miss_ranking 12:42 AM ET): exactly one veto, drop-ring set total 8\u21923 on 2000+3000 (4000+5000 4\u21925). Means +0.047 \u00b1 0.051 and +0.016 \u00b1 0.052. Died<40 s 48\u219245 and 38\u219237. Pause games 2\u21922 both. Activation (different behaviour) 26 and 22 of 192. Eligible near miss behind READY builds. Builds on F8.",
+  "next_action": "Coordinator loop: check.py rerun + archive check, then submit as a near-miss data test when a spare slot is free and no READY build is waiting.",
+  "blocker": "One veto (drop-ring 8\u21923 on 2000+3000). Near-miss eligible; not a normal READY.",
+  "hypothesis": "In the first 60 s, walking to cubes harder while keeping early spacing should cut early deaths and raise early upgrades (findings F8; P52.json source: Watcher 11:38 PM ET, winners alive at 60 s had 4.2 vs 2.2 cubes and 1.9 vs 1.2 upgrades).",
+  "mechanism": "EARLY_FARM_ON as specified in P52.json change. SHA 74b6ee4, PR #169.",
+  "activation": "Mac screen: different behaviour 26 and 22 of 192.",
+  "positives": "Mac screen: died<40 s 48\u219245 and 38\u219237; means +0.047 and +0.016 (findings F11).",
+  "negatives": "Drop-ring set total 8\u21923 on 2000+3000 (the only veto). No official site score yet.",
+  "confidence": "Promising",
+  "reuse": "narrow-follow-up",
+  "outcome": "B",
+  "disproof": "Official score \u2264 4.44, deaths before 40 s not lower, or a large site drop that tracks the missed rings.",
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

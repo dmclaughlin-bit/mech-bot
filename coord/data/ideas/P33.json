@@ -40,7 +40,7 @@
   "source": "coord/data/watcher/RANKED.md rule 11 (nearest enemy while HP<35%, mid phase, 119 vs 95 m)",
   "timestamps": {
     "created": "2026-11-21 19:35",
-    "updated": "2026-11-22"
+    "updated": "2026-11-22 12:55 AM ET"
   },
   "sources": [
     "coord/data/watcher/RANKED.md",
@@ -56,5 +56,16 @@
     "eqdrive_flag_off_vs_main": "IDENTICAL (cmp, vs origin/main d7fca14, bot code = 6182d29)",
     "contains_champion": "PASS (merge-base --is-ancestor 6182d29)",
     "single_change": "params.ts one flag HURT_RETREAT_FAR_ON=false (+3 value params) + brain.ts one guarded branch before heal; champion back-away heading factored into backAway() unchanged"
-  }
+  },
+  "hypothesis": "Mid-game hurt retreat distance: in mid phase with HP < 35%, keep the existing retreat going until the nearest visible enemy is at least ~120 m before stopping to heal (HURT_RETREAT_FAR_ON)",
+  "mechanism": "HURT_RETREAT_FAR_ON",
+  "activation": null,
+  "positives": null,
+  "negatives": "0/96 activations on the old base behind the drop-on-map gate (P33.json decision).",
+  "confidence": "Disproven",
+  "reuse": "retire",
+  "outcome": "C",
+  "builds_on": null,
+  "disproof": null,
+  "updated_et": "2026-11-22 12:55 AM ET"
 }

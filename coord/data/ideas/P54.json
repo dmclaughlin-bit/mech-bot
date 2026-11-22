@@ -198,5 +198,6 @@
     "merge_base_edb729f": "OK"
   },
   "disproof": "MET: early (t < 30 s) mean nearest visible enemy did not rise with the fixed build: 78.0 -> 78.0 m (base 0), 76.9 -> 77.0 m (base 6000); share of t < 30 decisions with an enemy within 120 m 0.490 -> 0.490 and 0.440 -> 0.439. Deaths < 40 s not up for the fixed build.",
-  "what_worked": "The pre-fix version (allowed to walk out of heal while hurt) cut base-0 deaths < 40 s 24 -> 20 with +0.229 +/- 0.132 mean and kills 293 -> 314, but broke base 6000 (16 -> 17, -0.156 +/- 0.096). Spacing only matters in the states where we are already being hit; a not-hurt gate removes nearly all of it."
+  "what_worked": "The pre-fix version (allowed to walk out of heal while hurt) cut base-0 deaths < 40 s 24 -> 20 with +0.229 +/- 0.132 mean and kills 293 -> 314, but broke base 6000 (16 -> 17, -0.156 +/- 0.096). Spacing only matters in the states where we are already being hit; a not-hurt gate removes nearly all of it.",
+  "finding_note": "Measure mismatch (Coordinator 1:20 AM ET Nov 22): the bot's own view of nearest known enemy in the first 30 s is ~78 m (77.0-78.0 m on bases 0/6000/2000-5000), while F10's evidence (Mech Watcher ladder) is 145 m winners vs 117 m on a different, full-information measure. F10 does not carry over to the bot's own view."
 }

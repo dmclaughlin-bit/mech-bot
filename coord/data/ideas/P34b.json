@@ -11,26 +11,41 @@
   ],
   "renumber_note": "P34b now = one drop gate on top of champion P34 (0e6fadd, merged 8c130ad, LETHAL_RELEASE_ON already true). The earlier GUN_NEAR_M distance variant (/workspace/patches/p34b-old-bot.diff, built on the old base) is NOT this build.",
   "owner": "Mech Builder",
-  "stage": "building",
+  "stage": "hold",
   "pr": null,
-  "sha": null,
+  "sha": "c5bb83f94d9c4b6998bb42a8932ff2e2789d5a61",
   "champion_sha_tested_against": "588557e464dd4946680bff964a7c8e86700b8739",
   "champion_sha": "588557e464dd4946680bff964a7c8e86700b8739",
-  "screens": [],
+  "screens": [
+    {
+      "sha": "flag-on copy of c5bb83f, instrumented (not committed)",
+      "seed_set": "0 + 1000 (96 + 96, trees on, --jobs 1, /tmp/builder-sim-trees)",
+      "fired": 0,
+      "diff_behavior": 0,
+      "diff_score": 0,
+      "pins": null,
+      "verdict": "BARELY FIRES: 0/192 games where the gate blocks a release the champion took. Gate on while a lethal release was otherwise due: 15 ticks (base 0), every one also inside the champion's own dropOpen() gate. All 192 games equal to the champion in every CSV column except bot timing (bot_ms_mean, late_over_50ms). Paired +0.000 +/- 0.000, 0/96/0 on each base. t<10 s activations 0",
+      "source": "/tmp/p34b2-out/{on,main}-{0,1000}.csv, /tmp/p34b2-out/instlog-* (builder run, not committed)",
+      "sim_delta": 0.0,
+      "sim_se": 0.0
+    }
+  ],
   "receipt": null,
   "site_score": null,
-  "decision": null,
-  "blocker": null,
-  "next_action": "Mech Builder: early activation count on base 0+1000 (stop with BARELY FIRES under 10/192), then the 4-base trees-on checklist",
+  "decision": "BARELY FIRES (0/192); stopped before the 4-base hazard run per brief",
+  "blocker": "By construction the gate is a subset of the champion's existing P34 drop test (brain.ts dropOpen(): dropRun set, or any called drop not held by another mech within DROP_RUN_M flat). dropHold only happens with dropRun set; farmHold needs a drop within FARM_PICKUP_M 80 m < 200 m; a reachable drop within DROP_RUN_M is a drop within DROP_RUN_M. So the champion never early-releases while a drop is near/reachable or during a run/hold/capture. The lost arrivals (2078, 2089 on the old base) come from divergence after releases made before any drop was called (P34 record: 46-47 s kills, drops lost 150-235 s later), which no drop-time gate can touch.",
+  "next_action": "Grok: decide retire or re-scope (stage left at hold for Grok). Any real change would have to gate releases with no drop near, which is a different idea, and the drop rule forbids gating on 'any drop exists'",
   "doug_waiver": false,
   "source": "coordinator brief (branch p34b2-drop-gate); background: P34 on the old base lost drop arrivals on the Sim Tester screen (seed 2078 both drops 1st->7th, 2089 one 1st->6th; PR #147 comment 7072472836), rebuilt P34 scored 4.38 on the site",
   "created_et": "2026-11-21 21:25",
   "timestamps": {
-    "updated": "2026-11-21 21:25 ET"
+    "updated": "2026-11-21 21:45 ET"
   },
   "sources": [
     "coord/data/ideas/P34.json",
     "/workspace/drop-gate-rule.txt",
-    "https://github.com/dmclaughlin-bit/mech-bot/pull/147#issuecomment-7072472836"
-  ]
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/147#issuecomment-7072472836",
+    "/tmp/p34b2-out (builder activation run)"
+  ],
+  "gate": "eqdrive flag-off vs main IDENTICAL (cmp), flag-on also IDENTICAL; check.py --map-dir arena PASS default max 2.7 ms, flag-on max 2.6 ms"
 }

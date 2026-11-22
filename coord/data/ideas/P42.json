@@ -10,7 +10,7 @@
     "while mode is 'to next circle' or 'zone escape' (t >= 10), the laser may not take the lead and start a new charge; gun and lightning lead and fire as usual; a charge already in progress is released by the champion's rules"
   ],
   "owner": "Mech Builder",
-  "stage": "built",
+  "stage": "retired",
   "pr": null,
   "sha": null,
   "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
@@ -212,8 +212,13 @@
       }
     },
     "blocking_items": "PASS: t<10 s activations 0, no new >=20 s pins, deaths <40 s equal on both bases",
-    "warning": "Paired score delta negative on both bases (-0.083 ± 0.035, -0.240 ± 0.104) and kills on zone trips fell (8->1, 29->15) with damage dealt on trips about halved: the record's what_would_disprove ('fewer kills on zone trips') is met in sim. Zone damage taken fell (4532->3494, 4524->2459). Drop arrivals dipped 5->3 and 1->0 (reported, not blocking).",
+    "warning": "Paired score delta negative on both bases (-0.083 \u00b1 0.035, -0.240 \u00b1 0.104) and kills on zone trips fell (8->1, 29->15) with damage dealt on trips about halved: the record's what_would_disprove ('fewer kills on zone trips') is met in sim. Zone damage taken fell (4532->3494, 4524->2459). Drop arrivals dipped 5->3 and 1->0 (reported, not blocking).",
     "method": "Sim /tmp/p42/sim = copy of /workspace/builder-sim (tools/sim byte-identical to /workspace/wt-tester-trees/tools/sim). `cd /tmp/p42/sim && P42_DIR=<log> HAZ_DIR=<traces> SEED_BASE=<b> bun tools/sim/run.ts --bot <bot> --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees`. Bots: passive per-game P42 counters added to copies of this branch (flag off / on), run through a copy of the tester's passive trace wrapper (wrap.template.ts) for pins and drop arrivals (hzlib pins rule); plus the plain flag-on bot. Logs in /tmp/p42 (not committed).",
     "run": "2026-11-22 00:21-00:28 ET"
+  },
+  "retired": {
+    "when": "2026-11-22 00:47 ET",
+    "by": "Mech Builder, per Coordinator",
+    "why": "negative on both practice bases (base 0 -0.083 +/- 0.035, base 6000 -0.240 +/- 0.104); zone-trip kills 8->1 and 29->15 (disproof signal). Negative finding N3: laser charges on zone trips produce kills. No PR, no screen."
   }
 }

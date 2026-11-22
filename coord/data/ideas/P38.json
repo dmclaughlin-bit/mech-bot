@@ -1,30 +1,30 @@
 {
   "id": "P38",
-  "title": "Reload the gun in a quiet lull instead of running it dry in the next exchange (LULL_RELOAD_ON)",
+  "title": "Reload the gun in a quiet lull instead of running it dry in the next exchange (LULL_RELOAD_ON), P38b rebuild on champion P34",
   "family": "weapon handling",
   "flags": [
     "LULL_RELOAD_ON"
   ],
   "flag": "LULL_RELOAD_ON",
   "behaviors": [
-    "with an enemy mech as target, send reload when the gun holds fewer than half a magazine, is not reloading, and for at least 1 s we have not fired it, the target has had no clear line, and no visible enemy has line of sight to us; t >= 10 s and no drop listed"
+    "with an enemy mech as target, send reload when the gun holds fewer than half a magazine, is not reloading, and for at least LULL_RELOAD_QUIET_S (2 s) we have not fired it, the target has had no clear line, and no visible enemy has line of sight to us; t >= 10 s; never while a drop run/ring hold is in progress or a claimable drop (holder none or us) is within DROP_RUN_M"
   ],
-  "owner": "unassigned (research P34-37; Grok assigns)",
-  "stage": "idea",
+  "owner": "Mech Builder (P38b rebuild)",
+  "stage": "building",
   "pr": null,
   "sha": null,
-  "champion_sha_tested_against": "6182d29c673d99f5186d742a5f019c0b007234f2",
-  "champion_sha": "6182d29c673d99f5186d742a5f019c0b007234f2",
+  "champion_sha_tested_against": "588557e464dd4946680bff964a7c8e86700b8739",
+  "champion_sha": "588557e464dd4946680bff964a7c8e86700b8739",
   "screens": [],
   "receipt": null,
   "site_score": null,
   "score": null,
   "decision": null,
   "blocker": null,
-  "next_action": "Grok: assign or park. If built: one flag LULL_RELOAD_ON default false (+LULL_RELOAD_QUIET_S 1), base-0 hazard with fired/diff/score and the clear-target-while-reloading count.",
+  "next_action": "Mech Builder: build P38b on 588557e (flag default false), early activation count base 0+1000 trees on, then four-base hazard run.",
   "doug_waiver": false,
   "single_decision": "Extend the champion's existing early reload (brain.ts:1071 reloads at < half a magazine when no enemy is known) to the 'enemy known but no line either way for 1 s' lull. Movement, aim and fire are unchanged.",
-  "trigger": "target is an enemy mech (not a farm shot) AND !target.clear AND gun ammo < mag/2 AND gun reload == 0 AND the gun is not set to fire this tick AND no threat has seenAt(cone=false) LOS to us AND the last tick with gun fire, a clear target or LOS on us is >= LULL_RELOAD_QUIET_S (1 s) ago AND obs.t >= 10 AND obs.drops.length === 0",
+  "trigger": "target is an enemy mech (not a farm shot) AND gun ammo < mag/2 AND gun reload == 0 AND no forced reload this tick AND this tick has no contact AND the last contact was >= LULL_RELOAD_QUIET_S (2 s) ago, where contact = our gun fires, our target has a clear line, or a visible enemy has seenAt(cone=false) LOS to us (also tracked in the no-target branch) AND obs.t >= 10 AND drop gate open: no drop run/ring hold in progress (dropRun === null) and no claimable drop (holder null or us) within DROP_RUN_M (champion P34's dropOpen test)",
   "hook": "brain.ts act(), target branch: next to the forced reload at brain.ts:1052 (`if (gun >= 0 && (w(gun).ammo ?? 1) === 0 && (w(gun).reload ?? 0) <= 0) act.reload = true`), after the fire decisions at brain.ts:1024-1027. One closure variable next to standoffId (brain.ts:310) holds the last contact time. Compare the no-target branch brain.ts:1070-1071. Flag + LULL_RELOAD_QUIET_S in params.ts.",
   "observable_inputs": [
     "self.weapons[gun].ammo / reload / stats.mag (protocol.md:184)",
@@ -33,7 +33,7 @@
     "obs.drops",
     "action reload (protocol.md:231)"
   ],
-  "gates": "Cannot start before t = 10 s (explicit obs.t >= 10). Never starts while any supply drop is listed in obs.drops (called and not yet taken; protocol.md:359 every mech sees it from the moment it is called), so it never runs while a drop is announced/active and can never displace drop run/hold (those need a listed drop). Off = champion exactly (flag false short-circuits). No movement change at all.",
+  "gates": "Cannot start before t = 10 s (explicit obs.t >= 10). Drop gate (Coordinator rule, /workspace/drop-gate-rule.txt): never while a drop run or ring hold is in progress, and never while a claimable drop is near and reachable within DROP_RUN_M (the same read-only test as champion P34's lethal-release dropOpen and the midring settle's dropNear). Not 'any drop listed': an untaken drop sits in obs.drops almost all game. The gate is read on the same tick the drop run starts, so it yields on that tick. Off = champion exactly (flag false short-circuits). No movement change at all.",
   "evidence": {
     "sim_forced_reloads": "Champion auto-reloads at 0 ammo with an enemy target 791 times in 181/192 games; the gun is reloading while a clear enemy target is present for 27,562 decisions (~2,756 s) in 190/192 games.",
     "sim_trigger_state": "Spec trigger (1 s quiet): 52 reload starts in 31/192 games. All lull decisions without the quiet gate (1,657 in 70/192 games): ammo median 3 of 12 (p10 1, p90 5), target distance median 70 m (p10 42, p90 163), alive median 15, t median 35.0 s (p10 15.2, p90 58.6).",
@@ -49,7 +49,8 @@
   "source": "Research P34-37 (this run): champion reload rules brain.ts:1052/1071 + passive sim log; PR #145 first-fight table",
   "timestamps": {
     "created": "2026-11-21 19:55 ET",
-    "updated": "2026-11-21 19:55 ET"
+    "updated": "2026-11-22 ET",
+    "p38b_started": "2026-11-22 ET (P38b rebuild)"
   },
   "sources": [
     "brain.ts (origin/main d7fca14 = 6182d29 bot code)",
@@ -57,9 +58,22 @@
     "tools/sim/engine.ts",
     "coord/data/site_results.csv",
     "https://github.com/dmclaughlin-bit/mech-bot/pull/145 (coord/research-doug-1941.md)",
-    "Instrumented champion sim (this research run): a copy of the champion bot files from origin/main d7fca14 (bot code identical to 6182d29: git diff 6182d29 HEAD on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p3437/bot, with passive per-decision CSV logging appended before act.move (no action changed). Run: bun tools/sim/run.ts --worker --seed-list 2000-2095,3000-3095 (one job, 192 games, ~5 min). Sanity: mean 16-place 3.531 vs 3.542 for the same seeds in coord/data/research/heal-positioning.md; deaths < 40 s 56/192. Logs are in /tmp (not committed). Held-out 4000+5000 not run (kept light)."
+    "Instrumented champion sim (this research run): a copy of the champion bot files from origin/main d7fca14 (bot code identical to 6182d29: git diff 6182d29 HEAD on bot.ts/brain.ts/params.ts/nav.ts/map.ts/target.ts/mechfight.ts is empty) under /tmp/p3437/bot, with passive per-decision CSV logging appended before act.move (no action changed). Run: bun tools/sim/run.ts --worker --seed-list 2000-2095,3000-3095 (one job, 192 games, ~5 min). Sanity: mean 16-place 3.531 vs 3.542 for the same seeds in coord/data/research/heal-positioning.md; deaths < 40 s 56/192. Logs are in /tmp (not committed). Held-out 4000+5000 not run (kept light).",
+    "/workspace/patches/p38-bot.diff; branch origin/p38-lull-reload (read only) record bb2a884; /workspace/drop-gate-rule.txt"
   ],
   "renumbered_from": "P34",
   "priority_rank": 3,
-  "coordinator_note": "Ranked 3 at 8:13 PM ET: queued. Champion is now P29 2e1d036 / main b6f2f8b; trigger counts came from the old champion, so re-count them."
+  "coordinator_note": "Ranked 3 at 8:13 PM ET: queued. Champion is now P29 2e1d036 / main b6f2f8b; trigger counts came from the old champion, so re-count them.",
+  "branch": "p38b-lull-reload",
+  "champion_note": "Champion = P34 rebuilt (0e6fadd, merged as 8c130ad, main 588557e; LETHAL_RELEASE_ON = true; site 4.38, BB-ABEB42BF).",
+  "drop_gate": "Near-and-reachable gate (dropRun !== null, or a drop with holder null/us within DROP_RUN_M flat), replacing P38's plain 'obs.drops empty' gate, per the Coordinator drop gate rule.",
+  "rebuild": {
+    "of": "P38 (branch p38-lull-reload, flag-off c6fdb6c, head e947614; reference /workspace/patches/p38-bot.diff on old P29 base b6f2f8b)",
+    "why": "Old base FAILED checklist item 3 on base 1000 (drop-ring arrivals 3 -> 1, seed 1010, trees off). Rebuilt on champion P34 588557e with trees ON and the Coordinator near-and-reachable drop gate; same behavior otherwise (quiet 2 s).",
+    "checklist": "coord/BUILD_CHECKLIST.md: trees on, four bases 0/1000/6000/7000, size check"
+  },
+  "prior_build_p38": {
+    "champion": "6182d29c673d99f5186d742a5f019c0b007234f2",
+    "result": "FAIL item 3 base 1000 (arrivals 3->1, seed 1010), trees off, plain gate; fired 12/192 on 0+1000 at quiet 2 s"
+  }
 }

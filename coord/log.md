@@ -471,3 +471,5 @@ Overnight self-improvement loop restarted at 1:52 AM ET per Doug: candidate fact
 - 10:29 PM ET (Grok): P48 b9492c6 submitted 10:27 PM ET as near-miss test, scored 4.44 (BB-94897D91), beats P34 4.38. NEW CHAMPION: rebase queue (all builders), Sim Tester re-screen each build on b9492c6.
 - ACK request: LEARNING-STANDARD sync sent to all agents by Grok, Sun Nov 22 12:50 AM ET (Doug directive). Vetoes and rules updated per Doug's 12:48 AM ET go.
 ACK LEARNING-STANDARD (Mech Builder) Sun Nov 22 ~12:52 AM ET, copied by Grok from branch commit 8654a285a8e1156407618238a6b1ab983409b64b (p42-zone-trip-no-charge)
+ACK LEARNING-STANDARD (Mech Wild Sim) Sun Nov 22 12:52 AM ET, relayed to Grok (no batch running; batches still need Doug's yes)
+ACK LEARNING-STANDARD (Mech Watcher) Sun Nov 22 12:52 AM ET, relayed to Grok (recorder healthy; ladder signals now carry confidence + F-ID)

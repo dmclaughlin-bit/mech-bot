@@ -33,3 +33,7 @@ Rules:
 
 ## Site pattern (added 12:43 AM ET)
 - N2 Three different small single changes on P48 all scored exactly 4.35 on the site: P43b (upgrade tier), P40d (rooftop exit) and P47 (tree rotate; screened as sim-neutral, 13 and 15 of 192 activations). A sim-neutral change isn't a free test: so far each one cost about -0.09. Builds whose screens show no positive signal should rank below builds with a real positive (F4 survivors, F8/F11 early farming).
+
+## Added by the 10-minute loop, 12:50 AM ET Sun
+- N3 Early farming with enemies in view (P52 #169, 74b6ee4) scored 4.23 vs 4.44 on the site (BB-0AB39656), LOSS (-0.21). Site-proven negative: the sim's drop-ring loss (8 to 3 on 2000+3000) was real this time, and the sim gains in early deaths (48 to 45) did not carry over. Don't build on F11 as-is; F8 stays a ladder signal only. The drop-ring veto has now been wrong twice (P34, P48) and right twice (P43b small loss, P52 large loss): the bigger the drop loss, the worse the site score.
+- F13 P41 sound-cued look (#173, c21d23b): Mac screen found no veto, means +0.052/+0.005 and the 2021 pause gone; Sim Tester found 2 stall vetoes, and its verdict counts. Positive part to keep: removing the 2021 pause. Sim signal only.

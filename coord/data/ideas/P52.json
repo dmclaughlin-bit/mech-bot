@@ -10,10 +10,11 @@
   "distinct_from": "B12/B13 (farm gate, no enemy in view), B21 (upgrade order), P23b (late idle farm)",
   "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
   "main": "edb729f",
-  "stage": "building (branch pushed, no PR yet)",
+  "stage": "site-tested LOSS 4.23 (BB-0AB39656), retired",
   "created_et": "2026-11-22 12:05 AM ET",
   "branch": "p52-early-farm",
-  "head_sha": "911a6629edb6e646e6a7d94c62568f22048f5d38",
-  "pr": null,
-  "coordinator_note": "Copied from branch to main by 10-minute loop 12:08 AM ET Sun Nov 22."
+  "head_sha": "74b6ee44df73f78ff26f50a3564ed3a5abdc46d2",
+  "pr": 169,
+  "coordinator_note": "Near-miss data test 12:47 AM ET Sun by 10-minute loop (one veto: drop-ring 8->3 on 2000+3000). LOSS -0.21. PR closed.",
+  "builds_on": "F8"
 }

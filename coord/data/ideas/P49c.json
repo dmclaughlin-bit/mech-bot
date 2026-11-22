@@ -175,5 +175,6 @@
   },
   "learned": "The 5000-seed P49b regressions are mostly downstream divergence: any small change to where the bot stands in an ongoing fight (here delaying the tree heal by 4-5 s) re-rolls the fight. A start-time stop on far closing hunters only fixes games where the hunter keeps closing until contact (5024). Do not rebuild this condition; a refinement would have to keep the tree heal off for the whole approach (e.g. any seer beyond near range), which also covers P49b gain seeds 4043 and 2090, or leave P49b as is.",
   "next_action": "Coordinator: P49c closed (outcome C). P49b's own practice numbers on bases 0/6000 are positive with no new pins or early deaths (see results).",
-  "updated_et": "2026-11-22 01:50 ET"
+  "updated_et": "2026-11-22 01:50 ET",
+  "finding_note": "FINDING (Coordinator 1:25 AM ET Nov 22): P49b's regressions on the 5000 seeds are fights re-rolling after small position/timing changes, not one fixable trigger (3/5 shared a far-closing-enemy heal start, but fixing it recovered only 5024 fully; 5055 and 5037 had other causes). Don't rebuild the closing-enemy rule."
 }

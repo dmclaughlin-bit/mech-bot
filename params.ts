@@ -218,3 +218,6 @@ export const BACKAWAY_LOS_STEPS_S = [1, 2, 3]
  */
 export const EARLY_BACKAWAY_FAR_COVER_ON = false
 export const EARLY_BACKAWAY_FAR_MIN_T = 10
+/** Fix round: before TREE_RETREAT_MIN_T, only when every enemy that sees us is at least this far (m; = brain.ts GUN_NEAR_M,
+ *  inside which house guns hit 0.8 instead of 0.5). Closer, the 4-6 s walk costs more than the cover saves: back away. */
+export const EARLY_BACKAWAY_FAR_MIN_SEER_M = 60

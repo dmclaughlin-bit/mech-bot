@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  BACKAWAY_FAR_COVER_ON, BACKAWAY_FAR_STEPS_S, BACKAWAY_LOS_BREAK_ON, EARLY_BACKAWAY_FAR_COVER_ON, EARLY_BACKAWAY_FAR_MIN_T, BACKAWAY_LOS_STEPS_S, DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  BACKAWAY_FAR_COVER_ON, BACKAWAY_FAR_STEPS_S, BACKAWAY_LOS_BREAK_ON, EARLY_BACKAWAY_FAR_COVER_ON, EARLY_BACKAWAY_FAR_MIN_SEER_M, EARLY_BACKAWAY_FAR_MIN_T, BACKAWAY_LOS_STEPS_S, DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
@@ -827,6 +827,8 @@ function buildBot(hello: Hello): Bot {
         const farMinT = EARLY_BACKAWAY_FAR_COVER_ON ? EARLY_BACKAWAY_FAR_MIN_T : TREE_RETREAT_MIN_T
         if (!BACKAWAY_FAR_COVER_ON || !trees || obs.t < farMinT || dropMove || dropHold || dropReach()) return (farRun = null)
         const seen = threats.filter((e) => seenAt(me.pos, myHeight, [e], false))
+        // P68 fix round: before 40 s only when every enemy that sees us is beyond the gun's near band.
+        if (obs.t < TREE_RETREAT_MIN_T && seen.some((e) => flat(e.pos, me.pos) < EARLY_BACKAWAY_FAR_MIN_SEER_M)) return (farRun = null)
         // Fix round: hide from the seers that hit us in the last THREAT_HIT_S (all seers if none did): a spot hidden from
         // every one of 2-8 seers rarely exists (P60 Step A: "no far spot" in 37 of 79 target deaths).
         const shooters = seen.filter((e) => obs.t - (mechHitBy.get(e.id) ?? -Infinity) < THREAT_HIT_S)

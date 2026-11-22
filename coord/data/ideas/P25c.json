@@ -1,10 +1,14 @@
 {
  "id": "P25c",
- "title": "P25 cube-memory follow-up (assigned in the pre-built queue)",
+ "title": "Cube memory only: walk to remembered cubes within 150 m, no added give-up (CUBE_MEMORY_ON)",
  "family": "farm",
- "flags": [],
- "flag": null,
- "behaviors": null,
+ "flags": [
+  "CUBE_MEMORY_ON"
+ ],
+ "flag": "CUBE_MEMORY_ON",
+ "behaviors": [
+  "with the Build 12 farm gate open and nothing for B12/B13 to walk to, walk to the nearest remembered (seen in the last 90 s) zone-safe ground cube within 150 m, keeping the same target until it is taken, expires or is no longer eligible"
+ ],
  "owner": "Mech Builder",
  "stage": "building",
  "pr": null,
@@ -16,16 +20,17 @@
  "site_score": null,
  "score": null,
  "decision": null,
- "blocker": "the single decision and flag are not yet written in the repo. P25b (47d0e6ce) remains on HOLD for new 20 s+ pins pending the stall comparison Doug asked for.",
- "next_action": "write the one behavior into this record (D2/D3) before coding; do not start from a guess",
+ "blocker": "build in progress (split of P25b: the per-cube time budget, the farmGiveUp additions and the no-progress drop are removed). P25b (47d0e6ce) remains on HOLD.",
+ "next_action": "Mech Builder: one-flag branch p25c-cube-memory on origin/main (contains 6182d29), CUBE_MEMORY_ON default false; gate, flag-off identity, base-0 hazard; then Sim Tester runs both seed sets",
  "doug_waiver": false,
  "source": "pre-built queue (Doug 7:00 PM ET); follow-up to P25/P25b PR #136",
  "timestamps": {
   "assigned": "2026-11-21 19:00 ET",
-  "updated": "2026-11-21 19:01 ET"
+  "updated": "2026-11-21 19:07 ET"
  },
  "sources": [
   "coord/data/ideas/P25b.json",
-  "coord/data/ready_ledger.md"
+  "coord/data/ready_ledger.md",
+  "git show b34271c15df17bac4fda4275a7928643034f5e83 and 47d0e6cecbe5df5432b6e604897a0bad9fd40f73 (origin/p25-cube-memory)"
  ]
 }

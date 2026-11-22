@@ -10,8 +10,8 @@
     "Roof jet route: where the champion would only hold (or its farm/loot goal is itself on a roof) and farmOk holds, from t >= 10 s, with no supply drop announced/falling within DROP_RUN_M (200 m) and never in a drop run, drop ring hold or farm capture hold, walk to the ground beside the roof item's wall, jump and jet onto the roof (climbs capped at 48 m above our feet), and take the crate (broken by the existing farm shot), cube or wanted weapon. 3 s no-progress give-up per phase, wait/crate/trip caps, skip list."
   ],
   "owner": "Mech Builder",
-  "stage": "building (branch pushed, no PR yet)",
-  "pr": null,
+  "stage": "retired (P40d scored 4.35 LOSS, BB-97019487; rooftop jet route family lost twice)",
+  "pr": 170,
   "sha": null,
   "branch": "p40d-roof-landing-exit",
   "champion_sha_tested_against": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
@@ -493,5 +493,6 @@
     "caveats": "Sim only (screen, not a predictor). Exit stops post-climb wedges (3014, 1002) but not the two non-climb cases from the veto (5083 early death, seed 1 pin), which are trajectory divergence after a short roof walk. Base 0 and 7000 negative (-0.094, -0.031). Full Sim Tester screen (2000+3000, 4000+5000) not run. P40c itself never finished, so there are no old P40c four-base numbers; the comparison is P40b on P34 (record) and P40b-on-P48 (exit off, run here)."
   },
   "head_sha": "45ecb4cc2eba61fdab862f9b3fcb596a89b2d344",
-  "coordinator_note": "Copied from branch to main by 10-minute loop 12:08 AM ET Sun Nov 22."
+  "coordinator_note": "Copied from branch to main by 10-minute loop 12:08 AM ET Sun Nov 22.",
+  "site_score": 4.35
 }

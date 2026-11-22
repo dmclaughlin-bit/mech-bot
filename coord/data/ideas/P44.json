@@ -13,15 +13,15 @@
   "stage": "building",
   "pr": null,
   "sha": null,
-  "champion_sha_tested_against": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
-  "champion_sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+  "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
+  "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
   "screens": [],
   "receipt": null,
   "site_score": null,
   "score": null,
   "decision": null,
   "blocker": null,
-  "next_action": "Mech Builder: implement behind LASER_SHORT_GUARD_ON, trees-on activation count (0+1000), four-base hazard run (0/1000/6000/7000) vs champion 0e6fadd, push branch.",
+  "next_action": "Mech Builder: re-apply LASER_SHORT_GUARD_ON on P48 (base 9071465), trees-on activation count (0+1000), four-base trees-on hazard run (0/1000/6000/7000) vs champion P48 b9492c6, push p44b-laser-short-guard.",
   "doug_waiver": false,
   "single_decision": "Which weapon leads against a lightning holder inside its reach. Lightning beats laser: a lightning hit on a laser holder wipes any charge in progress and blocks a new one for short_s 2 s (protocol.md:306, :312; sim engine.ts:327-332, :352), and while charging we move at half speed (protocol.md:305). The champion never reads the short effect (no 'short' handling in brain.ts) and picks the laser first whenever it is off cooldown with a clear line in range (brain.ts:1029), so inside lightning reach it keeps re-trying a charge that the arc keeps wiping, with the torso on the beam aim instead of the gun's lead aim.",
   "trigger": "LASER_SHORT_GUARD_ON AND obs.t >= 10 AND the laser would take the lead (clear target, laser cooldown <= 0, d <= laser range, brain.ts:1029) AND laser charge == 0 AND the target's weapons (obs.mechs[i].weapons, or the remembered Known.weapons) include 'lightning' AND its distance <= 54 m (lightning range 45 m x 1.2, one Tesla coil; enemy upgrades are not observable) AND NOT dropMove AND NOT dropHold AND NOT dropNear.",
@@ -77,8 +77,9 @@
   "source": "Research P41-44 (this run): protocol.md weapon matchup, passive sim log of the P29 champion (run 3).",
   "timestamps": {
     "created": "2026-11-21 21:30 ET",
-    "updated": "2026-11-22 (build start)",
-    "build_started": "2026-11-22"
+    "updated": "2026-11-22 (P44b rebuild on P48 start)",
+    "build_started": "2026-11-22",
+    "rebuild_started": "2026-11-22"
   },
   "sources": [
     "/workspace/mechfight-kit/protocol.md:305, :306, :312",
@@ -117,15 +118,21 @@
   "trees_on_change": "Nearly doubles (trees off on P29: 15 and 16 games). Two things changed at once and were not separated: the champion is now P34 (lethal release can free the laser sooner, so it is ready to start a new charge more often) and trees on hide approaching lightning holders until they are inside 45 m, so more fights start close. The plain gate now passes too (15 and 23).",
   "champion_sha_trees_on_recheck": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
   "champion_main": {
-    "main_588557e": "588557e464dd4946680bff964a7c8e86700b8739",
-    "champion_merge_8c130ad": "8c130ad7f0c81acb03508c40f20c31867f29d358",
-    "note": "champion = P34 0e6fadd (LETHAL_RELEASE_ON=true, site 4.38); 588557e is an ancestor of the build base"
+    "champion_merge_edb729f": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
+    "champion_code_b9492c6": "b9492c6f122c549c705b69402157f078b4a57857",
+    "note": "champion = P48 tree retreat b9492c6 (TREE_RETREAT_ON=true, site 4.44, BB-94897D91; P34 LETHAL_RELEASE_ON still true); build base origin/main 9071465 contains edb729f"
   },
-  "base_sha": "a37b2d0bf957804e68406ede1808d2aa4ea5498a",
-  "branch": "p44-laser-short-guard",
+  "base_sha": "9071465e31afe09ccc4e2bd66aaab2e4ce3b8684",
+  "branch": "p44b-laser-short-guard",
   "params": {
     "LASER_SHORT_GUARD_ON": "false (default; final commit flips to true)",
     "SHORT_GUARD_M": 54
   },
-  "drop_gate_built": "reach (Coordinator drop-gate rule): the guard is off on any tick with dropMove or dropHold, or with a drop that passes the champion's own drop-run candidate filter (not in dropSkip, holder null or us, within DROP_RUN_M, zone-safe for lands_in + capture time). Never 'any drop exists'."
+  "drop_gate_built": "reach (Coordinator drop-gate rule): the guard is off on any tick with dropMove or dropHold, or with a drop that passes the champion's own drop-run candidate filter (not in dropSkip, holder null or us, within DROP_RUN_M, zone-safe for lands_in + capture time). Never 'any drop exists'.",
+  "rebase": {
+    "from_branch": "p44-laser-short-guard",
+    "from_head": "9b211fdf70432348d64cc2df221ed025aa33cb3b",
+    "from_champion": "P34 0e6fadd1a30db4ee30c26114b8198f63d782b7c9 (main 8c130ad)",
+    "note": "P34-based build never finished; its code commit conflicted with P48 in brain.ts/params.ts, re-applied by hand on P48 (P44b)."
+  }
 }

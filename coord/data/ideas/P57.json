@@ -7,7 +7,7 @@
     "RETREAT_FACE_ON"
   ],
   "owner": "Mech Builder",
-  "stage": "step_a",
+  "stage": "building",
   "branch": "p57-retreat-face",
   "base": "59d6354bb1389f4d40a722d995e742efd4eb41e5",
   "champion": "P48 b9492c6 (main merge edb729f, site 4.44)",
@@ -27,13 +27,65 @@
   "negatives": null,
   "confidence": "Uncertain (F15 is Uncertain; mechanism untested)",
   "reuse": null,
-  "step_a_result": null,
+  "step_a_result": {
+    "method": "log-only /tmp copy of champion b9492c6 (the P57 trigger computed, target never changed), trees-on sim 22f72a8 (/workspace/wt-tester-trees/tools/sim copied), --jobs 1, 96 seeds per base",
+    "passivity": "CSV rows identical to /workspace/tester/runs/trees-b9492c6-{2000,3000,4000,5000}.csv on every non-timing field for 384/384 seeds (differences only in bot_ms_mean)",
+    "2000+3000": {
+      "fired_games": 120,
+      "fired_and_differs_games": 80,
+      "of": 192,
+      "fired_decisions": 3979,
+      "differs_decisions": 1239,
+      "activations_t_lt_40": 0,
+      "champion_deaths": 190,
+      "champion_retreat_deaths": 136,
+      "retreat_deaths_40_120s": 72,
+      "retreat_deaths_in_differ_games": 58
+    },
+    "4000+5000": {
+      "fired_games": 127,
+      "fired_and_differs_games": 98,
+      "of": 192,
+      "fired_decisions": 5104,
+      "differs_decisions": 1924,
+      "activations_t_lt_40": 0,
+      "champion_deaths": 189,
+      "champion_retreat_deaths": 124,
+      "retreat_deaths_40_120s": 78,
+      "retreat_deaths_in_differ_games": 72
+    },
+    "per_base": {
+      "2000": {
+        "fired": 51,
+        "differs": 33,
+        "retreat_deaths": 68
+      },
+      "3000": {
+        "fired": 69,
+        "differs": 47,
+        "retreat_deaths": 68
+      },
+      "4000": {
+        "fired": 62,
+        "differs": 46,
+        "retreat_deaths": 59
+      },
+      "5000": {
+        "fired": 65,
+        "differs": 52,
+        "retreat_deaths": 65
+      }
+    },
+    "retreat_death_definition": "died and the last decision's mode starts with 'retreat' (retreat to cover / retreat, trees / retreat)",
+    "verdict": "PASS (>= 10/192 on both sets)"
+  },
   "screens": [],
   "outcome": "pending",
   "pr": null,
   "sha": null,
   "timestamps": {
-    "recorded": "2026-11-22 01:35 ET"
+    "recorded": "2026-11-22 01:35 ET",
+    "step_a": "2026-11-22 01:40 ET"
   },
   "sources": [
     "coord/data/findings.md (F3)",

@@ -106,3 +106,5 @@ Verdict: **APPROVE WITH STIPULATIONS**. Do not begin implementation. Narrow scop
 **In scope if later assigned (research first, then one idea record each)**
 1. Tree/canopy vision and blind fire at a sound (protocol: trees block sight, not shots). Blocked on the sim until Doug says otherwise.
 2. Planned jet/roof routes to rooftop loot. Champion nav is ground-only; jump/jet is only the stuck escape. Isolate this from the retired B125 pack.
+
+**Doug 8:16-8:17 PM ET:** record the rooftop jet route as P40 and build it after P38. Doug approved adding trees to the sim ("ok also add trees to the simulations"). The tree work goes to Diego's Claude as P-D-014. The tree sim is adopted for screens only after it's validated and the champion baseline is re-run on it; until then, screens stay on the current sim.

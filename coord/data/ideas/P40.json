@@ -1,0 +1,16 @@
+{
+  "id": "P40",
+  "title": "Rooftop jet route to roof loot",
+  "family": "movement/loot",
+  "flag": "ROOF_JET_ROUTE_ON",
+  "owner": "Mech Builder",
+  "stage": "queued",
+  "priority_rank": "after P38 (Doug 8:16 PM ET)",
+  "pr": null,
+  "sha": null,
+  "champion_sha_tested_against": "2e1d03615f6e8faa7097ffcbd441be43b234c5b9",
+  "brief": "Single change: plan a jet/jump climb onto a roof (\u2264 ~60 m reachable with 100 energy, protocol.md:282-287) to take crates/loot that spawn on roofs (about a quarter of them), when no enemy is in view and the zone allows. The champion's nav is ground-only (nav.ts:16-17); jets are used only as a stuck escape (brain.ts:875-877). It must be separate from B125's TAC_JET_LOOT (site 3.50 bundled pack): explain how it differs. Early activation count first (stop under 10/192), then the full BUILD_CHECKLIST, with a flag-ON head.",
+  "source": "mechanics research directive (Doug 8:06 PM ET), coord/next-doug.md 5404931",
+  "decision": "Recorded 8:18 PM ET per Doug: build after P38.",
+  "created_et": "2026-11-21 20:18"
+}

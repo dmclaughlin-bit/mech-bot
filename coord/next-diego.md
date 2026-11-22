@@ -152,3 +152,17 @@ Cook-off target bonus: some enemy holds a mortar in 98.7% of sim matches; mortar
 H07 sound-guided late hunt: PARKED. Wild Sim: a usable sound while idle late shows up only 2.2% of the time.
 
 **UPDATE 8:10 PM ET: P29 WON 4.35 and is the new champion (main b6f2f8b).** P29b #146 must be rebased onto b6f2f8b. It's now a single fix on top of the champion (the drop yield plus the no-progress give-up, behind its own flag; MIDRING_SETTLE_ON stays true). Then it needs a fresh full paired screen against 2e1d036 before it can go to the site.
+
+
+---
+## NEXT PROMPT P-D-014 (after the P29b rebase): add trees to tools/sim (Doug approved 8:17 PM ET)
+
+**Goal.** Make the local sim model trees the way the official protocol says, so tree ideas (blind fire into trees at a sound, concealment) can be screened. Doug's words: "ok also add trees to the simulations".
+
+**Facts to implement (cite protocol.md).** Trees block vision, not shots: "Trees do not stop shots: you can fire blind into trees at a sound." Trunks stop sight, and the canopy is soft (partial). Gun, mortar and laser all hit buildings and terrain the same way. Today tools/sim/ASSUMPTIONS.md says trees block neither sight nor shots. Use tree data from the kit's map files and the official stream/hello where available. Never invent geometry.
+
+**Rules.**
+- Sim-only PR, branch `diego/P-D-014-sim-trees`. Put trees behind a sim option (e.g. `--trees`) that's OFF by default, so current screens are unaffected.
+- Do not touch bot code (brain.ts, params.ts, nav.ts, map.ts).
+- Report: the champion (2e1d036) on both seed sets with trees off vs on (placements, drop arrivals, early deaths, survivors, kills), the runtime cost, and every assumption added to ASSUMPTIONS.md.
+- The coordinator and Doug decide on adopting it for screens after seeing that comparison.

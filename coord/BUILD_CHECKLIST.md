@@ -24,3 +24,6 @@ Before handoff, and again before any submit, `git archive --format=tar <SHA> | w
 
 ## Doug 10:06 PM ET (Sat Nov 21): fires-often-enough check before every full build
 Before starting the full build and 4-base checklist for any NEW idea, run a log-only Step A on the current champion (trees-on, bases 2000-5000, 192 games per set): count the games where the new behavior would actually fire and change what the bot does. Fewer than 10/192 on either set: retire the idea (record stage step-a-fail with the numbers) and do not build it. Research runs that already measured firing per set on the current champion count as Step A (e.g. P43, P48 from 8e623eb). Rebuilds and near-miss reworks of an idea that already fired 10/192+ on both sets skip it.
+
+## Mechanic interaction check (consideration, not a gate)
+Before choosing the next single change, note which existing champion mechanics already act in the same situations (same ticks, the same games, or immediately before or after). Record any evidence of synergy or interference in the idea record's optional `interacts_with` field: the mechanics involved, the interaction, and the source of the numbers. This is not a new stage and does not block a build. Keep one isolated behavioral change even when the hypothesis is about an interaction. See `coord/data/synergy_research.md`.

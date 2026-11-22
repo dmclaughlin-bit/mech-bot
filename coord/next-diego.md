@@ -150,3 +150,5 @@ Finish burst: the finish rule should compare target HP to the SUM of magazines i
 Cook-off target bonus: some enemy holds a mortar in 98.7% of sim matches; mortar holders are 18.9% of our kills and mortars cause 11.5% of our deaths (coord/data/audit_h07_h09.csv; sim house model is invented, weak evidence). Flag `COOKOFF_BONUS_ON`, shipped ON, flag 0 = main byte-identical.
 
 H07 sound-guided late hunt: PARKED. Wild Sim: a usable sound while idle late shows up only 2.2% of the time.
+
+**UPDATE 8:10 PM ET: P29 WON 4.35 and is the new champion (main b6f2f8b).** P29b #146 must be rebased onto b6f2f8b. It's now a single fix on top of the champion (the drop yield plus the no-progress give-up, behind its own flag; MIDRING_SETTLE_ON stays true). Then it needs a fresh full paired screen against 2e1d036 before it can go to the site.

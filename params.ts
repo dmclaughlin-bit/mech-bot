@@ -207,4 +207,4 @@ export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]
  * seen by any threat and not yet reached. No progress (0.5 m) for 0.6 s (fix round; was 3 s) puts the spot on a skip list for that retreat and the
  * next spot is picked. Legs only; torso/aim unchanged. false = champion behavior exactly.
  */
-export const BUILDING_COVER_COMMIT_ON = false
+export const BUILDING_COVER_COMMIT_ON = true

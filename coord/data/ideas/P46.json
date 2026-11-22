@@ -1,0 +1,25 @@
+{
+  "id": "P46",
+  "title": "Mid-game unstuck: with 5-8 alive, when we have barely moved for ~5 s and are not in a drop ring, settling by P29, healing or fighting, pick a nearby reachable spot and move (UNSTUCK_MID_ON)",
+  "family": "movement",
+  "flags": [
+    "UNSTUCK_MID_ON"
+  ],
+  "flag": "UNSTUCK_MID_ON",
+  "behaviors": [
+    "With 5-8 alive and mid phase, if our own position moved < a few m over ~5 s, we are not in/holding a drop ring, not inside P29's settle, not healing and not engaged, re-path to a reachable in-zone point a short distance away. Drop run, midring settle and zone rules unchanged. Own observations only."
+  ],
+  "owner": "Mech Builder",
+  "stage": "idea",
+  "champion_sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+  "source": "Watcher refresh 74cdbcf (9:29-9:33 PM ET, 128 showdown matches)",
+  "evidence": {
+    "watcher": "5-8 alive: top teams stuck 12.0% vs 30.8% of ticks (d=-0.47; 97/95 matches), speed 8.06 vs 5.05 m/s; mid phase stuck 10.3% vs 30.2%. 2-4 alive: 9.6% vs 21.0%. Correlation only, exhibition FFA, not the house squad.",
+    "not_proof": "No site evidence yet."
+  },
+  "non_overlap": "Not P28 midring patrol (retired), not P40b roof jet route, not P45 (spot choice inside the settle). Movement P-B-008 strafe/modes stayed sim-only and on hold; this is a stuck trigger, not strafing.",
+  "step_a": "Log-only on P34 main, trees-on, bases 2000-5000: count 5 s stuck stretches with 5-8 alive outside drop rings/settle/heal/fight, and deaths or zone damage within 20 s after them. Pass: >= 10/192 games on both sets.",
+  "next_action": "Builder Step A after P45 Step A, ahead of P37b. Build only if Step A passes; then usual checklist and full screen.",
+  "approval_requirements": "None new; existing workflow.",
+  "updated_et": "2026-11-21 21:35"
+}

@@ -7,7 +7,7 @@
     "RETREAT_FACE_ON"
   ],
   "owner": "Mech Builder",
-  "stage": "building",
+  "stage": "retired",
   "branch": "p57-retreat-face",
   "base": "59d6354bb1389f4d40a722d995e742efd4eb41e5",
   "champion": "P48 b9492c6 (main merge edb729f, site 4.44)",
@@ -23,10 +23,10 @@
   "mechanism": "In the champion's three retreat branches (mode 'retreat to cover', 'retreat, trees', 'retreat': HP < retreatHp, hit in the last 2 s, not engaging, in zone), from t >= 40 s, never in a drop run or ring hold and never while a drop is near AND reachable within DROP_RUN_M (the P48 drop test): pick the nearest enemy mech among the target options that has a clear line from our muzzle, is inside the reach of a weapon we hold (gun, laser or lightning), and sees us or hit us in the last 2 s; make it the aim/fire target for this decision. The champion's weapon choice, aim, lead and fire gates then run unchanged on it. The target lock state, move, boost, path and every other mode are unchanged.",
   "activation": "Decision-level: in a retreat mode at t >= 40 s, no drop run/hold/near-reachable drop, a shooter in reach exists, and it is not the champion's chosen target. Game-level Step A count = games where this happens at least once.",
   "disproof": "If Step A < 10/192 on either set, or practice shows deaths <40 s up on either base, or retreat deaths not down on at least one base, or the mean lower on both bases, stop with outcome C/D and no PR.",
-  "positives": null,
-  "negatives": null,
-  "confidence": "Uncertain (F15 is Uncertain; mechanism untested)",
-  "reuse": null,
+  "positives": "Round 1 kept deaths <40 s, pins and 20 s pauses identical (gate at t >= 40 s and the drop gate held: 0 activations before 40 s, no new pins). Step A confirmed F15 on the house screen: 136/190 and 124/189 champion deaths happen in a retreat mode (72% / 66%).",
+  "negatives": "Taking fire off the champion's kill-value lock during a retreat costs kills: seeds 44 (1st survivor -> 11th, died 115 s) and 6035 (death 201 s -> 117 s) both lost a lock that was clear, in range and about to die (the champion killed it 1-2 s later) because P57 turned onto a nearer shooter. Kills 293->279 and 358->352, retreat deaths 57->60 and 60->62.",
+  "confidence": "Disproven (for torso/aim changes during the P48 retreat: the champion already shoots a shootable enemy whenever one exists, and switching to the nearest shooter is worse)",
+  "reuse": "Don't retarget during retreats. In P48 the torso is never idle while a shot exists (Build 16 interim role), so 'return fire while retreating' is already done; the 60-70% retreat-death share has to be attacked through the legs (where/when to retreat, e.g. EARLY_RETREAT_HIDE_ON) or by not entering the retreat, not through aim. Retreat deaths as a pre-registered metric: defined as death with last decision mode starting 'retreat'.",
   "step_a_result": {
     "method": "log-only /tmp copy of champion b9492c6 (the P57 trigger computed, target never changed), trees-on sim 22f72a8 (/workspace/wt-tester-trees/tools/sim copied), --jobs 1, 96 seeds per base",
     "passivity": "CSV rows identical to /workspace/tester/runs/trees-b9492c6-{2000,3000,4000,5000}.csv on every non-timing field for 384/384 seeds (differences only in bot_ms_mean)",
@@ -79,17 +79,88 @@
     "retreat_death_definition": "died and the last decision's mode starts with 'retreat' (retreat to cover / retreat, trees / retreat)",
     "verdict": "PASS (>= 10/192 on both sets)"
   },
-  "screens": [],
-  "outcome": "pending",
+  "screens": [
+    {
+      "round": 1,
+      "variant": "override the lock with the nearest shooter whenever they differ (Step A trigger)",
+      "sha": "afa2898215a6ec94b1f16b36cfbda0d0245b5f67 with RETREAT_FACE_ON=true (/tmp copy)",
+      "trees": true,
+      "base_0": {
+        "fired": 40,
+        "diff_behavior": 32,
+        "diff_score": 11,
+        "activations_t_lt_10": 0,
+        "sim_delta": -0.188,
+        "sim_se": 0.112,
+        "better": 2,
+        "worse": 9,
+        "mean_champ_head": "3.406/3.219",
+        "survivors": "2/1",
+        "kills": "293/279",
+        "deaths_lt_40": "24/24",
+        "retreat_deaths": "57/60",
+        "drop_ring_arrivals": "5/3",
+        "pin20_games": "3/3, none new, flag never active in them"
+      },
+      "base_6000": {
+        "fired": 38,
+        "diff_behavior": 34,
+        "diff_score": 18,
+        "activations_t_lt_10": 0,
+        "sim_delta": -0.062,
+        "sim_se": 0.059,
+        "better": 6,
+        "worse": 12,
+        "mean_champ_head": "3.865/3.802",
+        "survivors": "0/0",
+        "kills": "358/352",
+        "deaths_lt_40": "16/16",
+        "retreat_deaths": "60/62",
+        "drop_ring_arrivals": "1/1",
+        "pin20_games": "2/2, none new, flag never active in them"
+      },
+      "verdict": "FAIL gate 5 (retreat deaths up on both bases, mean lower on both)",
+      "source": "/tmp/p57 sim copy of /workspace/wt-tester-trees/tools/sim (22f72a8), --trees --jobs 1, own champion baselines /tmp/p57/runs/champ-{0,6000}.csv; traces not committed"
+    },
+    {
+      "round": 2,
+      "variant": "fix: override only when the champion's target can't be shot (none / no clear line / out of reach)",
+      "sha": "working tree on afa2898 (committed as the flag-false state) with RETREAT_FACE_ON=true",
+      "trees": true,
+      "base_0": {
+        "fired": 0,
+        "diff_behavior": 0,
+        "diff_score": 0,
+        "sim_delta": 0.0,
+        "retreat_deaths": "57/57",
+        "deaths_lt_40": "24/24",
+        "drop_ring_arrivals": "5/5"
+      },
+      "base_6000": {
+        "fired": 0,
+        "diff_behavior": 0,
+        "diff_score": 0,
+        "sim_delta": 0.0,
+        "retreat_deaths": "60/60",
+        "deaths_lt_40": "16/16",
+        "drop_ring_arrivals": "1/1"
+      },
+      "verdict": "FAIL gate 5 (retreat deaths not down on either base): never fires, because Build 16 already turns to any shootable enemy (target.ts 'shot' weight 4 and the 'interim' role when the lock has no shot)"
+    }
+  ],
+  "outcome": "C",
   "pr": null,
   "sha": null,
   "timestamps": {
     "recorded": "2026-11-22 01:35 ET",
-    "step_a": "2026-11-22 01:40 ET"
+    "step_a": "2026-11-22 01:40 ET",
+    "failed": "2026-11-22 01:55 ET"
   },
   "sources": [
     "coord/data/findings.md (F3)",
     "https://github.com/dmclaughlin-bit/mech-bot/pull/175 (F15 text)",
     "https://github.com/dmclaughlin-bit/mech-bot/pull/152 (P-D-024 table and RETREAT_FACE_ON proposal)"
-  ]
+  ],
+  "decision": "FAILED builder checklist (gate 5): round 1 retreat deaths up on both bases and mean lower on both; the one allowed fix fires 0/192. No PR, flag stays false.",
+  "finding_proposal": "N-candidate: switching the retreat aim from the Build 16 lock to the nearest shooter loses kills (P57 round 1: -0.188/-0.062, kills -14/-6, retreat deaths +3/+2 on practice 0/6000); only-when-unshootable fires 0/192 (Build 16 interim already covers it)."
 }

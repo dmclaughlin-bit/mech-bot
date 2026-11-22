@@ -189,10 +189,11 @@ export const TREE_RETREAT_STUCK_S = 3
 /**
  * P57 (retreat face, builds on F3 + F15): in the champion's retreat branches ("retreat to cover", "retreat, trees",
  * "retreat": HP < retreatHp, hit in the last 2 s), from t = RETREAT_FACE_MIN_T, never in a drop run or ring hold and never
- * while a drop is near AND reachable within DROP_RUN_M (P48's drop test): aim and fire at the nearest enemy mech that sees
- * us or hit us in the last 2 s, has a clear line from our muzzle and is inside a held gun, laser or lightning's reach,
- * instead of the Build 16 lock target. Weapon pick, aim, lead and fire gates are the champion's; the lock itself, move,
- * boost and path are unchanged. false = champion behavior exactly.
+ * while a drop is near AND reachable within DROP_RUN_M (P48's drop test), and only when the chosen target can't be shot
+ * from here (none, no clear line, or beyond every held gun/laser/lightning's reach): aim and fire at the nearest enemy mech
+ * that sees us or hit us in the last 2 s, has a clear line from our muzzle and is inside such a reach. A target we can
+ * shoot is kept (fix round: stealing fire from a shootable kill-value lock lost kills). Weapon pick, aim, lead and fire
+ * gates are the champion's; the lock itself, move, boost and path are unchanged. false = champion behavior exactly.
  */
 export const RETREAT_FACE_ON = false
 /** Never before this match time (s): play before it, and so every death before 40 s, equals the champion's. */

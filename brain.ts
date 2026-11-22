@@ -1078,16 +1078,19 @@ function buildBot(hello: Hello): Bot {
         target = marks.find((x) => (x.clear = clearLine(solids, muzzle, x.c)))!
         farmShot = !!target
       }
-      // P57 (RETREAT_FACE_ON): retreating under fire, return fire at the nearest shooter we can hit instead of the lock
-      // target. Only the aim/fire target of this decision changes; the lock state, move, boost and path are the champion's.
+      // P57 (RETREAT_FACE_ON): retreating under fire while the chosen target can't be shot from here (none, behind cover,
+      // or out of reach of every held gun/laser/lightning), return fire at the nearest shooter we can hit. A target we can
+      // shoot is kept (its kill value wins). Only this decision's aim/fire target changes; lock, move, boost and path don't.
       if (RETREAT_FACE_ON && mode.startsWith("retreat") && obs.t >= RETREAT_FACE_MIN_T && !dropMove && !dropHold && !dropReach()) {
         const inReach = (d: number) => me.weapons.some((w) => !!w && (w.kind === "gun" || w.kind === "laser" || w.kind === "lightning") && d <= w.stats.range)
-        const shooter = options
-          .filter((o) => o.clear && inReach(o.d) && (obs.t - (hitBy.get(o.m.id) ?? -Infinity) < THREAT_HIT_S || seenAt(me.pos, myHeight, [o.m], false)))
-          .sort((a, b) => a.d - b.d)[0]
-        if (shooter && shooter.m.id !== target?.m.id) {
-          target = shooter
-          pickNote = " [face]"
+        if (!target || !target.clear || !inReach(target.d)) {
+          const shooter = options
+            .filter((o) => o.clear && inReach(o.d) && (obs.t - (hitBy.get(o.m.id) ?? -Infinity) < THREAT_HIT_S || seenAt(me.pos, myHeight, [o.m], false)))
+            .sort((a, b) => a.d - b.d)[0]
+          if (shooter) {
+            target = shooter
+            pickNote = " [face]"
+          }
         }
       }
       let label = `knows ${known.size}`

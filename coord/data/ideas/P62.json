@@ -1,0 +1,36 @@
+{
+ "id": "P62",
+ "title": "EARS_LOOK_ON on P60",
+ "family": "vision / aim (late game)",
+ "flags": ["EARS_LOOK_ON"],
+ "flag": "EARS_LOOK_ON",
+ "behaviors": [
+  "P41's sound-cued look, ported unchanged onto the P60 champion: with obs.alive <= 12, t >= 10, no target (no enemy and no farm mark), not hit in the last 2 s, no laser charge in progress, no drop run/hold and no drop near AND reachable within DROP_RUN_M: aim the torso (yaw only, pitch 0) at the bearing of the newest mech-made sound heard in the last 2 s when that bearing is more than 30 deg off the champion's aim"
+ ],
+ "owner": "Mech Builder",
+ "stage": "built-pending",
+ "pr": null,
+ "sha": null,
+ "base": "490515c96aba31da6359caed2373cc87c2e25234 (origin/main; bot code = P60 afb6f26)",
+ "champion": "P60 afb6f263972480e03d381d5dbb32f56954e8ae73 / merge 32acd3dfd643c3bc46d7f2d96e8db2431d207ba0 (site 3.88 builders-4, BB-6F449E11)",
+ "champion_sha_tested_against": "afb6f263972480e03d381d5dbb32f56954e8ae73",
+ "builds_on": ["F17", "F18", "P41 c21d23b 3.84 builders-4"],
+ "hypothesis": "P41 (sound-cued look, 3.84 vs P48 3.75) and P60 (back-away far cover, 3.88 vs P41 3.84, built on P48) change different decisions: P41 the torso aim with no target and no recent hit, P60 the legs in the hurt back-away retreat within 2 s of a hit. Their gains should add: P41's look rebuilt on P60 scores above 3.88 (F18 hypothesis).",
+ "mechanism": "Same code as P41 c21d23b (brain.ts + params.ts: EARS_LOOK_ON, EARS_ALIVE 12, EARS_AGE_S 2, EARS_MIN_DEG 30; remember newest mech sound from obs.sounds; one extra aim source in the no-target branch after the lastHit line). No knob changes. Expected interaction with BACKAWAY_FAR_COVER_ON: none by construction (P60 fires only within 2 s of a hit, when P41's look is off; P60 changes legs only, P41 torso only).",
+ "activation": "Step A on P60 (trees on, 2000+3000 and 4000+5000, 192 each): pending. P41 on P48: 29/192 and 25/192.",
+ "positives": null,
+ "negatives": null,
+ "confidence": "Uncertain",
+ "reuse": null,
+ "outcome": "pending",
+ "disproof": "Fails if the paired mean vs P60 is lower on BOTH practice bases (0 and 6000), or the site score is at or below 3.88.",
+ "doug_waiver": false,
+ "source": "Coordinator order 2:40 AM ET Sun Nov 22: re-test P41 EARS_LOOK as ONE change on the P60 champion (findings F18 hypothesis).",
+ "timestamps": { "created": "2026-11-22 02:41 ET", "updated": "2026-11-22 02:41 ET" },
+ "sources": [
+  "coord/data/findings.md F17, F18, N10",
+  "git show 503a53d:coord/data/ideas/P41.json",
+  "git diff 503a53d^1 503a53d -- '*.ts' (P41 bot-code change)",
+  "git diff b9492c6 afb6f26 -- '*.ts' (P60 bot-code change)"
+ ]
+}

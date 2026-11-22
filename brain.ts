@@ -856,9 +856,13 @@ function buildBot(hello: Hello): Bot {
         return p
       }
       // P66 (BODY_WIDTH_COVER_KNEE_ON): body radius for the knee-height walk test of the building-cover spot search, or 0
-      // (champion test). Same gates as treeRetreat: from 40 s, no drop run/hold, no near-and-reachable drop.
+      // (champion test). Same gates as treeRetreat: from 40 s, no drop run/hold, no near-and-reachable drop. Only while we
+      // stand on the terrain (feet within step_up of it): the knee lines run from terrain-level spots, so on a roof or tier
+      // they don't follow the surface the legs walk on (fix round 1: seed 84 wedged after fires on 5-8 m tiers).
+      const onTerrain = (): boolean =>
+        !solids?.ground || me.pos[2] - groundAt(solids, me.pos[0], me.pos[1]) <= (me.stats.step_up ?? cfg.mech.step_up ?? 1.2)
       const coverBody = (): number =>
-        BODY_WIDTH_COVER_KNEE_ON && obs.t >= TREE_RETREAT_MIN_T && !dropMove && !dropHold && !dropReach()
+        BODY_WIDTH_COVER_KNEE_ON && obs.t >= TREE_RETREAT_MIN_T && !dropMove && !dropHold && !dropReach() && onTerrain()
           ? (me.stats.radius ?? cfg.mech.radius * scale(me.cubes)) : 0
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]

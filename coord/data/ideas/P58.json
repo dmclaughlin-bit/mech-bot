@@ -3,9 +3,11 @@
   "title": "SETTLE_FARM_COMMIT: once midring settle or farm pickup is chosen, hold it for a minimum time so the bot stops flip-flopping between them",
   "family": "movement / zone positioning (Lane A)",
   "flag": "SETTLE_FARM_COMMIT_ON",
-  "flags": ["SETTLE_FARM_COMMIT_ON"],
+  "flags": [
+    "SETTLE_FARM_COMMIT_ON"
+  ],
   "owner": "Mech Builder",
-  "stage": "step_a",
+  "stage": "step-a-fail",
   "base": "9646f43",
   "champion": "P48 b9492c6f122c549c705b69402157f078b4a57857 / merge edb729fc790c0bd583204fa2a0c6492cc8277ca8 (TREE_RETREAT_ON=true, site 4.44)",
   "champion_sha_tested_against": "b9492c6f122c549c705b69402157f078b4a57857",
@@ -16,23 +18,73 @@
   ],
   "evidence": "origin/p41b-sound-look-no-stall coord/data/ideas/P41b.json step1.table[0]: on seed 2021 the champion itself alternates 'midring settle' (move ~S) <-> 'farm, pickup' (move ~NW) at t 121-154 (52 heading flips, 10 s displacement 3.08 m, just over the 3 m pause threshold); P41 hit the same flip-flop 33 m away with 91 mode switches in 24 s (a counted 24 s pause, 12th death 171 s vs 11th 212 s).",
   "hypothesis": "P48 sometimes dithers between the F1 midring settle walk and a farm pickup walk, toggling goals every few ticks and covering ~3 m per 10 s. Committing to whichever of the two was chosen for a minimum hold time (or until the farm item is taken or gone) turns that dead time into progress toward one goal, cutting stuck seconds and 20 s+ pause games without touching combat, retreat, zone safety or drops.",
-  "mechanism": "One latch, SETTLE_FARM_COMMIT_ON (default false), hold time SETTLE_FARM_COMMIT_S in params.ts. When the movement goal switches between 'midring settle' and 'farm, pickup', the newly chosen one is latched; while the latch is younger than the hold time, a switch to the other goal is refused and the latched goal keeps driving the move. The latch drops at once when the farm item is taken/gone (not in obs any more, given up, or failing zone safety), the settle walk ends (arrived, stuck give-up, phase change), or any higher-priority mode (engage, retreat, zone escape/next circle, drop run/hold, heal, loot, laser rush, crossfire, farm capture) takes the tick. Nothing else changes.",
+  "mechanism": "Not built (Step A fail). Planned: one latch behind SETTLE_FARM_COMMIT_ON holding the chosen goal of the pair for SETTLE_FARM_COMMIT_S unless the farm item is taken/gone or a higher-priority mode takes the tick.",
   "activation": "Only while the champion would pick 'midring settle' or 'farm, pickup' and the other one was the goal less than SETTLE_FARM_COMMIT_S ago. Never in the opening (settle needs a shrunk zone; farm switches only matter after the first settle), never during drop run/hold or when a drop is near and reachable within DROP_RUN_M (settle already yields via dropNear; the latch is cleared on any drop run/hold tick).",
   "positives": null,
-  "negatives": null,
-  "confidence": "Uncertain (one seed, 2021, seen on both P48 and P41; frequency unknown until Step A)",
-  "reuse": "If Step A shows the pattern is common, the same latch idea applies to other goal pairs that can toggle (farm hunt vs hold, hide vs settle).",
+  "negatives": "The flip-flop is rare: >20 switches in 30 s in 2/192 (2000+3000: 2021, 3095) and 0/192 (4000+5000). Neither oscillating game is a counted 20 s+ pause or a large stuck-time game (2021: 11 stuck s, 3095: 0), and none of the champion's 4 pause games (2047, 3060, 4087, 4090) shows any settle<->farm switching, so a commit latch could not touch the pause or stuck metrics it was meant to fix.",
+  "confidence": "Disproven (as a frequent pattern): the settle<->farm flip-flop is real but fires in 2/192 and 0/192 games on P48",
+  "reuse": "Cause found on 2021: beyond vision near_range (45 m) a cube is visible only inside the 120 deg torso wedge, and the torso follows the move heading, so walking to the settle point turns the cube out of view and walking to the cube brings it back. Any future goal pair where one goal's target is FOV-dependent can flip the same way; check with this Step A wrapper before building (it fires rarely on P48).",
   "disproof": "If Step A shows the switch pattern (>20 settle<->farm switches within 30 s) in < 10/192 games on either set, or practice shows neither fewer >=20 s pause games nor fewer stuck seconds, or deaths <40 s up on either base, or the mean lower on both bases, stop with outcome C/D and no PR.",
   "success": "Step A >= 10/192 on both sets; on practice bases 0 and 6000: fewer >=20 s pause games or fewer stuck seconds (summed), deaths < 40 s not higher on either base, mean not lower on both bases, no new >=20 s pin with the flag active.",
-  "step_a": null,
-  "step_a_result": null,
+  "step_a": "Log-only, champion b9492c6 (bot files at 9646f43) under /tmp/p58 with a passive per-tick wrapper (label mode, pos, in_zone, |move|, drop-ring entry); trees-on sim copied from /workspace/wt-tester-trees/tools/sim; SEED_BASE=<b> bun tools/sim/run.ts --bot /tmp/p58/wrap-champ.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees, b = 2000, 3000, 4000, 5000. Switch = consecutive 'midring settle'/'farm, pickup' labels (other modes skipped) changing goal; a game counts when any 30 s window has > 20 switches. Stuck seconds: hzlib pins rule (10 s windows each 1 s, in zone, max displacement < 3 m, mean |move| > 0.3), runs summed as r + 9 s; pause game = a run >= 20 s.",
+  "step_a_result": {
+    "passivity": "rows identical to /workspace/tester/runs/trees-b9492c6-{2000,3000,4000,5000}.csv on every non-timing column, 384/384 (timing-only differences: 96, 93, 96, 96)",
+    "osc_games_gt20_in_30s": {
+      "2000+3000": "2/192 (2021: 75 switches, 63 in 30 s, t 113-155; 3095: 55 switches, 55 in 30 s, t 123-136)",
+      "4000+5000": "0/192"
+    },
+    "games_ge10_in_30s": {
+      "2000+3000": 2,
+      "4000+5000": 0
+    },
+    "games_ge5_in_30s": {
+      "2000+3000": 2,
+      "4000+5000": 0
+    },
+    "games_with_any_switch": {
+      "2000+3000": 15,
+      "4000+5000": 11
+    },
+    "max_switches_in_30s_next_highest": {
+      "2000+3000": "4 (3037)",
+      "4000+5000": "2 (5091, 4075)"
+    },
+    "champion_stuck_seconds": {
+      "2000": 146,
+      "3000": 193,
+      "4000": 259,
+      "5000": 154,
+      "2000+3000": 339,
+      "4000+5000": 413
+    },
+    "champion_pause20_games": {
+      "2000+3000": "2 (2047 30 s at t 43; 3060 23 s at t 28)",
+      "4000+5000": "2 (4087 24 s at t 27; 4090 22 s at t 41)"
+    },
+    "oscillation_games_vs_pauses": "2021: 11 stuck s, no 20 s+ pause, 11th 212.40 s; 3095: 0 stuck s, no pause, 12th 202.25 s. No overlap with the pause games.",
+    "champion_died_lt40": {
+      "2000+3000": 48,
+      "4000+5000": 38
+    },
+    "champion_drop_ring_arrivals": {
+      "2000+3000": 7,
+      "4000+5000": 5
+    },
+    "verdict": "STEPA FAIL: 2/192 and 0/192, both below 10/192. Disproof clause 1 met; not built (no flag, no bot code).",
+    "run": "2026-11-22 ~01:31-01:40 AM ET"
+  },
   "screens": [],
   "pr": null,
   "sha": null,
-  "outcome": "pending",
-  "timestamps": { "recorded": "2026-11-22 ET (Mech Builder, brief 1:28 AM ET)" },
+  "outcome": "D",
+  "timestamps": {
+    "recorded": "2026-11-22 ET (Mech Builder, brief 1:28 AM ET)",
+    "step_a": "2026-11-22 ~01:40 AM ET"
+  },
   "sources": [
     "coord/data/findings.md (F1)",
-    "origin/p41b-sound-look-no-stall:coord/data/ideas/P41b.json (step1.table[0])"
-  ]
+    "origin/p41b-sound-look-no-stall:coord/data/ideas/P41b.json (step1.table[0])",
+    "/tmp/p58 (Step A traces and CSVs, not committed)"
+  ],
+  "next_action": "None. Retired at Step A (outcome D). Coordinator: pick the next lane idea."
 }

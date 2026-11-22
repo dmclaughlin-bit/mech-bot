@@ -196,5 +196,5 @@ export const TREE_RETREAT_STUCK_S = 3
  * like P48's tree run (no progress for TREE_RETREAT_STUCK_S: skip list). Legs only; torso and aim unchanged (N8).
  * false = champion behavior exactly.
  */
-export const BACKAWAY_FAR_COVER_ON = false
+export const BACKAWAY_FAR_COVER_ON = true
 export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]

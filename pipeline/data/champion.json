@@ -1,12 +1,12 @@
 {
-  "experiment_id": "P60",
-  "commit": "afb6f263972480e03d381d5dbb32f56954e8ae73",
-  "merge_commit": "32acd3dfd643c3bc46d7f2d96e8db2431d207ba0",
-  "branch": "PR #181 (BACKAWAY_FAR_COVER_ON on P48; lacks P41 EARS_LOOK)",
-  "score": 3.88,
-  "submission_id": "BB-6F449E11",
+  "experiment_id": "P64",
+  "commit": "8ada6a4005cfe94e640e1f27c7108c05133255be",
+  "merge_commit": "297f1332c190b034be1248662460716a437d54c3",
+  "branch": "PR #184 (BACKAWAY_LOS_BREAK_ON on P60)",
+  "score": 3.9,
+  "submission_id": "BB-0E81A218",
   "target_score": 6.0,
-  "updated_at": "2026-11-22T02:38:00-05:00",
+  "updated_at": "2026-11-22T03:58:00-05:00",
   "history": [
     {
       "experiment_id": "EXP-0000",
@@ -153,6 +153,14 @@
       "scorer": "builders-4",
       "submission_id": "BB-0AAB8ADB",
       "at": "2026-11-22T02:23:00-05:00"
+    },
+    {
+      "experiment_id": "P64",
+      "commit": "8ada6a4005cfe94e640e1f27c7108c05133255be",
+      "score": 3.9,
+      "scorer": "builders-4",
+      "submission_id": "BB-0E81A218",
+      "at": "2026-11-22T03:50:00-05:00"
     }
   ],
   "scorer_version": "builders-4",
@@ -163,15 +171,15 @@
       "at": "2026-11-21T22:29:00-05:00"
     },
     "builders-4": {
-      "score": 3.84,
-      "submission_id": "BB-0AAB8ADB",
-      "at": "2026-11-22T02:23:00-05:00",
+      "score": 3.9,
+      "submission_id": "BB-0E81A218",
+      "at": "2026-11-22T03:50:00-05:00",
       "site_status": "Entered in the final (your best score)"
     }
   },
-  "merge_status": "Main bot code set exactly to afb6f26 in 32acd3d (merge of #181; P41 EARS_LOOK not included since it is not in the scored build). check.py PASS; archive 3,809,280 bytes.",
+  "merge_status": "Main bot code set exactly to 8ada6a4 in 297f1332c190b034be1248662460716a437d54c3 (merge of #184). check.py PASS max 3.6 ms; archive 3,880,960 bytes.",
   "scorer": "builders-4",
   "per_version_scores": {
-    "builders-4": 3.88
+    "builders-4": 3.9
   }
 }

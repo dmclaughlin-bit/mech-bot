@@ -64,3 +64,6 @@ Rules:
 
 ## F19 (3:16 AM ET Sun, from P62 BB-AD32CDFC). Confidence: low (one site score)
 EARS_LOOK (P41's change) ported onto P60 as one change scored 3.82 under builders-4, below P60's 3.88 (-0.06). On P48 the same change scored 3.84 vs P48's 3.75 (+0.09). Sim Tester paired screen vs P60 was +0.036 (2000+3000) and +0.057 (4000+5000), with the same stall seeds (2021, 5036) as P41. Takeaways (hypotheses): the 96/192-game sim delta again failed to predict the site sign (see F17/F18); EARS_LOOK's site gain does not carry over to P60. The stall-veto seeds 2021/5036 recur with torso-look changes; they did not predict the site result either way. Outcome D for P62. Do not re-test EARS_LOOK on P60.
+
+## F20 (3:58 AM ET Sun, from P64 BB-0E81A218). Confidence: low (one site score)
+BACKAWAY_LOS_BREAK_ON on P60 scored 3.90 under builders-4 vs P60 3.88 (+0.02), despite a near-miss screen (one stall-c veto, means +0.000/+0.005). Small site gain from a locally neutral change again fits F17-F19: near misses deserve site tests. Promoted as champion.

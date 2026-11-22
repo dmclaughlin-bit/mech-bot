@@ -1,0 +1,5 @@
+trees-screen-v1.patch
+sha256 7b0e3366bcf183fc4db87b205a2b262092a39ecd9b366cab88662df540d1db64
+base 22f72a88d071bc949ccec6dbc9bd535b74844e3b (#148)
+from Mech Sim Tester screening tree, shared with Doug approval 10:08 PM ET for the P-D-015 match check only. NOT for merge into main.
+Per base: SEED_BASE=<base> bun tools/sim/run.ts --bot <bot.ts> --seeds 96 --jobs 4 --kit <mechfight-kit dir> --trees --out <out.csv> (bases 2000 3000 4000 5000). Kit arena/v2/world.json sha256 e0302dd4777b527b00a6a4b2e02759915402a23c58839d921e9fcc6d58092445.

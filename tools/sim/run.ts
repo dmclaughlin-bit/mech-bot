@@ -17,7 +17,7 @@ import { squadDecide } from "./house.ts"
 const args = process.argv.slice(2)
 const opt = (name: string, def?: string) => { const i = args.indexOf("--" + name); return i >= 0 ? args[i + 1] : def }
 const flag = (name: string) => args.includes("--" + name)
-const SEED_BASE = 1000
+const SEED_BASE = Number(process.env.SEED_BASE ?? 1000)
 /** Wall-clock wait for one answer. Longer than the server's 50 ms so a loaded machine does not change results; late answers are counted. */
 const ANSWER_MS = 2000
 

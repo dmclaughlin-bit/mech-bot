@@ -184,6 +184,6 @@ export const LETHAL_RELEASE_MIN_T = 40
  * test), and it ranks below drop hold/run so a drop wins on the same tick. Gives up on a cube after
  * HEAL_PICKUP_STUCK_S s without 1 m of progress and skips it for the rest of the match. false = champion exactly.
  */
-export const HEAL_PICKUP_ON = false
+export const HEAL_PICKUP_ON = true
 export const HEAL_PICKUP_T = 10
 export const HEAL_PICKUP_STUCK_S = 3

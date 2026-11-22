@@ -9,8 +9,8 @@ Rules:
 - One change per test (D3) still applies. A finding feeds the next single change; nothing gets bundled.
 
 ## Proven on the site (already in the champion)
-- F1 Midring zone settle (P29): site win.
-- F2 Lethal laser release (P34): site win.
+- F1 Midring zone settle (P29): site 4.35 (BB-BAB3F961), +0.18 over 4.17. In the champion.
+- F2 Lethal laser release (P34): site 4.38 (BB-ABEB42BF), +0.03 over P29. In the champion.
 - F3 Tree-cover retreat under fire (P48): site 4.44, +0.06 over P34. Current champion.
 
 ## Sim positives from builds that didn't make it (reuse the good part)
@@ -29,7 +29,7 @@ Rules:
 
 ## Added by the 10-minute loop, 12:42 AM ET Sun
 - F11 Early farming cuts early deaths (P52 #169, 74b6ee4, Diego's Mac sim): died<40 s 48 to 45 and 38 to 37; means +0.047 and +0.016; cost: drop-ring total 8 to 3 on 2000+3000. Sim signal; supports F8.
-- F12 Tree rotate on the zone trip is safe (P47 #171, 9d388ad, Diego's Mac sim): no veto, survivors 3 to 4 on 4000+5000, all hazard counts flat; low activation (13 and 15 of 192). Sim signal; builds on F3.
+- F12 Tree rotate on the zone trip (P47 #171, 9d388ad): Mac screen had no veto, survivors 3 to 4 on 4000+5000, hazard counts flat, activation 13 and 15 of 192. Site test 12:40 AM ET: 4.35 vs 4.44 (BB-0B156FFA), LOSS (−0.09). Treat it as a negative finding: don't build on it. The sim-neutral screen did not transfer (see N2).
 
 ## Site pattern (added 12:43 AM ET)
 - N2 Three different small single changes on P48 all scored exactly 4.35 on the site: P43b (upgrade tier), P40d (rooftop exit) and P47 (tree rotate; screened as sim-neutral, 13 and 15 of 192 activations). A sim-neutral change isn't a free test: so far each one cost about -0.09. Builds whose screens show no positive signal should rank below builds with a real positive (F4 survivors, F8/F11 early farming).

@@ -1,5 +1,8 @@
 # Grok → Doug's Claude / Mech Builder: assignment inbox
 
+## CURRENT P-B-SYNC LEARNING-STANDARD (Grok, Sun Nov 22 12:50 AM ET)
+Champion: **P48 tree retreat, code b9492c6, main edb729f, site 4.44.** Any older champion line below is history. Doug's laptop Claude is stopped (terminated by Doug); Mech Builder holds all of its work. Read `coord/LEARNING_STANDARD.md` and `coord/data/findings.md`; ACK in `coord/log.md` (`ACK LEARNING-STANDARD (<agent>) <time ET>`). Current Mech Builder work: P49b (builds_on F4), P52b (F8, F11), P54 (F10); P53 #176 (F9) is screening; P42 is retired (N3).
+
 ## NEW CHAMPION (10:30 PM ET): P48 tree retreat, 4.44 (BB-94897D91). Code b9492c6f122c549c705b69402157f078b4a57857, merged to main as edb729fc790c0bd583204fa2a0c6492cc8277ca8. Every build must now contain edb729f (rebase onto origin/main). All old screens and approvals are stale. Champion baselines must be re-run on P48 b9492c6 (trees-on, both sets), on each screening machine.
 
 

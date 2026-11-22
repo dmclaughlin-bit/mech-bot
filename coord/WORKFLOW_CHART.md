@@ -99,3 +99,12 @@ flowchart TD
 
 ## Second screening station (Doug confirmed Sat Nov 21 10:28 PM ET)
 "Use Diego's Mac for screens with the build and champion on the same machine, cross-checking the first two builds on both stations." A Mac screen counts only if the champion baseline was also run on the Mac (same sim 4b8663e). The first two builds (P43, P35b) are screened on both stations; the Mac joins the rotation only if every veto decision matches. Otherwise it stays info-only and Doug decides.
+
+
+## Cumulative learning + veto update (Doug confirmed Sun Nov 22 12:48 AM ET: "feel free to change this to your best ideas, I give you the go")
+1. **Learning standard:** `coord/LEARNING_STANDARD.md` applies to every agent. `coord/data/findings.md` is the knowledge index and gets updated after every screen and score.
+2. **Builds-on hard rule:** no new build starts without an idea record whose `builds_on` cites a finding ID or `NEW: <evidence>`, with `disproof` written first. Refinements of retired ideas state the strength kept and the weakness fixed. Builds already in flight at 12:48 AM (P49b, P53, P52, P52b, P54) are exempt.
+3. **Drop-ring arrival is a warning, not a veto:** 2 of the 3 builds that failed only this check won on the site (P34, P48; P43b lost), and the sim assumes house bots never contest drops. It still blocks if drop totals fall on BOTH sets AND the mean is lower on both sets.
+4. **Neutral screens rank last:** three sim-neutral changes on P48 all scored 4.35 (P43b, P40d, P47; N2). Builds with a positive signal (mean above the champion on a set by more than 1 SE, or their pre-registered target metric clearly improved) take slots first. Neutral builds still run when nothing better is ready, to keep 3+ tests per hour.
+5. **Screen reports** include positives, regressions, conditions, repeatability and a refine verdict, alongside the veto table (no extra sims).
+All other vetoes (crash, deaths before 40 s up, clear loss of end-game survival, stall rule) and all gates are unchanged.

@@ -168,3 +168,12 @@ Doug confirmed the merged near-miss rule (his spare-slot timing formula plus Die
 - Pool: at most 5, ranked by evidence (closeness to thresholds, real behavior change, keeps champion strengths, no serious regressions, novelty versus past site tests). Never by sim score alone, and never with fabricated estimates.
 - Eligibility: a valid single-flag build never site-tested and not equivalent to a tested behavior; contains the current champion (P34, main `8c130ad`); eqdrive flag-off byte-identical; `check.py` max under 30 ms; archive under 15,000,000 bytes; flag-ON head; full paired trees-on screen on 2000+3000 and 4000+5000 versus the current champion; activation at least about 10 of 192 games; fails exactly one veto (never a crash, never a lower overall mean on both seed sets). Old trees-off rejects need a trees-on rerun first.
 - Log each submission as a "near-miss data test" with the failed veto. Champion only if the official score is strictly above the current best. A win records a confirmed sim false negative.
+
+
+## Cumulative learning + veto update (Doug confirmed Sun Nov 22 12:48 AM ET: "feel free to change this to your best ideas, I give you the go")
+1. **Learning standard:** `coord/LEARNING_STANDARD.md` applies to every agent. `coord/data/findings.md` is the knowledge index and gets updated after every screen and score.
+2. **Builds-on hard rule:** no new build starts without an idea record whose `builds_on` cites a finding ID or `NEW: <evidence>`, with `disproof` written first. Refinements of retired ideas state the strength kept and the weakness fixed. Builds already in flight at 12:48 AM (P49b, P53, P52, P52b, P54) are exempt.
+3. **Drop-ring arrival is a warning, not a veto:** 2 of the 3 builds that failed only this check won on the site (P34, P48; P43b lost), and the sim assumes house bots never contest drops. It still blocks if drop totals fall on BOTH sets AND the mean is lower on both sets.
+4. **Neutral screens rank last:** three sim-neutral changes on P48 all scored 4.35 (P43b, P40d, P47; N2). Builds with a positive signal (mean above the champion on a set by more than 1 SE, or their pre-registered target metric clearly improved) take slots first. Neutral builds still run when nothing better is ready, to keep 3+ tests per hour.
+5. **Screen reports** include positives, regressions, conditions, repeatability and a refine verdict, alongside the veto table (no extra sims).
+All other vetoes (crash, deaths before 40 s up, clear loss of end-game survival, stall rule) and all gates are unchanged.

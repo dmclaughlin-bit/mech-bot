@@ -30,6 +30,7 @@ import {
   DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
+  UNSEEN_TARGET_FROM_S, UNSEEN_TARGET_MIN_M, UNSEEN_TARGET_ON,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
 import { type Bot, type BotAction, type Hello, type Observation, type Vec3, type WeaponKind, type WeaponObs, draw, log } from "./mechfight.ts"
@@ -973,6 +974,9 @@ function buildBot(hello: Hello): Bot {
               id: o.m.id, pos: o.m.pos, d: o.d, clear: o.clear,
               hp: o.m.hp ?? k?.hp ?? cfg.mech.hp, maxHp: o.m.max_hp ?? k?.maxHp ?? cfg.mech.hp,
               threat: held ? Math.min(1, held.reduce((a, kind) => a + (baseDps[kind] ?? 0), 0) / topPairDps) : 0.5,
+              // P35: in view, beyond its proximity ring and its torso aim more than 90° off its bearing to us.
+              unseen: UNSEEN_TARGET_ON && obs.t >= UNSEEN_TARGET_FROM_S && flat(o.m.pos, me.pos) > UNSEEN_TARGET_MIN_M &&
+                Math.abs(wrap(yawTo(o.m.pos, me.pos) - o.m.aim[0])) > Math.PI / 2,
             }
           }),
           [...known.values()].filter((k) => obs.t - k.lastSeen <= (cfg.vision.memory_s ?? 5)),

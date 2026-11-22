@@ -140,3 +140,19 @@ export const STANDOFF_BREAK_S = 60
  * 0 = off, identical to the champion.
  */
 export const DROP_RUN_M = 200
+
+/**
+ * P-D-012 / idea P29 (midring settle, Watcher SKILLS.md idea 5): after a shrink, in the hold phase before the next one,
+ * while we would only hold (farmOk, nothing to farm, no engage, no zone travel, no drop run/hold and no claimable drop
+ * within DROP_RUN_M), and our distance from the circle's center is outside MIDRING_LO..MIDRING_HI of its radius, walk
+ * (silently) to the point at MIDRING_GOAL of the radius on our own side of the center, then sit there. Off at radius
+ * <= MIDRING_MIN_R m. Gives up for the rest of that hold phase after MIDRING_STUCK_S s without 1 m of progress.
+ * Zone travel, engage, retreat, laser walk, crossfire, ambush, drops and farming all rank above it.
+ * false = champion behavior exactly.
+ */
+export const MIDRING_SETTLE_ON = true
+export const MIDRING_LO = 0.4
+export const MIDRING_HI = 0.7
+export const MIDRING_GOAL = 0.55
+export const MIDRING_MIN_R = 70
+export const MIDRING_STUCK_S = 3

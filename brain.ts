@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, params,
 } from "./params.ts"
 import { createTargetLock, scoreTargets } from "./target.ts"
@@ -308,6 +308,9 @@ function buildBot(hello: Hello): Bot {
   let claim: { pos: Vec3; until: number } | null = null
   /** P-B-001: the enemy the standoff break walked at last decision (null when it did not run). */
   let standoffId: number | null = null
+  /** P-D-012 (P29): the midring settle walk in progress, and the hold phases (by shrink_start) it gave up on. */
+  let settle: { goal: Vec3; phase: number; best: number; at: number } | null = null
+  const settleSkip = new Set<number>()
 
   /** P-B-001: the effective range (m) of our held weapon with the highest sustained DPS, as the engage code closes to:
    * lightning 0.8 × its range, gun GUN_NEAR_M, laser and mortar their reach. */
@@ -839,6 +842,34 @@ function buildBot(hello: Hello): Bot {
         if (spot) {
           move = heading(spot)
           mode = "hide"
+        }
+      }
+      // Midring settle (P-D-012, idea P29, see MIDRING_SETTLE_ON): only where we would hold after a shrink.
+      if (MIDRING_SETTLE_ON) {
+        const phase = z.shrink_start
+        const r = z.radius
+        const afterShrink = r < Number(cfg.zone.start_radius) - 1 && obs.t < z.shrink_start
+        const dropNear = (obs.drops ?? []).some((x) => (x.holder === null || x.holder === hello.slot) && flat(x.pos, me.pos) <= DROP_RUN_M)
+        const d = flat(me.pos, z.center)
+        if (settle && settle.phase !== phase) settle = null
+        const can = mode === "hold" && farmOk && !farmGoal && !farmHold && afterShrink && r > MIDRING_MIN_R && !dropNear && !settleSkip.has(phase)
+        if (!can) settle = null
+        else if (!settle && (d < MIDRING_LO * r || d > MIDRING_HI * r)) {
+          const [ux, uy] = d > 1 ? [(me.pos[0] - z.center[0]) / d, (me.pos[1] - z.center[1]) / d] : [Math.cos(yawTo(z.center as any, z.next_center)), Math.sin(yawTo(z.center as any, z.next_center))]
+          const goal: Vec3 = [z.center[0] + ux * MIDRING_GOAL * r, z.center[1] + uy * MIDRING_GOAL * r, me.pos[2]]
+          const pace = ZONE_WALK * walkSpeed
+          const safe = (flat(me.pos, goal) + Math.max(0, flat(goal, z.next_center) - inner)) / pace + ZONE_BUFFER < timeLeft
+          if (safe) settle = { goal, phase, best: flat(me.pos, goal), at: obs.t }
+        }
+        if (settle) {
+          const left = flat(me.pos, settle.goal)
+          if (left < settle.best - 1) { settle.best = left; settle.at = obs.t }
+          if (left < 5) settle = null
+          else if (obs.t - settle.at > MIDRING_STUCK_S) { settleSkip.add(phase); settle = null }
+          else {
+            move = travel(me.pos, settle.goal, obs.t, canPlan()).move
+            mode = "midring settle"
+          }
         }
       }
       // Standoff break (P-B-001, see STANDOFF_BREAK_S): where we would heal or hold, late in the match, against one lone

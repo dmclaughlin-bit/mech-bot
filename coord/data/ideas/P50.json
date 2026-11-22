@@ -1,0 +1,13 @@
+{
+  "id": "P50",
+  "title": "ST-1 clear-shot laser charge: start charging only when the shot is clear and lined up",
+  "family": "laser charge timing",
+  "flag": "CHARGE_LINED_ON",
+  "owner": "Diego's Claude",
+  "prompt": "P-D-018",
+  "stage": "assigned (Step A log-only first)",
+  "source": "Sim Tester death report 20261121-2153-0e6fadd (ST-1)",
+  "champion_sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+  "decision": "Doug assigned to Diego's Claude, Sat Nov 21 10:02 PM ET",
+  "created_et": "2026-11-21 10:03 PM ET"
+}

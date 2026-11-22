@@ -5,9 +5,12 @@
   "flag": "CHARGE_LINED_ON",
   "owner": "Diego's Claude",
   "prompt": "P-D-018",
-  "stage": "assigned (Step A log-only first)",
+  "stage": "checklist: waiting for Doug ruling",
   "source": "Sim Tester death report 20261121-2153-0e6fadd (ST-1)",
   "champion_sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
-  "decision": "Doug assigned to Diego's Claude, Sat Nov 21 10:02 PM ET",
-  "created_et": "2026-11-21 10:03 PM ET"
+  "decision": "Checklist item 3 fails: drop-ring totals 11 -> 10 across 4 bases (down 1 on bases 0 and 7000, late knock-on). Builder stopped; ruling asked of Doug 11:30 PM ET.",
+  "created_et": "2026-11-21 10:03 PM ET",
+  "pr": 161,
+  "sha": "424029b",
+  "updated_et": "2026-11-21 11:30 PM ET"
 }

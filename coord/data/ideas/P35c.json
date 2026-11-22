@@ -1,0 +1,23 @@
+{
+  "id": "P35c",
+  "title": "Unseen target first, rebuilt on P48",
+  "family": "rebuild of P35b",
+  "flag": "UNSEEN_TARGET_ON",
+  "owner": "Diego's Claude",
+  "prompt": "P-D-019",
+  "stage": "screened: hold",
+  "rebuild_of": {
+    "id": "P35b",
+    "pr": 159,
+    "head": "8ddd077"
+  },
+  "champion_sha": "b9492c6f122c549c705b69402157f078b4a57857",
+  "main": "edb729fc790c0bd583204fa2a0c6492cc8277ca8",
+  "note": "Same single change as the parent, merged onto the P48 champion; Step A skipped (rebuild of an idea that already fired 10/192+).",
+  "created_et": "2026-11-21 11:15 PM ET",
+  "pr": 163,
+  "sha": "a43c1c612f6979e7954018d9be5f69466004b788",
+  "screen_station": "diego-mac fallback (P-D-019, Doug 11:00 PM ET)",
+  "decision": "HOLD (coordinator 11:30 PM ET): Mac fallback screen vs P48 lowers mean on both sets (-0.016, -0.099); stall (c) 20 s+ pause games 1->3 on 2000+3000; survivors 3->2 on 4000+5000. Not READY and not near-miss eligible (lower mean on both sets). Never site-tested.",
+  "updated_et": "2026-11-21 11:30 PM ET"
+}

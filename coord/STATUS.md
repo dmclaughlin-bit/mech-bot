@@ -98,3 +98,8 @@ Hit rate: 4/19 = 21% since 12:00 PM ET (in line with the 20% prior); 0/10 agains
 ## 9:53 PM ET: near-miss pathway confirmed (Doug 9:47 PM ET)
 - Doug confirmed the merged near-miss pathway. Official text is the additive section in `coord/WORKFLOW_CHART.md` (existing chart untouched) and the matching section in `coord/WORKFLOW.md`. First ranking: `coord/data/near_miss_ranking.md`.
 - At this check: U = 2 (P34 `c281bf5` rejected 9:07 PM ET, BB-FB8CB5AE; P34 `0e6fadd` submitted 9:10 PM ET, scored 4.38, BB-ABEB42BF; `coord/data/site_results.csv`). R = 1 (P40b PR #155 handed off 9:47 PM ET after a trees-on four-base checklist; official screen comment not posted yet as of 9:53 PM ET; if Sim Tester started promptly the screen can finish before 10:07). spare = (6 - 2) - (1 + 1) = 2. Next slot frees 10:07 PM EST. No normal READY build. No near miss is eligible to submit yet: none has a trees-on official screen on main `8c130ad`. Best candidate is P35; it still needs a rebase onto current main and a trees-on official screen (see the ranking file).
+
+## 11:30 PM ET tick (box back after reset ~11:23 PM ET; down since ~10:32 PM ET, ticks 10:32-11:11 skipped)
+- Champion P48 b9492c6 (main edb729f), 4.44. Ready: 0. Tests in last hour: 1 (P48 10:27 PM). Slot unused 10:32-11:23 PM ET: coordinator computer down, and no READY build existed.
+- Mac fallback screens (P-D-019): P43b #162 VETO (drop-ring 8->6 on 2000+3000; pause games 1->2 on 4000+5000). P35c #163 HOLD (pause games 1->3 on 2000+3000; survivors 3->2 on 4000+5000; mean lower on both sets). Records copied to main (D2).
+- P50 #161: checklist item 3 fail (rings 11->10 over 4 bases); Doug's ruling requested.

@@ -110,7 +110,7 @@ export const TARGET_W = { shot: 4, ttk: 2, hp: 1.5, weak: 1, alone: 1 }
  * never puts an enemy we can't shoot above one we can. Only the pick changes; aim, fire and movement are untouched.
  * false = champion (B113) behavior exactly.
  */
-export const UNSEEN_TARGET_ON = false
+export const UNSEEN_TARGET_ON = true
 /** Kill-value bonus for an unseen target (same scale as TARGET_W; equal to TARGET_W.hp). */
 export const UNSEEN_TARGET_W = 1.5
 /** The enemy must be more than this far (m, horizontal) from us: the protocol's near_range proximity ring. */

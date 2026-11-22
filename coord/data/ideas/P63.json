@@ -3,9 +3,11 @@
   "title": "FAR_COVER_SAFE_ON: P60's far-cover search must not pick a spot closer to any enemy in view than we are now (P60 checks that only for the enemies that just hit us)",
   "family": "retreat / movement",
   "flag": "FAR_COVER_SAFE_ON",
-  "flags": ["FAR_COVER_SAFE_ON"],
+  "flags": [
+    "FAR_COVER_SAFE_ON"
+  ],
   "owner": "Mech Builder",
-  "stage": "step_a",
+  "stage": "built",
   "stage_on": "P60",
   "branch": "p63-far-cover-arrival-safe",
   "base": "b2d0b06be25261dda7ba576a438ca5eb8a99b74c",
@@ -45,25 +47,104 @@
   "mechanism": "FAR_COVER_SAFE_ON (params.ts, default false). Only inside P60's farRetreat search (treeSpot with BACKAWAY_FAR_STEPS_S): a candidate far spot is skipped when it is closer than our current position to any enemy in view (threats, the nearest LOS_TARGETS mechs in obs), not only to the shooters; the hidden-from-shooters test is unchanged. The search then takes the next candidate (12 bearings x 4/5/6 s) or returns null -> champion back-away. Latch, give-up, gates, boost and torso/aim unchanged (legs only, N8). Flag off: byte-identical behavior to P60.",
   "activation": "Decision-level: a far-cover search (no latched spot kept) whose result differs with the flag on (another spot or none). Game-level Step A count = P60 games where that happens at least once.",
   "disproof": "Fails if the change fires in < 10/192 on either set, or the saves (2073, 4093) are lost, or deaths <40 s rise on either base, or the paired mean vs P60 is lower on both practice bases, or a NEW >=20 s pin appears.",
-  "positives": null,
-  "negatives": null,
-  "confidence": "Uncertain (4 collapses; condition also present in 51 games that did not collapse)",
+  "positives": "Checklist passes with no fix round: deaths <40 s 24->24 and 16->16, drop-ring 3->3 and 1->1, no new 20 s pin (P60's 6034 pin gone on 6000), survivors 2->2 both, retreat deaths 80->80 both, saves 2073 and 4093 identical. Base 6000 +0.042 +/- 0.029 (4 better / 1 worse), kills 365->369. Step A 28/192 and 29/192.",
+  "negatives": "The two collapses it was built for are NOT fixed: 5024 still 13th (50.80 s), 4001 13th -> 14th (122.35 s). In both the rule only swaps one far spot for another that still walks across the shooter's view; P48's advantage there came from backing straight away and finding 1-3 s building cover. Base 0 -0.042 +/- 0.053, kills 298->294, seed 24 4th -> 9th (12 -> 7 kills). Effects are within ~1.5 SE (N10: small local deltas don't predict the site).",
+  "confidence": "Uncertain (practice bases split -0.042 / +0.042; target seeds not rescued)",
   "reuse": "1) P63 trace tooling (bot per-decision enemy list with sees/hit/hidden flags next to P60's ground-truth trace) explains a collapse in a few lines. 2) 92/142 P60 far-cover episodes are under 1 s and none gets within 10 m of its spot in far-cover mode: the walk mostly changes the first second of the retreat direction, not where we end up.",
   "novelty": {
     "vs_P60": "P60 searches far spots no closer to the shooters; P63 keeps that search and only adds 'no closer to any enemy in view' for the far spot. Same legs-only walk, same gates, same latch.",
     "vs_P57_N8": "No torso/aim change.",
     "vs_P59_N9": "Not a tree-spot choice in the 1-3 s tree retreat; only the 4-6 s far spot."
   },
-  "outcome": "pending",
+  "outcome": "pending (built; Step 1 condition separated collapses 4/4 vs saves 3/13, but the fix did not rescue 5024 or 4001: the mechanism claim is weak)",
   "pr": null,
   "sha": null,
   "timestamps": {
-    "recorded": "2026-11-22 ET (after Step 1, before Step A)"
+    "recorded": "2026-11-22 ET (after Step 1, before Step A)",
+    "step_a": "2026-11-22 ET",
+    "built": "2026-11-22 ET"
   },
   "sources": [
     "coord/data/findings.md (F16, F18, N8, N9)",
     "coord/data/ideas/P60.json",
     "https://github.com/dmclaughlin-bit/mech-bot/issues/comments/7075869202 (P60 Sim Tester screen, refine B)",
     "/tmp/p63 traces (not committed)"
-  ]
+  ],
+  "step_a_result": {
+    "method": "log-only /tmp copy of P63 flag-off (= P60 behavior): at every far-cover search, also run the search with FAR_COVER_SAFE_ON's rule (no closer to any enemy in view) and log when the result differs. Trees-on sim copy, --jobs 1, 96 seeds per base",
+    "passivity": "CSV rows identical to /workspace/tester/runs/trees-afb6f26-{2000,3000,4000,5000}.csv on every field except bot_ms_mean, 384/384",
+    "2000+3000": {
+      "far_search_games": 81,
+      "changes_games": 28,
+      "of": 192,
+      "changed_searches": 38,
+      "changed_to_no_spot_backaway": 27
+    },
+    "4000+5000": {
+      "far_search_games": 84,
+      "changes_games": 29,
+      "of": 192,
+      "changed_searches": 48,
+      "changed_to_no_spot_backaway": 34
+    },
+    "collapse_seeds_changed": "3017 (1 search), 4001 (2), 4043 (1), 5024 (2): 4/4",
+    "save_seeds_changed": "2073 0, 4093 0, 5040 1 (last walk t=118.2 only), 2058 2, 3085 1; other saves 0",
+    "verdict": "PASS (28/192 and 29/192 >= 10/192)"
+  },
+  "screens": [
+    {
+      "sha": "P63 flag on (3dfcd5c + FAR_COVER_SAFE_ON = true)",
+      "seed_set": "practice 0",
+      "fired": 10,
+      "diff_behavior": 9,
+      "diff_score": 2,
+      "sim_delta": -0.042,
+      "sim_se": 0.053,
+      "better": 1,
+      "worse": 1,
+      "survivors": "2->2",
+      "kills": "298->294",
+      "deaths_lt_40": "24->24",
+      "drop_ring_arrivals": "3->3",
+      "retreat_deaths_last10s": "80->80",
+      "far_cover_games": "25->23",
+      "t_lt_10_activations": 0,
+      "pin20_games": "3->3 (41, 43, 79 = the same P60 pins, 0 far ticks in the windows; none new)",
+      "score_changes": "seed 24 4th 77.45 s 12 kills -> 9th 60.70 s 7 kills; seed 85 12th -> 11th"
+    },
+    {
+      "sha": "P63 flag on (3dfcd5c + FAR_COVER_SAFE_ON = true)",
+      "seed_set": "practice 6000",
+      "fired": 17,
+      "diff_behavior": 14,
+      "diff_score": 5,
+      "sim_delta": 0.042,
+      "sim_se": 0.029,
+      "better": 4,
+      "worse": 1,
+      "survivors": "2->2",
+      "kills": "365->369",
+      "deaths_lt_40": "16->16",
+      "drop_ring_arrivals": "1->1",
+      "retreat_deaths_last10s": "80->80",
+      "far_cover_games": "32->26",
+      "t_lt_10_activations": 0,
+      "pin20_games": "3->2 (6011, 6082 = the same P60 pins, 0 far ticks; P60's 6034 pin gone; none new)",
+      "score_changes": "6007 5->4, 6040 15->13, 6063 11->10, 6071 12->11 better; 6017 12th 73.65 s -> 13th 57.45 s worse"
+    }
+  ],
+  "named_seed_reruns": {
+    "5024": "P48 2nd 143.25 s 14 kills | P60 13th 51.60 s 3 | P63 13th 50.80 s 3 (NOT fixed: the rule picks another far spot NE, still an open walk across shooter #12's view)",
+    "4001": "P48 7th 183.55 s 9 | P60 13th 124.70 s 3 | P63 14th 122.35 s 2 (NOT fixed, slightly worse: the new spot flips direction after 0.3 s and shooter #12 kills us)",
+    "2073": "P60 7th 127.90 s 9 | P63 7th 127.90 s 9 (kept, identical)",
+    "4093": "P60 5th 182.50 s 10 | P63 5th 182.50 s 10 (kept, identical)"
+  },
+  "build": {
+    "flag_off_sha": "3dfcd5c",
+    "checklist_1": "eqdrive flag-off vs origin/main b95ba9a (bot code = afb6f26): IDENTICAL 301/301; flag-on also 301/301 (stream never reaches the far branch). check.py --map-dir arena PASS: default max 5.3 ms, flag-on max 3.3 ms",
+    "checklist_2": "t < 10 s activations 0 and 0 (gated at t >= 40 s by P60)",
+    "archive_bytes": 3829760,
+    "contains_32acd3d": true
+  },
+  "screens_note": "P60 baselines for 0 and 6000 are my own trees-on runs of a passively traced afb6f26 copy (that trace is row-identical on 2000-5000, 384/384 outcome fields). Sim: /workspace/wt-tester-trees/tools/sim copied to /tmp/p63, --jobs 1. 'fired' = games where the rule changed a far search (log-only counterfactual in a flag-on copy, CSV identical to the flag-on run)."
 }

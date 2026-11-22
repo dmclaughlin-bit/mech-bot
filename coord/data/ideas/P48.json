@@ -1,0 +1,86 @@
+{
+  "id": "P48",
+  "renumbered_from": "research P46 @ 8e623eb (coord/data/ideas/P46.json on branch research-p41-44); renumbered to P48 by the Coordinator because P46 is a different idea owned by Doug's Claude",
+  "title": "Retreat behind trees: when hurt, being hit and no building cover is reachable, retreat to a spot within 3 s that trees hide from every enemy seeing us, instead of backing straight away (TREE_RETREAT_ON)",
+  "family": "retreat / tree cover",
+  "flags": [
+    "TREE_RETREAT_ON"
+  ],
+  "flag": "TREE_RETREAT_ON",
+  "behaviors": [
+    "in the champion's 'retreat' branch (HP < retreatHp, hit in the last 2 s, no building hide spot), t >= 10, when trees+buildings do not already hide us from every enemy with line of sight: walk (boost above 30% energy, as today) to the nearest in-zone spot 1, 2 or 3 s away, no closer to any of those enemies, that trees+buildings hide from all of them; give up after 3 s without progress"
+  ],
+  "owner": "Mech Builder",
+  "stage": "building",
+  "pr": null,
+  "sha": null,
+  "branch": "p48-tree-retreat",
+  "base": "bdcff4a84e62a2e8c56fcec090c96425b4808bb8",
+  "champion_sha_tested_against": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+  "champion_sha": "0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+  "champion_main": "588557e464dd4946680bff964a7c8e86700b8739 (merge 8c130ad7f0c81acb03508c40f20c31867f29d358 = P34 0e6fadd)",
+  "screens": [],
+  "receipt": null,
+  "site_score": null,
+  "score": null,
+  "decision": null,
+  "blocker": null,
+  "next_action": "Mech Builder: implement behind TREE_RETREAT_ON (default false), trees-on build checklist on bases 0, 1000, 6000, 7000.",
+  "doug_waiver": false,
+  "single_decision": "Where the no-cover retreat goes. Today, with no building spot from hideSpot, it backs away from lastHit's bearing with a lean toward the center (brain.ts:780-794). This picks a tree-hidden spot instead when one exists; 'retreat to cover' (building spot, brain.ts:774-779) is unchanged.",
+  "trigger": "TREE_RETREAT_ON AND obs.t >= 10 AND mode === 'retreat' (brain.ts:794) AND enemies with seenAt(me.pos, myHeight, [e], false) non-empty AND NOT already hidden from all of them by trees+buildings AND a tree spot exists AND NOT (near-and-reachable drop OR dropMove OR dropHold).",
+  "hook": "brain.ts act(), no-cover retreat branch brain.ts:780-794: before the back-away vector, if TREE_RETREAT_ON and a tree spot exists, `move = heading(treeSpot)`; keep boost and mode 'retreat'. Same tree loader and tree-aware hidden test as P45 (shared helper, one flag here). Flag in params.ts.",
+  "gates": "Not before t = 10 s. Only in the champion's hurt retreat (HP < 0.3 and hit within 2 s); the drop run needs HP >= retreatHp and !hurt (brain.ts:731), so it cannot be running the same tick; the near-and-reachable drop gate is applied anyway. 3 s no-progress give-up. Off = champion exactly.",
+  "drop_gate": "Drop gate (Doug 8:58 PM ET rule, near AND reachable within DROP_RUN_M): the rule is off on any tick where a drop passes the champion's own drop-run candidate filter (not in dropSkip, holder null or us, flat distance <= DROP_RUN_M, zone-safe for lands_in + capture time; brain.ts:731-736) or dropMove/dropHold is on, and it yields to a drop run/hold on the same tick. A plain 'no drop listed' gate is not used (an untaken drop sits in obs.drops most of the game; it killed P26b, P33, P29b).",
+  "tree_model": "Tree cover test (observable: the kit map files hello.map.dir/v2/world.json, 1560 trees, rules.canopyDensity 0.35, canopyBlockT 0.25; protocol.md:369-372, :452): a spot p is hidden from enemy e when both e's eye-to-our-center and eye-to-our-top lines are blocked by a building (map.ts clearLine) or by a tree: a trunk always, canopy only when e is beyond near_range 45 m and the transmittance exp(-0.35 x metres inside crowns) is below 0.25. Shots ignore trees (protocol.md:317), so hiding behind a tree does not stop our own fire.",
+  "novelty": "Families that lost on the site: hold-behind-cover and heal-walk-to-cover (P24 heal in cover, HEAL_COVER=2, 3.79 vs 4.17 champion = -0.38, CLOSE). TRIGGER is new: those fire when hurt and SEEN (heal mode, HP < heal threshold, no recent hit needed) and lead into standing still to regen; P48 fires only when HP < retreatHp AND a hit landed in the last 2 s (actively taking fire) AND the champion's building hideSpot found nothing (the champion's kept retreat-to-cover B5 would not apply) AND trees+buildings do not already hide us. ACTION is new: it is not a stop-and-hold or heal: it replaces only the direction of the champion's moving no-cover retreat (back away from lastHit) with a walk/boost toward a spot 1-3 s away that is no closer to any enemy that sees us (distance is kept or grown), keeping mode retreat; once the spot hides us, or 2 s pass without a hit, control returns to the champion branches unchanged (back-away / heal). Stationary-hold rate is reported from the hazard traces.",
+  "evidence": {
+    "protocol": "protocol.md:369-372: canopy is soft, trunks block sight, canopy does not block inside near_range 45 m; :317 trees do not stop shots; :452 world.json trees. Our bot never reads trees: map.ts:119 clearLine covers buildings/terrain only, and seenAt (brain.ts:405) and hideSpot (brain.ts:425) use it.",
+    "sim_trees_on": "Champion trees-on baselines (/workspace/tester/runs): P29 b6f2f8b mean (16-place) 3.562 -> 3.708 (2000+3000) and 3.870 -> 4.083 (4000+5000) when trees are switched on; deaths before 40 s 56 -> 48 and 54 -> 38. P34 0e6fadd trees on: 3.750 and 4.099, deaths before 40 s 48 and 38. Trees on is now the official screen (coord/WORKFLOW.md 475eb09).",
+    "sim_retreat": "Trees on, P34 champion: in the champion's no-cover 'retreat' with an enemy in line of sight, trees already hide us at some point in 59 and 60 games, and a tree spot within 3 s exists (trigger) in 107 and 104 games (reach gate).",
+    "sim_deaths": "Trees on: 93 of 190 deaths (2000+3000) and 89 of 189 (4000+5000) had a P46 trigger (reach gate) in the 10 s before death.",
+    "watcher": "evasion_slices.csv (RANKED.md #1): at 2-4 alive, top teams keep the nearest enemy at 126 m vs 90 m while HP < 35% (d=0.71, 447/249 ticks, 43/43 matches, ok) and move faster when hurt (8.94 vs 6.95 m/s, d=0.35): breaking contact when hurt separates top teams. PR #145: someone else hitting me KILL 37 / DIED 128.",
+    "kept_parent": "B5 retreat to building cover (F3) is in the champion and was a KEEP (B5b 2.38); this extends the same decision to tree cover where the champion has no building spot."
+  },
+  "trigger_counts_trees_on": {
+    "champion": "P34 0e6fadd1a30db4ee30c26114b8198f63d782b7c9",
+    "2000+3000": {
+      "none": "109 games / 180 episodes",
+      "plain": "84 / 134",
+      "narrow": "103 / 171",
+      "reach": "107 / 175",
+      "per_base": "2000: none 58/103, reach 56/98; 3000: none 51/77, reach 51/77"
+    },
+    "4000+5000": {
+      "none": "107 / 181",
+      "plain": "82 / 140",
+      "narrow": "103 / 176",
+      "reach": "104 / 178",
+      "per_base": "4000: none 52/81, reach 50/79; 5000: none 55/100, reach 54/99"
+    },
+    "gates": "Gates as counted: none; plain = obs.drops empty; narrow = no drop (holder null or us) within DROP_RUN_M and no dropMove/dropHold; reach = 'near AND reachable within DROP_RUN_M' (Doug 8:58 PM ET follow-up): no drop that passes the champion's own drop-run candidate filter (not in dropSkip, holder null or us, within DROP_RUN_M, zone-safe for lands_in + capture time; brain.ts:731-736 on main 8c130ad) and no dropMove/dropHold that tick. Spec gate = reach."
+  },
+  "estimated_activation": "107/192 and 104/192 games (reach gate).",
+  "closest_prior_test": "B5/B5b retreat to building cover KEEP (in the stack). HYP-019 retreat route failed (cited in P-D-007 Step A); P33 retreat-far RETIRED (0/96 behind the plain drop gate); B123 hurt kiting VETO; P30 front-arc facing while retreating RETIRED. None used tree cover; this changes only the no-cover retreat's destination.",
+  "what_would_disprove": "Trees-on paired screen: deaths within 10 s of a trigger not lower, or damage taken during retreat not lower; drop-ring set totals below the champion; deaths < 40 s above; new 20 s+ pins with the flag active; official score at or below the champion.",
+  "risks": "Pins: movement to trunks/slopes; 3 s give-up needed. A tree spot can be sideways rather than away, so a chaser inside 45 m (canopy does not hide there; only trunks) may keep sight; the spot test only counts canopy beyond 45 m. Drops: cannot coincide with a drop run (hurt). Early deaths: off before 10 s.",
+  "source": "Doug 8:58 PM ET follow-up (break line of sight while disengaging): trees-on passive sim log of the P34 champion.",
+  "timestamps": {
+    "created": "2026-11-21 21:55 ET (research P46)",
+    "renumbered": "2026-11-22 ET",
+    "updated": "2026-11-22 ET"
+  },
+  "sources": [
+    "git show 8e623eb:coord/data/ideas/P46.json",
+    "/workspace/mechfight-kit/protocol.md:317, :369-372, :452",
+    "/workspace/mechfight-kit/arena/v2/world.json (trees, rules)",
+    "/tmp/builder-sim-trees/geom.ts treeBlocks and ASSUMPTIONS.md (read only)",
+    "/workspace/tester/runs/trees-0e6fadd-*.csv, trees-b6f2f8b-*.csv, fast-b6f2f8b-*.csv",
+    "coord/WORKFLOW.md (origin/main 475eb09)",
+    "brain.ts and map.ts on origin/main 8c130ad",
+    "Trees-on recheck (Doug 8:58 PM ET, coord/WORKFLOW.md 475eb09): copies of the current champion bot files from origin/main 8c130ad (P34 merge; bot code identical to 0e6fadd) under /tmp/p4144t/bot and /tmp/p4144t/bot2 with passive per-decision CSV logging before act.move (no action changed; the tree sight model is copied read-only from /tmp/builder-sim-trees/geom.ts treeBlocks and loaded from the kit's arena/v2/world.json). Run: `cd /tmp/builder-sim-trees && P4144_DIR=<dir> SEED_BASE=<s> bun run.ts --bot /tmp/p4144t/botN/bot.ts --seeds 96 --jobs 1 --kit /workspace/mechfight-kit --out <csv> --trees` for s = 2000, 3000, 4000, 5000. Equivalence: every non-timing column equals /workspace/tester/runs/trees-0e6fadd-<s>.csv on 96/96 games per base for both runs (768 games). Logs in /tmp (not committed).",
+    "coord/data/watcher/evasion_slices.csv",
+    "coord/data/watcher/RANKED.md",
+    "https://github.com/dmclaughlin-bit/mech-bot/pull/124"
+  ]
+}

@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  DROP_RUN_M, HELD_CHARGE_EARLY_RELEASE_H, HELD_CHARGE_EARLY_RELEASE_ON, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
@@ -1165,7 +1165,15 @@ function buildBot(hello: Hello): Bot {
               const dmg = (st.damage ?? L.damage) * (minFrac + (1 - minFrac) * frac) * cubeDamage(me.cubes) * cook
               lethal = LETHAL_RELEASE_MARGIN * dmg >= m.hp
             }
-            fire[laser] = !((full || lethal) && lined)
+            // P56 (HELD_CHARGE_EARLY_RELEASE_ON): let go now if the mech we are lined up on is about to leave the line or laser range.
+            let early = false
+            if (HELD_CHARGE_EARLY_RELEASE_ON && !full && !lethal && lined && !other && !farmShot && m.kind === "mech" && obs.t >= LETHAL_RELEASE_MIN_T && !dropOpen()) {
+              const h = HELD_CHARGE_EARLY_RELEASE_H
+              const mp: Vec3 = [muzzle[0] + me.vel[0] * h, muzzle[1] + me.vel[1] * h, muzzle[2]]
+              const cp: Vec3 = [c[0] + vel[0] * h, c[1] + vel[1] * h, c[2]]
+              early = span(mp, cp) > l.stats.range || !clearLine(solids, mp, cp)
+            }
+            fire[laser] = !((full || lethal || early) && lined)
           } else if (leading === "laser") fire[laser] = true
           if (LASER_RUSH_ON && leading === "laser") beamAt = c
         }

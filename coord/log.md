@@ -478,3 +478,4 @@ ACK LEARNING-STANDARD (Mech Sim Tester) Sun Nov 22 ~12:52 AM ET, copied by Grok 
 
 ACK LEARNING-STANDARD (Mech Sim Tester) Sun Nov 22 12:56 AM ET
 - 2026-11-22 01:37 ET (Grok): Doug 1:36 AM ET: "do we have anything going through the testing process if not lets utilize it". The site queue is slow during the builders-4 rescore, so the one-at-a-time wait is lifted for independent single-change builds on the same champion: the coordinator submits READY P53b #178 52c2862 while P49b BB-7C26BD16 is still queued. The loop may submit the next READY/near-miss while a receipt is pending, as long as the counter allows it; max 2 pending at once.
+- 2026-11-22 01:38 ET (Grok): the site refused P53b 52c2862 while BB-7C26BD16 is queued: "Your team already has a submission waiting in the queue on this track... One submission at a time per team". So the limit is max 1 pending, set by the site; the 2-pending note above is withdrawn. P53b goes in as soon as P49b scores.

@@ -1,0 +1,200 @@
+{
+  "id": "P66b",
+  "title": "BODY_WIDTH_KNEE_CELLTOP_ON: P66 round 1's knee-height body-width test for the champion's building-cover spot ('retreat to cover'), gated off only while our feet stand on a structure (the top of the map cell under us, not the terrain height)",
+  "family": "retreat / movement",
+  "flag": "BODY_WIDTH_KNEE_CELLTOP_ON",
+  "flags": [
+    "BODY_WIDTH_KNEE_CELLTOP_ON"
+  ],
+  "owner": "Mech Builder",
+  "stage": "built",
+  "stage_note": "Step A PASS on P64 (46/192, 64/192); FASTER checklist vs P64 on practice 0 and 6000: blocks pass, freezes fall on both bases, 6024 7->0, 1 6->0, seed-84 pin gone; flagged: seed-46 22 s pin (same pin P65/P66 had, ruled non-blocking for P65 at 3:30). Final commit flips the flag on.",
+  "branch": "p66b-body-width-knee-celltop",
+  "base": "bc640a6",
+  "base_note": "origin/main bc640a6 (contains the P64 merge 297f133; bot .ts files identical to 8ada6a4)",
+  "champion": "P64 BACKAWAY_LOS_BREAK_ON 8ada6a4 (main merge 297f133, builders-4 3.90, BB-0E81A218)",
+  "champion_code": "8ada6a4",
+  "champion_main": "297f133",
+  "champion_sha_tested_against": "8ada6a4",
+  "builds_on": [
+    "P66 round 1 eb6e30d: freezes 96->45, 257->4; 6024 7->0; seed 1 6->0",
+    "F16"
+  ],
+  "builds_on_detail": "P66 (origin/p66-body-width-cover-knee, coord/data/ideas/P66.json there): round 1 eb6e30d (knee-height walk lines -R, 0, +R must be clear for a building-cover spot) cut building-cover freezes after 40 s 96->45 and 257->4 vs P60, fixed 6024 (7->0) and seed 1 (6->0), paired +0.021 +/- 0.039 and +0.062 +/- 0.057, but made a NEW 25 s pin on seed 84 (fires at t=154-155.9 while crossing stepped tiers). Its fix e093967 gated the test on feet within step_up of the TERRAIN height, which also closed the 6024 fires (the bot's z there is 0.52 vs terrain -1.3), so P66 ended outcome C. P66 reuse note 2: the 'on a structure' gate must use the surface we stand on. F16/F18/F20: retreat deaths are most deaths; walking to reachable cover helped on the site. N8: legs only.",
+  "refinement_of": {
+    "retired_idea": "P66 (outcome C)",
+    "strength_kept": "round 1's knee-height body-width walk test (feet + step_up + 0.3 m, offsets -R, 0, +R), which removed most building-cover freezes and fixed 6024 and 1",
+    "weakness_fixed": "the seed-84 tier pin (round 1) and the over-broad terrain gate (fix round) that killed the 6024 fires",
+    "difference": "the test is skipped only while we stand ON a map solid: the map cell under our feet has a solid (prism) whose top is within step_up of our feet (feet z >= cell top - step_up). Cells with no solid (6024's freeze cells: bot map cell top -Infinity) keep the test regardless of the terrain height map. Geometry probe before results: 6024 fire/freeze cells (-36.9..-41.1, -228.4..-229.2) have no solid; seed 84's round-1 fire cells (-57.6,60.9)..(-61.4,75.2) and its pin (-63.4,78.0) sit in cells with a solid, base -2.86, top 3.81, terrain -3.7..-0.8.",
+    "success": "the disproof below does not trigger"
+  },
+  "interacts_with": [
+    {
+      "mechanics": "building cover (champion 'retreat to cover', hideSpot)",
+      "interaction": "the only decision changed: a spot whose knee-height body walk is blocked is skipped (another bearing/step, or none)",
+      "source": "P66 round 1 screens (P66.json)"
+    },
+    {
+      "mechanics": "P48 tree retreat, P60 far cover, P64 LOS break, plain back-away",
+      "interaction": "when no body-reachable building spot exists, the bot falls through to these modes (P66 round 1: 60-75% of fires found no knee spot; retreat deaths moved to tree/back-away buckets)",
+      "source": "P66.json negatives 5"
+    },
+    {
+      "mechanics": "zone / 'to next circle' nav after a fire",
+      "interaction": "a spot change can lead into an old champion wedge seconds later in another mode (P66 seed 84); pins are checked for several seconds after the last fire",
+      "source": "P66.json reuse 4"
+    }
+  ],
+  "freeze_definition": "P61/P65/P66's definition: a bot decision whose mode is 'retreat to cover' at t >= 40 s, with the passive ground-truth sim trace position at t and t + 0.5 s; FROZEN when our flat position moved < 0.5 m. Reported per base as frozen decisions / building-cover decisions (t >= 40 s).",
+  "hypothesis": "P66 round 1's knee lines fixed the body-blocked building-cover freezes (6024, 1) because the walls between step_up and mid-height stop the body; its one failure (seed 84) came from fires while standing on 5-8 m tiers, where the knee lines run from our raised feet down to terrain-level spots and pass through the structure we stand on. Skipping the test only while we stand on a map solid keeps the terrain-level fires (6024, 1, 17, base 6000) and removes the tier fires, so building-cover freezes after 40 s fall on both practice bases with no new pin.",
+  "mechanism": "Only in the champion's building-cover call of hideSpot ('retreat to cover'), from t >= TREE_RETREAT_MIN_T (40 s), never in a drop run/hold and never while a drop is near AND reachable within DROP_RUN_M (dropReach, drop gate rule), and never while we stand on a map solid (the map cell under our feet has a solid and feet z >= that cell's top - step_up). For each candidate spot (same 1/2/3 s x 12 bearings order) the champion's mid-height center line is unchanged, and three knee-height walk lines (feet z + step_up + 0.3 m at our end, spot ground + step_up + 0.3 m at the other; lateral offsets -R, 0, +R, R = our body radius) must be clear (clearLine, no end skips). Hide test, other hideSpot callers (rush, ambush, heal, sneak), torso and aim unchanged (N8). No new target, latch or timing. Flag false = champion byte-identical.",
+  "activation": "Decision level: a champion 'retreat to cover' decision with all gates open (t >= 40 s, no drop run/hold/near reachable drop, not standing on a map solid) where the knee search returns a different spot than the champion's (another spot, or none). Game level Step A count = games with at least one such decision, per set of 192 (2000+3000, 4000+5000), on P64 8ada6a4, trees on, with CSV rows identical to /workspace/tester/runs/trees-8ada6a4-*.csv.",
+  "disproof": "Written before any result. P66b fails if (1) 6024 or seed 1 still freeze (building-cover frozen decisions after 40 s > 0 in that game) on the flag-on build, OR (2) a NEW >= 20 s pin appears anywhere on practice bases 0 or 6000 (flag ticks in and up to 10 s before the window reported), OR (3) building-cover frozen decisions after 40 s do not fall on BOTH practice bases 0 and 6000 vs my own P64 baselines, OR (4) the paired mean vs P64 is lower on BOTH bases. Standard: Step A fire+change < 10/192 on either set; deaths < 40 s up on either base. Seed 84 is EXCLUDED from clause (1): all 38 of its champion freezes happen with a drop near and reachable, so the drop gate closes the test there by rule; it is still rerun and reported, and any 84 pin counts under clause (2).",
+  "positives": "Step A 46/192 and 64/192 (round 1 without the solid gate: 46 and 67; the gate removes 1 and 57 fire decisions, all on raised solids, incl. the 3.81 m-top structure where P66's seed-84 fires happened). Practice vs P64: building-cover freezes after 40 s 112->45 (base 0) and 242->7 (base 6000), freeze games 8->2 and 16->2; 6024 7->0 (place 10->9, death 69.3->75.2 s) and 1 6->0; seed 84 identical to the champion (P66 round 1's 25 s pin gone); paired +0.042 +/- 0.039 and +0.042 +/- 0.055; kills 306->309, 365->371; building-cover retreat deaths 17->8 and 25->15; deaths < 40 s 24->24, 16->16; survivors 3->3, 2->2; drop-ring arrivals 3->3, 1->1; 0 activations before 10 s.",
+  "negatives": "1) NEW 22 s pin on seed 46 (base 0, t=50-72 at (14.5,152.2)): 0 flag ticks in the window but the last fire was 0.5 s before it at the same spot, so it follows the change; the wedge itself is the champion's heal-hiding / ambush / tree-retreat walking north into a wall. The game got better (place 13->10, death +23 s; the champion was dead before the window). Same pin as P65 and P66 round 1, ruled non-blocking for P65 (STATUS 3:30 AM). By the literal wording of disproof clause (2) it counts; no fix was spent on it because the wedge is in other hideSpot callers this single change does not touch. 2) Retreat deaths move to fallback modes as in P66: tree a 9->12 / 5->7, tree d 11->14, back-away a 21->23, back-away d 15->17; total deaths unchanged (93->93, 94->94). 3) 60-75% of fires find no body-reachable spot. 4) All paired deltas are within 1 SE (N10).",
+  "confidence": "Promising for the freeze mechanism (freezes 112->45 and 242->7, 6024 and 1 fixed, 84 untouched); score effect Uncertain (+0.042 on both bases, within 1 SE; N10)",
+  "reuse": "1) The 'on a structure' gate works when taken from the map cell under our feet (solid present and feet >= cell top - step_up); 6024's freeze cells have no solid at all (the bot stands 1.8 m above the terrain map there), so the terrain-height test in P66's fix was the wrong signal. 2) The bot's feet z is often far above both terrain and cell tops during retreats (boost jumps; up to 35 m above terrain on kept fires), so any height gate should be tested on traced z, not assumed. 3) Seed 46's (14.5,152.2) wedge is a champion heal-hiding/ambush/tree-retreat wedge that appears whenever a change keeps the bot alive past 52.85 s there; a body-width test in those callers is a separate candidate.",
+  "novelty": {
+    "vs_P66": "Same knee lines as P66 round 1; P66's fix gated on the terrain height map (closed 6024's fires because the bot stands 1.8 m above the terrain map there), P66b gates on the map solid under our feet (6024's cells have no solid), so the 6024 fires stay and the 84 tier fires go.",
+    "vs_P65": "P65 ran the body lines at mid-height (4.5 m) and so missed walls between step_up and 4.5 m (6024's 4.1-4.7 m wall); P66b uses knee height.",
+    "vs_P61": "P61 latched the champion's first spot; P66b keeps the every-decision re-pick and only changes which spots count as reachable."
+  },
+  "outcome": "pending",
+  "pr": null,
+  "sha": null,
+  "screens": [
+    {
+      "sha": "b212f52 flag on (in a /tmp copy + passive trace)",
+      "champion": "P64 8ada6a4 (b212f52 flag false, passive trace; own run)",
+      "t_lt_10_activations": 0,
+      "seed_set": "practice 0",
+      "fired": 21,
+      "fire_change_decisions": 264,
+      "fire_change_no_body_spot": 166,
+      "diff_behavior": 14,
+      "diff_score": 6,
+      "sim_delta": 0.042,
+      "sim_se": 0.039,
+      "better": 4,
+      "worse": 2,
+      "champ_mean": 3.552,
+      "cand_mean": 3.594,
+      "freezes_after_40s": "112/600 -> 45/518; games 8 -> 2 (17: 29->7; 56: 16->0; 12: 12->0; 42: 7->0; 1: 6->0; 84: 38->38, drop gate closed, 0 fires, row identical to the champion)",
+      "survivors": "3->3",
+      "kills": "306->309",
+      "deaths_lt_40": "24->24",
+      "drop_ring_arrivals": "3->3",
+      "retreat_deaths": "81->81",
+      "deaths": "93->93",
+      "pin20_games": "3->4: 41, 43, 79 champion pins (same spots, 0 flag ticks); NEW 46: 22 s t=50-72 at (14.5,152.2), 0 flag ticks in the window, last fire t=49.5 at (14.8,150.3); the champion's heal-hiding / lightning-ambush / tree-retreat walks north into a wall; the champion died at 52.85 s (before the window); place 13->10, death 52.85->75.85. Same pin as P65 and P66 round 1 (ruled non-blocking for P65, STATUS 3:30 AM). Seed 84: no pin.",
+      "buckets": {
+        "tree": "a 9->12 b 1->0 c 2->5 d 11->14",
+        "building": "a 6->5 b 1->0 c 2->0 d 8->3",
+        "back_away": "a 21->23 b 2->2 c 5->4 d 13->13"
+      },
+      "bot_ms_mean": "0.219->0.237 (instrumented copy); late_over_50ms 0->1 (seed 53)",
+      "changed_score_seeds": "10 7->6, 33 5->6, 41 3->4, 42 2->1, 46 3->6, 47 7->8",
+      "verdict": "blocks pass; item 4 flags NEW pin 46 (known, 0 flag ticks, game better)"
+    },
+    {
+      "sha": "b212f52 flag on (in a /tmp copy + passive trace)",
+      "champion": "P64 8ada6a4 (b212f52 flag false, passive trace; own run)",
+      "t_lt_10_activations": 0,
+      "seed_set": "practice 6000",
+      "fired": 35,
+      "fire_change_decisions": 381,
+      "fire_change_no_body_spot": 289,
+      "diff_behavior": 24,
+      "diff_score": 11,
+      "sim_delta": 0.042,
+      "sim_se": 0.055,
+      "better": 6,
+      "worse": 5,
+      "champ_mean": 3.958,
+      "cand_mean": 4.0,
+      "freezes_after_40s": "242/902 -> 7/505; games 16 -> 2 (6024: 7->0; 6017: 73->0; 6020: 41->0; 6048: 40->0; left: 6062 4, 6014 3)",
+      "survivors": "2->2",
+      "kills": "365->371",
+      "deaths_lt_40": "16->16",
+      "drop_ring_arrivals": "1->1",
+      "retreat_deaths": "80->79",
+      "deaths": "94->94",
+      "pin20_games": "2->2: 6011, 6082 champion pins (same spots, 0 flag ticks); none new",
+      "buckets": {
+        "tree": "a 5->7 b 1->2 c 3->5 d 5->5",
+        "building": "a 6->4 b 1->1 c 6->1 d 12->9",
+        "back_away": "a 15->15 b 5->6 c 6->7 d 15->17"
+      },
+      "bot_ms_mean": "0.220->0.233 (instrumented copy); late_over_50ms 0->0",
+      "changed_score_seeds": "6003 1->2, 6010 3->2, 6017 4->3, 6020 8->11, 6024 6->7, 6039 3->5, 6044 6->8, 6048 3->1, 6056 1->2, 6065 2->1, 6084 11->10",
+      "verdict": "blocks pass; no new pin"
+    }
+  ],
+  "timestamps": {
+    "recorded": "2026-11-22 (before any result)",
+    "step_a": "2026-11-22 ~04:08 ET",
+    "built": "2026-11-22 ~04:20 ET"
+  },
+  "sources": [
+    "origin/p66-body-width-cover-knee:coord/data/ideas/P66.json (round 1 eb6e30d, fix e093967, reuse 2-4)",
+    "origin/p61-building-cover-commit:coord/data/ideas/P61.json (freeze definition, reuse 2)",
+    "coord/data/findings.md F16, F18, F20, N8, N9, N10",
+    "/workspace/drop-gate-rule.txt",
+    "coordinator brief 3:51 AM ET (P66B KNEE CELLTOP)",
+    "geometry probe: bot map.ts loadMap cell base/top and groundAt at P66 round-1 fire positions (read from /tmp/p66 traces, not committed)",
+    "/tmp/p66b runs and traces (not committed)"
+  ],
+  "sha_flag_off": "b212f52",
+  "step_a_result": {
+    "champion": "P64 8ada6a4 (bot code of origin/main bc640a6)",
+    "method": "log-only /tmp copy of the flag-false build b212f52: at every champion 'retreat to cover' decision, a shadow knee-height hideSpot (bodyR = me.stats.radius, no deadline) is compared with the champion's spot; also logged: onSolid, feet z, terrain, cell top/base. fire+change = gates open (t >= 40 s, no drop run/hold, no near reachable drop, not on a map solid) and the knee spot differs (another spot or none).",
+    "passivity": "every non-timing CSV field identical to /workspace/tester/runs/trees-8ada6a4-{2000,3000,4000,5000}.csv, 384/384 (timing only: 5004, 5013 late_over_50ms)",
+    "2000+3000": {
+      "fire_and_change_games": 46,
+      "of": 192,
+      "no_knee_spot_games": 40,
+      "round1_no_solid_gate_games": 46,
+      "fire_and_change_decisions": 681,
+      "no_knee_spot_decisions": 459,
+      "other_spot_decisions": 222,
+      "excluded_on_solid_decisions": 1,
+      "champion_freezes_after_40s": "198/1079 decisions in 17 games (15 also fire)",
+      "building_cover_death_buckets": {
+        "a": 17,
+        "b": 3,
+        "c": 8,
+        "d": 9
+      }
+    },
+    "4000+5000": {
+      "fire_and_change_games": 64,
+      "of": 192,
+      "no_knee_spot_games": 56,
+      "round1_no_solid_gate_games": 67,
+      "fire_and_change_decisions": 1110,
+      "no_knee_spot_decisions": 780,
+      "other_spot_decisions": 330,
+      "excluded_on_solid_decisions": 57,
+      "games_losing_all_fires_to_solid_gate": [
+        4017,
+        5003,
+        5054
+      ],
+      "champion_freezes_after_40s": "437/1674 decisions in 26 games (24 also fire)",
+      "building_cover_death_buckets": {
+        "a": 16,
+        "b": 3,
+        "c": 6,
+        "d": 21
+      }
+    },
+    "verdict": "PASS (46/192 and 64/192 >= 10/192)"
+  },
+  "build": {
+    "flag_off_sha": "b212f52",
+    "checklist_1": "eqdrive flag-off b212f52 vs origin/main bc640a6 (bot code = 8ada6a4): IDENTICAL 301/301. check.py --map-dir arena PASS: default (flag false) max 3.4 ms; flag-on (instrumented copy) max 3.0 ms; flag-on final head reported in the handoff",
+    "checklist_2": "t < 10 s activations 0 and 0 (gated at 40 s)",
+    "freeze_cases": "6024 7/18 -> 0/4; 1 6/36 -> 0/39; 84 38/82 -> 38/82 (excluded by the drop gate, 0 fires, no pin)"
+  },
+  "outcome_note": "built; disproof clauses 1, 3, 4 and the standard gates not met; clause 2 met only by the known seed-46 pin (P65 precedent). Coordinator to rule; Sim Tester screen vs P64 next."
+}

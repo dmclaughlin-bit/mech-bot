@@ -209,3 +209,12 @@ export const BACKAWAY_FAR_STEPS_S = [4, 5, 6]
  */
 export const BACKAWAY_LOS_BREAK_ON = true
 export const BACKAWAY_LOS_STEPS_S = [1, 2, 3]
+
+/**
+ * P66b (knee-height body width, cell-top gate): in the champion's building-cover retreat ("retreat to cover"), from
+ * t = TREE_RETREAT_MIN_T (40 s), never in a drop run/hold or while a drop is near AND reachable within DROP_RUN_M, and never
+ * while our feet stand on a map solid (the map cell under us has one whose top is within step_up of our feet), hideSpot's
+ * walk test also needs three knee-height lines (feet + step_up + 0.3 m; offsets -radius, 0, +radius perpendicular to the
+ * walk) clear (P66 round 1). Hide test, other hideSpot callers, torso and aim unchanged (N8). false = champion exactly.
+ */
+export const BODY_WIDTH_KNEE_CELLTOP_ON = true

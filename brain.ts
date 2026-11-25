@@ -27,7 +27,7 @@
 import { clearLine, groundAt, loadMap, loadTrees, treeBlocks } from "./map.ts"
 import { createNav } from "./nav.ts"
 import {
-  BACKAWAY_FAR_COVER_ON, BACKAWAY_FAR_STEPS_S, BACKAWAY_LOS_BREAK_ON, BACKAWAY_LOS_STEPS_S, DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
+  BACKAWAY_FAR_COVER_ON, BACKAWAY_FAR_STEPS_S, BACKAWAY_LOS_BREAK_ON, BACKAWAY_LOS_STEPS_S, BODY_WIDTH_COVER_ON, DROP_RUN_M, MIDRING_GOAL, MIDRING_HI, MIDRING_LO, MIDRING_MIN_R, MIDRING_SETTLE_ON, MIDRING_STUCK_S, ENGAGE_FINISH_HP, ENGAGE_ON, FARM_ENEMY_M, FARM_HUNT_M, FARM_HUNT_ON, FARM_ON, FARM_PICKUP_M,
   LASER_CHASE_S, LASER_RUSH_ON, LASER_RUSH_S, LASER_TRIP_M, LETHAL_RELEASE_MARGIN, LETHAL_RELEASE_MIN_T, LETHAL_RELEASE_ON,
   NO_SNEAK_ON, NO_SNEAK_QUIET_S, STANDOFF_BREAK_S, TARGET_PICK_ON, TREE_RETREAT_MIN_T, TREE_RETREAT_ON, TREE_RETREAT_STUCK_S, params,
 } from "./params.ts"
@@ -432,11 +432,12 @@ function buildBot(hello: Hello): Bot {
   /**
    * F3, Q2: the nearest spot we can walk to in a straight line, inside `keepIn` (center, radius), no closer to any
    * threat than we are now, where no threat sees us. Nearest first, no scoring (the full position query is later in
-   * Build 5). Null when there is none or the deadline is near.
+   * Build 5). Null when there is none or the deadline is near. P65: `bodyR` > 0 also needs the walk clear along two lines
+   * offset by +/- bodyR perpendicular to it (the body, not a zero-width line, has to get there).
    */
   function hideSpot(
     me: Observation["self"], height: number, walk: number, threats: { pos: Vec3; aim: [number, number]; cubes?: number }[],
-    cone: boolean, keepIn: [number[], number], timeOk: () => boolean,
+    cone: boolean, keepIn: [number[], number], timeOk: () => boolean, bodyR = 0,
   ): Vec3 | null {
     const from: Vec3 = [me.pos[0], me.pos[1], me.pos[2] + height / 2]
     for (const s of HIDE_STEPS_S) {
@@ -450,6 +451,11 @@ function buildBot(hello: Hello): Bot {
         const p: Vec3 = [x, y, g]
         if (threats.some((e) => flat(e.pos, p) < flat(e.pos, me.pos))) continue
         if (!clearLine(solids, from, [x, y, p[2] + height / 2], 0, 0)) continue
+        if (bodyR > 0) {
+          const ox = -Math.sin(yaw) * bodyR, oy = Math.cos(yaw) * bodyR, z = p[2] + height / 2
+          if (!clearLine(solids, [from[0] + ox, from[1] + oy, from[2]], [x + ox, y + oy, z], 0, 0)) continue
+          if (!clearLine(solids, [from[0] - ox, from[1] - oy, from[2]], [x - ox, y - oy, z], 0, 0)) continue
+        }
         if (!seenAt(p, height, threats, cone)) return p
       }
     }
@@ -893,6 +899,11 @@ function buildBot(hello: Hello): Bot {
         if (best) losRun = { spot: best, key: treeKey(best[0], best[1]), best: flat(me.pos, best), bestAt: obs.t, used: obs.t, n: bestN }
         return best
       }
+      // P65 (BODY_WIDTH_COVER_ON): body radius for the building-cover spot search, or 0 (champion zero-width test). Same
+      // gates as treeRetreat: from 40 s, no drop run/hold, no near-and-reachable drop.
+      const coverBody = (): number =>
+        BODY_WIDTH_COVER_ON && obs.t >= TREE_RETREAT_MIN_T && !dropMove && !dropHold && !dropReach()
+          ? (me.stats.radius ?? cfg.mech.radius * scale(me.cubes)) : 0
       let spot: Vec3 | null = null
       let move: [number, number] = [0, 0]
       let boost = false
@@ -920,7 +931,7 @@ function buildBot(hello: Hello): Bot {
         if ((!engage.clear || (engage.why === "finish" && d > close && !standOff)) && flat(engage.m.pos, zoneKeep[0]) < zoneKeep[1])
           move = travel(me.pos, engage.m.pos, obs.t, canPlan()).move
         mode = `engage, ${engage.why}`
-      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && seenAt(me.pos, myHeight, threats, false) && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan))) {
+      } else if (lastHit && obs.t - lastHit.t < 2 && me.hp < RETREAT_HP * me.max_hp && seenAt(me.pos, myHeight, threats, false) && (spot = hideSpot(me, myHeight, walkSpeed, threats, false, zoneKeep, canPlan, coverBody()))) {
         // Retreat (F2, F3, Build 5): hurt and under fire, so head for the nearest in-zone spot out of every visible
         // enemy's line of sight, torso still on the attacker (legs and torso are independent). Boost only above 30% energy.
         move = heading(spot)

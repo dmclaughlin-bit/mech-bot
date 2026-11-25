@@ -1,0 +1,49 @@
+{
+  "id": "P65r",
+  "title": "BODY_WIDTH_COVER_ON rebuilt on P64 champion (main bc640a6): hideSpot's straight-walk test in the building-cover retreat also checks two lines offset by the body radius",
+  "flag": "BODY_WIDTH_COVER_ON",
+  "flags": [
+    "BODY_WIDTH_COVER_ON"
+  ],
+  "owner": "Diego's Claude",
+  "prompt": "P65r (Grok 4:18 AM ET Sun)",
+  "branch": "diego/p65r-body-width-cover",
+  "champion": "P64 8ada6a4 (site 3.90, BB-0E81A218), main bc640a6",
+  "builds_on": [
+    "P65 (#185, 368f7c6)",
+    "F16",
+    "P61 finding (building-cover freezes after 40 s)"
+  ],
+  "rebuild_of": {
+    "idea": "P65",
+    "pr": 185,
+    "sha": "368f7c6",
+    "change": "same code moved unchanged onto main bc640a6 (adds only the P64 code that main now contains); one flag, default false"
+  },
+  "hypothesis": "Some of the champion's building-cover spots are reachable by a zero-width line but not by the 2.5 m-radius body (the sim and the game collide the mech as a circle of its radius). The bot then walks straight into the building edge and freezes in the open while under fire. Requiring the walk to be clear along lines offset by +/- the body radius makes hideSpot pick a spot the body can actually walk to (another bearing or step), or none (then the champion's own tree / far-cover / back-away retreat runs), so the bot stops freezing in building-cover retreat after 40 s and loses fewer HP there.",
+  "mechanism": "Only in the champion's building-cover call of hideSpot (the 'retreat to cover' branch; its entry test is unchanged except that the spot search uses the wider test), from t >= TREE_RETREAT_MIN_T (40 s), never in a drop run/hold and never while a drop is near AND reachable within DROP_RUN_M (P48's dropReach test, drop gate rule). For each candidate spot (same 1/2/3 s x 12 bearings order), besides the champion's center line from our mid-height to the spot's mid-height, two parallel lines offset by +/- our body radius (me.stats.radius, else cfg.mech.radius x cube scale) perpendicular to the walk must also be clear (clearLine, no end skips). The hide test (seenAt, center and top lines) is unchanged: vision and aim in the protocol use center/top lines, so body width does not change who sees us. Other hideSpot callers (rush, ambush, sneak) unchanged. No new movement target, no latch, no timing change; legs only, torso/aim untouched (N8). Flag false = champion byte-identical.",
+  "activation": "Decision-level: a 'retreat to cover' decision of the champion at t >= 40 s with the drop gates open where the body-width search returns a different spot than the champion's (another bearing/step, or none, so the branch falls through to the champion's next retreat). Game-level Step A count = games where this happens at least once (fire + change), per set of 192 (2000+3000, 4000+5000).",
+  "disproof": "Written before any result. P65 fails if (1) Step A fire+change < 10/192 on either set (2000+3000, 4000+5000), OR (2) building-cover frozen decisions after 40 s (definition above) do not fall on BOTH practice bases 0 and 6000 vs my own P60 baselines, OR (3) the paired mean vs P60 is lower on BOTH practice bases, OR (4) deaths < 40 s rise on either base, OR (5) a NEW >= 20 s pin appears (stall rule).",
+  "novelty": {
+    "vs_P61": "P61 latched the champion's first spot (with a skip list); P65 keeps the champion's every-decision re-pick and only changes which spots count as reachable. P61's 6024 freeze came from latching a body-blocked spot; P65 removes body-blocked spots from the candidates.",
+    "vs_P59": "P59 (N9) changed tree spot choice in 'retreat, trees'; P65 touches only the building-cover spot search.",
+    "vs_P60": "P60 (F16) added a far spot for back-away; P65 does not touch that branch (it may run more often when no body-reachable building spot exists).",
+    "vs_P57": "P57 (N8) changed torso/aim; P65 is legs only."
+  },
+  "disproof_p65r": "Safety screen on cloud x86 vs the P64 baseline on 2000+3000 and 4000+5000: building-cover freezes after 40 s (or deaths) not down on both sets, OR deaths < 40 s up, OR mean lower on both sets (Grok, 4:18 AM ET).",
+  "positives": "No new pins, early deaths and survivors flat, flag-off identical, check.py 6.6 ms. (P65 on P60 reduced building-cover freezes 96->64 and 257->32 on practice bases; not remeasured here.)",
+  "negatives": "Mean lower on BOTH sets (-0.021, -0.062) and kills down on both (684->679, 727->714): the disproof clause 'mean lower on both sets' is met. Freeze counts after 40 s were not remeasured.",
+  "confidence": "Uncertain",
+  "outcome": "C (disproved by the stated disproof: mean lower on both sets on the P64 baseline)",
+  "stage": "screened_disproved",
+  "step_a_result": "inherited from P65: 43/192 and 62/192 on P60; not rerun (rebuild of an idea that already fired 10/192+ on both sets)",
+  "sha_flag_off": "b08d0e58bd758075eb7370d3ecf0713eed5ac116",
+  "safety_screen": {
+    "station": "Diego's cloud x86 (matches Sim Tester), hazard sim 39c7894 trees on, --jobs 4, 96 seeds per base",
+    "baseline": "main bc640a6 = P64 8ada6a4",
+    "flag_off": "base 2000: 96/96 rows identical to main; kit actions identical (KIT_IDENTICAL)",
+    "check_py": "PASS, max 6.6 ms",
+    "2000+3000": "-0.021+/-0.022 (3 better/4 worse), changed 31, kills 684->679, rings 7->7, pause20 2->2 none new, died<40 48->48, surv 2->2",
+    "4000+5000": "-0.062+/-0.056 (8/11), changed 48, kills 727->714, rings 6->5, pause20 2->2 none new, died<40 38->38, surv 3->3"
+  }
+}
